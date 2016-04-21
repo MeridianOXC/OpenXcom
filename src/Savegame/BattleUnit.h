@@ -460,7 +460,7 @@ public:
 	/// derive a rank integer based on rank string (for xcom soldiers ONLY)
 	void deriveRank();
 	/// this function checks if a tile is visible, using maths.
-	bool checkViewSector(Position pos) const;
+	bool checkViewSector(Position pos, bool useTurretDirection = false) const;
 	/// adjust this unit's stats according to difficulty.
 	void adjustStats(const int diff);
 	/// did this unit already take fire damage this turn? (used to avoid damaging large units multiple times.)
