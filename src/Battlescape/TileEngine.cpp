@@ -44,7 +44,6 @@
 #include "../Engine/Options.h"
 #include "ProjectileFlyBState.h"
 #include "MeleeAttackBState.h"
-#include "../Engine/Logger.h"
 #include "../fmath.h"
 
 namespace OpenXcom
@@ -229,91 +228,116 @@ void TileEngine::addLight(const Position &center, int power, int layer)
 }
 
 /**
- * Calculates line of sight of a soldier.
- * @param unit Unit to check line of sight of.
- * @return True when new aliens are spotted.
- */
-bool TileEngine::calculateFOV(BattleUnit *unit)
+* Calculates line of sight of a soldier.
+* @param unit Unit to check line of sight of.
+* @param updateVisibleUnitsOnly Update only unit visibility (true) or unit and tile visibility (false)
+* @return True when new aliens are spotted.
+*/
+bool TileEngine::calculateFOV(BattleUnit *unit, bool updateVisibleUnitsOnly /*= false*/)
 {
+	int count = 0;
 	size_t oldNumVisibleUnits = unit->getUnitsSpottedThisTurn().size();
-	Position center = unit->getPosition();
-	Position test;
+	bool useTurretDirection = false;
 	int direction;
-	bool swap;
-	std::vector<Position> _trajectory;
 	if (Options::strafe && (unit->getTurretType() > -1)) {
 		direction = unit->getTurretDirection();
+		useTurretDirection = true;
 	}
 	else
 	{
 		direction = unit->getDirection();
 	}
-	swap = (direction==0 || direction==4);
-	int signX[8] = { +1, +1, +1, +1, -1, -1, -1, -1 };
-	int signY[8] = { -1, -1, -1, +1, +1, +1, -1, -1 };
-	int y1, y2;
-
+	
 	unit->clearVisibleUnits();
 	unit->clearVisibleTiles();
 
 	if (unit->isOut())
 		return false;
-	Position pos = unit->getPosition();
 
-	if ((unit->getHeight() + unit->getFloatHeight() + -_save->getTile(unit->getPosition())->getTerrainLevel()) >= 24 + 4)
+	Position posSelf = unit->getPosition();
+	//Loop through all units in range and figure out which ones we can see
+	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		Tile *tileAbove = _save->getTile(pos + Position(0,0,1));
-		if (tileAbove && tileAbove->hasNoFloor(0))
+		Position posOther = (*i)->getPosition();
+		if (!(*i)->isOut() && distanceSq(posSelf, posOther, false) <= getMaxViewDistanceSq())
 		{
-			++pos.z;
-		}
-	}
-	for (int x = 0; x <= getMaxViewDistance(); ++x)
-	{
-		if (direction%2)
-		{
-			y1 = 0;
-			y2 = getMaxViewDistance();
-		}
-		else
-		{
-			y1 = -x;
-			y2 = x;
-		}
-		for (int y = y1; y <= y2; ++y)
-		{
-			for (int z = 0; z < _save->getMapSizeZ(); z++)
+			int sizeOther = (*i)->getArmor()->getSize();
+			for (int x = 0; x < sizeOther; ++x)
 			{
-				const int distanceSqr = x*x + y*y;
-				test.z = z;
-				if (distanceSqr <= getMaxViewDistanceSq())
+				for (int y = 0; y < sizeOther; ++y)
 				{
-					test.x = center.x + signX[direction]*(swap?y:x);
-					test.y = center.y + signY[direction]*(swap?x:y);
-					if (_save->getTile(test))
+					Position posToCheck = posOther + Position(x, y, 0);
+					if (unit->checkViewSector(posToCheck, useTurretDirection) && visible(unit, _save->getTile(posToCheck)))
 					{
-						BattleUnit *visibleUnit = _save->getTile(test)->getUnit();
-						if (visibleUnit && !visibleUnit->isOut() && visible(unit, _save->getTile(test)))
+						//Unit (or part thereof) visible to one or more eyes of this unit
+						if (unit->getFaction() == FACTION_PLAYER)
 						{
-							if (unit->getFaction() == FACTION_PLAYER)
-							{
-								visibleUnit->getTile()->setVisible(+1);
-								visibleUnit->setVisible(true);
-							}
-							if ((visibleUnit->getFaction() == FACTION_HOSTILE && unit->getFaction() == FACTION_PLAYER)
-								|| (visibleUnit->getFaction() != FACTION_HOSTILE && unit->getFaction() == FACTION_HOSTILE))
-							{
-								unit->addToVisibleUnits(visibleUnit);
-								unit->addToVisibleTiles(visibleUnit->getTile());
+							(*i)->getTile()->setVisible(+1);
+							(*i)->setVisible(true);
+						}
+						if (((*i)->getFaction() == FACTION_HOSTILE && unit->getFaction() == FACTION_PLAYER)
+							|| ((*i)->getFaction() != FACTION_HOSTILE && unit->getFaction() == FACTION_HOSTILE))
+						{
+							unit->addToVisibleUnits((*i));
+							unit->addToVisibleTiles((*i)->getTile());
 
-								if (unit->getFaction() == FACTION_HOSTILE && visibleUnit->getFaction() != FACTION_HOSTILE)
-								{
-									visibleUnit->setTurnsSinceSpotted(0);
-								}
+							if (unit->getFaction() == FACTION_HOSTILE && (*i)->getFaction() != FACTION_HOSTILE)
+							{
+								(*i)->setTurnsSinceSpotted(0);
 							}
 						}
 
-						if (unit->getFaction() == FACTION_PLAYER)
+						x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops
+					}
+				}
+			}
+		}
+	}
+	
+	//Clearing the fog is only needed for the player. It's recommended to skip this step if doing a global FOV calculation without terrain changes.
+	if (!updateVisibleUnitsOnly && unit->getFaction() == FACTION_PLAYER)
+	{
+		Position posTest;
+		std::vector<Position> _trajectory;
+		bool swap;
+		swap = (direction == 0 || direction == 4);
+		int signX[8] = { +1, +1, +1, +1, -1, -1, -1, -1 };
+		int signY[8] = { -1, -1, -1, +1, +1, +1, -1, -1 };
+		int y1, y2;
+
+		if ((unit->getHeight() + unit->getFloatHeight() + -_save->getTile(unit->getPosition())->getTerrainLevel()) >= 24 + 4)
+		{
+			Tile *tileAbove = _save->getTile(posSelf + Position(0, 0, 1));
+			if (tileAbove && tileAbove->hasNoFloor(0))
+			{
+				++posSelf.z;
+			}
+		}
+		//Test tiles within view cone for visibility
+		for (int x = 0; x <= getMaxViewDistance(); ++x)
+		{
+			if (direction % 2)
+			{
+				y1 = 0;
+				y2 = getMaxViewDistance();
+			}
+			else
+			{
+				y1 = -x;
+				y2 = x;
+			}
+			for (int y = y1; y <= y2; ++y)
+			{
+				const int distanceSqr = x*x + y*y;
+				if (distanceSqr <= getMaxViewDistanceSq())
+				{
+					for (int z = 0; z < _save->getMapSizeZ(); z++)
+					{
+						posTest.x = posSelf.x + signX[direction] * (swap ? y : x);
+						posTest.y = posSelf.y + signY[direction] * (swap ? x : y);
+						posTest.z = z;
+
+						if (_save->getTile(posTest)) //inside map?
 						{
 							// this sets tiles to discovered if they are in LOS - tile visibility is not calculated in voxelspace but in tilespace
 							// large units have "4 pair of eyes"
@@ -322,25 +346,34 @@ bool TileEngine::calculateFOV(BattleUnit *unit)
 							{
 								for (int yo = 0; yo < size; yo++)
 								{
-									Position poso = pos + Position(xo,yo,0);
+									Position poso = posSelf + Position(xo, yo, 0);
 									_trajectory.clear();
-									int tst = calculateLine(poso, test, true, &_trajectory, unit, false);
-									size_t tsize = _trajectory.size();
-									if (tst>127) --tsize; //last tile is blocked thus must be cropped
-									for (size_t i = 0; i < tsize; i++)
+									int tst = calculateLine(poso, posTest, true, &_trajectory, unit, false);
+									if (tst > 127)
 									{
-										Position posi = _trajectory.at(i);
-										//mark every tile of line as visible (as in original)
-										//this is needed because of bresenham narrow stroke.
-										_save->getTile(posi)->setVisible(+1);
-										_save->getTile(posi)->setDiscovered(true, 2);
-										// walls to the east or south of a visible tile, we see that too
-										Tile* t = _save->getTile(Position(posi.x + 1, posi.y, posi.z));
-										if (t) t->setDiscovered(true, 0);
-										t = _save->getTile(Position(posi.x, posi.y + 1, posi.z));
-										if (t) t->setDiscovered(true, 1);
+										//Vision impacted something before reaching posTest. Throw away the impact point
+										_trajectory.pop_back();
 									}
+									//Reveal all tiles along line of vision. Note: needed due to width of bresenham stroke
+									for (std::vector<Position>::iterator i = _trajectory.begin(); i != _trajectory.end(); ++i)
+									{
+										//TODO: consider pruning by checking whether anything has been changed for X tiles. Where X is dependent on bresenham period
+										Position posVisited = (*i);
+										_save->getTile(posVisited)->setVisible(+1);
+										_save->getTile(posVisited)->setDiscovered(true, 2);
 
+										// walls to the east or south of a visible tile, we see that too
+										Tile* t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
+										if (t)
+										{
+											t->setDiscovered(true, 0);
+										}
+										t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
+										if (t)
+										{
+											t->setDiscovered(true, 1);
+										}
+									}
 								}
 							}
 						}
@@ -349,7 +382,7 @@ bool TileEngine::calculateFOV(BattleUnit *unit)
 			}
 		}
 	}
-
+	
 	// we only react when there are at least the same amount of visible units as before AND the checksum is different
 	// this way we stop if there are the same amount of visible units, but a different unit is seen
 	// or we stop if there are more visible units seen
@@ -357,10 +390,9 @@ bool TileEngine::calculateFOV(BattleUnit *unit)
 	{
 		return true;
 	}
-
 	return false;
-
 }
+
 
 /**
  * Gets the origin voxel of a unit's eyesight (from just one eye or something? Why is it x+7??
@@ -792,14 +824,15 @@ bool TileEngine::canTargetTile(Position *originVoxel, Tile *tile, int part, Posi
  * Calculates line of sight of a soldiers within range of the Position
  * (used when terrain has changed, which can reveal new parts of terrain or units).
  * @param position Position of the changed terrain.
+ * @param updateVisibleUnitsOnly Update only unit visibility (true) or unit and tile visibility (false)
  */
-void TileEngine::calculateFOV(const Position &position)
+void TileEngine::calculateFOV(const Position &position, bool updateVisibleUnitsOnly /* =false */)
 {
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
 		if (distanceSq(position, (*i)->getPosition(), false) < getMaxViewDistanceSq())
 		{
-			calculateFOV(*i);
+			calculateFOV(*i, updateVisibleUnitsOnly);
 		}
 	}
 }
@@ -1423,7 +1456,7 @@ BattleUnit *TileEngine::hit(const Position &center, int power, const RuleDamageT
 	applyGravity(tile);
 	calculateSunShading(); // roofs could have been destroyed
 	calculateTerrainLighting(); // fires could have been started
-	calculateFOV(center.toTile());
+	calculateFOV(center.toTile()); //TODO: only do a full FOV calc if a tile has been removed. Likewise partial is only needed for destroyed units and smoke changes
 	return bu;
 }
 
@@ -1592,7 +1625,7 @@ void TileEngine::explode(const Position &center, int power, const RuleDamageType
 
 	calculateSunShading(); // roofs could have been destroyed
 	calculateTerrainLighting(); // fires could have been started
-	calculateFOV(center / Position(16,16,24));
+	calculateFOV(center / Position(16,16,24));  //TODO: only do a full FOV calc if a tile has been removed. Likewise partial is only needed for destroyed units and smoke changes
 }
 
 /**

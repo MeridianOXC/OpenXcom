@@ -93,9 +93,9 @@ public:
 	/// Calculates sun shading of a single tile.
 	void calculateSunShading(Tile *tile);
 	/// Calculates the field of view from a units view point.
-	bool calculateFOV(BattleUnit *unit);
+	bool calculateFOV(BattleUnit *unit, bool updateVisibleUnitsOnly = false);
 	/// Calculates the field of view within range of a certain position.
-	void calculateFOV(const Position &position);
+	void calculateFOV(const Position &position, bool updateVisibleUnitsOnly = false);
 	/// Checks reaction fire.
 	bool checkReactionFire(BattleUnit *unit);
 	/// Recalculates lighting of the battlescape for terrain.
