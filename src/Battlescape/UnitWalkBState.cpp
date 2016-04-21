@@ -197,7 +197,7 @@ void UnitWalkBState::think()
 			{
 				_unit->setVisible(false);
 			}
-			_terrain->calculateFOV(_unit->getPosition());
+			_terrain->calculateFOV(_unit->getPosition(), true);
 			unitSpotted = (!_action.ignoreSpottedEnemies && !_falling && !_action.desperate && _parent->getPanicHandled() && _numUnitsSpotted != _unit->getUnitsSpottedThisTurn().size());
 
 			if (_parent->checkForProximityGrenades(_unit))
