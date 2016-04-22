@@ -1673,7 +1673,7 @@ void BattlescapeGame::dropItem(const Position &position, BattleItem *item, bool 
 	if (item->getGlow())
 	{
 		getTileEngine()->calculateTerrainLighting();
-		getTileEngine()->calculateFOV(position, true); //lighting only affects unit visibility, hence no need to recalculate tiles
+		getTileEngine()->calculateFOV(position);
 	}
 
 }
