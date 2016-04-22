@@ -90,6 +90,7 @@ public:
 	~TileEngine();
 	/// Calculates sun shading of the whole map.
 	void calculateSunShading();
+	void calculateSunShading(const Position &pos);
 	/// Calculates sun shading of a single tile.
 	void calculateSunShading(Tile *tile);
 	/// Calculates the field of view from a units view point.
@@ -103,7 +104,7 @@ public:
 	/// Recalculates lighting of the battlescape for units.
 	void calculateUnitLighting();
 	/// Handles tile hit.
-	void hitTile(Tile *tile, int damage, const RuleDamageType* type);
+	int hitTile(Tile *tile, int damage, const RuleDamageType* type);
 	/// Handles experience training.
 	bool awardExperience(BattleUnit *unit, BattleItem *weapon, BattleUnit *target, bool rangeAtack);
 	/// Handles unit hit.
