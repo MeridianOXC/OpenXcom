@@ -2963,51 +2963,59 @@ void BattleUnit::deriveRank()
 }
 
 /**
- * this function checks if a tile is visible, using maths.
+ * this function checks if a tile is visible from either of the unit's tiles, using maths.
  * @param pos the position to check against
+ * @param useTurretDirection use turret facing (true) or body facing (false) for sector calculation
  * @return what the maths decide
  */
-bool BattleUnit::checkViewSector (Position pos) const
+bool BattleUnit::checkViewSector (Position pos, bool useTurretDirection /* = false */) const
 {
-	int deltaX = pos.x - _pos.x;
-	int deltaY = _pos.y - pos.y;
-
-	switch (_direction)
+	int unitSize = getArmor()->getSize();
+	//Check view cone from each of the unit's tiles
+	for (int x = 0; x < unitSize; ++x)
 	{
-		case 0:
-			if ( (deltaX + deltaY >= 0) && (deltaY - deltaX >= 0) )
-				return true;
-			break;
-		case 1:
-			if ( (deltaX >= 0) && (deltaY >= 0) )
-				return true;
-			break;
-		case 2:
-			if ( (deltaX + deltaY >= 0) && (deltaY - deltaX <= 0) )
-				return true;
-			break;
-		case 3:
-			if ( (deltaY <= 0) && (deltaX >= 0) )
-				return true;
-			break;
-		case 4:
-			if ( (deltaX + deltaY <= 0) && (deltaY - deltaX <= 0) )
-				return true;
-			break;
-		case 5:
-			if ( (deltaX <= 0) && (deltaY <= 0) )
-				return true;
-			break;
-		case 6:
-			if ( (deltaX + deltaY <= 0) && (deltaY - deltaX >= 0) )
-				return true;
-			break;
-		case 7:
-			if ( (deltaY >= 0) && (deltaX <= 0) )
-				return true;
-			break;
-		default:
-			return false;
+		for (int y = 0; y < unitSize; ++y)
+		{
+			int deltaX = pos.x + x - _pos.x;
+			int deltaY = _pos.y - pos.y - y;
+			switch (useTurretDirection ? _directionTurret : _direction)
+			{
+				case 0:
+					if ( (deltaX + deltaY >= 0) && (deltaY - deltaX >= 0) )
+						return true;
+					break;
+				case 1:
+					if ( (deltaX >= 0) && (deltaY >= 0) )
+						return true;
+					break;
+				case 2:
+					if ( (deltaX + deltaY >= 0) && (deltaY - deltaX <= 0) )
+						return true;
+					break;
+				case 3:
+					if ( (deltaY <= 0) && (deltaX >= 0) )
+						return true;
+					break;
+				case 4:
+					if ( (deltaX + deltaY <= 0) && (deltaY - deltaX <= 0) )
+						return true;
+					break;
+				case 5:
+					if ( (deltaX <= 0) && (deltaY <= 0) )
+						return true;
+					break;
+				case 6:
+					if ( (deltaX + deltaY <= 0) && (deltaY - deltaX >= 0) )
+						return true;
+					break;
+				case 7:
+					if ( (deltaY >= 0) && (deltaX <= 0) )
+						return true;
+					break;
+				default:
+					break;
+			}
+		}
 	}
 	return false;
 }
