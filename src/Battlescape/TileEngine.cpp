@@ -969,15 +969,15 @@ void TileEngine::calculateFOV(const Position &position, int eventRadius, const b
 	if (eventRadius == -1)
 	{
 		eventRadius = getMaxViewDistance();
-		updateRadius = getMaxViewDistance();
+		updateRadius = getMaxViewDistanceSq();
 	} 
 	else {
 		//Need to grab units which are out of range of the centre of the event, but can still see the edge of the effect.
-		updateRadius = getMaxViewDistance() + (eventRadius > 0 ? eventRadius : 0);
+		updateRadius = getMaxViewDistanceSq() + (eventRadius > 0 ? eventRadius*eventRadius : 0);
 	}
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		if (distanceSq(position, (*i)->getPosition(), false) < updateRadius) //could this unit have observed the event?
+		if (distanceSq(position, (*i)->getPosition(), false) <= updateRadius) //could this unit have observed the event?
 		{
 			if (updateTiles)
 			{
