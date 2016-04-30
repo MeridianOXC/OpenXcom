@@ -89,6 +89,21 @@ void TileEngine::calculateSunShading()
 }
 
 /**
+* Calculates sun shading for all tiles in the column at the given X - Y - coordinates.
+* @param pos The position to calculate sun shading for.Z - coordinate is ignored.
+*/
+void TileEngine::calculateSunShading(const Position &pos)
+{
+	Position toUpdate = pos;
+	for (int z = _save->getMapSizeZ() - 1; z >= 0; z--)
+	{
+		toUpdate.z = z;
+		_save->getTile(toUpdate)->resetLight(0); //reset ambient lighting
+		calculateSunShading(_save->getTile(toUpdate));
+	}
+}
+
+/**
   * Calculates sun shading for 1 tile. Sun comes from above and is blocked by floors or objects.
   * TODO: angle the shadow according to the time? - link to Options::globeSeasons (or whatever the realistic lighting one is)
   * @param tile The tile to calculate sun shading for.
@@ -229,48 +244,208 @@ void TileEngine::addLight(const Position &center, int power, int layer)
 }
 
 /**
- * Calculates line of sight of a soldier.
- * @param unit Unit to check line of sight of.
- * @return True when new aliens are spotted.
- */
-bool TileEngine::calculateFOV(BattleUnit *unit)
+* Setups the internal event visibility search space reduction system. This system defines a narrow circle sector around
+* a given event as viewed from an external observer. This allows narrowing down which tiles/units may need to be updated for
+* the observer based on the event affecting visibility at the event itself and beyond it in its direction.
+* Imagines a circle around the event of eventRadius, calculates its tangents, and places points at the circle's tangent 
+* intersections for later bounds checking.
+* @param observerPos Position of the observer of this event.
+* @param eventPos The centre of the event. Ie a moving unit's position, centre of explosion, a single destroyed tile, etc.
+* @param eventRadius Radius big enough to fully envelop the event. Ie for a single tile change, set radius to 1.
+*/
+void TileEngine::setupEventVisibilitySector(const Position &observerPos, const Position &eventPos, const int &eventRadius)
+{
+	Position posDiff = eventPos - observerPos;
+	float a = asinf(eventRadius / sqrtf(posDiff.x * posDiff.x + posDiff.y * posDiff.y));
+	float b = atan2f(posDiff.y, posDiff.x);
+	float t1 = b - a;
+	float t2 = b + a;
+	//Define the points where the lines tangent to the circle intersect it. Note: resulting positions are relative to observer, not in direct tile space.
+	_eventVisibilitySectorL.x = roundf(eventPos.x + eventRadius * sinf(t1)) - observerPos.x;
+	_eventVisibilitySectorL.y = roundf(eventPos.y - eventRadius * cosf(t1)) - observerPos.y;
+	_eventVisibilitySectorR.x = roundf(eventPos.x - eventRadius * sinf(t2)) - observerPos.x;
+	_eventVisibilitySectorR.y = roundf(eventPos.y + eventRadius * cosf(t2)) - observerPos.y;
+	_eventVisibilityObserverPos = observerPos;
+}
+
+/**
+* Checks whether toCheck is within a previously setup eventVisibilitySector. See setupEventVisibilitySector(...).
+* May be used to rapidly reduce the searchspace when updating unit and tile visibility.
+* @param toCheck The position to check.
+* @return true if within the circle sector.
+*/
+inline bool TileEngine::inEventVisibilitySector(const Position &toCheck) const
+{
+	Position posDiff = toCheck - _eventVisibilityObserverPos;
+	//Is toCheck within the arc as defined by the two tangent points?
+	return (!(-_eventVisibilitySectorL.x * posDiff.y + _eventVisibilitySectorL.y * posDiff.x > 0) &&
+		(-_eventVisibilitySectorR.x * posDiff.y + _eventVisibilitySectorR.y * posDiff.x > 0));
+}
+
+/**
+* Updates line of sight of a single soldier in a narrow arc around a given event position.
+* @param unit Unit to check line of sight of.
+* @param eventPos The centre of the event which necessitated the FOV update. Used to optimize which tiles to update.
+* @param eventRadius The radius of a circle able to fully encompass the event, in tiles. Hence: 1 for a singletile event.
+* @return True when new aliens are spotted.
+*/
+bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, const int eventRadius)
 {
 	size_t oldNumVisibleUnits = unit->getUnitsSpottedThisTurn().size();
-	Position center = unit->getPosition();
-	Position test;
+	bool useTurretDirection = false;
+	bool selfWithinEventRadius = false;
+	if (Options::strafe && (unit->getTurretType() > -1)) {
+		useTurretDirection = true;
+	}
+
+	if (unit->isOut())
+		return false;
+
+	Position posSelf = unit->getPosition();
+	if (eventRadius == 0 || eventPos == Position(-1, -1, -1) || distanceSq(posSelf, eventPos) <= eventRadius * eventRadius)
+	{
+		//Asked to do a full check. Or the event is overlapping our tile. Better check everything.
+		selfWithinEventRadius = true;
+		unit->clearVisibleUnits();
+	} 
+	else 
+	{
+		//Use search space reduction by updating within a narrow circle sector covering the event and any 
+		//units beyond it (they can now be hidden or revealed based on what occured at the event position)
+		//So, with a circle at eventPos of radius eventRadius, define its tangent points as viewed from this unit:
+		setupEventVisibilitySector(posSelf, eventPos, eventRadius);
+	}
+
+	//Loop through all units specified and figure out which ones we can actually see.
+	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
+	{
+		Position posOther = (*i)->getPosition();
+		if (!(*i)->isOut() && (unit->getId() != (*i)->getId()))
+		{
+			int sizeOther = (*i)->getArmor()->getSize();
+			for (int x = 0; x < sizeOther; ++x)
+			{
+				for (int y = 0; y < sizeOther; ++y)
+				{
+					Position posToCheck = posOther + Position(x, y, 0);
+					//If we can now find any unit within the arc defined by the event tangent points, its visibility may have been affected by the event.
+					if (selfWithinEventRadius || inEventVisibilitySector(posToCheck))
+					{
+						if (!unit->checkViewSector(posToCheck, useTurretDirection))
+						{
+							//Unit within arc, but not in view sector. If it just walked out we need to remove it.
+							unit->removeFromVisibleUnits((*i));
+						}
+						else if (visible(unit, _save->getTile(posToCheck))) // (distance is checked here)
+						{
+							//Unit (or part thereof) visible to one or more eyes of this unit.
+							if (unit->getFaction() == FACTION_PLAYER)
+							{
+								(*i)->setVisible(true);
+							}
+							if ((( (*i)->getFaction() == FACTION_HOSTILE && unit->getFaction() == FACTION_PLAYER )
+								|| ( (*i)->getFaction() != FACTION_HOSTILE && unit->getFaction() == FACTION_HOSTILE ))
+								&& !unit->hasVisibleUnit((*i)))
+							{
+								unit->addToVisibleUnits((*i));
+								unit->addToVisibleTiles((*i)->getTile());
+
+								if (unit->getFaction() == FACTION_HOSTILE && (*i)->getFaction() != FACTION_HOSTILE)
+								{
+									(*i)->setTurnsSinceSpotted(0);
+								}
+							}
+
+							x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops.
+						}
+						else
+						{
+							//Within arc, but not visible. Need to check to see if whatever happened at eventPos blocked a previously seen unit.
+							unit->removeFromVisibleUnits((*i));
+						}
+					}
+				}
+			}
+		}
+	}
+	// we only react when there are at least the same amount of visible units as before AND the checksum is different
+	// this way we stop if there are the same amount of visible units, but a different unit is seen
+	// or we stop if there are more visible units seen
+	if (unit->getUnitsSpottedThisTurn().size() > oldNumVisibleUnits && !unit->getVisibleUnits()->empty())
+	{
+		return true;
+	}
+	return false;
+}
+
+/**
+* Calculates line of sight of tiles for a player controlled soldier.
+* If supplied with an event position differing from the soldier's position, it will only
+* calculate tiles within a narrow arc.
+* @param unit Unit to check line of sight of.
+* @param eventPos The centre of the event which necessitated the FOV update. Used to optimize which tiles to update.
+* @param eventRadius The radius of a circle able to fully encompass the event, in tiles. Hence: 1 for a singletile event.
+*/
+void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, const int eventRadius)
+{
+	bool useTurretDirection = false;
+	bool skipNarrowArcTest = false;
 	int direction;
-	bool swap;
-	std::vector<Position> _trajectory;
 	if (Options::strafe && (unit->getTurretType() > -1)) {
 		direction = unit->getTurretDirection();
+		useTurretDirection = true;
 	}
 	else
 	{
 		direction = unit->getDirection();
 	}
-	swap = (direction==0 || direction==4);
-	int signX[8] = { +1, +1, +1, +1, -1, -1, -1, -1 };
-	int signY[8] = { -1, -1, -1, +1, +1, +1, -1, -1 };
+	if (unit->getFaction() != FACTION_PLAYER || (eventRadius == 1 && !unit->checkViewSector(eventPos, useTurretDirection)))
+	{
+		//The event wasn't meant for us and/or visible for us.
+		return;
+	}
+	else if (unit->isOut())
+	{
+		unit->clearVisibleTiles();
+		return;
+	}
+	Position posSelf = unit->getPosition();
+	if (eventPos == Position(-1,-1,-1) || eventPos == unit->getPosition() || distanceSq(posSelf, eventPos) <= eventRadius * eventRadius)
+	{
+		//Asked to do a full check. Or unit within event. Should update all.
+		unit->clearVisibleTiles();
+		skipNarrowArcTest = true;
+	}
+	else {
+		//Use search space reduction by updating within a narrow circle sector covering the event and any 
+		//tiles beyond it (changes in terrain can reveal tiles beyond the event as well)
+		//So, with a circle at eventPos of radius eventRadius, define its tangent points as viewed from this unit:
+		setupEventVisibilitySector(posSelf, eventPos, eventRadius);
+	}
+	
+	//Only recalculate bresenham lines to tiles that are at the event or further away.
+	const int distanceSqrMin = skipNarrowArcTest ? 0 : std::max(distanceSq(posSelf, eventPos) - eventRadius*eventRadius, 0); 
+	
+	//Variables for finding the tiles to test based on the view direction.
+	Position posTest;
+	std::vector<Position> _trajectory;
+	bool swap = (direction == 0 || direction == 4);
+	const int signX[8] = { +1, +1, +1, +1, -1, -1, -1, -1 };
+	const int signY[8] = { -1, -1, -1, +1, +1, +1, -1, -1 };
 	int y1, y2;
-
-	unit->clearVisibleUnits();
-	unit->clearVisibleTiles();
-
-	if (unit->isOut())
-		return false;
-	Position pos = unit->getPosition();
 
 	if ((unit->getHeight() + unit->getFloatHeight() + -_save->getTile(unit->getPosition())->getTerrainLevel()) >= 24 + 4)
 	{
-		Tile *tileAbove = _save->getTile(pos + Position(0,0,1));
+		Tile *tileAbove = _save->getTile(posSelf + Position(0, 0, 1));
 		if (tileAbove && tileAbove->hasNoFloor(0))
 		{
-			++pos.z;
+			++posSelf.z;
 		}
 	}
-	for (int x = 0; x <= getMaxViewDistance(); ++x)
+	//Test all tiles within view cone for visibility.
+	for (int x = 0; x <= getMaxViewDistance(); ++x) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 	{
-		if (direction%2)
+		if (direction & 1)
 		{
 			y1 = 0;
 			y2 = getMaxViewDistance();
@@ -280,40 +455,21 @@ bool TileEngine::calculateFOV(BattleUnit *unit)
 			y1 = -x;
 			y2 = x;
 		}
-		for (int y = y1; y <= y2; ++y)
+		for (int y = y1; y <= y2; ++y) //TODO: Possible improvement: find the intercept points of the arc at max view distance and choose a more intelligent sweep of values when an event arc is defined.
 		{
-			for (int z = 0; z < _save->getMapSizeZ(); z++)
+			const int distanceSqr = x*x + y*y;
+			if (distanceSqr <= getMaxViewDistanceSq() && distanceSqr >= distanceSqrMin)
 			{
-				const int distanceSqr = x*x + y*y;
-				test.z = z;
-				if (distanceSqr <= getMaxViewDistanceSq())
+				posTest.x = posSelf.x + signX[direction] * (swap ? y : x);
+				posTest.y = posSelf.y + signY[direction] * (swap ? x : y);
+				//Only continue if the column of tiles at (x,y) is within the narrow arc of interest (if enabled)
+				if (skipNarrowArcTest || inEventVisibilitySector(posTest))
 				{
-					test.x = center.x + signX[direction]*(swap?y:x);
-					test.y = center.y + signY[direction]*(swap?x:y);
-					if (_save->getTile(test))
+					for (int z = 0; z < _save->getMapSizeZ(); z++)
 					{
-						BattleUnit *visibleUnit = _save->getTile(test)->getUnit();
-						if (visibleUnit && !visibleUnit->isOut() && visible(unit, _save->getTile(test)))
-						{
-							if (unit->getFaction() == FACTION_PLAYER)
-							{
-								visibleUnit->getTile()->setVisible(+1);
-								visibleUnit->setVisible(true);
-							}
-							if ((visibleUnit->getFaction() == FACTION_HOSTILE && unit->getFaction() == FACTION_PLAYER)
-								|| (visibleUnit->getFaction() != FACTION_HOSTILE && unit->getFaction() == FACTION_HOSTILE))
-							{
-								unit->addToVisibleUnits(visibleUnit);
-								unit->addToVisibleTiles(visibleUnit->getTile());
+						posTest.z = z;
 
-								if (unit->getFaction() == FACTION_HOSTILE && visibleUnit->getFaction() != FACTION_HOSTILE)
-								{
-									visibleUnit->setTurnsSinceSpotted(0);
-								}
-							}
-						}
-
-						if (unit->getFaction() == FACTION_PLAYER)
+						if (_save->getTile(posTest)) //inside map?
 						{
 							// this sets tiles to discovered if they are in LOS - tile visibility is not calculated in voxelspace but in tilespace
 							// large units have "4 pair of eyes"
@@ -322,25 +478,33 @@ bool TileEngine::calculateFOV(BattleUnit *unit)
 							{
 								for (int yo = 0; yo < size; yo++)
 								{
-									Position poso = pos + Position(xo,yo,0);
+									Position poso = posSelf + Position(xo, yo, 0);
 									_trajectory.clear();
-									int tst = calculateLine(poso, test, true, &_trajectory, unit, false);
-									size_t tsize = _trajectory.size();
-									if (tst>127) --tsize; //last tile is blocked thus must be cropped
-									for (size_t i = 0; i < tsize; i++)
+									int tst = calculateLine(poso, posTest, true, &_trajectory, unit, false);
+									if (tst > 127)
 									{
-										Position posi = _trajectory.at(i);
-										//mark every tile of line as visible (as in original)
-										//this is needed because of bresenham narrow stroke.
-										_save->getTile(posi)->setVisible(+1);
-										_save->getTile(posi)->setDiscovered(true, 2);
-										// walls to the east or south of a visible tile, we see that too
-										Tile* t = _save->getTile(Position(posi.x + 1, posi.y, posi.z));
-										if (t) t->setDiscovered(true, 0);
-										t = _save->getTile(Position(posi.x, posi.y + 1, posi.z));
-										if (t) t->setDiscovered(true, 1);
+										//Vision impacted something before reaching posTest. Throw away the impact point.
+										_trajectory.pop_back();
 									}
+									//Reveal all tiles along line of vision. Note: needed due to width of bresenham stroke.
+									for (std::vector<Position>::iterator i = _trajectory.begin(); i != _trajectory.end(); ++i)
+									{
+										Position posVisited = (*i);
+										//Add tiles to the visible list only once. BUT we still need to calculate the whole trajectory as
+										// this bresenham line's period might be different from the one that originally revealed the tile.
+										if (!unit->hasVisibleTile(_save->getTile(posVisited)))
+										{
+											unit->addToVisibleTiles(_save->getTile(posVisited));
+											_save->getTile(posVisited)->setVisible(+1);
+											_save->getTile(posVisited)->setDiscovered(true, 2);
 
+											// walls to the east or south of a visible tile, we see that too
+											Tile* t = _save->getTile(Position(posVisited.x + 1, posVisited.y, posVisited.z));
+											if (t) t->setDiscovered(true, 0);
+											t = _save->getTile(Position(posVisited.x, posVisited.y + 1, posVisited.z));
+											if (t) t->setDiscovered(true, 1);
+										}
+									}
 								}
 							}
 						}
@@ -349,17 +513,20 @@ bool TileEngine::calculateFOV(BattleUnit *unit)
 			}
 		}
 	}
+}
 
-	// we only react when there are at least the same amount of visible units as before AND the checksum is different
-	// this way we stop if there are the same amount of visible units, but a different unit is seen
-	// or we stop if there are more visible units seen
-	if (unit->getUnitsSpottedThisTurn().size() > oldNumVisibleUnits && !unit->getVisibleUnits()->empty())
-	{
-		return true;
-	}
-
-	return false;
-
+/**
+* Recalculates line of sight of a soldier.
+* @param unit Unit to check line of sight of.
+* @param doTileRecalc True (default) to recalculate the visible tiles for this unit.
+* @param doUnitRecalc True (default) to recalculate the visible units for this unit.
+* @return True when new aliens are spotted.
+*/
+bool TileEngine::calculateFOV(BattleUnit *unit, bool doTileRecalc, bool doUnitRecalc)
+{
+	//Force a full FOV recheck for this unit.
+	if (doTileRecalc) calculateTilesInFOV(unit);
+	return doUnitRecalc ? calculateUnitsInFOV(unit) : false;
 }
 
 /**
@@ -792,14 +959,37 @@ bool TileEngine::canTargetTile(Position *originVoxel, Tile *tile, int part, Posi
  * Calculates line of sight of a soldiers within range of the Position
  * (used when terrain has changed, which can reveal new parts of terrain or units).
  * @param position Position of the changed terrain.
+ * @param eventRadius Radius of circle big enough to encompass the event.
+ * @param updateTiles true to do an update of visible tiles.
+ * @param appendToTileVisibility true to append only new tiles and skip previously seen ones.
  */
-void TileEngine::calculateFOV(const Position &position)
+void TileEngine::calculateFOV(const Position &position, int eventRadius, const bool updateTiles, const bool appendToTileVisibility)
 {
+	int updateRadius;
+	if (eventRadius == -1)
+	{
+		eventRadius = getMaxViewDistance();
+		updateRadius = getMaxViewDistance();
+	} 
+	else {
+		//Need to grab units which are out of range of the centre of the event, but can still see the edge of the effect.
+		updateRadius = getMaxViewDistance() + (eventRadius > 0 ? eventRadius : 0);
+	}
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
-		if (distanceSq(position, (*i)->getPosition(), false) < getMaxViewDistanceSq())
+		if (distanceSq(position, (*i)->getPosition(), false) < updateRadius) //could this unit have observed the event?
 		{
-			calculateFOV(*i);
+			if (updateTiles)
+			{
+				if (!appendToTileVisibility)
+				{
+					(*i)->clearVisibleTiles();
+				}
+				calculateTilesInFOV((*i), position, eventRadius);
+			}
+
+			calculateUnitsInFOV((*i), position, eventRadius);
+
 		}
 	}
 }
@@ -1068,8 +1258,9 @@ bool TileEngine::tryReaction(BattleUnit *unit, BattleUnit *target, int attackTyp
  * @param tile targeted tile.
  * @param damage power of hit.
  * @param type damage type of hit.
+ * @return whether a smoke (1) or fire (2) effect was produced
  */
-void TileEngine::hitTile(Tile* tile, int damage, const RuleDamageType* type)
+int TileEngine::hitTile(Tile* tile, int damage, const RuleDamageType* type)
 {
 	if (damage >= type->SmokeThreshold)
 	{
@@ -1081,11 +1272,10 @@ void TileEngine::hitTile(Tile* tile, int damage, const RuleDamageType* type)
 				tile->setSmoke(RNG::generate(7, 15)); // for SmokeThreshold == 0
 			else
 				tile->setSmoke(RNG::generate(7, 15) * (damage - type->SmokeThreshold) / type->SmokeThreshold);
+			return 1;
 		}
-		return;
 	}
-
-	if (damage >= type->FireThreshold)
+	else if (damage >= type->FireThreshold)
 	{
 		if (!tile->isVoid())
 		{
@@ -1096,10 +1286,11 @@ void TileEngine::hitTile(Tile* tile, int damage, const RuleDamageType* type)
 				else
 					tile->setFire(tile->getFuel() * (damage - type->FireThreshold) / type->FireThreshold + 1);
 				tile->setSmoke(std::max(1, std::min(15 - (tile->getFlammability() / 10), 12)));
+				return 2;
 			}
 		}
-		return;
 	}
+	return 0;
 }
 
 /**
@@ -1357,6 +1548,8 @@ bool TileEngine::hitUnit(BattleUnit *unit, BattleItem *clipOrWeapon, BattleUnit 
  */
 BattleUnit *TileEngine::hit(const Position &center, int power, const RuleDamageType *type, BattleUnit *unit, BattleItem *clipOrWeapon, bool rangeAtack)
 {
+	bool terrainChanged = false; //did the hit destroy a tile thereby changing line of sight?
+	int effectGenerated = 0; //did the hit produce smoke (1), fire/light (2) or disabled a unit (3) ?
 	Tile *tile = _save->getTile(center.toTile());
 	if (!tile || power <= 0)
 	{
@@ -1375,6 +1568,7 @@ BattleUnit *TileEngine::hit(const Position &center, int power, const RuleDamageT
 			{
 				if (hitUnit(unit, clipOrWeapon, (*i)->getUnit(), Position(0,0,0), damage, type, rangeAtack))
 				{
+					if ((*i)->getGlow()) effectGenerated = 2; //Any glowing corpses?
 					nothing = false;
 					break;
 				}
@@ -1383,7 +1577,11 @@ BattleUnit *TileEngine::hit(const Position &center, int power, const RuleDamageT
 		if (nothing)
 		{
 			const int tileDmg = damage * type->ToTile;
-			hitTile(tile, damage, type);
+			//Do we need to update the visibility of units due to smoke/fire?
+			effectGenerated = hitTile(tile, damage, type);
+			//If a tile was destroyed we may have revealed new areas for one or more observers
+			if (tileDmg >= tile->getMapData(part)->getArmor()) terrainChanged = true;
+
 			if (part == V_OBJECT && _save->getMissionType() == "STR_BASE_DEFENSE")
 			{
 				if (tileDmg >= tile->getMapData(O_OBJECT)->getArmor() && tile->getMapData(V_OBJECT)->isBaseModule())
@@ -1421,12 +1619,35 @@ BattleUnit *TileEngine::hit(const Position &center, int power, const RuleDamageT
 			const Position relative = (center - target) - Position(0,0,verticaloffset);
 
 			hitUnit(unit, clipOrWeapon, bu, relative, damage, type, rangeAtack);
+			if (bu->getFire())
+			{
+				effectGenerated = 2;
+			}
 		}
 	}
-	applyGravity(tile);
-	calculateSunShading(); // roofs could have been destroyed
-	calculateTerrainLighting(); // fires could have been started
-	calculateFOV(center.toTile());
+	//Recalculate relevant item/unit locations and visibility depending on what happened during the hit
+	if (terrainChanged || effectGenerated)
+	{
+		applyGravity(tile);
+	}
+	if (effectGenerated == 2) //fire, or lighting otherwise changed
+	{
+		calculateTerrainLighting(); // fires could have been started
+	}
+	if (terrainChanged) //part of tile destroyed
+	{
+		if (part == V_FLOOR && _save->getTile(center.toTile() - Position(0, 0, 1))) {
+			calculateSunShading(center.toTile()); // roof destroyed, update sunlight in this tile column
+		}
+		calculateFOV(center.toTile(), 1, true, true); //append any new units or tiles revealed by the terrain change
+	}
+	else if (effectGenerated)
+	{
+		calculateFOV(center.toTile(), 1, false); //skip updating of tiles
+	}
+	//Note: If bu was knocked out this will have no effect on unit visibility quite yet, as it is not marked as out 
+	//and will continue to block visibility at this point in time.
+
 	return bu;
 }
 
@@ -1592,10 +1813,10 @@ void TileEngine::explode(const Position &center, int power, const RuleDamageType
 				applyGravity(j);
 		}
 	}
-
+	//TODO: Can update shading and lighting on only tiles affected
 	calculateSunShading(); // roofs could have been destroyed
 	calculateTerrainLighting(); // fires could have been started
-	calculateFOV(center / Position(16,16,24));
+	calculateFOV(center / Position(16, 16, 24), maxRadius + 1, true, true);
 }
 
 /**
@@ -2101,6 +2322,9 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
 	int TUCost = 0;
 	int size = unit->getArmor()->getSize();
 	int z = unit->getTile()->getTerrainLevel() < -12 ? 1 : 0; // if we're standing on stairs, check the tile above instead.
+	int doorsOpened = 0;
+	Position doorCentre;
+
 	if (dir == -1)
 	{
 		dir = unit->getDirection();
@@ -2196,9 +2420,16 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
 					if (door != -1)
 					{
 						part = i->second;
-						if (door == 1)
+						if (door == 0)
 						{
-							checkAdjacentDoors(unit->getPosition() + Position(x,y,z) + i->first, i->second);
+							++doorsOpened;
+							doorCentre = unit->getPosition() + Position(x, y, z) + i->first;
+						}
+						else if (door == 1)
+						{
+							std::pair<int, Position> adjacentDoors = checkAdjacentDoors(unit->getPosition() + Position(x,y,z) + i->first, i->second);
+							doorsOpened += adjacentDoors.first + 1;
+							doorCentre = adjacentDoors.second;
 						}
 					}
 				}
@@ -2228,13 +2459,8 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
 		{
 			if (unit->spendTimeUnits(TUCost))
 			{
-				calculateFOV(unit->getPosition());
-				// look from the other side (may be need check reaction fire?)
-				std::vector<BattleUnit*> *vunits = unit->getVisibleUnits();
-				for (size_t i = 0; i < vunits->size(); ++i)
-				{
-					calculateFOV(vunits->at(i));
-				}
+				// Update FOV through the doorway.
+				calculateFOV(doorCentre, doorsOpened, true, true);
 			}
 			else return 4;
 		}
@@ -2249,10 +2475,13 @@ int TileEngine::unitOpensDoor(BattleUnit *unit, bool rClick, int dir)
  * Keeps processing til it hits a non-ufo-door.
  * @param pos The starting position
  * @param part The part to open, defines which direction to check.
+ * @return <The number of adjacent doors opened, Position of door centre>
  */
-void TileEngine::checkAdjacentDoors(Position pos, int part)
+std::pair<int, Position> TileEngine::checkAdjacentDoors(Position pos, int part)
 {
 	Position offset;
+	int adjacentDoorsOpened = 0;
+	int doorOffset = 0;
 	bool westSide = (part == 1);
 	for (int i = 1;; ++i)
 	{
@@ -2260,7 +2489,12 @@ void TileEngine::checkAdjacentDoors(Position pos, int part)
 		Tile *tile = _save->getTile(pos + offset);
 		if (tile && tile->getMapData(part) && tile->getMapData(part)->isUFODoor())
 		{
-			tile->openDoor(part);
+			int doorAdj = tile->openDoor(part);
+			if (doorAdj == 1) //only expecting ufo doors
+			{
+				adjacentDoorsOpened++;
+				doorOffset++;
+			}
 		}
 		else break;
 	}
@@ -2270,10 +2504,17 @@ void TileEngine::checkAdjacentDoors(Position pos, int part)
 		Tile *tile = _save->getTile(pos + offset);
 		if (tile && tile->getMapData(part) && tile->getMapData(part)->isUFODoor())
 		{
-			tile->openDoor(part);
+			int doorAdj = tile->openDoor(part);
+			if (doorAdj == 1)
+			{
+				adjacentDoorsOpened++;
+				doorOffset--;
+			}
 		}
 		else break;
 	}
+	doorOffset /= 2; //Find ~centre of door
+	return {adjacentDoorsOpened, pos + (westSide ? Position(0, doorOffset, 0) : Position(doorOffset, 0, 0))};
 }
 
 /**
@@ -2771,7 +3012,7 @@ bool TileEngine::psiAttack(BattleAction *action)
 		else if (action->type == BA_MINDCONTROL)
 		{
 			victim->convertToFaction(action->actor->getFaction());
-			calculateFOV(victim->getPosition());
+			calculateFOV(victim->getPosition()); //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
 			calculateUnitLighting();
 			victim->recoverTimeUnits();
 			victim->allowReselect();
