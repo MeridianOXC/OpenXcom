@@ -294,9 +294,9 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 		return;
 	}
 
-	unit->setVisible(false);
+	unit->setVisible(false); //Possible TODO: check nr of player unit observers, then hide the unit if noone can see it. Should then be able to skip the next FOV call.
 
-	_save->getTileEngine()->calculateFOV(unit->getPosition()); // might need this populate _visibleUnit for a newly-created alien
+	_save->getTileEngine()->calculateFOV(unit->getPosition(), 1, false); // might need this populate _visibleUnit for a newly-created alien.
         // it might also help chryssalids realize they've zombified someone and need to move on
 		// it should also hide units when they've killed the guy spotting them
         // it's also for good luck
@@ -430,8 +430,8 @@ bool BattlescapeGame::kneel(BattleUnit *bu)
 		{
 			bu->kneel(!bu->isKneeled());
 			// kneeling or standing up can reveal new terrain or units. I guess.
-			getTileEngine()->calculateFOV(bu);
-			_parentState->updateSoldierInfo();
+			getTileEngine()->calculateFOV(bu->getPosition(), 1, false); //Update unit FOV for everyone through this position, skip tiles.
+			_parentState->updateSoldierInfo(); //This also updates the tile FOV of the unit, hence why it's skipped above.
 			getTileEngine()->checkReactionFire(bu);
 			return true;
 		}
@@ -1673,7 +1673,7 @@ void BattlescapeGame::dropItem(const Position &position, BattleItem *item, bool 
 	if (item->getGlow())
 	{
 		getTileEngine()->calculateTerrainLighting();
-		getTileEngine()->calculateFOV(position);
+		getTileEngine()->calculateFOV(position, getMod()->getMaxViewDistance(), false); //could be faster if we figure out the exact size of the new glow
 	}
 
 }
@@ -1724,7 +1724,7 @@ BattleUnit *BattlescapeGame::convertUnit(BattleUnit *unit)
 	newUnit->setAIState(new AlienBAIState(getSave(), newUnit, 0));
 	newUnit->setVisible(visible);
 
-	getTileEngine()->calculateFOV(newUnit->getPosition());
+	getTileEngine()->calculateFOV(newUnit->getPosition());  //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
 	getTileEngine()->applyGravity(newUnit->getTile());
 	newUnit->dontReselect();
 	//newUnit->getCurrentAIState()->think();

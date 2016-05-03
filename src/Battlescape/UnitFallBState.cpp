@@ -268,7 +268,8 @@ void UnitFallBState::think()
 				}
 				// move our personal lighting with us
 				_terrain->calculateUnitLighting();
-				_terrain->calculateFOV(*unit);
+				_terrain->calculateFOV((*unit)->getPosition(), 1, false); //update everyone else to see this unit, as well as all this unit's visible units.
+				_terrain->calculateFOV((*unit), true, false); //update tiles
 				_parent->checkForProximityGrenades(*unit);
 				if (_parent->getTileEngine()->checkReactionFire(*unit))
 					_parent->getPathfinding()->abortPath();

@@ -149,6 +149,7 @@ void UnitDieBState::think()
 	{
 		_parent->getMap()->setUnitDying(false);
 		_parent->getTileEngine()->calculateUnitLighting();
+		_parent->getTileEngine()->calculateFOV(_unit->getPosition(), _unit->getArmor()->getSize(), false); //Update FOV for anyone that can see me
 		_parent->popState();
 		if (_unit->getOriginalFaction() == FACTION_PLAYER)
 		{

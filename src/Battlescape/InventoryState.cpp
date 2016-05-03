@@ -304,6 +304,7 @@ static void _clearInventory(Game *game, std::vector<BattleItem*> *unitInv, Tile 
 		else
 		{
 			(*i)->setOwner(NULL);
+			(*i)->setFuseTimer(-1); // unprime explosives before dropping them
 			groundTile->addItem(*i, groundRuleInv);
 			i = unitInv->erase(i);
 		}
@@ -421,6 +422,14 @@ void InventoryState::init()
 	else
 	{
 		Surface *armorSurface = _game->getMod()->getSurface(unit->getArmor()->getSpriteInventory());
+		if (!armorSurface)
+		{
+			armorSurface = _game->getMod()->getSurface(unit->getArmor()->getSpriteInventory() + ".SPK");
+		}
+		if (!armorSurface)
+		{
+			armorSurface = _game->getMod()->getSurface(unit->getArmor()->getSpriteInventory() + "M0.SPK");
+		}
 		if (armorSurface)
 		{
 			armorSurface->blit(_soldier);

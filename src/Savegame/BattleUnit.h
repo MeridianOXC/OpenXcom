@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_set>
 #include "../Battlescape/Position.h"
 #include "../Battlescape/BattlescapeGame.h"
 #include "../Mod/RuleItem.h"
@@ -79,6 +80,7 @@ private:
 	int _walkPhase, _fallPhase;
 	std::vector<BattleUnit *> _visibleUnits, _unitsSpottedThisTurn;
 	std::vector<Tile *> _visibleTiles;
+	std::unordered_set<Tile *> _visibleTilesLookup;
 	int _tu, _energy, _health, _morale, _stunlevel;
 	bool _kneeled, _floating, _dontReselect;
 	int _currentArmor[SIDE_MAX];
@@ -260,14 +262,20 @@ public:
 	void setTimeUnits(int tu);
 	/// Add unit to visible units.
 	bool addToVisibleUnits(BattleUnit *unit);
+	/// Remove a unit from the list of visible units.
+	bool removeFromVisibleUnits(BattleUnit *unit);
+	/// Is the given unit among this unit's visible units?
+	bool hasVisibleUnit(BattleUnit *unit);
 	/// Get the list of visible units.
 	std::vector<BattleUnit*> *getVisibleUnits();
 	/// Clear visible units.
 	void clearVisibleUnits();
 	/// Add unit to visible tiles.
 	bool addToVisibleTiles(Tile *tile);
+	/// Has this unit marked this tile as within its view?
+	bool hasVisibleTile(Tile *tile) const;
 	/// Get the list of visible tiles.
-	std::vector<Tile*> *getVisibleTiles();
+	const std::vector<Tile*> *getVisibleTiles();
 	/// Clear visible tiles.
 	void clearVisibleTiles();
 	/// Calculate psi attack accuracy.
@@ -460,7 +468,7 @@ public:
 	/// derive a rank integer based on rank string (for xcom soldiers ONLY)
 	void deriveRank();
 	/// this function checks if a tile is visible, using maths.
-	bool checkViewSector(Position pos) const;
+	bool checkViewSector(Position pos, bool useTurretDirection = false) const;
 	/// adjust this unit's stats according to difficulty.
 	void adjustStats(const int diff);
 	/// did this unit already take fire damage this turn? (used to avoid damaging large units multiple times.)

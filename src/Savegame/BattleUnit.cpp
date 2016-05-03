@@ -1482,6 +1482,42 @@ bool BattleUnit::addToVisibleUnits(BattleUnit *unit)
 }
 
 /**
+* Removes the given unit from the list of visible units.
+* @param unit The unit to add to our visibility cache.
+* @return true if unit found and removed
+*/
+bool BattleUnit::removeFromVisibleUnits(BattleUnit *unit)
+{
+	if (!_visibleUnits.size()) {
+		return false;
+	}
+	std::vector<BattleUnit*>::iterator i = find(_visibleUnits.begin(), _visibleUnits.end(), unit);
+	if (i == _visibleUnits.end())
+	{
+		return false;
+	}
+	//Slow to remove stuff from vector as it shuffles all the following items. Swap in rearmost element before removal.
+	(*i) = *(_visibleUnits.end() - 1);
+	_visibleUnits.pop_back();
+	return true;
+}
+
+/**
+* Checks if the given unit is on the list of visible units.
+* @param unit The unit to check whether we have in our visibility cache.
+* @return true if on the visible list or of the same faction
+*/
+bool BattleUnit::hasVisibleUnit(BattleUnit *unit)
+{
+	if (getFaction() == unit->getFaction())
+	{
+		//Units of same faction are always visible, but not stored in the visible unit list
+		return true;
+	}
+	return find(_visibleUnits.begin(), _visibleUnits.end(), unit) != _visibleUnits.end();
+}
+
+/**
  * Get the pointer to the vector of visible units.
  * @return pointer to vector.
  */
@@ -1499,27 +1535,38 @@ void BattleUnit::clearVisibleUnits()
 }
 
 /**
- * Add this unit to the list of visible tiles. Returns true if this is a new one.
- * @param tile
- * @return
+ * Add this unit to the list of visible tiles.
+ * @param tile that we're now able to see.
+ * @return true if a new tile.
  */
 bool BattleUnit::addToVisibleTiles(Tile *tile)
 {
-	_visibleTiles.push_back(tile);
-	return true;
+	//Only add once, otherwise we're going to mess up the visibility value and make trouble for the AI (if sneaky).
+	if (_visibleTilesLookup.insert(tile).second)
+	{
+		tile->setVisible(1);
+		_visibleTiles.push_back(tile);
+		return true;
+	}
+	return false;
+}
+
+bool BattleUnit::hasVisibleTile(Tile *tile) const
+{
+	return _visibleTilesLookup.find(tile) != _visibleTilesLookup.end(); //find?
 }
 
 /**
  * Get the pointer to the vector of visible tiles.
  * @return pointer to vector.
  */
-std::vector<Tile*> *BattleUnit::getVisibleTiles()
+const std::vector<Tile*> *BattleUnit::getVisibleTiles()
 {
 	return &_visibleTiles;
 }
 
 /**
- * Clear visible tiles.
+ * Clears visible tiles. Also reduces the associated visibility counter used by the AI.
  */
 void BattleUnit::clearVisibleTiles()
 {
@@ -1527,7 +1574,7 @@ void BattleUnit::clearVisibleTiles()
 	{
 		(*j)->setVisible(-1);
 	}
-
+	_visibleTilesLookup.clear();
 	_visibleTiles.clear();
 }
 
@@ -2963,51 +3010,59 @@ void BattleUnit::deriveRank()
 }
 
 /**
- * this function checks if a tile is visible, using maths.
- * @param pos the position to check against
- * @return what the maths decide
- */
-bool BattleUnit::checkViewSector (Position pos) const
+* this function checks if a tile is visible from either of the unit's tiles, using maths.
+* @param pos the position to check against
+* @param useTurretDirection use turret facing (true) or body facing (false) for sector calculation
+* @return what the maths decide
+*/
+bool BattleUnit::checkViewSector (Position pos, bool useTurretDirection /* = false */) const
 {
-	int deltaX = pos.x - _pos.x;
-	int deltaY = _pos.y - pos.y;
-
-	switch (_direction)
+	int unitSize = getArmor()->getSize();
+	//Check view cone from each of the unit's tiles
+	for (int x = 0; x < unitSize; ++x)
 	{
-		case 0:
-			if ( (deltaX + deltaY >= 0) && (deltaY - deltaX >= 0) )
-				return true;
-			break;
-		case 1:
-			if ( (deltaX >= 0) && (deltaY >= 0) )
-				return true;
-			break;
-		case 2:
-			if ( (deltaX + deltaY >= 0) && (deltaY - deltaX <= 0) )
-				return true;
-			break;
-		case 3:
-			if ( (deltaY <= 0) && (deltaX >= 0) )
-				return true;
-			break;
-		case 4:
-			if ( (deltaX + deltaY <= 0) && (deltaY - deltaX <= 0) )
-				return true;
-			break;
-		case 5:
-			if ( (deltaX <= 0) && (deltaY <= 0) )
-				return true;
-			break;
-		case 6:
-			if ( (deltaX + deltaY <= 0) && (deltaY - deltaX >= 0) )
-				return true;
-			break;
-		case 7:
-			if ( (deltaY >= 0) && (deltaX <= 0) )
-				return true;
-			break;
-		default:
-			return false;
+		for (int y = 0; y < unitSize; ++y)
+		{
+			int deltaX = pos.x + x - _pos.x;
+			int deltaY = _pos.y - pos.y - y;
+			switch (useTurretDirection ? _directionTurret : _direction)
+			{
+			case 0:
+				if ((deltaX + deltaY >= 0) && (deltaY - deltaX >= 0))
+					return true;
+				break;
+			case 1:
+				if ((deltaX >= 0) && (deltaY >= 0))
+					return true;
+				break;
+			case 2:
+				if ((deltaX + deltaY >= 0) && (deltaY - deltaX <= 0))
+					return true;
+				break;
+			case 3:
+				if ((deltaY <= 0) && (deltaX >= 0))
+					return true;
+				break;
+			case 4:
+				if ((deltaX + deltaY <= 0) && (deltaY - deltaX <= 0))
+					return true;
+				break;
+			case 5:
+				if ((deltaX <= 0) && (deltaY <= 0))
+					return true;
+				break;
+			case 6:
+				if ((deltaX + deltaY <= 0) && (deltaY - deltaX >= 0))
+					return true;
+				break;
+			case 7:
+				if ((deltaY >= 0) && (deltaX <= 0))
+					return true;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 	return false;
 }

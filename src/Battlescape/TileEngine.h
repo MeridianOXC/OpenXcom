@@ -50,6 +50,7 @@ private:
 	const int _maxViewDistanceSq;      // 20 * 20
 	const int _maxVoxelViewDistance;   // maxViewDistance * 16
 	const int _maxDarknessToSeeUnits;  // 9 by default
+	Position _eventVisibilitySectorL, _eventVisibilitySectorR, _eventVisibilityObserverPos;
 
 	/// Add light source.
 	void addLight(const Position &center, int power, int layer);
@@ -63,6 +64,9 @@ private:
 	inline int getMaxVoxelViewDistance() const   {return _maxVoxelViewDistance;}
 	/// Get threshold of darkness for LoS calculation.
 	inline int getMaxDarknessToSeeUnits() const  {return _maxDarknessToSeeUnits;}
+
+	void setupEventVisibilitySector(const Position &observerPos, const Position &eventPos, const int &eventRadius);
+	inline bool inEventVisibilitySector(const Position &toCheck) const;
 
 	/**
 	 * Helper class storing reaction data
@@ -90,12 +94,18 @@ public:
 	~TileEngine();
 	/// Calculates sun shading of the whole map.
 	void calculateSunShading();
+	/// Calculates sun shading for the column of tiles at pos
+	void calculateSunShading(const Position &pos);
 	/// Calculates sun shading of a single tile.
 	void calculateSunShading(Tile *tile);
+	/// Calculates visible tiles within the field of view. Supply an eventPosition to do an update limited to a small slice of the view sector.
+	void calculateTilesInFOV(BattleUnit *unit, const Position eventPos = { -1, -1, -1 }, const int eventRadius = 0);
+	/// Calculates visible units within the field of view. Supply an eventPosition to do an update limited to a small slice of the view sector.
+	bool calculateUnitsInFOV(BattleUnit* unit, const Position eventPos = { -1, -1, -1 }, const int eventRadius = 0);
 	/// Calculates the field of view from a units view point.
-	bool calculateFOV(BattleUnit *unit);
+	bool calculateFOV(BattleUnit *unit, bool doTileRecalc = true, bool doUnitRecalc = true);
 	/// Calculates the field of view within range of a certain position.
-	void calculateFOV(const Position &position);
+	void calculateFOV(const Position &position, int eventRadius = -1, const bool updateTiles = true, const bool appendToTileVisibility = false);
 	/// Checks reaction fire.
 	bool checkReactionFire(BattleUnit *unit);
 	/// Recalculates lighting of the battlescape for terrain.
@@ -103,7 +113,7 @@ public:
 	/// Recalculates lighting of the battlescape for units.
 	void calculateUnitLighting();
 	/// Handles tile hit.
-	void hitTile(Tile *tile, int damage, const RuleDamageType* type);
+	int hitTile(Tile *tile, int damage, const RuleDamageType* type);
 	/// Handles experience training.
 	bool awardExperience(BattleUnit *unit, BattleItem *weapon, BattleUnit *target, bool rangeAtack);
 	/// Handles unit hit.
@@ -175,7 +185,7 @@ public:
 	/// Validates a throwing action.
 	bool validateThrow(BattleAction &action, Position originVoxel, Position targetVoxel, double *curve = 0, int *voxelType = 0);
 	/// Opens any doors this door is connected to.
-	void checkAdjacentDoors(Position pos, int part);
+	std::pair<int, Position> checkAdjacentDoors(Position pos, int part);
 	/// Recalculates FOV of all units in-game.
 	void recalculateFOV();
 	/// Get direction to a certain point
