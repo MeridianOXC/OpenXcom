@@ -1099,7 +1099,7 @@ void Inventory::arrangeGround(bool alterOffset)
 					// Place all stackable items of the current type, while taking note of any nonstackable ones.
 					std::unordered_map<std::string, std::vector<BattleItem*> >::iterator itemTypeList = typeItemLists.find(itemTypeSample->getRules()->getType());
 					for (std::vector<BattleItem*>::iterator j = itemTypeList->second.begin(); j != itemTypeList->second.end(); ++j) {
-						if (canBeStacked((*j), itemTypeSample))
+						if (itemTypeSample == (*j) || canBeStacked((*j), itemTypeSample))
 						{
 							(*j)->setSlotX(x);
 							(*j)->setSlotY(y);
