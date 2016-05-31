@@ -302,7 +302,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 		return false;
 
 	Position posSelf = unit->getPosition();
-	if (eventRadius == 0 || eventPos == Position(-1, -1, -1) || distanceSq(posSelf, eventPos) <= eventRadius * eventRadius)
+	if (eventRadius == 0 || eventPos == Position(-1, -1, -1) || distanceSq(posSelf, eventPos, false) <= eventRadius * eventRadius)
 	{
 		//Asked to do a full check. Or the event is overlapping our tile. Better check everything.
 		selfWithinEventRadius = true;
@@ -410,7 +410,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 		return;
 	}
 	Position posSelf = unit->getPosition();
-	if (eventPos == Position(-1,-1,-1) || eventPos == unit->getPosition() || distanceSq(posSelf, eventPos) <= eventRadius * eventRadius)
+	if (eventPos == Position(-1,-1,-1) || eventPos == unit->getPosition() || distanceSq(posSelf, eventPos, false) <= eventRadius * eventRadius)
 	{
 		//Asked to do a full check. Or unit within event. Should update all.
 		unit->clearVisibleTiles();
@@ -424,7 +424,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 	}
 	
 	//Only recalculate bresenham lines to tiles that are at the event or further away.
-	const int distanceSqrMin = skipNarrowArcTest ? 0 : std::max(distanceSq(posSelf, eventPos) - eventRadius*eventRadius, 0); 
+	const int distanceSqrMin = skipNarrowArcTest ? 0 : std::max(distanceSq(posSelf, eventPos, false) - eventRadius * eventRadius, 0); 
 	
 	//Variables for finding the tiles to test based on the view direction.
 	Position posTest;
@@ -971,9 +971,11 @@ void TileEngine::calculateFOV(const Position &position, int eventRadius, const b
 		eventRadius = getMaxViewDistance();
 		updateRadius = getMaxViewDistanceSq();
 	} 
-	else {
+	else 
+	{
 		//Need to grab units which are out of range of the centre of the event, but can still see the edge of the effect.
-		updateRadius = getMaxViewDistanceSq() + (eventRadius > 0 ? eventRadius*eventRadius : 0);
+		updateRadius = getMaxViewDistance() + (eventRadius > 0 ? eventRadius : 0);
+		updateRadius *= updateRadius;
 	}
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
