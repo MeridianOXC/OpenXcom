@@ -1047,7 +1047,7 @@ void Inventory::arrangeGround(bool alterOffset)
 		std::vector< std::vector<int> > startIndexCacheX; // Cache for skipping to last known available position of a given size.
 		// Create chart of free slots for later rapid lookup.
 		std::vector< std::vector<bool> > occupiedSlots;
-		occupiedSlots.resize(slotsY, std::vector<bool>(32, false));
+		occupiedSlots.resize(slotsY, std::vector<bool>(slotsX * 2, false));
 
 		// Move items out of the way and find which stack they'll end up in within the inventory.
 		for (std::vector<BattleItem*>::iterator i = _selUnit->getTile()->getInventory()->begin(); i != _selUnit->getTile()->getInventory()->end(); ++i)
@@ -1126,11 +1126,12 @@ void Inventory::arrangeGround(bool alterOffset)
 					if (canPlace) // Found a place for this item stack.
 					{
 						xMax = std::max(xMax, x + itemTypeSample->getRules()->getInventoryWidth());
-						if (xMax > occupiedSlots[0].capacity())
+						if ( (x + startIndexCacheX[0].size() ) >= occupiedSlots[0].size())
 						{
-							// Expand occupied slot cache.
+							// Filled enough for the widest item to potentially request occupancy checks outside of current cache. Expand slot cache.
+							size_t newCacheSize = occupiedSlots[0].size() * 2;
 							for (std::vector< std::vector<bool> >::iterator j = occupiedSlots.begin(); j != occupiedSlots.end(); ++j) {
-								j->resize(occupiedSlots[0].capacity() * 2, false);
+								j->resize(newCacheSize, false);
 							}
 						}
 						// Reserve the slots this item will occupy.
@@ -1163,14 +1164,12 @@ void Inventory::arrangeGround(bool alterOffset)
 				// Now update the shortcut cache so that items to follow are able to skip a decent chunk of their search,
 				// as there can be no spot before this x-address with available slots for items that are larger in one or more dimensions.
 				std::map<std::pair<int, int>, int>::iterator cacheToUpdate;
-				int offsetX = 0;
-				int offsetY = 0;
 				int firstPossibleX = itemTypeSample->getRules()->getInventoryHeight() * 2 > slotsY ? x + itemTypeSample->getRules()->getInventoryWidth() : x;
-				for (y = itemTypeSample->getRules()->getInventoryHeight(); y < startIndexCacheX.size(); ++y)
+				for (int offsetY = itemTypeSample->getRules()->getInventoryHeight(); offsetY < startIndexCacheX.size(); ++offsetY)
 				{
-					for (x = itemTypeSample->getRules()->getInventoryWidth(); x < startIndexCacheX[y].size(); ++x)
+					for (int offsetX = itemTypeSample->getRules()->getInventoryWidth(); offsetX < startIndexCacheX[offsetY].size(); ++offsetX)
 					{
-						startIndexCacheX[y][x] = std::max(firstPossibleX, startIndexCacheX[y][x]);
+						startIndexCacheX[offsetY][offsetX] = std::max(firstPossibleX, startIndexCacheX[offsetY][offsetX]);
 					}
 				}
 			}
