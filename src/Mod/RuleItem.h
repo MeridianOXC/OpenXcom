@@ -138,7 +138,9 @@ private:
 	RuleItemUseCost _flatUse, _flatMelee, _flatThrow, _flatPrime;
 	bool _arcingShot;
 	ExperienceTrainingMode _experienceTrainingMode;
-	int _listOrder, _maxRange, _aimRange, _snapRange, _autoRange, _minRange, _dropoff, _bulletSpeed, _explosionSpeed, _autoShots, _shotgunPellets;
+	int _listOrder, _maxRange, _aimRange, _snapRange, _autoRange, _minRange, _dropoff, _bulletSpeed, _explosionSpeed, _autoShots, _shotgunPellets, _shotgunSpread;
+	bool _shotgunBehavior;
+	int  _shotgunChoke;
 	std::string _zombieUnit;
 	bool _LOSRequired, _underwaterOnly, _psiReqiured;
 	int _meleePower, _specialType, _vaporColor, _vaporDensity, _vaporProbability;
@@ -421,6 +423,12 @@ public:
 	int getDropoff() const;
 	/// Get the number of projectiles to trace.
 	int getShotgunPellets() const;
+	/// Get the spread of projectiles with shotgun behavior.
+	int getShotgunSpread() const;
+	/// Get which shotgun spread behavior to use.
+	bool getShotgunBehavior() const;
+	/// Get the shotgun choke value of this weapon.
+	int getShotgunChoke() const;
 	/// Gets the weapon's zombie unit.
 	const std::string &getZombieUnit() const;
 	/// Check if LOS is required to use this item (only applies to psionic type items)

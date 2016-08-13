@@ -553,13 +553,30 @@ void ProjectileFlyBState::think()
 					// special shotgun behaviour: trace extra projectile paths, and add bullet hits at their termination points.
 					if (shotgun)
 					{
+						int spread = _ammo->getRules()->getShotgunSpread();
+						int choke = _action.weapon->getRules()->getShotgunChoke();
+						Position firstPelletImpact = _targetVoxel;
+
 						int i = 1;
 						while (i != _ammo->getRules()->getShotgunPellets())
 						{
 							// create a projectile
 							Projectile *proj = new Projectile(_parent->getMod(), _parent->getSave(), _action, _origin, _targetVoxel, _ammo);
-							// let it trace to the point where it hits
-							_projectileImpact = proj->calculateTrajectory(std::max(0.0, (_unit->getFiringAccuracy(_action.type, _action.weapon, _parent->getMod()) / 100.0) - i * 5.0));
+
+							// which type of shotgun behavior to use?
+							bool groupingBehavior = _ammo->getRules()->getShotgunBehavior();
+							if (!groupingBehavior)
+							{
+								// let it trace to the point where it hits
+								_projectileImpact = proj->calculateTrajectory(std::max(0.0, (_unit->getFiringAccuracy(_action.type, _action.weapon, _parent->getMod()) / 100.0) - i * 5.0 * spread / 100.0));
+							}
+							// pellet spread based on where first pellet hit
+							else
+							{
+								_targetVoxel = firstPelletImpact;
+								_projectileImpact = proj->calculateTrajectory(std::max(0.0, (1.0 - spread / 100.0) * choke / 100.0));
+							}
+
 							if (_projectileImpact != V_EMPTY)
 							{
 								// as above: skip the shot to the end of it's path
