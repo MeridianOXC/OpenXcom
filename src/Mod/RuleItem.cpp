@@ -54,7 +54,7 @@ RuleItem::RuleItem(const std::string &type) :
 	_painKiller(0), _heal(0), _stimulant(0), _medikitType(BMT_NORMAL), _woundRecovery(0), _healthRecovery(0), _stunRecovery(0), _energyRecovery(0), _moraleRecovery(0), _painKillerRecovery(1.0f), _recoveryPoints(0), _armor(20), _turretType(-1),
 	_aiUseDelay(-1), _aiMeleeHitCount(25),
 	_recover(true), _liveAlien(false), _attraction(0), _flatUse(0, 1), _flatMelee(-1, -1), _flatThrow(0, 1), _flatPrime(0, 1), _arcingShot(false), _experienceTrainingMode(ETM_DEFAULT), _listOrder(0),
-	_maxRange(200), _aimRange(200), _snapRange(15), _autoRange(7), _minRange(0), _dropoff(2), _bulletSpeed(0), _explosionSpeed(0), _autoShots(3), _shotgunPellets(0), _shotgunSpread(100), _shotgunBehavior(false), _shotgunChoke(100),
+	_maxRange(200), _aimRange(200), _snapRange(15), _autoRange(7), _minRange(0), _dropoff(2), _bulletSpeed(0), _explosionSpeed(0), _autoShots(3), _shotgunPellets(0), _shotgunSpread(100), _shotgunBehavior(0), _shotgunChoke(100),
 	_LOSRequired(false), _underwaterOnly(false), _psiReqiured(false),
 	_meleePower(0), _specialType(-1), _vaporColor(-1), _vaporDensity(0), _vaporProbability(15),
 	_customItemPreviewIndex(0),
@@ -442,7 +442,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_autoShots = node["autoShots"].as<int>(_autoShots);
 	_shotgunPellets = node["shotgunPellets"].as<int>(_shotgunPellets);
 	_shotgunSpread = node["shotgunSpread"].as<int>(_shotgunSpread);
-	_shotgunBehavior = node["shotgunBehavior"].as<bool>(_shotgunBehavior);
+	_shotgunBehavior = node["shotgunBehavior"].as<int>(_shotgunBehavior);
 	_shotgunChoke = node["shotgunChoke"].as<int>(_shotgunChoke);
 	_zombieUnit = node["zombieUnit"].as<std::string>(_zombieUnit);
 	_LOSRequired = node["LOSRequired"].as<bool>(_LOSRequired);
@@ -1616,9 +1616,9 @@ int RuleItem::getShotgunSpread() const
 
 /**
  * Do the shotgun pellets follow a grouping, or just fired in a cone-like behavior?
- * @return false => cone-like spread, true => grouping
+ * @return 0 => cone-like spread, 1 => grouping
  */
-bool RuleItem::getShotgunBehavior() const
+int RuleItem::getShotgunBehavior() const
 {
 	return _shotgunBehavior;
 }
