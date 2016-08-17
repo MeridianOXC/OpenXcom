@@ -553,13 +553,36 @@ void ProjectileFlyBState::think()
 					// special shotgun behaviour: trace extra projectile paths, and add bullet hits at their termination points.
 					if (shotgun)
 					{
+						int spread = _ammo->getRules()->getShotgunSpread();
+						int choke = _action.weapon->getRules()->getShotgunChoke();
+						Position firstPelletImpact = _parent->getMap()->getProjectile()->getPosition(-2);
+
+						// which type of shotgun behavior to use?
+						bool groupingBehavior = _ammo->getRules()->getShotgunBehavior() == 1;
+
 						int i = 1;
 						while (i != _ammo->getRules()->getShotgunPellets())
 						{
-							// create a projectile
+							// use targeted voxel or impact location to determine spread
+							if (groupingBehavior)
+							{
+								_targetVoxel = firstPelletImpact;
+							}
+
 							Projectile *proj = new Projectile(_parent->getMod(), _parent->getSave(), _action, _origin, _targetVoxel, _ammo);
+
 							// let it trace to the point where it hits
-							_projectileImpact = proj->calculateTrajectory(std::max(0.0, (_unit->getFiringAccuracy(_action.type, _action.weapon, _parent->getMod()) / 100.0) - i * 5.0));
+							if (!groupingBehavior)
+							{
+								// pellet spread based on spread and firing accuracy with diminishing formula
+								_projectileImpact = proj->calculateTrajectory(std::max(0.0, (_unit->getFiringAccuracy(_action.type, _action.weapon, _parent->getMod()) / 100.0) - i * 5.0 * spread / 100.0));
+							}
+							else
+							{
+								// pellet spread based on spread and choke values
+								_projectileImpact = proj->calculateTrajectory(std::max(0.0, (1.0 - spread / 100.0) * choke / 100.0));
+							}
+
 							if (_projectileImpact != V_EMPTY)
 							{
 								// as above: skip the shot to the end of it's path
