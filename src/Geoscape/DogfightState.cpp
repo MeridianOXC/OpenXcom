@@ -240,7 +240,8 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo) :
 	_state(state), _craft(craft), _ufo(ufo), _timeout(50), _currentDist(640), _targetDist(560),
 	_end(false), _endUfoHandled(false), _endCraftHandled(false), _destroyUfo(false), _destroyCraft(false), _ufoBreakingOff(false),
 	_minimized(false), _endDogfight(false), _animatingHit(false), _waitForPoly(false), _ufoSize(0), _craftHeight(0), _currentCraftDamageColor(0), _interceptionNumber(0),
-	_interceptionsCount(0), _x(0), _y(0), _minimizedIconX(0), _minimizedIconY(0), _firedAtLeastOnce(false)
+	_interceptionsCount(0), _x(0), _y(0), _minimizedIconX(0), _minimizedIconY(0), _firedAtLeastOnce(false),
+	_ufoGlancingHitThreshold(0)
 {
 	_screen = false;
 	_craft->setInDogfight(true);
@@ -564,6 +565,9 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo) :
 	{
 		_weapon[i]->onMouseClick((ActionHandler)&DogfightState::weaponClick);
 	}
+
+	// Get damage threshold for defining glancing hits (save on the calculation later)
+	_ufoGlancingHitThreshold = _game->getMod()->getUfoGlancingHitThreshold();
 }
 
 /**
@@ -895,7 +899,23 @@ void DogfightState::update()
 							_ufo->setHitFrame(3);
 						}
 
-						setStatus("STR_UFO_HIT");
+						// How hard was the ufo hit?
+						if (damage == 0)
+						{
+							setStatus("STR_UFO_HIT_NO_DAMAGE");
+						}
+						else
+						{
+							if (damage < _ufo->getCraftStats().damageMax / 2 * _ufoGlancingHitThreshold / 100)
+							{
+								setStatus("STR_UFO_HIT_GLANCING");
+							}
+							else
+							{
+								setStatus("STR_UFO_HIT");
+							}
+						}
+
 						_game->getMod()->getSound("GEO.CAT", Mod::UFO_HIT)->play();
 						p->remove();
 					}
@@ -1290,7 +1310,15 @@ void DogfightState::ufoFireWeapon()
 	p->setHorizontalPosition(HP_CENTER);
 	p->setPosition(_currentDist - (_ufo->getRules()->getRadius() / 2));
 	_projectiles.push_back(p);
-	_game->getMod()->getSound("GEO.CAT", Mod::UFO_FIRE)->play();
+
+	if (_ufo->getRules()->getFireSound() == -1)
+	{
+		_game->getMod()->getSound("GEO.CAT", Mod::UFO_FIRE)->play();
+	}
+	else
+	{
+		_game->getMod()->getSound("GEO.CAT", _ufo->getRules()->getFireSound())->play();
+	}
 }
 
 /**
@@ -1596,12 +1624,27 @@ void DogfightState::drawProjectile(const CraftWeaponProjectile* p)
 		for (int y = yStart; y > yEnd; --y)
 		{
 			Uint8 radarPixelColor = _window->getPixel(xPos + 3, y + 3);
-			Uint8 color = radarPixelColor - pixelOffset;
-			if (color < _colors[BLOB_MIN])
+
+			int beamPower = 0;
+			if (p->getType() == CWPT_PLASMA_BEAM)
 			{
-				color = _colors[BLOB_MIN];
+				beamPower = std::floor(_ufo->getRules()->getWeaponPower() / _game->getMod()->getUfoBeamWidthParameter());
 			}
-			_battle->setPixel(xPos, y, color);
+
+			for (int x = 0; x <= std::min(beamPower, 3); x++)
+			{
+				Uint8 color = radarPixelColor - pixelOffset - beamPower + 2 * x;
+				if (color < _colors[BLOB_MIN])
+				{
+					color = _colors[BLOB_MIN];
+				}
+				if (color > radarPixelColor)
+				{
+					color = radarPixelColor;
+				}
+				_battle->setPixel(xPos + x, y, color);
+				_battle->setPixel(xPos - x, y, color);
+			}
 		}
 	}
 }

@@ -18,6 +18,7 @@
  */
 #include "RuleUfo.h"
 #include "RuleTerrain.h"
+#include "Mod.h"
 
 namespace OpenXcom
 {
@@ -30,6 +31,7 @@ namespace OpenXcom
 RuleUfo::RuleUfo(const std::string &type) :
 	_type(type), _size("STR_VERY_SMALL"), _sprite(-1), _marker(-1),
 	_power(0), _range(0), _score(0), _reload(0), _breakOffTime(0),
+	_fireSound(-1),
 	_battlescapeTerrainData(0), _stats(), _statsRaceBonus()
 {
 	_stats.sightRange = 268;
@@ -82,6 +84,11 @@ void RuleUfo::load(const YAML::Node &node, Mod *mod)
 		{
 			_statsRaceBonus[i->first.as<std::string>()].load(i->second);
 		}
+	}
+
+	if (node["fireSound"])
+	{
+		_fireSound = mod->getSoundOffset(node["fireSound"].as<int>(_fireSound), "GEO.CAT");
 	}
 }
 
@@ -241,6 +248,15 @@ const RuleUfoStats& RuleUfo::getRaceBonus(const std::string& s) const
 		return i->second;
 	else
 		return _statsRaceBonus.find("")->second;
+}
+
+/**
+ * Gets the ufo's fire sound.
+ * @return The fire sound id.
+ */
+int RuleUfo::getFireSound() const
+{
+	return _fireSound;
 }
 
 }

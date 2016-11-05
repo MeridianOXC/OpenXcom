@@ -173,6 +173,8 @@ private:
 	std::vector<SDL_Color> _transparencies;
 	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _researchListOrder,  _manufactureListOrder, _ufopaediaListOrder, _invListOrder;
 	size_t _modOffset;
+	int _ufoGlancingHitThreshold;
+	int _ufoBeamWidthParameter;
 	std::vector<std::string> _psiRequirements; // it's a cache for psiStrengthEval
 	size_t _surfaceOffsetBigobs = 0;
 	size_t _surfaceOffsetFloorob = 0;
@@ -424,6 +426,10 @@ public:
 	std::vector<OpenXcom::RuleBaseFacility*> getCustomBaseFacilities() const;
 	/// Gets a specific UfoTrajectory.
 	const UfoTrajectory *getUfoTrajectory(const std::string &id) const;
+	/// Gets the threshold for defining a glancing hit on a ufo during interception
+	int getUfoGlancingHitThreshold() const { return _ufoGlancingHitThreshold; }
+	/// Gets the parameter for drawing the width of a ufo's beam weapon based on power
+	int getUfoBeamWidthParameter() const { return _ufoBeamWidthParameter; }
 	/// Gets the ruleset for a specific alien mission.
 	const RuleAlienMission *getAlienMission(const std::string &id) const;
 	/// Gets the ruleset for a random alien mission.

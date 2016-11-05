@@ -282,7 +282,8 @@ Mod::Mod() :
 	_kneelBonusGlobal(115), _oneHandedPenaltyGlobal(80), _surrenderMode(0),
 	_bughuntMinTurn(20), _bughuntMaxEnemies(2), _bughuntRank(0), _bughuntLowMorale(40), _bughuntTimeUnitsLeft(60),
 	_startingTime(6, 1, 1, 1999, 12, 0, 0), _facilityListOrder(0), _craftListOrder(0), _itemCategoryListOrder(0), _itemListOrder(0),
-	_researchListOrder(0),  _manufactureListOrder(0), _ufopaediaListOrder(0), _invListOrder(0), _modOffset(0)
+	_researchListOrder(0),  _manufactureListOrder(0), _ufopaediaListOrder(0), _invListOrder(0), _modOffset(0),
+	_ufoGlancingHitThreshold(0), _ufoBeamWidthParameter(1000)
 {
 	_muteMusic = new Music();
 	_muteSound = new Sound();
@@ -1316,6 +1317,8 @@ void Mod::loadFile(const std::string &filename, ModScript &parsers)
 	_bughuntTimeUnitsLeft = doc["bughuntTimeUnitsLeft"].as<int>(_bughuntTimeUnitsLeft);
 	_missionRatings = doc["missionRatings"].as<std::map<int, std::string> >(_missionRatings);
 	_monthlyRatings = doc["monthlyRatings"].as<std::map<int, std::string> >(_monthlyRatings);
+	_ufoGlancingHitThreshold = doc["ufoGlancingHitThreshold"].as<int>(_ufoGlancingHitThreshold);
+	_ufoBeamWidthParameter = doc["ufoBeamWidthParameter"].as<int>(_ufoBeamWidthParameter);
 
 	if (doc["difficultyCoefficient"])
 	{
