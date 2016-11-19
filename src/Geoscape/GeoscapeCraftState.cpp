@@ -65,10 +65,12 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 	_txtSpeed = new Text(210, 9, 32, offset_upper + 60);
 	_txtMaxSpeed = new Text(210, 9, 32, offset_upper + 68);
 	_txtAltitude = new Text(210, 9, 32, offset_upper + 76);
-	_txtSoldier = new Text(60, 9, 164, offset_upper + 68);
-	_txtHWP = new Text(80, 9, 164, offset_upper + 76);
+	_txtSoldier = new Text(60, 9, 164, offset_upper + 60);
+	_txtHWP = new Text(80, 9, 164, offset_upper + 68);
 	_txtFuel = new Text(130, 9, 32, offset_upper + 84);
-	_txtDamage = new Text(80, 9, 164, offset_upper + 84);
+	_txtDamage = new Text(80, 9, 164, offset_upper + 76);
+	_txtShield = new Text(80, 9, 164, offset_upper + 84);
+
 	for(int i = 0; i < _weaponNum; ++i)
 	{
 		_txtWeaponName[i] = new Text(130, 9, 32, offset_upper + 92 + 8*i);
@@ -96,6 +98,7 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 	add(_txtAltitude, "text3", "geoCraftScreens");
 	add(_txtFuel, "text3", "geoCraftScreens");
 	add(_txtDamage, "text3", "geoCraftScreens");
+	add(_txtShield, "text3", "geoCraftScreens");
 	for(int i = 0; i < _weaponNum; ++i)
 	{
 		add(_txtWeaponName[i], "text3", "geoCraftScreens");
@@ -194,6 +197,8 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 	_txtFuel->setText(tr("STR_FUEL").arg(Text::formatPercentage(_craft->getFuelPercentage())));
 
 	_txtDamage->setText(tr("STR_DAMAGE_UC_").arg(Text::formatPercentage(_craft->getDamagePercentage())));
+
+	_txtShield->setText(tr("STR_SHIELD").arg(Text::formatPercentage(int (std::floor((double)_craft->getShield() / _craft->getShieldCapacity() * 100)))));
 
 	for(int i = 0; i < _weaponNum; ++i)
 	{

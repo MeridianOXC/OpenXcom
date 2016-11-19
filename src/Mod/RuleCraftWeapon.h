@@ -39,7 +39,7 @@ class RuleCraftWeapon
 {
 private:
 	std::string _type;
-	int _sprite, _sound, _damage, _range, _accuracy, _reloadCautious, _reloadStandard, _reloadAggressive, _ammoMax, _rearmRate, _projectileSpeed, _weaponType;
+	int _sprite, _sound, _damage, _shieldDamageModifier, _range, _accuracy, _reloadCautious, _reloadStandard, _reloadAggressive, _ammoMax, _rearmRate, _projectileSpeed, _weaponType;
 	CraftWeaponProjectileType _projectileType;
 	std::string _launcher, _clip;
 	RuleCraftStats _stats;
@@ -59,6 +59,8 @@ public:
 	int getSound() const;
 	/// Gets the craft weapon's damage.
 	int getDamage() const;
+	/// Gets the craft weapon's effectiveness against shields.
+	int getShieldDamageModifier() const;
 	/// Gets the craft weapon's range.
 	int getRange() const;
 	/// Gets the craft weapon's accuracy.

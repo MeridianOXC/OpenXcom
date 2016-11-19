@@ -51,7 +51,7 @@ namespace OpenXcom
  * @param id ID to assign to the craft (0 to not assign).
  */
 Craft::Craft(RuleCraft *rules, Base *base, int id) : MovingTarget(),
-	_rules(rules), _base(base), _id(0), _fuel(0), _damage(0),
+	_rules(rules), _base(base), _id(0), _fuel(0), _damage(0), _shield(0),
 	_interceptionOrder(0), _takeoff(0), _weapons(),
 	_status("STR_READY"), _lowFuel(false), _mission(false),
 	_inBattlescape(false), _inDogfight(false), _stats(),
@@ -101,6 +101,7 @@ void Craft::load(const YAML::Node &node, const Mod *mod, SavedGame *save)
 	_id = node["id"].as<int>(_id);
 	_fuel = node["fuel"].as<int>(_fuel);
 	_damage = node["damage"].as<int>(_damage);
+	_shield = node["shield"].as<int>(_shield);
 
 	int j = 0;
 	for (YAML::const_iterator i = node["weapons"].begin(); i != node["weapons"].end(); ++i)
@@ -231,6 +232,7 @@ YAML::Node Craft::save() const
 	node["id"] = _id;
 	node["fuel"] = _fuel;
 	node["damage"] = _damage;
+	node["shield"] = _shield;
 	for (std::vector<CraftWeapon*>::const_iterator i = _weapons.begin(); i != _weapons.end(); ++i)
 	{
 		YAML::Node subnode;
@@ -687,6 +689,33 @@ void Craft::setDamage(int damage)
 int Craft::getDamagePercentage() const
 {
 	return (int)floor((double)_damage / _stats.damageMax * 100);
+}
+
+/**
+ * Gets the max shield capacity of this craft
+ * @return max shield capacity.
+ */
+int Craft::getShieldCapacity() const
+{
+	return  _stats.shieldCapacity;
+}
+
+/**
+ * Gets the amount of shield this craft has remaining
+ * @return shield points remaining.
+ */
+int Craft::getShield() const
+{
+	return  _shield;
+}
+
+/**
+ * Sets the amount of shield for this craft, capped at the capacity plus bonuses
+ * @param shield value to set the shield.
+ */
+void Craft::setShield(int shield)
+{
+	_shield = std::max(0, std::min(_stats.shieldCapacity, shield));
 }
 
 /**

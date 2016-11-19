@@ -160,6 +160,7 @@ CraftWeaponProjectile* CraftWeapon::fire() const
 	p->setAccuracy(this->getRules()->getAccuracy());
 	p->setDamage(this->getRules()->getDamage());
 	p->setRange(this->getRules()->getRange());
+	p->setShieldDamageModifier(this->getRules()->getShieldDamageModifier());
 	return p;
 }
 

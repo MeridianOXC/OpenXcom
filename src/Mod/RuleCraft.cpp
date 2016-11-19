@@ -33,7 +33,8 @@ RuleCraft::RuleCraft(const std::string &type) :
     _type(type), _sprite(-1), _marker(-1), _weapons(0), _soldiers(0), _pilots(0), _vehicles(0),
     _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
 	_transferTime(0), _score(0), _battlescapeTerrainData(0),
-	_spacecraft(false), _notifyWhenRefueled(false), _autoPatrol(false), _listOrder(0), _maxItems(0), _maxDepth(0), _stats()
+	_spacecraft(false), _notifyWhenRefueled(false), _autoPatrol(false), _listOrder(0), _maxItems(0), _maxDepth(0), _stats(),
+	_shieldRechargeAtBase(1000)
 {
 	for (int i = 0; i < WeaponMax; ++ i)
 	{
@@ -146,6 +147,7 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, int listOrder)
 		for (int i = 0; (size_t)i < str.size() &&  i < WeaponMax; ++i)
 			_weaponStrings[i] = str[i].as<std::string>();
 	}
+	_shieldRechargeAtBase = node["shieldRechargedAtBase"].as<int>(_shieldRechargeAtBase);
 }
 
 /**
@@ -487,6 +489,42 @@ const RuleCraftStats& RuleCraft::getStats() const
 int RuleCraft::getMaxDepth() const
 {
 	return _maxDepth;
+}
+
+/**
+ * Gets the shield capacity of this craft
+ * @return shield capacity.
+ */
+int RuleCraft::getShieldCapacity() const
+{
+	return _stats.shieldCapacity;
+}
+
+/**
+ * Gets the shield recharge rate of this craft in combat
+ * @return shield recharge rate.
+ */
+int RuleCraft::getShieldRecharge() const
+{
+	return _stats.shieldRecharge;
+}
+
+/**
+ * Gets how much damage bleeds through the shield when it goes down
+ * @return damage bleedthrough percentage.
+ */
+int RuleCraft::getShieldBleedThrough() const
+{
+	return _stats.shieldBleedThrough;
+}
+
+/**
+ * Gets how many shield points are recharged when landed at base per hour
+ * @return shield recharged per hour
+ */
+int RuleCraft::getShieldRechargeAtBase() const
+{
+	return _shieldRechargeAtBase;
 }
 
 }

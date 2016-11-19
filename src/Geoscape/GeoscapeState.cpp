@@ -1497,6 +1497,8 @@ void GeoscapeState::time1Hour()
 					popup(new CraftErrorState(this, msg));
 				}
 			}
+			// Recharge craft shields automatically
+			(*j)->setShield((*j)->getShield() + (*j)->getRules()->getShieldRechargeAtBase());
 		}
 	}
 

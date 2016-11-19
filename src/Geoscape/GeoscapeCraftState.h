@@ -45,7 +45,7 @@ private:
 
 	TextButton *_btnBase, *_btnTarget, *_btnPatrol, *_btnCancel;
 	Window *_window;
-	Text *_txtTitle, *_txtStatus, *_txtBase, *_txtSpeed, *_txtMaxSpeed, *_txtAltitude, *_txtFuel, *_txtDamage, *_txtWeaponName[RuleCraft::WeaponMax], *_txtWeaponAmmo[RuleCraft::WeaponMax], *_txtRedirect, *_txtSoldier, *_txtHWP;
+	Text *_txtTitle, *_txtStatus, *_txtBase, *_txtSpeed, *_txtMaxSpeed, *_txtAltitude, *_txtFuel, *_txtDamage, *_txtShield, *_txtWeaponName[RuleCraft::WeaponMax], *_txtWeaponAmmo[RuleCraft::WeaponMax], *_txtRedirect, *_txtSoldier, *_txtHWP;
 
 	int _weaponNum;
 public:

@@ -152,6 +152,8 @@ void CraftWeaponsState::lstWeaponsClick(Action *)
 		_base->getStorageItems()->addItem(current->getRules()->getLauncherItem());
 		_base->getStorageItems()->addItem(current->getRules()->getClipItem(), current->getClipsLoaded(_game->getMod()));
 		_craft->addCraftStats(-current->getRules()->getBonusStats());
+		// Make sure craft removes bonus shields
+		_craft->setShield(_craft->getShield() -current->getRules()->getBonusStats().shieldCapacity);
 		delete current;
 		_craft->getWeapons()->at(_weapon) = 0;
 	}

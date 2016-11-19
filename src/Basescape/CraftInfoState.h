@@ -49,7 +49,7 @@ private:
 	TextButton *_btnOk, *_btnW[RuleCraft::WeaponMax], *_btnCrew, *_btnEquip, *_btnArmor, *_btnPilots;
 	Window *_window;
 	TextEdit *_edtCraft;
-	Text *_txtDamage, *_txtFuel;
+	Text *_txtDamage, *_txtShield, *_txtFuel;
 	Text *_txtWName[RuleCraft::WeaponMax], *_txtWAmmo[RuleCraft::WeaponMax];
 	Surface *_sprite, *_weapon[RuleCraft::WeaponMax], *_crew, *_equip;
 	/// Formats an amount of time.

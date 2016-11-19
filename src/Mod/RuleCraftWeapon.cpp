@@ -27,7 +27,7 @@ namespace OpenXcom
  * @param type String defining the type.
  */
 RuleCraftWeapon::RuleCraftWeapon(const std::string &type) :
-	_type(type), _sprite(-1), _sound(-1), _damage(0), _range(0), _accuracy(0),
+	_type(type), _sprite(-1), _sound(-1), _damage(0), _shieldDamageModifier(100), _range(0), _accuracy(0),
 	_reloadCautious(0), _reloadStandard(0), _reloadAggressive(0), _ammoMax(0),
 	_rearmRate(1), _projectileSpeed(0), _weaponType(0), _projectileType(CWPT_CANNON_ROUND),
 	_stats(), _underwaterOnly(false)
@@ -69,6 +69,7 @@ void RuleCraftWeapon::load(const YAML::Node &node, Mod *mod)
 		_sound = mod->getSoundOffset(node["sound"].as<int>(_sound), "GEO.CAT");
 	}
 	_damage = node["damage"].as<int>(_damage);
+	_shieldDamageModifier = node["shieldDamageModifier"].as<int>(_shieldDamageModifier);
 	_range = node["range"].as<int>(_range);
 	_accuracy = node["accuracy"].as<int>(_accuracy);
 	_reloadCautious = node["reloadCautious"].as<int>(_reloadCautious);
@@ -122,6 +123,15 @@ int RuleCraftWeapon::getSound() const
 int RuleCraftWeapon::getDamage() const
 {
 	return _damage;
+}
+
+/**
+ * Gets the percent effectiveness of this craft weapon against shields
+ * @return modifier to damage against shields
+ */
+int RuleCraftWeapon::getShieldDamageModifier() const
+{
+	return _shieldDamageModifier;
 }
 
 /**

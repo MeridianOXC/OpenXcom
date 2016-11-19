@@ -50,7 +50,7 @@ class Craft : public MovingTarget
 private:
 	RuleCraft *_rules;
 	Base *_base;
-	int _id, _fuel, _damage, _interceptionOrder, _takeoff;
+	int _id, _fuel, _damage, _shield, _interceptionOrder, _takeoff;
 	std::vector<CraftWeapon*> _weapons;
 	ItemContainer *_items;
 	std::vector<Vehicle*> _vehicles;
@@ -144,6 +144,12 @@ public:
 	void setDamage(int damage);
 	/// Gets the craft's percentage of damage.
 	int getDamagePercentage() const;
+	/// Gets the craft's max shield capacity
+	int getShieldCapacity () const;
+        /// Gets the craft's shield remaining
+	int getShield() const;
+	/// Sets the craft's shield remaining
+	void setShield(int shield);
 	/// Gets whether the craft is running out of fuel.
 	bool getLowFuel() const;
 	/// Sets whether the craft is running out of fuel.

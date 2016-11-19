@@ -111,10 +111,7 @@ void Ufo::load(const YAML::Node &node, const Mod &mod, SavedGame &game)
 	_crashId = node["crashId"].as<int>(_crashId);
 	_landId = node["landId"].as<int>(_landId);
 	_damage = node["damage"].as<int>(_damage);
-	if (node["shield"])
-	{
 	_shield = node["shield"].as<int>(_shield);
-	}
 	_shieldRechargeHandle = node["shieldRechargeHandle"].as<int>(_shieldRechargeHandle);
 	_altitude = node["altitude"].as<std::string>(_altitude);
 	_direction = node["direction"].as<std::string>(_direction);
@@ -832,7 +829,7 @@ int Ufo::getShield() const
  */
 void Ufo::setShield(int shield)
 {
-	_shield = shield;
+	_shield = std::max(0, std::min(_stats.shieldCapacity, shield));
 }
 
 /**

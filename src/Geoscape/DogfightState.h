@@ -49,7 +49,7 @@ class DogfightState : public State
 private:
 	GeoscapeState *_state;
 	Timer *_craftDamageAnimTimer;
-	Surface *_window, *_battle, *_range[RuleCraft::WeaponMax], *_damage;
+	Surface *_window, *_battle, *_range[RuleCraft::WeaponMax], *_damage, *_craftSprite, *_craftShield;
 	InteractiveSurface *_btnMinimize, *_preview, *_weapon[RuleCraft::WeaponMax];
 	ImageButton *_btnStandoff, *_btnCautious, *_btnStandard, *_btnAggressive, *_btnDisengage, *_btnUfo;
 	ImageButton *_mode;
@@ -68,6 +68,8 @@ private:
 	int _weaponNum;
 	int _pilotAccuracyBonus, _pilotDodgeBonus, _pilotApproachSpeedModifier;
 	bool _firedAtLeastOnce;
+	double _craftShieldRecharge;
+	int _craftShieldBleedThrough;
 	int _ufoGlancingHitThreshold;
 	double _ufoShieldRecharge;
 	int  _ufoShieldBleedThrough;
@@ -129,6 +131,8 @@ public:
 	void animateCraftDamage();
 	/// Updates craft damage.
 	void drawCraftDamage();
+	/// Draws craft shield on sprite
+	void drawCraftShield();
 	/// Toggles usage of weapons.
 	void weaponClick(Action *action);
 	/// Changes colors of weapon icons, range indicators and ammo texts base on current weapon state.

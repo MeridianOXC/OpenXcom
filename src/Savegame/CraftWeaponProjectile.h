@@ -48,6 +48,7 @@ private:
 	bool _missed;
 
 	int _distanceCovered;
+	int _shieldDamageModifier;
 	
 public:
 	CraftWeaponProjectile();
@@ -97,6 +98,10 @@ public:
 	int getRange() const;
 	/// Sets the speed of a missile type projectile.
 	void setSpeed(const int speed);
+	/// Sets how effective this projectile is against shields
+	void setShieldDamageModifier(const int &shieldDamageModifier);
+	/// Gets how effective this projectile is against shields
+	int getShieldDamageModifier() const;
 };
 
 }

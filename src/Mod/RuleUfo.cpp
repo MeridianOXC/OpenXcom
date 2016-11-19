@@ -30,7 +30,6 @@ namespace OpenXcom
  */
 RuleUfo::RuleUfo(const std::string &type) :
 	_type(type), _size("STR_VERY_SMALL"), _sprite(-1), _marker(-1),
-	_shield(0), _shieldRecharge(0), _shieldBleedThrough(100),
 	_power(0), _range(0), _score(0), _reload(0), _breakOffTime(0),
 	_fireSound(-1),
 	_battlescapeTerrainData(0), _stats(), _statsRaceBonus()
@@ -62,9 +61,6 @@ void RuleUfo::load(const YAML::Node &node, Mod *mod)
 	_size = node["size"].as<std::string>(_size);
 	_sprite = node["sprite"].as<int>(_sprite);
 	_marker = node["marker"].as<int>(_marker);
-	_shield = node["shield"].as<int>(_shield);
-	_shieldRecharge = node["shieldRecharge"].as<double>(_shieldRecharge);
-	_shieldBleedThrough = node["shieldBleedThrough"].as<int>(_shieldBleedThrough);
 	_power = node["power"].as<int>(_power);
 	_range = node["range"].as<int>(_range);
 	_score = node["score"].as<int>(_score);
@@ -168,9 +164,9 @@ int RuleUfo::getMarker() const
  * Gets the maximum shield capacity for the UFO
  * @return The shield capacity.
  */
-int RuleUfo::getShield() const
+int RuleUfo::getShieldCapacity() const
 {
-	return _shield;
+	return _stats.shieldCapacity;
 }
 
 /**
@@ -180,7 +176,7 @@ int RuleUfo::getShield() const
  */
 int RuleUfo::getShieldRecharge() const
 {
-	return _shieldRecharge;
+	return _stats.shieldRecharge;
 }
 
 /**
@@ -190,7 +186,7 @@ int RuleUfo::getShieldRecharge() const
  */
 int RuleUfo::getShieldBleedThrough() const
 {
-	return _shieldBleedThrough;
+	return _stats.shieldBleedThrough;
 }
 
 /**
