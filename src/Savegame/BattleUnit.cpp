@@ -1842,11 +1842,13 @@ int BattleUnit::getFatalWounds() const
  * Little formula to calculate reaction score.
  * @return Reaction score.
  */
-double BattleUnit::getReactionScore() const
+double BattleUnit::getReactionScore(int tuCost) const
 {
-	//(Reactions Stat) x (Current Time Units / Max TUs)
-	double score = ((double)getBaseStats()->reactions * (double)getTimeUnits()) / (double)getBaseStats()->tu;
-	return score;
+    // This has been modified to include half of weapon TU cost
+    // Default is set to assault rifle, 25% snap shot. Anything above that slows unit down, below speeds it up.
+    //(Reactions Stat) x (Current Time Units - (Weapon TU cost - 0.25*Max TUs) / 2) / Max TUs
+    double score = (double)getBaseStats()->reactions * (double)(getTimeUnits() - int((tuCost - int(0.25 * getBaseStats()->tu))/2)) / (double)getBaseStats()->tu;
+    return score;
 }
 
 /**
@@ -3983,7 +3985,7 @@ void geReactionScoreScript(const BattleUnit *bu, int &ret)
 {
 	if (bu)
 	{
-		ret = (int)bu->getReactionScore();
+		ret = (int)bu->getReactionScore(bu->getActionTUs(BA_SNAPSHOT, bu->getMainHandWeapon(true)).Time);
 	}
 	ret = 0;
 }
