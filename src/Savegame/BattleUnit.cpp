@@ -1844,10 +1844,18 @@ int BattleUnit::getFatalWounds() const
  */
 double BattleUnit::getReactionScore(int tuCost) const
 {
-    // This has been modified to include half of weapon TU cost
-    // Default is set to assault rifle, 25% snap shot. Anything above that slows unit down, below speeds it up.
-    //(Reactions Stat) x (Current Time Units - (Weapon TU cost - 0.25*Max TUs) / 2) / Max TUs
-    double score = (double)getBaseStats()->reactions * (double)(getTimeUnits() - int((tuCost - int(0.25 * getBaseStats()->tu))/2)) / (double)getBaseStats()->tu;
+    // If extended reaction fire option is chosen, the reaction score depends on the TUs required to operate the weapon.
+    // Default is set to assault rifle snap shot, 25% of all TUs.
+    int tuAction;
+    if (Options::extendedReactionFire) {
+        // Anything above default slows the unit down, and below it speeds it up, by half of the difference.
+        tuAction = int((tuCost - int(0.25 * getBaseStats()->tu))/2);
+    } else {
+        // Otherwise revert to standard calculation.
+        tuAction = 0;
+    }
+    //(Reactions Stat) x (Current Time Units - Possible Modification for ERF) / Max TUs
+    double score = (double)getBaseStats()->reactions * (double)(getTimeUnits() - tuAction) / (double)getBaseStats()->tu;
     return score;
 }
 
