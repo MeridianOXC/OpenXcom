@@ -314,7 +314,7 @@ public:
 	/// Get total number of fatal wounds.
 	int getFatalWounds() const;
 	/// Get the current reaction score.
-	double getReactionScore() const;
+	double getReactionScore(int tuCost) const;
 	/// Prepare for a new turn.
 	void prepareNewTurn(bool fullProcess = true);
 	/// Calculate change in unit stats.

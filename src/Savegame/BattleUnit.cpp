@@ -1842,11 +1842,21 @@ int BattleUnit::getFatalWounds() const
  * Little formula to calculate reaction score.
  * @return Reaction score.
  */
-double BattleUnit::getReactionScore() const
+double BattleUnit::getReactionScore(int tuCost) const
 {
-	//(Reactions Stat) x (Current Time Units / Max TUs)
-	double score = ((double)getBaseStats()->reactions * (double)getTimeUnits()) / (double)getBaseStats()->tu;
-	return score;
+    // If extended reaction fire option is chosen, the reaction score depends on the TUs required to operate the weapon.
+    // Default is set to assault rifle snap shot, 25% of all TUs.
+    int tuAction;
+    if (Options::extendedReactionFire) {
+        // Anything above default slows the unit down, and below it speeds it up, by half of the difference.
+        tuAction = int((tuCost - int(0.25 * getBaseStats()->tu))/2);
+    } else {
+        // Otherwise revert to standard calculation.
+        tuAction = 0;
+    }
+    //(Reactions Stat) x (Current Time Units - Possible Modification for ERF) / Max TUs
+    double score = (double)getBaseStats()->reactions * (double)(getTimeUnits() - tuAction) / (double)getBaseStats()->tu;
+    return score;
 }
 
 /**
@@ -3983,7 +3993,7 @@ void geReactionScoreScript(const BattleUnit *bu, int &ret)
 {
 	if (bu)
 	{
-		ret = (int)bu->getReactionScore();
+		ret = (int)bu->getReactionScore(bu->getActionTUs(BA_SNAPSHOT, bu->getMainHandWeapon(true)).Time);
 	}
 	ret = 0;
 }
