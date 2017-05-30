@@ -173,7 +173,6 @@ void create()
 	_info.push_back(OptionInfo("storageLimitsEnforced", &storageLimitsEnforced, false, "STR_STORAGELIMITSENFORCED", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("canSellLiveAliens", &canSellLiveAliens, false, "STR_CANSELLLIVEALIENS", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("anytimePsiTraining", &anytimePsiTraining, false, "STR_ANYTIMEPSITRAINING", "STR_GEOSCAPE"));
-	_info.push_back(OptionInfo("anytimeMartialTraining", &anytimeMartialTraining, true, "STR_ANYTIMEMARTIALTRAINING", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("globeSeasons", &globeSeasons, false, "STR_GLOBESEASONS", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("psiStrengthEval", &psiStrengthEval, false, "STR_PSISTRENGTHEVAL", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("canTransferCraftsWhileAirborne", &canTransferCraftsWhileAirborne, false, "STR_CANTRANSFERCRAFTSWHILEAIRBORNE", "STR_GEOSCAPE")); // When the craft can reach the destination base with its fuel
@@ -217,10 +216,10 @@ void create()
 	_info.push_back(OptionInfo("removeWoundedFromTraining", &removeWoundedFromTraining, false, "STR_REMOVE_WOUNDED_FROM_TRAINING", "STR_OXCE"));
 	_info.push_back(OptionInfo("autoAssignPilots", &autoAssignPilots, false, "STR_AUTO_ASSIGN_PILOTS", "STR_OXCE"));
 	_info.push_back(OptionInfo("fullNightVision", &fullNightVision, false, "STR_FULL_NIGHT_VISION", "STR_OXCE"));
-	_info.push_back(OptionInfo("nightVisionColor", &nightVisionColor, 8, "STR_NIGHT_VISION_COLOR", "STR_OXCE"));
-	_info.push_back(OptionInfo("autoNightVision", &autoNightVision, false, "STR_AUTO_NIGHT_VISION", "STR_OXCE"));
+	_info.push_back(OptionInfo("nightVisionColor", &nightVisionColor, 5, "STR_NIGHT_VISION_COLOR", "STR_OXCE"));
 	_info.push_back(OptionInfo("autoSell", &autoSell, false, "STR_AUTO_SELL", "STR_OXCE"));
 	_info.push_back(OptionInfo("techTreeViewerSpoilerProtection", &techTreeViewerSpoilerProtection, false, "STR_TECH_SPOILER_PROTECTION", "STR_OXCE"));
+    _info.push_back(OptionInfo("extendedReactionFire", &extendedReactionFire, false, "STR_EXTENDED_REACTION_FIRE", "STR_OXCE"));
 
 	// controls
 	_info.push_back(OptionInfo("keyOk", &keyOk, SDLK_RETURN, "STR_OK", "STR_GENERAL"));
