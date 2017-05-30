@@ -50,7 +50,7 @@ RuleItem::RuleItem(const std::string &type) :
 	_costAimed(0), _costAuto(0, -1), _costSnap(0, -1), _costMelee(0), _costUse(25), _costMind(-1, -1), _costPanic(-1, -1), _costThrow(25), _costPrime(50), _costUnprime(25),
 	_clipSize(0), _specialChance(100), _tuLoad(15), _tuUnload(8),
 	_battleType(BT_NONE), _fuseType(BFT_NONE), _psiAttackName(), _primeActionName("STR_PRIME_GRENADE"), _unprimeActionName(), _primeActionMessage("STR_GRENADE_IS_ACTIVATED"), _unprimeActionMessage("STR_GRENADE_IS_DEACTIVATED"),
-    _twoHanded(false), _blockBothHands(false), _fixedWeapon(false), _fixedWeaponShow(false), _allowSelfHeal(false), _isConsumable(false), _isFireExtinguisher(false), _isExplodingInHands(false), _canReact(true), _waypoints(0), _invWidth(1), _invHeight(1),
+    _twoHanded(false), _blockBothHands(false), _fixedWeapon(false), _fixedWeaponShow(false), _allowSelfHeal(false), _isConsumable(false), _isFireExtinguisher(false), _isExplodingInHands(false), _canReactAimed(true), _canReactAuto(true), _canReactSnap(true), _canReactMelee(true), _waypoints(0), _invWidth(1), _invHeight(1),
 	_painKiller(0), _heal(0), _stimulant(0), _medikitType(BMT_NORMAL), _woundRecovery(0), _healthRecovery(0), _stunRecovery(0), _energyRecovery(0), _moraleRecovery(0), _painKillerRecovery(1.0f), _recoveryPoints(0), _armor(20), _turretType(-1),
 	_aiUseDelay(-1), _aiMeleeHitCount(25),
 	_recover(true), _ignoreInBaseDefense(false), _liveAlien(false), _liveAlienPrisonType(0), _attraction(0), _flatUse(0, 1), _flatMelee(-1, -1), _flatThrow(0, 1), _flatPrime(0, 1), _flatUnprime(0, 1), _arcingShot(false), _experienceTrainingMode(ETM_DEFAULT), _listOrder(0),
@@ -411,7 +411,9 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_isConsumable = node["isConsumable"].as<bool>(_isConsumable);
 	_isFireExtinguisher = node["isFireExtinguisher"].as<bool>(_isFireExtinguisher);
 	_isExplodingInHands = node["isExplodingInHands"].as<bool>(_isExplodingInHands);
-    _canReact = node["canReact"].as<bool>(_canReact);
+    _canReactAimed = node["canReactAimed"].as<bool>(_canReactAimed);
+    _canReactAuto = node["canReactAuto"].as<bool>(_canReactAuto);
+    _canReactSnap = node["canReactSnap"].as<bool>(_canReactSnap);
 	_invWidth = node["invWidth"].as<int>(_invWidth);
 	_invHeight = node["invHeight"].as<int>(_invHeight);
 
@@ -1368,12 +1370,39 @@ bool RuleItem::isExplodingInHands() const
 }
     
 /**
- * Can this item be used in reactions?
- * @return True if can be used in reactions.
+ * Can this item be used for reactions with aimed shot?
+ * @return True if the item can be used for reactions with aimed shot.
  */
-bool RuleItem::canReact() const
+bool RuleItem::canReactAimed() const
 {
-    return _canReact;
+    return _canReactAimed;
+}
+    
+/**
+* Can this item be used for reactions with auto shot?
+* @return True if the item can be used for reactions with aimed shot.
+*/
+bool RuleItem::canReactAuto() const
+{
+    return _canReactAuto;
+}
+
+/**
+* Can this item be used for reactions with snap shot?
+* @return True if the item can be used for reactions with snap shot.
+*/
+bool RuleItem::canReactSnap() const
+{
+    return _canReactSnap;
+}
+    
+/**
+* Can this item be used for melee reactions?
+* @return True if the item can be used for melee reactions.
+*/
+bool RuleItem::canReactMelee() const
+{
+    return _canReactMelee;
 }
 
 /**
