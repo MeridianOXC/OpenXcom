@@ -128,7 +128,7 @@ private:
 	BattleType _battleType;
 	BattleFuseType _fuseType;
 	std::string _psiAttackName, _primeActionName, _unprimeActionName, _primeActionMessage, _unprimeActionMessage;
-	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _allowSelfHeal, _isConsumable, _isFireExtinguisher, _isExplodingInHands;
+	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _allowSelfHeal, _isConsumable, _isFireExtinguisher, _isExplodingInHands, _canReact;
 	std::string _defaultInventorySlot;
 	std::vector<std::string> _supportedInventorySections;
 	int _waypoints, _invWidth, _invHeight;
@@ -388,6 +388,8 @@ public:
 	bool isFireExtinguisher() const;
 	/// Is this item explode in hands?
 	bool isExplodingInHands() const;
+    /// Can the item be used in reactions?
+    bool canReact() const;
 	/// Gets the medikit use type.
 	BattleMediKitType getMediKitType() const;
 	/// Gets the max explosion radius.
