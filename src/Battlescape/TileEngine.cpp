@@ -1612,6 +1612,7 @@ TileEngine::ReactionScore *TileEngine::getReactor(std::vector<TileEngine::Reacti
  */
 TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, BattleUnit *target)
 {
+    // MERIDIAN: Uncomment the lines below (once in melee, three times in weapon) to cause the crash. The code works as long as the function canReact never runs. Or simply uncomment the useless conditional after weapon is defined.
 	ReactionScore reaction =
 	{
 		unit,
@@ -1622,6 +1623,7 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 	// prioritize melee
 	BattleItem *meleeWeapon = unit->getUtilityWeapon(BT_MELEE);
 	if (_save->canUseWeapon(meleeWeapon, unit, false) &&
+        //(!Options::extendedReactionFire || meleeWeapon->getRules()->canReact()) &&
 		// has a melee weapon and is in melee range
 		validMeleeRange(unit, target, unit->getDirection()) &&
 		BattleActionCost(BA_HIT, unit, meleeWeapon).haveTU())
@@ -1634,9 +1636,12 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 
 	// has a weapon
     BattleItem *weapon = unit->getMainHandWeapon(unit->getFaction() != FACTION_PLAYER);
+    //if (weapon->getRules()->canReact()) {} // For testing purposes only
 
     // prioritize auto shot if in close range
-    if (_save->canUseWeapon(weapon, unit, false) &&
+    if (Options::extendedReactionFire &&
+        //weapon->getRules()->canReact() &&
+        _save->canUseWeapon(weapon, unit, false) &&
         distance(unit->getPosition(), target->getPosition()) <= weapon->getRules()->getMaxRange() &&
         (   // has a melee weapon and is in melee range
          (weapon->getRules()->getBattleType() == BT_MELEE &&
@@ -1658,7 +1663,8 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
     }
     
     // next try snap shot if in snap shot range
-    if (_save->canUseWeapon(weapon, unit, false) &&
+    if (//(!Options::extendedReactionFire || weapon->getRules()->canReact()) &&
+        _save->canUseWeapon(weapon, unit, false) &&
         distance(unit->getPosition(), target->getPosition()) < weapon->getRules()->getMaxRange() &&
         (	// has a melee weapon and is in melee range
          (weapon->getRules()->getBattleType() == BT_MELEE &&
@@ -1668,8 +1674,9 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
          (weapon->getRules()->getBattleType() != BT_MELEE &&
           weapon->getAmmoItem() &&
           BattleActionCost(BA_SNAPSHOT, unit, weapon).haveTU() &&
-          // and is in effective snap shot range or is not capable of aimed shot (at all or out of TUs)
-          (distance(unit->getPosition(), target->getPosition()) <= weapon->getRules()->getSnapRange() ||
+          // and is in effective snap shot range or is not capable of aimed shot (at all or out of TUs) or not using extended reaction fire
+          (!Options::extendedReactionFire ||
+           distance(unit->getPosition(), target->getPosition()) <= weapon->getRules()->getSnapRange() ||
           (weapon->getRules()->getCostAimed().Time == 0 || !BattleActionCost(BA_AIMEDSHOT, unit, weapon).haveTU())))))
     {
         reaction.reactionScore = unit->getReactionScore(unit->getActionTUs(BA_SNAPSHOT, weapon).Time);
@@ -1679,7 +1686,9 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
     }
     
     // finally attempt an aimed shot if in effective aimed shot range
-    if (_save->canUseWeapon(weapon, unit, false) &&
+    if (Options::extendedReactionFire &&
+        //weapon->getRules()->canReact() &&
+        _save->canUseWeapon(weapon, unit, false) &&
         distance(unit->getPosition(), target->getPosition()) < weapon->getRules()->getMaxRange() &&
         (   // has a melee weapon and is in melee range
             (weapon->getRules()->getBattleType() == BT_MELEE &&
