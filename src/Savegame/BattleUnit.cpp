@@ -56,7 +56,7 @@ namespace OpenXcom
 BattleUnit::BattleUnit(Soldier *soldier, int depth, int maxViewDistance) :
 	_faction(FACTION_PLAYER), _originalFaction(FACTION_PLAYER), _killedBy(FACTION_PLAYER), _id(0), _tile(0),
 	_lastPos(Position()), _direction(0), _toDirection(0), _directionTurret(0), _toDirectionTurret(0),
-	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false),
+	_verticalDirection(0), _status(STATUS_STANDING), _wantsToSurrender(false), _walkPhase(0), _fallPhase(0), _kneeled(false), _floating(false), _reservedAction(BA_NONE), _excludedActions(0),
 	_dontReselect(false), _fire(0), _currentAIState(0), _visible(false),
 	_expBravery(0), _expReactions(0), _expFiring(0), _expThrowing(0), _expPsiSkill(0), _expPsiStrength(0), _expMelee(0),
 	_motionPoints(0), _kills(0), _hitByFire(false), _fireMaxHit(0), _smokeMaxHit(0), _moraleRestored(0), _coverReserve(0), _charging(0), _turnsSinceSpotted(255),
@@ -381,6 +381,7 @@ void BattleUnit::load(const YAML::Node &node, const ScriptGlobal *shared)
 	_energy = node["energy"].as<int>(_energy);
 	_morale = node["morale"].as<int>(_morale);
 	_kneeled = node["kneeled"].as<bool>(_kneeled);
+	_reservedAction = (BattleActionType)node["reservedAction"].as<int>(_reservedAction);
 	_floating = node["floating"].as<bool>(_floating);
 	for (int i=0; i < SIDE_MAX; i++)
 		_currentArmor[i] = node["armor"][i].as<int>(_currentArmor[i]);
@@ -417,6 +418,15 @@ void BattleUnit::load(const YAML::Node &node, const ScriptGlobal *shared)
 	_murdererWeapon = node["murdererWeapon"].as<std::string>(_murdererWeapon);
 	_murdererWeaponAmmo = node["murdererWeaponAmmo"].as<std::string>(_murdererWeaponAmmo);
 
+	
+	if (const YAML::Node& p = node["excludedActions"])
+	{
+		_excludedActions.clear();
+		for (size_t i = 0; i < p.size(); ++i)
+		{
+			_excludedActions.push_back((BattleActionType)p[i][0].as<int>());
+		}
+	}
 	if (const YAML::Node& p = node["recolor"])
 	{
 		_recolor.clear();
@@ -453,6 +463,7 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["morale"] = _morale;
 	node["kneeled"] = _kneeled;
 	node["floating"] = _floating;
+	node["reservedAction"] = (int)_reservedAction;
 	for (int i=0; i < SIDE_MAX; i++) node["armor"].push_back(_currentArmor[i]);
 	for (int i=0; i < BODYPART_MAX; i++) node["fatalWounds"].push_back(_fatalWounds[i]);
 	node["fire"] = _fire;
@@ -491,6 +502,13 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	node["murdererWeapon"] = _murdererWeapon;
 	node["murdererWeaponAmmo"] = _murdererWeaponAmmo;
 
+	// FIXME: Is there a simpler way?
+	for (size_t i = 0; i < _excludedActions.size(); ++i)
+	{
+		YAML::Node p;
+		p.push_back((int)_excludedActions[i]);
+		node["excludedActions"].push_back(p);
+	}
 	for (size_t i = 0; i < _recolor.size(); ++i)
 	{
 		YAML::Node p;
@@ -1008,7 +1026,57 @@ bool BattleUnit::isFloating() const
 {
 	return _floating;
 }
+	
+/**	 
+ * Is the unit reserving TUs for a reaction shot?
+ * @return the type of action (snap, aimed, auto).
+ */
+BattleActionType BattleUnit::getReservedAction() const
+{
+	return _reservedAction;
+}
 
+/**
+ * Set the preferred reaction fire mode for this unit.
+ * @param the type of action (snap, aimed, auto).
+ */
+void BattleUnit::reserveAction(BattleActionType type)
+ {
+	 _reservedAction = type;
+ }
+	
+/**
+ * Checks whether the unit has excluded the action from reaction fire.
+ * @return True if the action is excluded.
+ */
+bool BattleUnit::isExcluded(BattleActionType type) const
+{
+	for (int i = 0; i < _excludedActions.size(); i++) {
+		if (_excludedActions[i] == type)
+			return true;
+	}
+	return false;
+}
+	
+/**
+ * Exclude or de-exclude action from reaction fire.
+ * @param type Type to be excluded.
+ * @param exclude Exclude or de-exclude.
+ */
+void BattleUnit::excludeAction(BattleActionType type, bool exclude)
+{
+	for (int i = 0; i < _excludedActions.size(); i++) {
+		if (_excludedActions[i] == type)
+		{
+			if (!exclude)
+				_excludedActions.erase(std::remove(_excludedActions.begin(), _excludedActions.end(), type), _excludedActions.end());
+			return;
+		}
+	}
+	if (exclude)
+		_excludedActions.push_back(type);
+}
+	
 /**
  * Aim. (shows the right hand sprite and weapon holding)
  * @param aiming true/false
@@ -1845,10 +1913,20 @@ int BattleUnit::getFatalWounds() const
  * Little formula to calculate reaction score.
  * @return Reaction score.
  */
-double BattleUnit::getReactionScore() const
+double BattleUnit::getReactionScore(int tuCost) const
 {
-	//(Reactions Stat) x (Current Time Units / Max TUs)
-	double score = ((double)getBaseStats()->reactions * (double)getTimeUnits()) / (double)getBaseStats()->tu;
+	// If extended reaction fire option is enabled, the reaction score depends on the TUs required to operate the weapon.
+	// Default is set to assault rifle snap shot, 25% of all TUs.
+	int tuAction;
+	if (Options::extendedReactionFire) {
+		// Anything above default slows the unit down, and below it speeds it up, by half of the difference.
+		tuAction = int((tuCost - int(0.25 * getBaseStats()->tu))/2);
+	} else {
+		// Otherwise revert to standard calculation.
+		tuAction = 0;
+	}
+	//(Reactions Stat) x (Current Time Units - Possible Modification for ERF) / Max TUs
+	double score = (double)getBaseStats()->reactions * (double)(getTimeUnits() - tuAction) / (double)getBaseStats()->tu;
 	return score;
 }
 
@@ -2496,15 +2574,16 @@ BattleItem *BattleUnit::getItem(const std::string &slot, int x, int y) const
  * @param quickest Whether to get the quickest weapon, default true
  * @return Pointer to item.
  */
-BattleItem *BattleUnit::getMainHandWeapon(bool quickest) const
+BattleItem *BattleUnit::getMainHandWeapon(bool quickest, bool ignoreEmpty) const
 {
 	BattleItem *weaponRightHand = getRightHandWeapon();
 	BattleItem *weaponLeftHand = getLeftHandWeapon();
 
 	// ignore weapons without ammo (rules out grenades)
-	if (!weaponRightHand || !weaponRightHand->haveAnyAmmo())
+	// boolean used to enable melee reactions with empty guns; battle type to rule out melee weapons
+	if (ignoreEmpty && (!weaponRightHand || (!weaponRightHand->haveAnyAmmo() && weaponRightHand->getRules()->getBattleType() != 3)))
 		weaponRightHand = 0;
-	if (!weaponLeftHand || !weaponLeftHand->haveAnyAmmo())
+	if (ignoreEmpty && (!weaponLeftHand || (!weaponLeftHand->haveAnyAmmo() && weaponLeftHand->getRules()->getBattleType() != 3)))
 		weaponLeftHand = 0;
 
 	// if there is only one weapon, it's easy:
@@ -2531,10 +2610,10 @@ BattleItem *BattleUnit::getMainHandWeapon(bool quickest) const
 			return weaponLeftHand;
 		}
 	}
-	// if only one weapon has snapshot, pick that one
-	if (tuLeftHand <= 0 && tuRightHand > 0)
+	// if only one weapon has snapshot, pick that one – exception: Extended Reaction Fire
+	if (!Options::extendedReactionFire && tuLeftHand <= 0 && tuRightHand > 0)
 		return weaponRightHand;
-	else if (tuRightHand <= 0 && tuLeftHand > 0)
+	else if (!Options::extendedReactionFire && tuRightHand <= 0 && tuLeftHand > 0)
 		return weaponLeftHand;
 	// else pick the better one
 	else
@@ -3980,7 +4059,7 @@ void geReactionScoreScript(const BattleUnit *bu, int &ret)
 {
 	if (bu)
 	{
-		ret = (int)bu->getReactionScore();
+		ret = (int)bu->getReactionScore(bu->getActionTUs(BA_SNAPSHOT, bu->getMainHandWeapon(true)).Time);
 	}
 	ret = 0;
 }

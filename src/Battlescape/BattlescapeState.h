@@ -52,7 +52,7 @@ private:
 	Map *_map;
 	BattlescapeButton *_btnUnitUp, *_btnUnitDown, *_btnMapUp, *_btnMapDown, *_btnShowMap, *_btnKneel;
 	BattlescapeButton *_btnInventory, *_btnCenter, *_btnNextSoldier, *_btnNextStop, *_btnShowLayers, *_btnHelp;
-	BattlescapeButton *_btnEndTurn, *_btnAbort, *_btnLaunch, *_btnPsi, *_reserve;
+	BattlescapeButton *_btnEndTurn, *_btnAbort, *_btnLaunch, *_btnPsi, *_reserve, *_select;
 	InteractiveSurface *_btnStats;
 	BattlescapeButton *_btnReserveNone, *_btnReserveSnap, *_btnReserveAimed, *_btnReserveAuto, *_btnReserveKneel, *_btnZeroTUs;
 	InteractiveSurface *_btnLeftHandItem, *_btnRightHandItem;
@@ -100,6 +100,10 @@ private:
 	void drawPrimers();
 	/// Shows the unit kneel state.
 	void toggleKneelButton(BattleUnit* unit);
+	/// Shows the unit reserve TU state.
+	void toggleReserveActionButton(BattleUnit* unit);
+	/// Shows the unit exclude reaction state.
+	void toggleExcludeActionButton(BattleUnit* unit);
 public:
 	/// Selects the next soldier.
 	void selectNextPlayerUnit(bool checkReselect = false, bool setReselect = false, bool checkInventory = false);

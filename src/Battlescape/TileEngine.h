@@ -124,6 +124,8 @@ private:
 
 	/// Checks validity of a snap shot to this position.
 	ReactionScore determineReactionType(BattleUnit *unit, BattleUnit *target);
+    /// Checks whether unit can react with a given action type.
+    bool canReact(BattleUnit *unit, BattleUnit *target, BattleItem *weapon, BattleActionType type, bool force=false, bool onlyAccurate=false);
 	/// Creates a vector of units that can spot this unit.
 	std::vector<ReactionScore> getSpottingUnits(BattleUnit* unit);
 	/// Given a vector of spotters, and a unit, picks the spotter with the highest reaction score.

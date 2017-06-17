@@ -94,6 +94,8 @@ private:
 	std::unordered_set<Tile *> _visibleTilesLookup;
 	int _tu, _energy, _health, _morale, _stunlevel;
 	bool _kneeled, _floating, _dontReselect;
+	BattleActionType _reservedAction;
+	std::vector<BattleActionType> _excludedActions;
 	int _currentArmor[SIDE_MAX], _maxArmor[SIDE_MAX];
 	int _fatalWounds[BODYPART_MAX];
 	int _fire;
@@ -239,6 +241,14 @@ public:
 	bool isKneeled() const;
 	/// Is floating?
 	bool isFloating() const;
+	/// Get the preferred action for reaction fire.
+	BattleActionType getReservedAction() const;
+	/// Set preferred action for reaction fire.
+	void reserveAction(BattleActionType type);
+	/// Check whether the action is excluded from reaction fire.
+	bool isExcluded(BattleActionType action) const;
+	/// Exclude/de-exclude action from reaction fire.
+	void excludeAction(BattleActionType type, bool exclude = false);
 	/// Aim.
 	void aim(bool aiming);
 	/// Get direction to a certain point
@@ -314,7 +324,7 @@ public:
 	/// Get total number of fatal wounds.
 	int getFatalWounds() const;
 	/// Get the current reaction score.
-	double getReactionScore() const;
+	double getReactionScore(int tuCost) const;
 	/// Prepare for a new turn.
 	void prepareNewTurn(bool fullProcess = true);
 	/// Calculate change in unit stats.
@@ -362,7 +372,7 @@ public:
 	/// Gets the item in the specified slot.
 	BattleItem *getItem(const std::string &slot, int x = 0, int y = 0) const;
 	/// Gets the item in the main hand.
-	BattleItem *getMainHandWeapon(bool quickest = true) const;
+	BattleItem *getMainHandWeapon(bool quickest = true, bool ignoreEmpty = true) const;
 	/// Gets a grenade from the belt, if any.
 	BattleItem *getGrenadeFromBelt() const;
 	/// Gets the item from right hand.

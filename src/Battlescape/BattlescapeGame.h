@@ -196,6 +196,10 @@ public:
 	void requestEndTurn(bool askForConfirmation);
 	/// Sets the TU reserved type.
 	void setTUReserved(BattleActionType tur);
+	/// Sets the fire mode the selected unit prefers for reaction fire.
+	void setReservedAction(BattleActionType type);
+	/// Excludes/de-excludes a fire mode from reactions for the selected unit.
+	void excludeAction(BattleActionType action, bool exclude = false);
 	/// Sets up the cursor taking into account the action.
 	void setupCursor();
 	/// Gets the map.

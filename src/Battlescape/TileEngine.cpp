@@ -1499,12 +1499,14 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 {
 	std::vector<TileEngine::ReactionScore> spotters;
 	Tile *tile = unit->getTile();
-	int threshold = unit->getReactionScore();
+	// Active unit reaction score adjusted for default 25% of TUs.
+	int threshold = unit->getReactionScore(int(floor(0.25 * unit->getBaseStats()->tu)));
 	// no reaction on civilian turn.
 	if (_save->getSide() != FACTION_NEUTRAL)
 	{
 		for (std::vector<BattleUnit*>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 		{
+			ReactionScore rs = determineReactionType(*i, unit);
 				// not dead/unconscious
 			if (!(*i)->isOut() &&
 				// not dying
@@ -1512,7 +1514,7 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 				// not about to pass out
 				(*i)->getStunlevel() < (*i)->getHealth() &&
 				// have any chances for reacting
-				(*i)->getReactionScore() >= threshold &&
+				rs.reactionScore >= threshold &&
 				// not a friend
 				(*i)->getFaction() != _save->getSide() &&
 				// not a civilian
@@ -1540,15 +1542,14 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 						unit->setVisible(true);
 					}
 					(*i)->addToVisibleUnits(unit);
-					ReactionScore rs = determineReactionType(*i, unit);
 					if (rs.attackType != BA_NONE)
 					{
-						if (rs.attackType == BA_SNAPSHOT && Options::battleUFOExtenderAccuracy)
+						if ((rs.attackType == BA_SNAPSHOT || rs.attackType == BA_AUTOSHOT) && Options::battleUFOExtenderAccuracy)
 						{
 							BattleItem *weapon = (*i)->getMainHandWeapon((*i)->getFaction() != FACTION_PLAYER);
 							int accuracy = (*i)->getFiringAccuracy(rs.attackType, weapon, _save->getBattleGame()->getMod());
 							int distance = _save->getTileEngine()->distance((*i)->getPosition(), unit->getPosition());
-							int upperLimit = weapon->getRules()->getSnapRange();
+							int upperLimit = rs.attackType == BA_SNAPSHOT ? weapon->getRules()->getSnapRange() : weapon->getRules()->getAutoRange();
 							int lowerLimit = weapon->getRules()->getMinRange();
 							if (distance > upperLimit)
 							{
@@ -1594,7 +1595,7 @@ TileEngine::ReactionScore *TileEngine::getReactor(std::vector<TileEngine::Reacti
 			best = &(*i);
 		}
 	}
-	if (best &&(unit->getReactionScore() <= best->reactionScore))
+	if (best &&(unit->getReactionScore((int)floor(0.25 * unit->getBaseStats()->tu)) <= best->reactionScore))
 	{
 		if (best->unit->getOriginalFaction() == FACTION_PLAYER)
 		{
@@ -1609,7 +1610,7 @@ TileEngine::ReactionScore *TileEngine::getReactor(std::vector<TileEngine::Reacti
 }
 
 /**
- * Checks the validity of a snap shot performed here.
+ * Checks the validity of a auto, snap or aimed shot performed here.
  * @param unit The unit to check sight from.
  * @param target The unit to check sight TO.
  * @return True if the target is valid.
@@ -1620,45 +1621,110 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 	{
 		unit,
 		BA_NONE,
-		unit->getReactionScore(),
+		unit->getReactionScore(unit->getActionTUs(BA_SNAPSHOT, unit->getMainHandWeapon(true)).Time),
 		0,
 	};
-	// prioritize melee
+	
+	// Do not ignore empty weapons, as they may have a melee component with which to react
+	BattleItem *weapon = unit->getMainHandWeapon(unit->getFaction() != FACTION_PLAYER, false);
 	BattleItem *meleeWeapon = unit->getUtilityWeapon(BT_MELEE);
-	if (_save->canUseWeapon(meleeWeapon, unit, false) &&
-		// has a melee weapon and is in melee range
-		validMeleeRange(unit, target, unit->getDirection()) &&
-		BattleActionCost(BA_HIT, unit, meleeWeapon).haveTU())
-	{
-		reaction.attackType = BA_HIT;
-		reaction.reactionReduction = 1.0 * BattleActionCost(BA_HIT, unit, meleeWeapon).Time * unit->getBaseStats()->reactions / unit->getBaseStats()->tu;
+	
+	if (!weapon && !meleeWeapon) // Unit does not have a valid weapon, so that's it.
 		return reaction;
+	
+	std::vector<Uint8> reactionTypes;
+	if (Options::extendedReactionFire)
+	{
+		// Get all action types available for reaction with this weapon.
+		// Standard order is MELEE->AUTO->SNAP->AIMED. If unit has a manual selection, that goes first.
+		// FIXME: What about a melee weapon?
+		if (_save->canUseWeapon(weapon, unit, false) || _save->canUseWeapon(meleeWeapon, unit, false))
+			reactionTypes = weapon->getRules()->getReactionTypes(unit);
+		if (reactionTypes.empty())
+			return reaction;
+	}
+	else
+	{
+		// Standard action types for reactions when ERF is disabled. Prioritize melee.
+		Uint8 types [2] {BA_HIT, BA_SNAPSHOT};
+		reactionTypes.assign(types, types+2);
 	}
 
-	// has a weapon
-	BattleItem *weapon = unit->getMainHandWeapon(unit->getFaction() != FACTION_PLAYER);
-	if (_save->canUseWeapon(weapon, unit, false) &&
-		distance(unit->getPosition(), target->getPosition()) < weapon->getRules()->getMaxRange() &&
-		(	// has a melee weapon and is in melee range
-			(weapon->getRules()->getBattleType() == BT_MELEE &&
-				weapon->getAmmoForAction(BA_HIT) &&
-				validMeleeRange(unit, target, unit->getDirection()) &&
-				BattleActionCost(BA_HIT, unit, weapon).haveTU()) ||
-			// has a gun capable of snap shot with ammo
-			(weapon->getRules()->getBattleType() != BT_MELEE &&
-				weapon->getAmmoForAction(BA_SNAPSHOT)  &&
-				BattleActionCost(BA_SNAPSHOT, unit, weapon).haveTU())))
-	{
-		reaction.attackType = BA_SNAPSHOT;
-		reaction.reactionReduction = 1.0 * BattleActionCost(BA_SNAPSHOT, unit, weapon).Time * unit->getBaseStats()->reactions / unit->getBaseStats()->tu;
-		return reaction;
+	// FIXME: Add priorities for cases with one handed and two handed weapon; prioritize former.
+	bool force = true;
+	for (int i = 0; i < reactionTypes.size(); i++) {
+		// Force the shot even when inaccurate if it is manually selected (i.e. first) or is the last resort
+		force = (i == 0 || i == reactionTypes.size() - 1) ? true : false;
+		// Get action type and the weapon to go with it.
+		BattleActionType actionType = BattleActionType(reactionTypes[i]);
+		BattleItem *currentweapon = actionType == BA_HIT ? meleeWeapon : weapon;
+		// Firearm with melee. Replace melee weapon with weapon unless can use proper melee weapon (priority).
+		if (actionType == BA_HIT && _save->canUseWeapon(weapon, unit, false) && weapon->getRules()->getCostMelee().Time > 0 && (!meleeWeapon || !canReact(unit, target, meleeWeapon, BA_HIT)))
+			currentweapon = weapon;
+		if (canReact(unit, target, currentweapon, actionType, force))
+		{
+			reaction.reactionScore = unit->getReactionScore(BattleActionCost(actionType, unit, currentweapon).Time);
+			reaction.attackType = actionType;
+			reaction.reactionReduction = 1.0 * BattleActionCost(actionType, unit, currentweapon).Time * unit->getBaseStats()->reactions / unit->getBaseStats()->tu;
+			return reaction;
+		}
 	}
-
-	return reaction;
+}
+	
+bool TileEngine::canReact(BattleUnit *unit, BattleUnit *target, BattleItem *weapon, BattleActionType type, bool force, bool onlyAccurate)
+{
+	if (!_save->canUseWeapon(weapon, unit, false))
+		return false;
+	int dist = distance(unit->getPosition(), target->getPosition());
+	bool validRange = type == BA_HIT ?
+		validMeleeRange(unit, target, unit->getDirection()) : (dist <= weapon->getRules()->getMaxRange());
+	// Special handling of diagonals for weapons with range of one or two
+	bool diagonal = (unit->directionTo(target->getPosition()) % 2 == 1 && ((weapon->getRules()->getMaxRange() == 1 && dist == 2) || (weapon->getRules()->getMaxRange() == 2 && dist == 3 && target->getPosition().z != unit->getPosition().z)));
+	// Within valid range and with a usable weapon with enough ammon and TUs
+	// FIXME: Check that there is enough ammo for each shot type...
+	if ((validRange || diagonal) &&
+		(type == BA_HIT || weapon->haveAnyAmmo()) &&
+		BattleActionCost(type, unit, weapon).haveTU() &&
+		 // Do not auto fire unless ammo is more than what is required for a simple snap shot (or snap shot ammo is out)
+		(type != BA_AUTOSHOT || (weapon->getAmmoForAction(BA_AUTOSHOT)->getAmmoQuantity() > weapon->getActionConf(BA_SNAPSHOT)->shots) || weapon->getAmmoForAction(BA_SNAPSHOT)->getAmmoQuantity() < weapon->getActionConf(BA_SNAPSHOT)->shots))
+	{
+		// If it's a melee weapon, go ahead; otherwise check accuracy based on distance
+		if (type == BA_HIT)
+			return true;
+		int upperlimit = type == BA_AUTOSHOT ? weapon->getRules()->getAutoRange() :
+		(type == BA_SNAPSHOT ? weapon->getRules()->getSnapRange() : weapon->getRules()->getAimRange());
+		int lowerlimit = weapon->getRules()->getMinRange();
+		int accuracy = unit->getFiringAccuracy(type, weapon, _save->getBattleGame()->getMod());
+		int minReactionAccuracy = _save->getBattleGame()->getMod()->getMinReactionAccuracy();
+		int weaponDropoff = weapon->getRules()->getDropoff();
+		
+		// if shot accuracy is below minimum reaction accuracy, do not shoot
+		if (((accuracy - (dist - upperlimit) * weaponDropoff) <= minReactionAccuracy) ||
+			(((accuracy - (lowerlimit - dist) * weaponDropoff) <= minReactionAccuracy)))
+			return false;
+		// If within accurate distance fire away
+		if (dist <= upperlimit && lowerlimit <= dist)
+			return true;
+		// Tough one: we could shoot, but not accurately. Check if another shot would be better.
+		else if (!onlyAccurate)
+		{
+			// First, if selected by player or last chance, force the shot
+			if (force)
+				return true;
+			// Then see if aimed would be better than snap or snap/aimed better than auto shot, if so, don't shoot
+			if((type == BA_AUTOSHOT && (canReact(unit, target, weapon, BA_SNAPSHOT, false, true) || canReact(unit, target, weapon, BA_AIMEDSHOT, false, true))) ||
+			   (type == BA_SNAPSHOT && (canReact(unit, target, weapon, BA_AIMEDSHOT, false, true))))
+				return false;
+			// Another shot is not possible with full accuracy, so take this one
+			else
+				return true;
+		}
+	}
+	return false;
 }
 
 /**
- * Attempts to perform a reaction snap shot.
+ * Attempts to perform a reaction shot.
  * @param unit The unit to check sight from.
  * @param target The unit to check sight TO.
  * @return True if the action should (theoretically) succeed.
@@ -1670,24 +1736,23 @@ bool TileEngine::tryReaction(BattleUnit *unit, BattleUnit *target, BattleActionT
 	action.actor = unit;
 	if (attackType == BA_HIT)
 	{
-		action.weapon = unit->getUtilityWeapon(BT_MELEE);
+		// Use melee weapon unless the unit has a firearm with a melee component (e.g. gun butt)
+		action.weapon = unit->getMainHandWeapon(unit->getFaction() != FACTION_PLAYER, false);
+		if (!_save->canUseWeapon(action.weapon, unit, false) || action.weapon->getRules()->getCostMelee().Time == 0)
+			action.weapon = unit->getUtilityWeapon(BT_MELEE);
 	}
 	else
-	{
 		action.weapon = unit->getMainHandWeapon(unit->getFaction() != FACTION_PLAYER);
-	}
 
 	if (!_save->canUseWeapon(action.weapon, action.actor, false))
-	{
 		return false;
-	}
 
 	action.type = attackType;
 	action.target = target->getPosition();
 	action.updateTU();
 
 	auto ammo = action.weapon->getAmmoForAction(attackType);
-	if (ammo && action.haveTU())
+	if ((attackType == BA_HIT || ammo) && action.haveTU())
 	{
 		action.targeting = true;
 
