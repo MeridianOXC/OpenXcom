@@ -42,7 +42,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-NewResearchListState::NewResearchListState(Base *base) : _base(base)
+NewResearchListState::NewResearchListState(Base *base) : _base(base), _lstScroll(0)
 {
 	_screen = false;
 
@@ -210,6 +210,7 @@ void NewResearchListState::fillProjectList(bool markAllAsSeen)
 	CrossPlatform::upperCase(searchString, myLocale);
 
 	_projects.clear();
+	_lstScroll = _lstResearch->getScroll();
 	_lstResearch->clearList();
 	// Note: this is the *only* place where this method is called with considerDebugMode = true
 	_game->getSavedGame()->getAvailableResearchProjects(_projects, _game->getMod() , _base, true);
@@ -275,6 +276,8 @@ void NewResearchListState::fillProjectList(bool markAllAsSeen)
 			it = _projects.erase(it);
 		}
 	}
+
+	_lstResearch->scrollTo(_lstScroll < _lstResearch->getRows() ? _lstScroll : _lstResearch->getRows());
 
 	std::wstring label = tr("STR_SHOW_ONLY_NEW");
 	_btnShowOnlyNew->setText((hasUnseen ? L"* " : L"") + label);

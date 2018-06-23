@@ -45,6 +45,7 @@ private:
 	Window *_window;
 	Text *_txtTitle;
 	TextList *_lstResearch;
+	size_t _lstScroll;
 	void onSelectProject(Action *action);
 	void onToggleProjectStatus(Action *action);
 	void onOpenTechTreeViewer(Action *action);
