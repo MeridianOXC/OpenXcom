@@ -51,6 +51,7 @@ namespace OpenXcom
 		ToggleTextButton *_btnShowOnlyNew;
 		TextList *_lstSelection;
 		ArticleDefinitionList _article_list, _filtered_article_list;
+		size_t _lstScroll;
 
 		/// Handler for clicking the OK button
 		void btnOkClick(Action *action);

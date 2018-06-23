@@ -51,6 +51,7 @@ namespace OpenXcom
 		_btnOk = new TextButton(108, 16, 164, 166);
 		_btnShowOnlyNew = new ToggleTextButton(108, 16, 48, 166);
 		_lstSelection = new TextList(224, 104, 40, 50);
+		_lstScroll = 0;
 
 		// Set palette
 		setInterface("ufopaedia");
@@ -120,6 +121,8 @@ namespace OpenXcom
 	 */
 	void UfopaediaSelectState::lstSelectionClick(Action *)
 	{
+		_lstScroll = _lstSelection->getScroll();
+		printf("lstscroll is %zd\n", _lstScroll);
 		Ufopaedia::openArticle(_game, _filtered_article_list[_lstSelection->getSelectedRow()]);
 	}
 
@@ -247,6 +250,8 @@ namespace OpenXcom
 
 		std::wstring label = tr("STR_SHOW_ONLY_NEW");
 		_btnShowOnlyNew->setText((hasUnseen ? L"* " : L"") + label);
+		printf("setscroll to %zd\n", _lstScroll);
+		_lstSelection->scrollTo(_lstScroll);
 	}
 
 }

@@ -47,6 +47,7 @@ private:
 	Window *_window;
 	Text *_txtTitle, *_txtItem, *_txtCategory;
 	TextList *_lstManufacture;
+	size_t _lstScroll;
 	ComboBox *_cbxCategory;
 	ComboBox *_cbxFilter;
 	std::vector<RuleManufacture *> _possibleProductions;

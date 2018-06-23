@@ -47,7 +47,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _showRequirements(false), _detailClicked(false)
+NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _showRequirements(false), _detailClicked(false), _lstScroll(0)
 {
 	_screen = false;
 
@@ -133,6 +133,7 @@ void NewManufactureListState::init()
 {
 	State::init();
 	fillProductionList(!_detailClicked);
+	_lstManufacture->scrollTo(_lstScroll);
 }
 
 /**
@@ -150,6 +151,8 @@ void NewManufactureListState::btnOkClick(Action *)
  */
 void NewManufactureListState::lstProdClickLeft(Action *)
 {
+	_lstScroll = _lstManufacture->getScroll();
+
 	ManufacturingFilterType basicFilter = (ManufacturingFilterType)(_cbxFilter->getSelected());
 	if (basicFilter == MANU_FILTER_FACILITY_REQUIRED)
 		return;
@@ -243,6 +246,7 @@ void NewManufactureListState::lstProdClickRight(Action *)
 void NewManufactureListState::lstProdClickMiddle(Action *)
 {
 	const RuleManufacture *selectedTopic = _game->getMod()->getManufacture(_displayedStrings[_lstManufacture->getSelectedRow()]);
+	_lstScroll = _lstManufacture->getScroll();
 	_game->pushState(new TechTreeViewerState(0, selectedTopic));
 }
 
@@ -252,6 +256,7 @@ void NewManufactureListState::lstProdClickMiddle(Action *)
 
 void NewManufactureListState::cbxFilterChange(Action *)
 {
+	_lstScroll = 0;
 	fillProductionList(true);
 }
 
@@ -261,6 +266,7 @@ void NewManufactureListState::cbxFilterChange(Action *)
 
 void NewManufactureListState::cbxCategoryChange(Action *)
 {
+	_lstScroll = 0;
 	fillProductionList(false);
 }
 
@@ -289,6 +295,7 @@ void NewManufactureListState::btnQuickSearchToggle(Action *action)
 */
 void NewManufactureListState::btnQuickSearchApply(Action *)
 {
+	_lstScroll = 0;
 	fillProductionList(false);
 }
 
@@ -298,6 +305,7 @@ void NewManufactureListState::btnQuickSearchApply(Action *)
 */
 void NewManufactureListState::btnShowOnlyNewClick(Action *)
 {
+	_lstScroll = 0;
 	fillProductionList(false);
 }
 

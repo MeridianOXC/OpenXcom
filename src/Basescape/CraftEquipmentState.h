@@ -49,6 +49,7 @@ private:
 	std::map<std::string, bool> _usedCategoryStrings;
 	ComboBox *_cbxFilterBy;
 	TextList *_lstEquipment;
+	size_t _lstScroll;
 	Timer *_timerLeft, *_timerRight;
 	size_t _sel, _craft;
 	Base *_base;

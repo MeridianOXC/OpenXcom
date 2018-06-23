@@ -64,7 +64,7 @@ namespace OpenXcom
  * @param base Pointer to the base to get info from.
  * @param craft ID of the selected craft.
  */
-CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) : _sel(0), _craft(craft), _base(base), _totalItems(0), _ammoColor(0), _reload(true)
+CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) : _sel(0), _craft(craft), _base(base), _totalItems(0), _ammoColor(0), _reload(true), _lstScroll(0)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	bool craftHasACrew = c->getNumSoldiers() > 0;
@@ -397,6 +397,7 @@ void CraftEquipmentState::initList()
 		}
 	}
 
+	_lstEquipment->scrollTo(_lstScroll < _lstEquipment->getRows() ? _lstScroll : _lstEquipment->getRows());
 	_lstEquipment->draw();
 }
 
@@ -502,6 +503,8 @@ void CraftEquipmentState::lstEquipmentRightArrowClick(Action *action)
 void CraftEquipmentState::lstEquipmentMousePress(Action *action)
 {
 	_sel = _lstEquipment->getSelectedRow();
+	_lstScroll =  _lstEquipment->getScroll();
+
 	if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
 	{
 		_timerRight->stop();
@@ -528,6 +531,9 @@ void CraftEquipmentState::lstEquipmentMousePress(Action *action)
 		std::string articleId = rule->getType();
 		Ufopaedia::openArticle(_game, articleId);
 	}
+
+	_lstEquipment->scrollTo(_lstScroll);
+
 }
 
 /**
