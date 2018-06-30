@@ -27,7 +27,7 @@
 # to get OpenXcomExPlusMinus64.exe and OpenXcomExPlusMinus64Debug.exe (the latter with debug symbols)
 #
 
-BIN ?= OpenXcomEx.exe
+BIN ?= OpenXcomEx
 ARCH ?= i686-w64-mingw32.static
 # Directories and files
 MXE_DIR ?= /opt/mxe
