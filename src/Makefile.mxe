@@ -1,49 +1,58 @@
-# Makefile for: http://mxe.cc/
-# Get mxe from `git clone https://github.com/mxe/mxe.git`
-# Build mxe with packs: `make gcc sdl sdl_gfx sdl_image sdl_mixer glew yaml-cpp`
-# and get yaml-cpp master: `git clone https://github.com/jbeder/yaml-cpp.git`
-# Or build mxe with yaml: `make gcc sdl sdl_gfx sdl_image sdl_mixer glew yaml-cpp`
+# Makefile for http://mxe.cc/
 #
-# ARCH can be either i686-w64-mingw32.static or x86_64-w64-mingw32.static if you installed packs for it.
+# Get MXE doing `git clone https://github.com/mxe/mxe.git`
+# Build MXE packages: `cd mxe; make gcc sdl sdl_gfx sdl_image sdl_mixer yaml-cpp`
+# For win64 do `cd mxe; make gcc sdl sdl_gfx sdl_image sdl_mixer yaml-cpp MXE_TARGETS=x86_64-w64-mingw32.static`
+#
+# Variables
+#
+# MXE_DIR  Points to the mxe.cc root; default /opt/mxe
+# ARCH     Can be either i686-w64-mingw32.static or x86_64-w64-mingw32.static.
+# YAML_DIR Points to the cloned https://github.com/jbeder/yaml-cpp, if you like it that way.
+#          Otherwise, MXE-bundled yaml-cpp is used.
+# NO_LTO   If set, disable link-time optimization
 #
 # Example:
 #
-# make -f Makefile.mxe ARCH=x86_64-w64-mingw32.static
+# make -f Makefile.mxe MXE_DIR=/opt/mxe ARCH=x86_64-w64-mingw32.static
 #
-# With mxe-supplied yaml-cpp:
+# With local yaml-cpp:
 #
-# make -f Makefile.mxe ARCH=x86_64-w64-mingw32.static MXE_YAML=1
+# make -f Makefile.mxe ARCH=x86_64-w64-mingw32.static YAML_SRC=/whatever/yaml-cpp/
 #
-# You can also set BIN=whatever.exe to rename the .exe
+# You can also set BIN=whatever
 #
-# make -f Makefile.mxe ARCH=x86_64-w64-mingw32.static MXE_YAML=1 BIN=OpenXcomExPlusMinus64.exe
+# make -f Makefile.mxe ARCH=x86_64-w64-mingw32.static BIN=OpenXcomExPlusMinus64
 #
-# Or build with mxe and yaml-cpp cloned somewhere else than side-by-side with OpenXcom:
-#
-# make -f Makefile.mxe MXE_DIR=/tmp/mxe YAML_INC=/tmp/yaml-cpp/include/ YAML_SRC=/tmp/yaml-cpp/src/
+# to get OpenXcomExPlusMinus64.exe and OpenXcomExPlusMinus64Debug.exe (the latter with debug symbols)
 #
 
-BIN ?= OpenXcomEx.exe
+BIN ?= OpenXcomEx
 ARCH ?= i686-w64-mingw32.static
-
 # Directories and files
-MXE_DIR ?= ../../mxe
+MXE_DIR ?= /opt/mxe
 PATH := $(MXE_DIR)/usr/bin:$(PATH)
 OBJDIR = ../obj/
 BINDIR = ../bin/
-YAML_INC ?= ../../yaml-cpp/include/
-YAML_SRC ?= ../../yaml-cpp/src/
-
 SRCS = $(wildcard *.cpp */*.cpp */*/*.cpp)
 
-# if MXE_YAML is set, use the mxe-supplied one
-ifeq ($(strip $(MXE_YAML)),)
-	SRCS += $(wildcard $(YAML_SRC)*.cpp $(YAML_SRC)*/*.cpp)
+# if YAML_SRC is set, use the supplied yaml-cpp, else MXE yaml-cpp
+ifneq ($(strip $(YAML_DIR)),)
+	YAML_INC = $(YAML_DIR)/include
+	SRCS += $(wildcard $(YAML_DIR)/src/*.cpp $(YAML_DIR)/src/*/*.cpp)
 	YAML_LIB =
 else
-	YAML_INC = $(MXE_DIR)/usr/$(ARCH)/include/yaml-cpp
-	YAML_SRC =
+	YAML_INC =
 	YAML_LIB = -lyaml-cpp
+endif
+
+# disable LTO if requested
+ifeq ($(strip $(NO_LTO)),)
+	CC_LTO = -flto
+	LD_LTO = -flto -O3
+else
+	CC_LTO =
+	LD_LTO =
 endif
 
 OBJRES = ../obj/OpenXcom_res.o
@@ -53,21 +62,23 @@ RES = ../src/OpenXcomEx.rc ../src/resource.h ../src/version.h ../res/windows/ope
 # Arch-specific settings
 CXX = $(ARCH)-gcc
 RC = $(ARCH)-windres
+STRIP = $(ARCH)-strip
 PKG_CONFIG = $(ARCH)-pkg-config
 SDL_CONFIG = $(ARCH)-sdl-config
 
 # Compiler settings
-CXXFLAGS = -Wall -O3 -s -std=gnu++11 -I$(YAML_INC) \
-	`$(SDL_CONFIG) --cflags` `$(PKG_CONFIG)  SDL_mixer --cflags ` `$(PKG_CONFIG) SDL_gfx --cflags`
+CXXFLAGS += -Wall -g $(CC_LTO) -O3 -femit-struct-debug-reduced -std=gnu++11 -I$(YAML_INC) \
+	`$(SDL_CONFIG) --cflags` `$(PKG_CONFIG) SDL_mixer --cflags ` `$(PKG_CONFIG) SDL_gfx --cflags`
 
-LDFLAGS = -s `$(SDL_CONFIG) --libs` $(YAML_LIB) -lopengl32 -lshlwapi `$(PKG_CONFIG) SDL_gfx --libs` \
+LDFLAGS = $(LD_LTO) `$(SDL_CONFIG) --libs` $(YAML_LIB) -lopengl32 -lshlwapi `$(PKG_CONFIG) SDL_gfx --libs` \
 	-lstdc++ `$(PKG_CONFIG) SDL_mixer --libs` `$(PKG_CONFIG) SDL_image --libs` -ldbghelp
 
 # Rules
 all: $(BINDIR)/$(BIN)
 
 $(BINDIR)/$(BIN): $(OBJS)
-	$(CXX) $(OBJS) $(LDFLAGS) -o $(BINDIR)/$(BIN)
+	$(CXX) $(OBJS) $(LDFLAGS) -o $(BINDIR)/$(BIN)Debug.exe
+	$(STRIP) -o $(BINDIR)/$(BIN).exe $(BINDIR)/$(BIN)Debug.exe
 
 $(OBJDIR)%.o:: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -105,17 +116,17 @@ $(OBJDIR)%.o:: Savegame/%.cpp
 $(OBJDIR)%.o:: Ufopaedia/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(OBJDIR)%.o:: $(YAML_SRC)/%.cpp
+$(OBJDIR)%.o:: $(YAML_DIR)/src/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(OBJDIR)%.o:: $(YAML_SRC)/contrib/%.cpp
+$(OBJDIR)%.o:: $(YAML_DIR)/src/contrib/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJRES):$(RES)
 	$(RC) -o $@ $<
 
 clean:
-	rm -f $(BINDIR)/$(BIN) $(OBJDIR)/*.o
+	rm -f $(BINDIR)$(BIN).exe $(BINDIR)$(BIN)Debug.exe $(OBJDIR)*.o
 
 .PHONY: all clean
 
