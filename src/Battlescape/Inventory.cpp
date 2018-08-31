@@ -771,7 +771,7 @@ void Inventory::mouseClick(Action *action, State *state)
 				bool canStack = slot->getType() == INV_GROUND && canBeStacked(item, _selItem);
 
 				// Check if this inventory section supports the item
-				if (!_selItem->getRules()->canBePlacedIntoInventorySection(slot->getId()))
+				if (!_selItem->getRules()->canBePlacedIntoInventorySection(slot->getId(), slot->getResLevel()))
 				{
 					_warning->showMessage(_game->getLanguage()->getString("STR_CANNOT_PLACE_ITEM_INTO_THIS_SECTION"));
 				}
