@@ -52,8 +52,9 @@ namespace OpenXcom
  * Creates a blank ruleset for a certain
  * type of inventory section.
  * @param id String defining the id.
+ * @param _resLevel int restriction level for item placement.
  */
-RuleInventory::RuleInventory(const std::string &id): _id(id), _x(0), _y(0), _type(INV_SLOT), _listOrder(0), _hand(0)
+RuleInventory::RuleInventory(const std::string &id): _id(id), _x(0), _y(0), _type(INV_SLOT), _resLevel(1), _listOrder(0), _hand(0)
 {
 }
 
@@ -76,6 +77,7 @@ void RuleInventory::load(const YAML::Node &node, int listOrder)
 	_x = node["x"].as<int>(_x);
 	_y = node["y"].as<int>(_y);
 	_type = (InventoryType)node["type"].as<int>(_type);
+	_resLevel = node["PlacementRestrictionLevel"].as<int>(_resLevel);
 	_slots = node["slots"].as< std::vector<RuleSlot> >(_slots);
 	_costs = node["costs"].as< std::map<std::string, int> >(_costs);
 	_listOrder = node["listOrder"].as<int>(listOrder);
@@ -131,6 +133,15 @@ int RuleInventory::getY() const
 InventoryType RuleInventory::getType() const
 {
 	return _type;
+}
+
+/**
+ * Gets the restriction level. 0 never restricted, 1 restricted for items with slot lists (default), 2 always restricted.
+ * @return restriction level.
+ */
+bool RuleInventory::getResLevel() const
+{
+	return _resLevel;
 }
 
 /**
