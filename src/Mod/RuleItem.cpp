@@ -924,12 +924,12 @@ const std::vector<std::string> &RuleItem::getSupportedInventorySections() const
  */
 bool RuleItem::canBePlacedIntoInventorySection(const std::string &inventorySection) const
 {
-	// backwards-compatibility
-	if (_supportedInventorySections.empty())
+	// allow default items in unrestricted inventory sections.
+	if (resLevel == 1 && _supportedInventorySections.empty())
 		return true;
 
-	// always possible to put an item on the ground
-	if (inventorySection == "STR_GROUND")
+	// always possible to put an item on the ground or in fully unrestricted slots
+	if (inventorySection == "STR_GROUND" or resLevel == 0)
 		return true;
 
 	// otherwise check allowed inventory sections
