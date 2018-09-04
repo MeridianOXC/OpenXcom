@@ -297,6 +297,7 @@ void CraftSoldiersState::init()
 void CraftSoldiersState::lstItemsLeftArrowClick(Action *action)
 {
 	unsigned int row = _lstSoldiers->getSelectedRow();
+    size_t numSoldiers = _base->getSoldiers()->size();
 	if (row > 0)
 	{
 		if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
@@ -307,7 +308,18 @@ void CraftSoldiersState::lstItemsLeftArrowClick(Action *action)
 		{
 			moveSoldierUp(action, row, true);
 		}
+		else if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
+		{
+			moveSoldierUp(action, row);
+		}
 	}
+    if (0 < numSoldiers && INT_MAX >= numSoldiers && row < numSoldiers - 1)
+    {
+        if (action->getDetails()->button.button == SDL_BUTTON_WHEELDOWN)
+		{
+			moveSoldierDown(action, row);
+		}
+    }
 	_cbxSortBy->setText(tr("STR_SORT_BY"));
 	_cbxSortBy->setSelected(-1);
 }
@@ -359,6 +371,17 @@ void CraftSoldiersState::lstItemsRightArrowClick(Action *action)
 		else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 		{
 			moveSoldierDown(action, row, true);
+		}
+        else if (action->getDetails()->button.button == SDL_BUTTON_WHEELDOWN)
+		{
+			moveSoldierDown(action, row);
+		}
+	}
+    if (row > 0)
+    {
+		if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
+		{
+			moveSoldierUp(action, row);
 		}
 	}
 	_cbxSortBy->setText(tr("STR_SORT_BY"));
