@@ -303,6 +303,14 @@ void AllocateTrainingState::lstItemsLeftArrowClick(Action *action)
 		{
 			moveSoldierUp(action, row, true);
 		}
+		else if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
+		{
+			moveSoldierUp(action, row);
+		}
+		else if (action->getDetails()->button.button == SDL_BUTTON_WHEELDOWN)
+		{
+			moveSoldierDown(action, row);
+		}
 	}
 	_cbxSortBy->setText(tr("STR_SORT_BY"));
 	_cbxSortBy->setSelected(-1);
@@ -355,6 +363,14 @@ void AllocateTrainingState::lstItemsRightArrowClick(Action *action)
 		else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 		{
 			moveSoldierDown(action, row, true);
+		}
+		else if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
+		{
+			moveSoldierUp(action, row);
+		}
+		else if (action->getDetails()->button.button == SDL_BUTTON_WHEELDOWN)
+		{
+			moveSoldierDown(action, row);
 		}
 	}
 	_cbxSortBy->setText(tr("STR_SORT_BY"));
