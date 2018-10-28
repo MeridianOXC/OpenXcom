@@ -649,6 +649,7 @@ void Inventory::mouseOver(Action *action, State *state)
  */
 void Inventory::mouseClick(Action *action, State *state)
 {
+	bool replaceAction = false;
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
 		if (_selUnit == 0)
@@ -752,6 +753,7 @@ void Inventory::mouseClick(Action *action, State *state)
 						}
 					}
 				}
+				replaceAction = true;
 			}
 		}
 		// Drop item
@@ -881,6 +883,7 @@ void Inventory::mouseClick(Action *action, State *state)
 					}
 				}
 				// else swap the item positions?
+				replaceAction = true;
 			}
 			else
 			{
@@ -906,6 +909,7 @@ void Inventory::mouseClick(Action *action, State *state)
 							_warning->showMessage(_game->getLanguage()->getString("STR_NOT_ENOUGH_TIME_UNITS"));
 						}
 					}
+					replaceAction = true;
 				}
 			}
 		}
@@ -955,6 +959,7 @@ void Inventory::mouseClick(Action *action, State *state)
 								}
 							}
 						}
+						replaceAction = true;
 					}
 				}
 				else
@@ -971,6 +976,7 @@ void Inventory::mouseClick(Action *action, State *state)
 			}
 			// Return item to original position
 			setSelectedItem(0);
+			replaceAction = true;
 		}
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
@@ -991,11 +997,23 @@ void Inventory::mouseClick(Action *action, State *state)
 			if (item != 0)
 			{
 				std::string articleId = item->getRules()->getType();
+				replaceAction = true;
 				Ufopaedia::openArticle(_game, articleId);
 			}
 		}
 	}
 	InteractiveSurface::mouseClick(action, state);
+	if (replaceAction) {
+		//replace the current action click by a mouse move(?)
+		SDL_Event *pev = action->getDetails(), ev = *pev;
+		pev->type = SDL_MOUSEMOTION;
+		pev->motion.which = ev.button.which;
+		pev->motion.state = ev.button.state;
+		pev->motion.x = ev.button.x;
+		pev->motion.y = ev.button.y;
+		pev->motion.xrel = 0;
+		pev->motion.yrel = 0;
+	}
 }
 
 /**
