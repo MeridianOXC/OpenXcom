@@ -649,6 +649,7 @@ void Inventory::mouseOver(Action *action, State *state)
  */
 void Inventory::mouseClick(Action *action, State *state)
 {
+	bool replaceAction = false;
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
 		if (_selUnit == 0)
@@ -752,6 +753,7 @@ void Inventory::mouseClick(Action *action, State *state)
 						}
 					}
 				}
+				replaceAction = true;
 			}
 		}
 		// Drop item
@@ -908,6 +910,7 @@ void Inventory::mouseClick(Action *action, State *state)
 					}
 				}
 			}
+			replaceAction = true;
 		}
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
@@ -955,6 +958,7 @@ void Inventory::mouseClick(Action *action, State *state)
 								}
 							}
 						}
+						replaceAction = true;
 					}
 				}
 				else
@@ -971,6 +975,7 @@ void Inventory::mouseClick(Action *action, State *state)
 			}
 			// Return item to original position
 			setSelectedItem(0);
+			replaceAction = true;
 		}
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
@@ -996,6 +1001,18 @@ void Inventory::mouseClick(Action *action, State *state)
 		}
 	}
 	InteractiveSurface::mouseClick(action, state);
+	//"consume" the action if needed
+	if (replaceAction) {
+		//replace the current action click by a mouse "move" delta 0
+		SDL_Event *pev = action->getDetails(), ev = *pev;
+		pev->type = SDL_MOUSEMOTION;
+		pev->motion.which = ev.button.which;
+		pev->motion.state = ev.button.state;
+		pev->motion.x = ev.button.x;
+		pev->motion.y = ev.button.y;
+		pev->motion.xrel = 0;
+		pev->motion.yrel = 0;
+	}
 }
 
 /**
