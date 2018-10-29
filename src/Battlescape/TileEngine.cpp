@@ -831,7 +831,7 @@ void TileEngine::calculateTilesInFOV(BattleUnit *unit, const Position eventPos, 
 	}
 	else
 	{
-		direction = unit->getDirection();
+		direction = Pathfinding::horizontalDirection(unit->getDirection());
 	}
 	if (unit->getFaction() != FACTION_PLAYER || (eventRadius == 1 && !unit->checkViewSector(eventPos, useTurretDirection)))
 	{
@@ -2911,14 +2911,15 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 	int direction;
 	Pathfinding::vectorToDirection(endPos - startPos, direction);
 	if (direction == -1) return 0;
+	direction = Pathfinding::horizontalDirection(direction);
 	int block = 0;
 
 	switch(direction)
 	{
-	case 0:	// north
+	case Pathfinding::DIR_HN:	// north
 		block = blockage(startTile, O_NORTHWALL, type);
 		break;
-	case 1: // north east
+	case Pathfinding::DIR_HNE: // north east
 		if (type == DT_NONE) //this is two-way diagonal visibility check, used in original game
 		{
 			block = blockage(startTile, O_NORTHWALL, type) + blockage(endTile, O_WESTWALL, type); //up+right
@@ -2947,10 +2948,10 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 				+ blockage(tmpTile, O_OBJECT, type, 6))/2;
 		}
 		break;
-	case 2: // east
+	case Pathfinding::DIR_HE: // east
 		block = blockage(endTile, O_WESTWALL, type);
 		break;
-	case 3: // south east
+	case Pathfinding::DIR_HSE: // south east
 		if (type == DT_NONE)
 		{
 			tmpTile = _save->getTile(startPos + oneTileSouth);
@@ -2976,10 +2977,10 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 				+ blockage(_save->getTile(startPos + oneTileEast), O_OBJECT, type, 6))/2;
 		}
 		break;
-	case 4: // south
+	case Pathfinding::DIR_HS: // south
 		block = blockage(endTile,O_NORTHWALL, type);
 		break;
-	case 5: // south west
+	case Pathfinding::DIR_HSW: // south west
 		if (type == DT_NONE)
 		{
 			tmpTile = _save->getTile(startPos + oneTileSouth);
@@ -3004,10 +3005,10 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 				+ blockage(_save->getTile(startPos + oneTileWest),O_OBJECT, type, 2))/2;
 		}
 		break;
-	case 6: // west
+	case Pathfinding::DIR_HW: // west
 		block = blockage(startTile,O_WESTWALL, type);
 		break;
-	case 7: // north west
+	case Pathfinding::DIR_HNW: // north west
 
 		if (type == DT_NONE)
 		{
@@ -3046,9 +3047,9 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 
 		//if (skipObject) return block;
 
-		direction += 4;
-		if (direction > 7)
-			direction -= 8;
+		direction += Pathfinding::DIR_FULL_HTURN;
+		if (direction >= Pathfinding::DIR_UP)
+			direction -= Pathfinding::DIR_UP;
 		if (endTile->isBigWall())
 			block += blockage(endTile,O_OBJECT, type, direction, true);
 	}
@@ -3056,9 +3057,9 @@ int TileEngine::horizontalBlockage(Tile *startTile, Tile *endTile, ItemDamageTyp
 	{
 		if ( block <= 127 )
 		{
-			direction += 4;
-			if (direction > 7)
-				direction -= 8;
+			direction += Pathfinding::DIR_FULL_HTURN;
+			if (direction >= Pathfinding::DIR_UP)
+				direction -= Pathfinding::DIR_UP;
 			if (blockage(endTile,O_OBJECT, type, direction, true) > 127){
 				return -1; //hit bigwall, reveal bigwall tile
 			}
@@ -3098,9 +3099,9 @@ int TileEngine::blockage(Tile *tile, const TilePart part, ItemDamageType type, i
 			{
 				check = false;
 			}
-			switch (direction)
+			switch (Pathfinding::horizontalDirection(direction))
 			{
-			case 0: // north
+			case Pathfinding::DIR_HN: // north
 				if (wall == Pathfinding::BIGWALLWEST ||
 					wall == Pathfinding::BIGWALLEAST ||
 					wall == Pathfinding::BIGWALLSOUTH ||
@@ -3109,14 +3110,14 @@ int TileEngine::blockage(Tile *tile, const TilePart part, ItemDamageType type, i
 					check = false;
 				}
 				break;
-			case 1: // north east
+			case Pathfinding::DIR_HNE: // north east
 				if (wall == Pathfinding::BIGWALLWEST ||
 					wall == Pathfinding::BIGWALLSOUTH)
 				{
 					check = false;
 				}
 				break;
-			case 2: // east
+			case Pathfinding::DIR_HE: // east
 				if (wall == Pathfinding::BIGWALLNORTH ||
 					wall == Pathfinding::BIGWALLSOUTH ||
 					wall == Pathfinding::BIGWALLWEST ||
@@ -3125,7 +3126,7 @@ int TileEngine::blockage(Tile *tile, const TilePart part, ItemDamageType type, i
 					check = false;
 				}
 				break;
-			case 3: // south east
+			case Pathfinding::DIR_HSE: // south east
 				if (wall == Pathfinding::BIGWALLNORTH ||
 					wall == Pathfinding::BIGWALLWEST ||
 					wall == Pathfinding::BIGWALLWESTANDNORTH)
@@ -3133,7 +3134,7 @@ int TileEngine::blockage(Tile *tile, const TilePart part, ItemDamageType type, i
 					check = false;
 				}
 				break;
-			case 4: // south
+			case Pathfinding::DIR_HS: // south
 				if (wall == Pathfinding::BIGWALLWEST ||
 					wall == Pathfinding::BIGWALLEAST ||
 					wall == Pathfinding::BIGWALLNORTH ||
@@ -3142,14 +3143,14 @@ int TileEngine::blockage(Tile *tile, const TilePart part, ItemDamageType type, i
 					check = false;
 				}
 				break;
-			case 5: // south west
+			case Pathfinding::DIR_HSW: // south west
 				if (wall == Pathfinding::BIGWALLNORTH ||
 					wall == Pathfinding::BIGWALLEAST)
 				{
 					check = false;
 				}
 				break;
-			case 6: // west
+			case Pathfinding::DIR_HW: // west
 				if (wall == Pathfinding::BIGWALLNORTH ||
 					wall == Pathfinding::BIGWALLSOUTH ||
 					wall == Pathfinding::BIGWALLEAST ||
@@ -3158,7 +3159,7 @@ int TileEngine::blockage(Tile *tile, const TilePart part, ItemDamageType type, i
 					check = false;
 				}
 				break;
-			case 7: // north west
+			case Pathfinding::DIR_HNW: // north west
 				if (wall == Pathfinding::BIGWALLSOUTH ||
 					wall == Pathfinding::BIGWALLEAST ||
 					wall == Pathfinding::BIGWALLEASTANDSOUTH)
@@ -3166,15 +3167,13 @@ int TileEngine::blockage(Tile *tile, const TilePart part, ItemDamageType type, i
 					check = false;
 				}
 				break;
-			case 8: // up
-			case 9: // down
-				if (wall != 0 && wall != Pathfinding::BLOCK)
-				{
-					check = false;
-				}
-				break;
 			default:
 				break;
+			}
+			//if not pure horizontal direction, be conservative,apply former vertical restrictions
+			if (direction != Pathfinding::horizontalDirection(direction) && wall != 0 && wall != Pathfinding::BLOCK)
+			{
+				check = false;
 			}
 		}
 		else if (part == O_FLOOR &&
@@ -4256,7 +4255,8 @@ bool TileEngine::validMeleeRange(BattleUnit *attacker, BattleUnit *target, int d
  */
 bool TileEngine::validMeleeRange(Position pos, int direction, BattleUnit *attacker, BattleUnit *target, Position *dest, bool preferEnemy)
 {
-	if (direction < 0 || direction > 7)
+	int dir = Pathfinding::horizontalDirection(direction);
+	if (dir < 0 || dir >= Pathfinding::DIR_UP)
 	{
 		return false;
 	}
@@ -4264,7 +4264,7 @@ bool TileEngine::validMeleeRange(Position pos, int direction, BattleUnit *attack
 	BattleUnit *chosenTarget = 0;
 	Position p;
 	int size = attacker->getArmor()->getSize() - 1;
-	Pathfinding::directionToVector(direction, &p);
+	Pathfinding::directionToVector(dir, &p);
 	for (int x = 0; x <= size; ++x)
 	{
 		for (int y = 0; y <= size; ++y)
