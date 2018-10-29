@@ -205,6 +205,7 @@ void create()
 	_info.push_back(OptionInfo("skipNextTurnScreen", &skipNextTurnScreen, false, "STR_SKIPNEXTTURNSCREEN", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("noAlienPanicMessages", &noAlienPanicMessages, false, "STR_NOALIENPANICMESSAGES", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo("alienBleeding", &alienBleeding, false, "STR_ALIENBLEEDING", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo("threeDFlight", &threeDFlight, false, "STR_3DFLIGHT", "STR_BATTLESCAPE"));
 
 	// OXCE+
 	_info.push_back(OptionInfo("twoHandedIndicator", &twoHandedIndicator, true, "STR_TWO_HANDED_INDICATOR", "STR_OXCE"));
