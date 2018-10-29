@@ -224,11 +224,12 @@ bool Pathfinding::aStarPath(Position startPosition, Position endPosition, Battle
 		}
 
 		// Try all reachable neighbours.
-		for (int direction = 0; direction < 10; direction++)
+		int maxDir = (Options::threeDFlight ? DIR_TOTAL : DIR_DN);
+		for (int direction = DIR_HN; direction < maxDir; direction = nextDirection(direction))
 		{
 			Position nextPos;
 			int tuCost = getTUCost(currentPos, direction, &nextPos, _unit, target, missile);
-			if (tuCost >= 255) // Skip unreachable / blocked
+			if (tuCost >= FORBID_MOVE) // Skip unreachable / blocked
 				continue;
 			if (sneak && _save->getTile(nextPos)->getVisible()) tuCost *= 2; // avoid being seen
 			PathfindingNode *nextNode = getNode(nextPos);
@@ -257,7 +258,7 @@ bool Pathfinding::aStarPath(Position startPosition, Position endPosition, Battle
  * @param unit The unit moving.
  * @param target The target unit.
  * @param missile Is this a guided missile?
- * @return TU cost or 255 if movement is impossible.
+ * @return TU cost or FORBID_MOVE if movement is impossible.
  */
 int Pathfinding::getTUCost(Position startPosition, int direction, Position *endPosition, BattleUnit *unit, BattleUnit *target, bool missile)
 {
@@ -286,12 +287,12 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 
 			// this means the destination is probably outside the map
 			if (startTile == 0 || destinationTile == 0)
-				return 255;
+				return FORBID_MOVE;
 			if (!x && !y && _movementType != MT_FLY && canFallDown(startTile, size+1))
 			{
 				if (direction != DIR_DOWN)
 				{
-					return 255; //cannot walk on air
+					return FORBID_MOVE; //cannot walk on air
 				}
 				else
 				{
@@ -302,9 +303,9 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 			{
 				// check if we can go this way
 				if (isBlocked(startTile, destinationTile, direction, target))
-					return 255;
+					return FORBID_MOVE;
 				if (startTile->getTerrainLevel() - destinationTile->getTerrainLevel() > 8)
-					return 255;
+					return FORBID_MOVE;
 			}
 
 			// this will later be used to re-cast the start tile again.
@@ -341,32 +342,29 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 				// 2 or more voxels poking into this tile = no go
 				if (belowDestination->getUnit()->getHeight() + belowDestination->getUnit()->getFloatHeight() - belowDestination->getTerrainLevel() > 26)
 				{
-					return 255;
+					return FORBID_MOVE;
 				}
 			}
 
 			// this means the destination is probably outside the map
 			if (!destinationTile)
-				return 255;
+				return FORBID_MOVE;
 
 			if (direction < DIR_UP && endPosition->z == startTile->getPosition().z)
 			{
 				// check if we can go this way
 				if (isBlocked(startTile, destinationTile, direction, target))
-					return 255;
+					return FORBID_MOVE;
 				if (startTile->getTerrainLevel() - destinationTile->getTerrainLevel() > 8)
-					return 255;
+					return FORBID_MOVE;
 			}
 			else if (direction >= DIR_UP && !fellDown)
 			{
 				// check if we can go up or down through gravlift or fly
-				if (validateUpDown(unit, startPosition + offset, direction, missile))
+				cost = costUpDown(unit, startPosition + offset, direction, missile);
+				if (cost == FORBID_MOVE)
 				{
-					cost = 8; // vertical movement by flying suit or grav lift
-				}
-				else
-				{
-					return 255;
+					return FORBID_MOVE;
 				}
 			}
 
@@ -387,21 +385,21 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 			{
 				// check if we can go this way
 				if (isBlocked(startTile, destinationTile, direction, target))
-					return 255;
+					return FORBID_MOVE;
 				if (startTile->getTerrainLevel() - destinationTile->getTerrainLevel() > 8)
-					return 255;
+					return FORBID_MOVE;
 			}
 
 			int wallcost = 0; // walking through rubble walls, but don't charge for walking diagonally through doors (which is impossible),
 							// they're a special case unto themselves, if we can walk past them diagonally, it means we can go around,
 							// as there is no wall blocking us.
-			if (direction == 0 || direction == 7 || direction == 1)
+			if (direction == DIR_HNW || direction == DIR_HN || direction == DIR_HNE)
 				wallcost += startTile->getTUCost(O_NORTHWALL, _movementType);
-			if (!fellDown && (direction == 2 || direction == 1 || direction == 3))
+			if (!fellDown && (direction == DIR_HNE || direction == DIR_HE || direction == DIR_HSE))
 				wallcost += destinationTile->getTUCost(O_WESTWALL, _movementType);
-			if (!fellDown && (direction == 4 || direction == 3 || direction == 5))
+			if (!fellDown && (direction == DIR_HSE || direction == DIR_HS || direction == DIR_HSW))
 				wallcost += destinationTile->getTUCost(O_NORTHWALL, _movementType);
-			if (direction == 6 || direction == 5 || direction == 7)
+			if (direction == DIR_HSW || direction == DIR_HW || direction == DIR_HNW)
 				wallcost += startTile->getTUCost(O_WESTWALL, _movementType);
 			// don't let tanks phase through doors.
 			if (x && y)
@@ -409,13 +407,13 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 				if ((destinationTile->getMapData(O_NORTHWALL) && destinationTile->getMapData(O_NORTHWALL)->isDoor()) ||
 					(destinationTile->getMapData(O_WESTWALL) && destinationTile->getMapData(O_WESTWALL)->isDoor()))
 				{
-					return 255;
+					return FORBID_MOVE;
 				}
 			}
 			// check if the destination tile can be walked over
 			if (isBlocked(destinationTile, O_FLOOR, target) || isBlocked(destinationTile, O_OBJECT, target))
 			{
-				return 255;
+				return FORBID_MOVE;
 			}
 
 			// if we don't want to fall down and there is no floor, we can't know the TUs so it's default to 4
@@ -495,20 +493,20 @@ int Pathfinding::getTUCost(Position startPosition, int direction, Position *endP
 		Tile *destinationTile = _save->getTile(*endPosition);
 		int tmpDirection = 7;
 		if (isBlocked(startTile, destinationTile, tmpDirection, target))
-			return 255;
+			return FORBID_MOVE;
 		if (!fellDown && abs(startTile->getTerrainLevel() - destinationTile->getTerrainLevel()) > 10)
-			return 255;
+			return FORBID_MOVE;
 		startTile = _save->getTile(*endPosition + Position(1,0,0));
 		destinationTile = _save->getTile(*endPosition + Position(0,1,0));
 		tmpDirection = 5;
 		if (isBlocked(startTile, destinationTile, tmpDirection, target))
-			return 255;
+			return FORBID_MOVE;
 		if (!fellDown && abs(startTile->getTerrainLevel() - destinationTile->getTerrainLevel()) > 10)
-			return 255;
+			return FORBID_MOVE;
 		// also check if we change level, that there are two parts changing level,
 		// so a big sized unit can not go up a small sized stairs
 		if (numberOfPartsChangingHeight == 1)
-			return 255;
+			return FORBID_MOVE;
 	}
 
 	if (missile)
@@ -651,7 +649,7 @@ bool Pathfinding::isBlocked(Tile *tile, const int part, BattleUnit *missileTarge
 	{
 		return true;
 	}}
-	if (tile->getTUCost(part, _movementType) == 255) return true; // blocking part
+	if (tile->getTUCost(part, _movementType) == FORBID_MOVE) return true; // blocking part
 	return false;
 }
 
@@ -663,7 +661,7 @@ bool Pathfinding::isBlocked(Tile *tile, const int part, BattleUnit *missileTarge
  * @param missileTarget Target for a missile.
  * @return True if the movement is blocked.
  */
-bool Pathfinding::isBlocked(Tile *startTile, Tile * /* endTile */, const int direction, BattleUnit *missileTarget)
+bool Pathfinding::isBlocked(Tile *startTile, Tile * /* endTile */, int direction, BattleUnit *missileTarget)
 {
 
 	// check if the difference in height between start and destination is not too high
@@ -836,51 +834,289 @@ bool Pathfinding::isOnStairs(Position startPosition, Position endPosition) const
 }
 
 /**
- * Checks, for the up/down button, if the movement is valid. Either there is a grav lift or the unit can fly and there are no obstructions.
+ * Checks, for a vertical or combo move, if the movement is valid. Either there is a grav lift or the unit can fly and there are no obstructions.
  * @param bu Pointer to unit.
  * @param startPosition Unit starting position.
  * @param direction Up or Down
- * @return bool Whether it's valid.
+ * @returns MAX_COST overflowing if impossible move or the movement cost
  */
-bool Pathfinding::validateUpDown(BattleUnit *bu, const Position& startPosition, const int direction, bool missile) const
+int Pathfinding::costUpDown(BattleUnit *bu, const Position& startPosition, int direction, bool missile) const
 {
 	Position endPosition;
 	directionToVector(direction, &endPosition);
 	endPosition += startPosition;
 	Tile *startTile = _save->getTile(startPosition);
-	Tile *belowStart = _save->getTile(startPosition + Position(0,0,-1));
 	Tile *destinationTile = _save->getTile(endPosition);
+	//pure vertical cost, vertical diagonal cost, and vertical horizontal diagonal cost determined by Pitagora the Greek
+	const int verticalCost = 8, verticalDiagonalCost = 9, verticalHorizontalDiagonalCost = 10;
 	if (startTile->getMapData(O_FLOOR) && destinationTile && destinationTile->getMapData(O_FLOOR) &&
-		(startTile->getMapData(O_FLOOR)->isGravLift() && destinationTile->getMapData(O_FLOOR)->isGravLift()))
+		startTile->getMapData(O_FLOOR)->isGravLift() && destinationTile->getMapData(O_FLOOR)->isGravLift() &&
+		(direction == DIR_UP || direction == DIR_DOWN))
 	{
 		if (missile)
 		{
 			if (direction == DIR_UP)
 			{
 				if (destinationTile->getMapData(O_FLOOR)->getLoftID(0) != 0)
-					return false;
+					return FORBID_MOVE;
 			}
 			else if (startTile->getMapData(O_FLOOR)->getLoftID(0) != 0)
 			{
-				return false;
+				return FORBID_MOVE;
 			}
 		}
-		return true;
+		return verticalCost;
 	}
 	else
 	{
 		if (bu->getMovementType() == MT_FLY)
 		{
-			if ((direction == DIR_UP && destinationTile && destinationTile->hasNoFloor(startTile)) // flying up only possible when there is no roof
-				|| (direction == DIR_DOWN && destinationTile && startTile->hasNoFloor(belowStart)) // falling down only possible when there is no floor
-				)
+			Tile *tadj1, *tadj2, *tadj3, *tadj4, *tadj5, *tadj6;
+			switch (direction)
 			{
-				return true;
+			case DIR_UP:
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR))
+					return verticalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_UN:
+				//destination tile and adjacent UP - no floors
+				//start tile and adjacent UP - no north wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					!startTile->getMapData(O_NORTHWALL) && !tadj1->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_UNE:
+				//destination tile, adjacent UP, adjacent UPNORTH and adjacent UPEAST - no floor
+				//destination tile, adjacent UPEAST, adjacent EAST and adjacent NE - no west wall
+				//start tile, adjacent UP, adjacent UPEAST and adjacent EAST - no north wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				tadj2 = getTile(startPosition, DIR_UN);
+				tadj3 = getTile(startPosition, DIR_UE);
+				tadj4 = getTile(startPosition, DIR_HE);
+				tadj5 = getTile(startPosition, DIR_HNE);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					tadj2 && !tadj2->getMapData(O_FLOOR) && tadj3 && !tadj3->getMapData(O_FLOOR) &&
+					!destinationTile->getMapData(O_WESTWALL) && !tadj3->getMapData(O_WESTWALL) &&
+					tadj4 && !tadj4->getMapData(O_WESTWALL) && tadj5 && !tadj5->getMapData(O_WESTWALL) &&
+					!startTile->getMapData(O_NORTHWALL) && !tadj1->getMapData(O_NORTHWALL) &&
+					!tadj3->getMapData(O_NORTHWALL) && !tadj4->getMapData(O_NORTHWALL))
+					return verticalHorizontalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_UE:
+				//destination tile and adjacent UP - no floors
+				//destination tile and adjacent EAST - no west wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				tadj2 = getTile(startPosition, DIR_HE);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					!destinationTile->getMapData(O_WESTWALL) && tadj2 && !tadj2->getMapData(O_WESTWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_USE:
+				//destination tile, adjacent UP, adjacent UPSOUTH and adjacent UPEAST - no floor
+				//destination tile, adjacent UPEAST, adjacent EAST and adjacent SE - no west wall
+				//destination tile, adjacent UPSOUTH, adjacent SOUTH and adjacent SE - no north wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				tadj2 = getTile(startPosition, DIR_US);
+				tadj3 = getTile(startPosition, DIR_UE);
+				tadj4 = getTile(startPosition, DIR_HE);
+				tadj5 = getTile(startPosition, DIR_HSE);
+				tadj6 = getTile(startPosition, DIR_HS);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					tadj2 && !tadj2->getMapData(O_FLOOR) && tadj3 && !tadj3->getMapData(O_FLOOR) &&
+					!destinationTile->getMapData(O_WESTWALL) && !tadj3->getMapData(O_WESTWALL) &&
+					tadj4 && !tadj4->getMapData(O_WESTWALL) && tadj5 && !tadj5->getMapData(O_WESTWALL) &&
+					!destinationTile->getMapData(O_NORTHWALL) && !tadj2->getMapData(O_NORTHWALL) &&
+					tadj6 && !tadj6->getMapData(O_NORTHWALL) && !tadj5->getMapData(O_NORTHWALL))
+					return verticalHorizontalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_US:
+				//destination tile and adjacent UP - no floors
+				//destination tile and adjacent SOUTH - no north wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				tadj2 = getTile(startPosition, DIR_HS);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					!destinationTile->getMapData(O_NORTHWALL) && tadj2 && !tadj2->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_USW:
+				//destination tile, adjacent UP, adjacent UPSOUTH and adjacent UPWEST - no floor
+				//start tile, adjacent UP, adjacent SOUTH and adjacent US - no west wall
+				//destination tile, adjacent UPSOUTH, adjacent SOUTH and adjacent SW - no north wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				tadj2 = getTile(startPosition, DIR_US);
+				tadj3 = getTile(startPosition, DIR_UW);
+				tadj4 = getTile(startPosition, DIR_HS);
+				tadj5 = getTile(startPosition, DIR_HSW);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					tadj2 && !tadj2->getMapData(O_FLOOR) && tadj3 && !tadj3->getMapData(O_FLOOR) &&
+					!startTile->getMapData(O_WESTWALL) && !tadj1->getMapData(O_WESTWALL) &&
+					tadj4 && !tadj4->getMapData(O_WESTWALL) && !tadj2->getMapData(O_WESTWALL) &&
+					!destinationTile->getMapData(O_NORTHWALL) && !tadj2->getMapData(O_NORTHWALL) &&
+					!tadj4->getMapData(O_NORTHWALL) && tadj5 && !tadj5->getMapData(O_NORTHWALL))
+					return verticalHorizontalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_UW:
+				//destination tile and adjacent UP - no floors
+				//start tile and adjacent UP - no west wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					!destinationTile->getMapData(O_WESTWALL) && !tadj1->getMapData(O_WESTWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_UNW:
+				//destination tile, adjacent UP, adjacent UPNORTH and adjacent UPWEST - no floor
+				//start tile, adjacent UP, adjacent NORTH and adjacent UPNORTH - no west wall
+				//start tile, adjacent WEST, adjacent UP and adjacent UPWEST - no north wall
+				tadj1 = getTile(startPosition, DIR_UP);
+				tadj2 = getTile(startPosition, DIR_UN);
+				tadj3 = getTile(startPosition, DIR_UW);
+				tadj4 = getTile(startPosition, DIR_HN);
+				tadj5 = getTile(startPosition, DIR_HW);
+				if (destinationTile && !destinationTile->getMapData(O_FLOOR) && tadj1 && !tadj1->getMapData(O_FLOOR) &&
+					tadj2 && !tadj2->getMapData(O_FLOOR) && tadj3 && !tadj3->getMapData(O_FLOOR) &&
+					!startTile->getMapData(O_WESTWALL) && !tadj1->getMapData(O_WESTWALL) &&
+					tadj4 && !tadj4->getMapData(O_WESTWALL) && !tadj2->getMapData(O_WESTWALL) &&
+					!startTile->getMapData(O_NORTHWALL) && !tadj1->getMapData(O_NORTHWALL) &&
+					!tadj2->getMapData(O_NORTHWALL) && tadj5 && !tadj5->getMapData(O_NORTHWALL))
+					return verticalHorizontalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DOWN:
+				if (destinationTile && startTile->hasNoFloor(destinationTile))
+					return verticalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DN:
+				//start tile and adjacent NORTH - no floors - need adjacent DOWN and destination
+				//start tile and adjacent DOWN - no north wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HN);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && destinationTile && tadj2->hasNoFloor(destinationTile) &&
+					!startTile->getMapData(O_NORTHWALL) && !tadj1->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DNE:
+				//start tile, adjacent NORTH, adjacent NE and adjacent EAST - no floor - need adjacent DOWN, DOWNNORTH, destination, DOWNEAST
+				//destination tile, adjacent DOWNEAST, adjacent EAST and adjacent NE - no west wall
+				//start tile, adjacent DOWN, adjacent DOWNEAST and adjacent EAST - no north wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HN);
+				tadj3 = getTile(startPosition, DIR_DN);
+				tadj4 = getTile(startPosition, DIR_HNE);
+				tadj5 = getTile(startPosition, DIR_HE);
+				tadj6 = getTile(startPosition, DIR_DE);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && tadj3 && tadj2->hasNoFloor(tadj3) &&
+					tadj4 && destinationTile && tadj4->hasNoFloor(destinationTile) && tadj5 && tadj6 && tadj5->hasNoFloor(tadj6) &&
+					!destinationTile->getMapData(O_WESTWALL) && !tadj6->getMapData(O_WESTWALL) &&
+					!tadj4->getMapData(O_WESTWALL) && !tadj5->getMapData(O_WESTWALL) &&
+					!startTile->getMapData(O_NORTHWALL) && !tadj1->getMapData(O_NORTHWALL) &&
+					!tadj6->getMapData(O_NORTHWALL) && !tadj5->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DE:
+				//start tile and adjacent EAST - no floors - need adjacent DOWN and destination
+				//destination tile and adjacent EAST - no west wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HE);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && destinationTile && tadj2->hasNoFloor(destinationTile) &&
+					!destinationTile->getMapData(O_WESTWALL) && !tadj2->getMapData(O_WESTWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DSE:
+				//start tile, adjacent SOUTH, adjacent SE and adjacent EAST - no floor - need adjacent DOWN, DOWNSOUTH, destination, DOWNEAST
+				//destination tile, adjacent DOWNEAST, adjacent EAST and adjacent SE - no west wall
+				//destination tile, adjacent DOWNSOUTH, adjacent SE and adjacent SOUTH - no north wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HS);
+				tadj3 = getTile(startPosition, DIR_DS);
+				tadj4 = getTile(startPosition, DIR_HSE);
+				tadj5 = getTile(startPosition, DIR_HE);
+				tadj6 = getTile(startPosition, DIR_DE);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && tadj3 && tadj2->hasNoFloor(tadj3) &&
+					tadj4 && destinationTile && tadj4->hasNoFloor(destinationTile) && tadj5 && tadj6 && tadj5->hasNoFloor(tadj6) &&
+					!destinationTile->getMapData(O_WESTWALL) && !tadj6->getMapData(O_WESTWALL) &&
+					!tadj4->getMapData(O_WESTWALL) && !tadj5->getMapData(O_WESTWALL) &&
+					!destinationTile->getMapData(O_NORTHWALL) && !tadj3->getMapData(O_NORTHWALL) &&
+					!tadj4->getMapData(O_NORTHWALL) && !tadj2->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DS:
+				//start tile and adjacent SOUTH - no floors - need adjacent DOWN and destination
+				//destination tile and adjacent SOUTH - no north wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HS);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && destinationTile && tadj2->hasNoFloor(destinationTile) &&
+					!destinationTile->getMapData(O_NORTHWALL) && !tadj2->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DSW:
+				//start tile, adjacent SOUTH, adjacent SW and adjacent WEST - no floor - need adjacent DOWN, DOWNSOUTH, destination, DOWNWEST
+				//start tile, adjacent DOWN, adjacent SOUTH and adjacent DOWNSOUTH - no west wall
+				//destination tile, adjacent DOWNSOUTH, adjacent SW and adjacent SOUTH - no north wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HS);
+				tadj3 = getTile(startPosition, DIR_DS);
+				tadj4 = getTile(startPosition, DIR_HSW);
+				tadj5 = getTile(startPosition, DIR_HW);
+				tadj6 = getTile(startPosition, DIR_DW);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && tadj3 && tadj2->hasNoFloor(tadj3) &&
+					tadj4 && destinationTile && tadj4->hasNoFloor(destinationTile) && tadj5 && tadj6 && tadj5->hasNoFloor(tadj6) &&
+					!startTile->getMapData(O_WESTWALL) && !tadj1->getMapData(O_WESTWALL) &&
+					!tadj2->getMapData(O_WESTWALL) && !tadj3->getMapData(O_WESTWALL) &&
+					!destinationTile->getMapData(O_NORTHWALL) && !tadj3->getMapData(O_NORTHWALL) &&
+					!tadj4->getMapData(O_NORTHWALL) && !tadj2->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DW:
+				//start tile and adjacent WEST - no floors - need adjacent DOWN and destination
+				//starting tile and adjacent DOWN - no west wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HW);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && destinationTile && tadj2->hasNoFloor(destinationTile) &&
+					!startTile->getMapData(O_WESTWALL) && !tadj1->getMapData(O_WESTWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			case DIR_DNW:
+				//start tile, adjacent NORTH, adjacent NW and adjacent WEST - no floor - need adjacent DOWN, DOWNNORTH, destination, DOWNWEST
+				//start tile, adjacent DOWN, adjacent NORTH and adjacent DOWNNORTH - no west wall
+				//start tile, adjacent DOWN, adjacent WEST and adjacent DOWNWEST - no north wall
+				tadj1 = getTile(startPosition, DIR_DOWN);
+				tadj2 = getTile(startPosition, DIR_HN);
+				tadj3 = getTile(startPosition, DIR_DN);
+				tadj4 = getTile(startPosition, DIR_HNW);
+				tadj5 = getTile(startPosition, DIR_HW);
+				tadj6 = getTile(startPosition, DIR_DW);
+				if (tadj1 && startTile->hasNoFloor(tadj1) && tadj2 && tadj3 && tadj2->hasNoFloor(tadj3) &&
+					tadj4 && destinationTile && tadj4->hasNoFloor(destinationTile) && tadj5 && tadj6 && tadj5->hasNoFloor(tadj6) &&
+					!startTile->getMapData(O_WESTWALL) && !tadj1->getMapData(O_WESTWALL) &&
+					!tadj2->getMapData(O_WESTWALL) && !tadj3->getMapData(O_WESTWALL) &&
+					!startTile->getMapData(O_NORTHWALL) && !tadj1->getMapData(O_NORTHWALL) &&
+					!tadj5->getMapData(O_NORTHWALL) && !tadj6->getMapData(O_NORTHWALL))
+					return verticalDiagonalCost;
+				else
+					return FORBID_MOVE;
+			default:
+				return FORBID_MOVE;
 			}
 		}
 	}
-
-	return false;
+	return FORBID_MOVE;
 }
 
 /**
@@ -950,7 +1186,10 @@ bool Pathfinding::previewPath(bool bRemove)
 					else
 					{
 						int nextDir = *(i + 1);
-						tile->setPreview(nextDir);
+						if (nextDir == DIR_UP || nextDir == DIR_DOWN)
+							tile->setPreview(nextDir);
+						else
+							tile->setPreview(horizontalDirection(nextDir));
 					}
 					if ((x && y) || size == 0)
 					{
@@ -1083,7 +1322,7 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleUnit *ta
 			bool isDiagonal = (dir&1);
 			int lastTUCostDiagonal = lastTUCost + lastTUCost / 2;
 			int tuCostDiagonal = tuCost + tuCost / 2;
-			if (nextPoint == realNextPoint && tuCost < 255 && (tuCost == lastTUCost || (isDiagonal && tuCost == lastTUCostDiagonal) || (!isDiagonal && tuCostDiagonal == lastTUCost) || lastTUCost == -1)
+			if (nextPoint == realNextPoint && tuCost < FORBID_MOVE && (tuCost == lastTUCost || (isDiagonal && tuCost == lastTUCostDiagonal) || (!isDiagonal && tuCostDiagonal == lastTUCost) || lastTUCost == -1)
 				&& !isBlocked(_save->getTile(lastPoint), _save->getTile(nextPoint), dir, targetUnit))
 			{
 				_path.push_back(dir);
@@ -1092,7 +1331,7 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleUnit *ta
 			{
 				return false;
 			}
-			if (targetUnit == 0 && tuCost != 255)
+			if (targetUnit == 0 && tuCost != FORBID_MOVE)
 			{
 				lastTUCost = tuCost;
 				_totalTUCost += tuCost;
@@ -1148,11 +1387,13 @@ std::vector<int> Pathfinding::findReachable(BattleUnit *unit, const BattleAction
 		Position const &currentPos = currentNode->getPosition();
 
 		// Try all reachable neighbours.
-		for (int direction = 0; direction < 10; direction++)
+		// 3d diagonal protected by option
+		int maxDir = (Options::threeDFlight ? DIR_TOTAL : DIR_DN);
+		for (int direction = DIR_HN; direction < maxDir; direction = nextDirection(direction))
 		{
 			Position nextPos;
 			int tuCost = getTUCost(currentPos, direction, &nextPos, unit, 0, false);
-			if (tuCost == 255) // Skip unreachable / blocked
+			if (tuCost == FORBID_MOVE) // Skip unreachable / blocked
 				continue;
 			if (currentNode->getTUCost(false) + tuCost > tuMax ||
 				(currentNode->getTUCost(false) + tuCost) / 2 > energyMax) // Run out of TUs/Energy
