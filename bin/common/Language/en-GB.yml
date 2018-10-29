@@ -411,3 +411,5 @@ en-GB:
   STR_THROWING_ACCURACY_ABBREVIATION: "THR"
   STR_STRENGTH_ABBREVIATION: "STR"
   STR_MELEE_ACCURACY_ABBREVIATION: "MEL"
+  STR_3DFLIGHT: "Hovering units full 3D flight"
+  STR_3DFLIGHT_DESC: "Enables full 3D flight (vertical + horizontal simultaneously) for hovering units"
