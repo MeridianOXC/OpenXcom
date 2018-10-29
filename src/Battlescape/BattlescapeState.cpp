@@ -37,6 +37,7 @@
 #include "MiniMapState.h"
 #include "BattlescapeGenerator.h"
 #include "BriefingState.h"
+#include "Pathfinding.h"
 #include "../lodepng.h"
 #include "../fmath.h"
 #include "../Geoscape/SelectMusicTrackState.h"
@@ -1004,7 +1005,7 @@ void BattlescapeState::mapIn(Action *)
  */
 void BattlescapeState::btnUnitUpClick(Action *)
 {
-	if (playableUnitSelected() && _save->getPathfinding()->validateUpDown(_save->getSelectedUnit(), _save->getSelectedUnit()->getPosition(), Pathfinding::DIR_UP))
+	if (playableUnitSelected() && _save->getPathfinding()->costUpDown(_save->getSelectedUnit(), _save->getSelectedUnit()->getPosition(), Pathfinding::DIR_UP)<Pathfinding::FORBID_MOVE)
 	{
 		_battleGame->cancelCurrentAction();
 		_battleGame->moveUpDown(_save->getSelectedUnit(), Pathfinding::DIR_UP);
@@ -1017,7 +1018,7 @@ void BattlescapeState::btnUnitUpClick(Action *)
  */
 void BattlescapeState::btnUnitDownClick(Action *)
 {
-	if (playableUnitSelected() && _save->getPathfinding()->validateUpDown(_save->getSelectedUnit(), _save->getSelectedUnit()->getPosition(), Pathfinding::DIR_DOWN))
+	if (playableUnitSelected() && _save->getPathfinding()->costUpDown(_save->getSelectedUnit(), _save->getSelectedUnit()->getPosition(), Pathfinding::DIR_DOWN)<Pathfinding::FORBID_MOVE)
 	{
 		_battleGame->cancelCurrentAction();
 		_battleGame->moveUpDown(_save->getSelectedUnit(), Pathfinding::DIR_DOWN);
@@ -2406,7 +2407,7 @@ void BattlescapeState::saveAIMap()
 			r.x = x * r.w;
 			r.y = y * r.h;
 
-			if (t->getTUCost(O_FLOOR, MT_FLY) != 255 && t->getTUCost(O_OBJECT, MT_FLY) != 255)
+			if (t->getTUCost(O_FLOOR, MT_FLY) != Pathfinding::FORBID_MOVE && t->getTUCost(O_OBJECT, MT_FLY) != Pathfinding::FORBID_MOVE)
 			{
 				SDL_FillRect(img, &r, SDL_MapRGB(img->format, 255, 0, 0x20));
 				characterRGBA(img, r.x, r.y,'*' , 0x7f, 0x7f, 0x7f, 0x7f);
@@ -2441,12 +2442,12 @@ void BattlescapeState::saveAIMap()
 				if (z > 0 && !t->hasNoFloor(_save->getTile(pos))) break; // no seeing through floors
 			}
 
-			if (t->getMapData(O_NORTHWALL) && t->getMapData(O_NORTHWALL)->getTUCost(MT_FLY) == 255)
+			if (t->getMapData(O_NORTHWALL) && t->getMapData(O_NORTHWALL)->getTUCost(MT_FLY) == Pathfinding::FORBID_MOVE)
 			{
 				lineRGBA(img, r.x, r.y, r.x+r.w, r.y, 0x50, 0x50, 0x50, 255);
 			}
 
-			if (t->getMapData(O_WESTWALL) && t->getMapData(O_WESTWALL)->getTUCost(MT_FLY) == 255)
+			if (t->getMapData(O_WESTWALL) && t->getMapData(O_WESTWALL)->getTUCost(MT_FLY) == Pathfinding::FORBID_MOVE)
 			{
 				lineRGBA(img, r.x, r.y, r.x, r.y+r.h, 0x50, 0x50, 0x50, 255);
 			}
