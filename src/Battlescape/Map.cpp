@@ -937,9 +937,10 @@ void Map::drawTerrain(Surface *surface)
 
 								for (int i = begin; i != end; i += direction)
 								{
-									tmpSurface = _projectileSet->getFrame(_projectile->getParticle(i));
-									if (tmpSurface)
+									Surface *ts = _projectileSet->getFrame(_projectile->getParticle(i));
+									if (ts)
 									{
+										tmpSurface = ts;
 										Position voxelPos = _projectile->getPosition(1-i);
 										// draw shadow on the floor
 										voxelPos.z = _save->getTileEngine()->castedShade(voxelPos);
