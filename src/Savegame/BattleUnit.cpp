@@ -2260,8 +2260,8 @@ bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
  */
 bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip, bool allowAutoLoadout, bool allowUnloadedWeapons)
 {
-	RuleInventory *rightHand = mod->getInventory("STR_RIGHT_HAND");
-	RuleInventory *leftHand = mod->getInventory("STR_LEFT_HAND");
+	RuleInventory *rightHand = mod->getInventory(_armor->getDefaultInventoryMap("STR_RIGHT_HAND"));
+	RuleInventory *leftHand = mod->getInventory(_armor->getDefaultInventoryMap("STR_LEFT_HAND"));
 	bool placed = false;
 	bool loaded = false;
 	const RuleItem *rule = item->getRules();
@@ -2414,7 +2414,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		{
 			if (getBaseStats()->strength >= weight) // weight is always considered 0 for aliens
 			{
-				for (const std::string &s : mod->getInvsList())
+				for (const std::string &s : _armor->getInventorySlots())
 				{
 					RuleInventory *slot = mod->getInventory(s);
 					if (slot->getType() == INV_SLOT)
@@ -2541,7 +2541,7 @@ Tile *BattleUnit::getTile() const
  * @param y Y position in slot.
  * @return Item in the slot, or NULL if none.
  */
-BattleItem *BattleUnit::getItem(RuleInventory *slot, int x, int y) const
+BattleItem *BattleUnit::getItem(const RuleInventory *slot, int x, int y) const
 {
 	// Soldier items
 	if (slot->getType() != INV_GROUND)
@@ -2719,7 +2719,7 @@ BattleItem *BattleUnit::getRightHandWeapon() const
 	for (auto i : _inventory)
 	{
 		auto slot = i->getSlot();
-		if (slot && slot->isRightHand())
+		if (slot && _armor->getDefaultInventoryMap("STR_RIGHT_HAND") == slot->getId())
 		{
 			return i;
 		}
@@ -2736,7 +2736,7 @@ BattleItem *BattleUnit::getLeftHandWeapon() const
 	for (auto i : _inventory)
 	{
 		auto slot = i->getSlot();
-		if (slot && slot->isLeftHand())
+		if (slot && _armor->getDefaultInventoryMap("STR_LEFT_HAND") == slot->getId())
 		{
 			return i;
 		}
