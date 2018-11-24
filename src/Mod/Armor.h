@@ -76,17 +76,21 @@ private:
 	RuleStatBonus _timeRecovery, _energyRecovery, _moraleRecovery, _healthRecovery, _stunRecovery;
 	ModScript::BattleUnitScripts::Container _battleUnitScripts;
 
-	std::vector<std::string> _units;
 	ScriptValues<Armor> _scriptValues;
 	std::vector<int> _customArmorPreviewIndex;
 	bool _allowsRunning, _allowsStrafing, _allowsKneeling, _allowsMoving;
 	bool _instantWoundRecovery;
 	int _standHeight, _kneelHeight, _floatHeight;
+	std::vector<std::string> _units, _inventorySlots;
+	std::map<std::string, std::string> _defaultInventoriesMap;
+	bool _inventoryOverlapsPaperdoll;
 public:
 	/// Creates a blank armor ruleset.
 	Armor(const std::string &type);
 	/// Cleans up the armor ruleset.
 	~Armor();
+	/// Cross link with other rules.
+	void afterLoad(const Mod* mod);
 	/// Loads the armor data from YAML.
 	void load(const YAML::Node& node, const ModScript& parsers, Mod *mod);
 	/// Gets the armor's type.
@@ -255,6 +259,12 @@ public:
 	int getKneelHeight() const;
 	/// Gets a unit's float elevation while wearing this armor.
 	int getFloatHeight() const;
+	/// Gets the armor's inventory slots.
+	const std::vector<std::string> &getInventorySlots() const;
+	/// Gets the default inventory rules mapping
+	std::string getDefaultInventoryMap(std::string s) const;
+	/// Inventory overlaps paperdoll
+	bool inventoryOverlapsPaperdoll() const;
 };
 
 }
