@@ -98,7 +98,7 @@ Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base)
 			}
 		}
 	}
-
+	//set some preload defaults
 	_inventorySlotRightHand = _game->getMod()->getInventory("STR_RIGHT_HAND", true);
 	_inventorySlotLeftHand = _game->getMod()->getInventory("STR_LEFT_HAND", true);
 	_inventorySlotBackPack = _game->getMod()->getInventory("STR_BACK_PACK", true);
@@ -164,9 +164,15 @@ void Inventory::setSelectedUnit(BattleUnit *unit)
 	_selUnit = unit;
 	_groundOffset = 999;
 	arrangeGround(1);
+	const Armor *a = _selUnit->getArmor();
+	_inventorySlotRightHand = _game->getMod()->getInventory(a->getDefaultInventoryMap("STR_RIGHT_HAND"), true);
+	_inventorySlotLeftHand = _game->getMod()->getInventory(a->getDefaultInventoryMap("STR_LEFT_HAND"), true);
+	_inventorySlotBackPack = _game->getMod()->getInventory(a->getDefaultInventoryMap("STR_BACK_PACK"), true);
+	_inventorySlotBelt = _game->getMod()->getInventory(a->getDefaultInventoryMap("STR_BELT"), true);
+	_inventorySlotGround = _game->getMod()->getInventory(a->getDefaultInventoryMap("STR_GROUND"), true);
 }
 
-/**
+/**	
  * Draws the inventory elements.
  */
 void Inventory::draw()
@@ -184,16 +190,17 @@ void Inventory::drawGrid()
 	RuleInterface *rule = _game->getMod()->getInterface("inventory");
 	Uint8 color = rule->getElement("grid")->color;
 
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
+	if (_selUnit != 0) for (std::vector<std::string>::const_iterator i = _selUnit->getArmor()->getInventorySlots().cbegin(); i != _selUnit->getArmor()->getInventorySlots().cend(); i++)
 	{
+		RuleInventory *ruleI = (*_game->getMod()->getInventories())[*i];
 		// Draw grid
-		if (i->second->getType() == INV_SLOT)
+		if (ruleI->getType() == INV_SLOT)
 		{
-			for (std::vector<RuleSlot>::iterator j = i->second->getSlots()->begin(); j != i->second->getSlots()->end(); ++j)
+			for (std::vector<RuleSlot>::iterator j = ruleI->getSlots()->begin(); j != ruleI->getSlots()->end(); ++j)
 			{
 				SDL_Rect r;
-				r.x = i->second->getX() + RuleInventory::SLOT_W * j->x;
-				r.y = i->second->getY() + RuleInventory::SLOT_H * j->y;
+				r.x = ruleI->getX() + RuleInventory::SLOT_W * j->x;
+				r.y = ruleI->getY() + RuleInventory::SLOT_H * j->y;
 				r.w = RuleInventory::SLOT_W + 1;
 				r.h = RuleInventory::SLOT_H + 1;
 				_grid->drawRect(&r, color);
@@ -204,11 +211,11 @@ void Inventory::drawGrid()
 				_grid->drawRect(&r, 0);
 			}
 		}
-		else if (i->second->getType() == INV_HAND)
+		else if (ruleI->getType() == INV_HAND)
 		{
 			SDL_Rect r;
-			r.x = i->second->getX();
-			r.y = i->second->getY();
+			r.x = ruleI->getX();
+			r.y = ruleI->getY();
 			r.w = RuleInventory::HAND_W * RuleInventory::SLOT_W;
 			r.h = RuleInventory::HAND_H * RuleInventory::SLOT_H;
 			_grid->drawRect(&r, color);
@@ -218,11 +225,11 @@ void Inventory::drawGrid()
 			r.h -= 2;
 			_grid->drawRect(&r, 0);
 		}
-		else if (i->second->getType() == INV_GROUND)
+		else if (ruleI->getType() == INV_GROUND)
 		{
-			for (int x = i->second->getX(); x <= 320; x += RuleInventory::SLOT_W)
+			for (int x = ruleI->getX(); x <= 320; x += RuleInventory::SLOT_W)
 			{
-				for (int y = i->second->getY(); y <= 200; y += RuleInventory::SLOT_H)
+				for (int y = ruleI->getY(); y <= 200; y += RuleInventory::SLOT_H)
 				{
 					SDL_Rect r;
 					r.x = x;
@@ -256,22 +263,25 @@ void Inventory::drawGridLabels(bool showTuCost)
 	text.setColor(rule->getElement("textSlots")->color);
 	text.setHighContrast(true);
 
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
+	if (_selUnit != 0) for (std::vector<std::string>::const_iterator i = _selUnit->getArmor()->getInventorySlots().cbegin(); i != _selUnit->getArmor()->getInventorySlots().cend(); i++)
 	{
+		RuleInventory *ruleI = (*_game->getMod()->getInventories())[*i];
 		// Draw label
-		text.setX(i->second->getX());
-		text.setY(i->second->getY() - text.getFont()->getHeight() - text.getFont()->getSpacing());
-		if (showTuCost && _selItem != 0)
+		text.setX(ruleI->getX());
+		text.setY(ruleI->getY() - text.getFont()->getHeight() - text.getFont()->getSpacing());
+		LocalizedText lbl = _game->getLanguage()->getString(ruleI->getId());
+		//put postfix TU cost only if non-empty label
+		if (showTuCost && _selItem != 0 && lbl.c_str()[0] != '\0')
 		{
 			std::ostringstream ss;
-			ss << _game->getLanguage()->getString(i->second->getId());
+			ss << lbl;
 			ss << ":";
-			ss << _selItem->getSlot()->getCost(i->second);
+			ss << _selItem->getSlot()->getCost(ruleI);
 			text.setText(ss.str().c_str());
 		}
 		else
 		{
-			text.setText(_game->getLanguage()->getString(i->second->getId()));
+			text.setText(_game->getLanguage()->getString(ruleI->getId()));
 		}
 		text.blit(_grid->getSurface());
 	}
@@ -499,11 +509,12 @@ bool Inventory::overlapItems(BattleUnit *unit, BattleItem *item, RuleInventory *
  */
 RuleInventory *Inventory::getSlotInPosition(int *x, int *y) const
 {
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
+	if (_selUnit)  for (std::vector<std::string>::const_iterator i = _selUnit->getArmor()->getInventorySlots().cbegin(); i != _selUnit->getArmor()->getInventorySlots().cend(); i++)
 	{
-		if (i->second->checkSlotInPosition(x, y))
+		RuleInventory *r = _game->getMod()->getInventory(*i);
+		if (r->checkSlotInPosition(x, y))
 		{
-			return i->second;
+			return r;
 		}
 	}
 	return 0;
@@ -706,9 +717,10 @@ void Inventory::mouseClick(Action *action, State *state)
 
 							if (!placed)
 							{
-								for (std::map<std::string, RuleInventory *>::const_iterator wildCard = _game->getMod()->getInventories()->begin(); wildCard != _game->getMod()->getInventories()->end() && !placed; ++wildCard)
+
+								for (std::vector<std::string>::const_iterator i = _selUnit->getArmor()->getInventorySlots().cbegin(); i != _selUnit->getArmor()->getInventorySlots().cend(); i++)
 								{
-									newSlot = wildCard->second;
+									newSlot = _game->getMod()->getInventory(*i);
 									if (newSlot->getType() == INV_GROUND)
 									{
 										continue;
