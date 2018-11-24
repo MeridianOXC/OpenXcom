@@ -19,6 +19,7 @@
 #include "RuleInventory.h"
 #include <cmath>
 #include "RuleItem.h"
+#include "../Savegame/BattleUnit.h"
 
 namespace YAML
 {
@@ -48,12 +49,14 @@ namespace YAML
 namespace OpenXcom
 {
 
+const std::vector<std::string> RuleInventory::DefaultInventories = { "STR_GROUND", "STR_RIGHT_HAND", "STR_LEFT_HAND", "STR_BELT", "STR_RIGHT_LEG", "STR_LEFT_LEG", "STR_RIGHT_SHOULDER", "STR_LEFT_SHOULDER", "STR_BACK_PACK" };
+
 /**
  * Creates a blank ruleset for a certain
  * type of inventory section.
  * @param id String defining the id.
  */
-RuleInventory::RuleInventory(const std::string &id): _id(id), _x(0), _y(0), _type(INV_SLOT), _listOrder(0), _hand(0)
+RuleInventory::RuleInventory(const std::string &id): _id(id), _x(0), _y(0), _type(INV_SLOT), _listOrder(0)
 {
 }
 
@@ -79,18 +82,6 @@ void RuleInventory::load(const YAML::Node &node, int listOrder)
 	_slots = node["slots"].as< std::vector<RuleSlot> >(_slots);
 	_costs = node["costs"].as< std::map<std::string, int> >(_costs);
 	_listOrder = node["listOrder"].as<int>(listOrder);
-	if (_id == "STR_RIGHT_HAND")
-	{
-		_hand = 2;
-	}
-	else if (_id == "STR_LEFT_HAND")
-	{
-		_hand = 1;
-	}
-	else
-	{
-		_hand = 0;
-	}
 }
 
 /**
@@ -131,24 +122,6 @@ int RuleInventory::getY() const
 InventoryType RuleInventory::getType() const
 {
 	return _type;
-}
-
-/**
- * Gets if this slot is right hand.
- * @return This is right hand.
- */
-bool RuleInventory::isRightHand() const
-{
-	return _hand == 2;
-}
-
-/**
- * Gets if this slot is left hand.
- * @return This is wrong hand.
- */
-bool RuleInventory::isLeftHand() const
-{
-	return _hand == 1;
 }
 
 /**
