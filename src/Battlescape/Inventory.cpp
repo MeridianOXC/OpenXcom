@@ -601,7 +601,7 @@ void Inventory::blit(SDL_Surface *surface)
 	clear();
 	_grid->blitNShade(this, 0, 0);
 	_items->blitNShade(this, 0, 0);
-	_selection->blitNShade(this, 0, 0);
+	_selection->blitNShade(this, _selection->getX(), _selection->getY());
 	_warning->blit(this->getSurface());
 	Surface::blit(surface);
 }
