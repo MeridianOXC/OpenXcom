@@ -19,6 +19,7 @@
 #include "Armor.h"
 #include "../Engine/ScriptBind.h"
 #include "Mod.h"
+#include "../Mod/RuleInventory.h"
 
 namespace OpenXcom
 {
@@ -53,6 +54,11 @@ Armor::Armor(const std::string &type) :
 	_stunRecovery.setStunRecovery();
 
 	_customArmorPreviewIndex.push_back(0);
+	for (std::vector<std::string>::const_iterator i = RuleInventory::DefaultInventories.cbegin(); i != RuleInventory::DefaultInventories.cend(); i++)
+	{
+		_inventorySlots.push_back(*i);
+		_defaultInventoriesMap[*i] = *i;
+	}
 }
 
 /**
@@ -231,6 +237,46 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	_standHeight = node["standHeight"].as<int>(_standHeight);
 	_kneelHeight = node["kneelHeight"].as<int>(_kneelHeight);
 	_floatHeight = node["floatHeight"].as<int>(_floatHeight);
+	if (const YAML::Node &tst = node["inventorySlots"])
+		_inventorySlots = tst.as< std::vector<std::string> >(_inventorySlots);
+	if (const YAML::Node &tst = node["defaultInventoriesMap"])
+	{
+		std::map<std::string, std::string> par = tst.as <std::map<std::string, std::string> >(par);
+		for (std::map<std::string, std::string>::iterator i = par.begin(); i != par.end(); ++i)
+			_defaultInventoriesMap[i->first] = i->second;
+
+	}
+}
+
+/**
+* Cross link with other Rules.
+*/
+void Armor::afterLoad(const Mod* mod)
+{
+	// find out if paperdoll overlaps with inventory slots
+	int x1 = RuleInventory::PAPERDOLL_X;
+	int y1 = RuleInventory::PAPERDOLL_Y;
+	int w1 = RuleInventory::PAPERDOLL_W;
+	int h1 = RuleInventory::PAPERDOLL_H;
+	for (auto inventory : _inventorySlots)
+	{
+		RuleInventory *invCategory = mod->getInventory(inventory);
+		for (auto invSlot : *invCategory->getSlots())
+		{
+			int x2 = invCategory->getX() + (invSlot.x * RuleInventory::SLOT_W);
+			int y2 = invCategory->getY() + (invSlot.y * RuleInventory::SLOT_H);
+			int w2 = RuleInventory::SLOT_W;
+			int h2 = RuleInventory::SLOT_H;
+			if (x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1)
+			{
+				// intersection is empty
+			}
+			else
+			{
+				_inventoryOverlapsPaperdoll = true;
+			}
+		}
+	}
 }
 
 /**
@@ -976,6 +1022,33 @@ int Armor::getKneelHeight() const
 int Armor::getFloatHeight() const
 {
 	return _floatHeight;
+}
+
+/**
+* Gets the list of inventory slots this armor posess.
+* @return The list of inventory slots (empty => no inventory).
+*/
+const std::vector<std::string> &Armor::getInventorySlots() const
+{
+	return _inventorySlots;
+}
+
+/**
+* Gets the default inventory rule mapping.
+* @return The default inventory rule mapping.
+*/
+std::string Armor::getDefaultInventoryMap(std::string s) const
+{
+	std::map<std::string, std::string>::const_iterator i = _defaultInventoriesMap.find(s);
+	if (i != _defaultInventoriesMap.cend())
+		return i->second;
+	return s;
+}
+
+/// Inventory overlaps paperdoll
+bool Armor::inventoryOverlapsPaperdoll() const
+{
+	return _inventoryOverlapsPaperdoll;
 }
 
 }
