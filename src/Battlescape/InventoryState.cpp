@@ -218,14 +218,11 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnRank->onMouseIn((ActionHandler)&InventoryState::txtTooltipIn);
 	_btnRank->onMouseOut((ActionHandler)&InventoryState::txtTooltipOut);
 
-	if (!_game->getMod()->getInventoryOverlapsPaperdoll())
-	{
-		_btnArmor->onMouseClick((ActionHandler)&InventoryState::btnArmorClick);
-		_btnArmor->onMouseClick((ActionHandler)&InventoryState::btnArmorClickRight, SDL_BUTTON_RIGHT);
-		_btnArmor->onMouseClick((ActionHandler)&InventoryState::btnArmorClickMiddle, SDL_BUTTON_MIDDLE);
-		_btnArmor->onMouseIn((ActionHandler)&InventoryState::txtArmorTooltipIn);
-		_btnArmor->onMouseOut((ActionHandler)&InventoryState::txtArmorTooltipOut);
-	}
+	_btnArmor->onMouseClick((ActionHandler)&InventoryState::btnArmorClick);
+	_btnArmor->onMouseClick((ActionHandler)&InventoryState::btnArmorClickRight, SDL_BUTTON_RIGHT);
+	_btnArmor->onMouseClick((ActionHandler)&InventoryState::btnArmorClickMiddle, SDL_BUTTON_MIDDLE);
+	_btnArmor->onMouseIn((ActionHandler)&InventoryState::txtArmorTooltipIn);
+	_btnArmor->onMouseOut((ActionHandler)&InventoryState::txtArmorTooltipOut);
 
 	_btnCreateTemplate->onMouseClick((ActionHandler)&InventoryState::btnCreateTemplateClick);
 	_btnCreateTemplate->onKeyboardPress((ActionHandler)&InventoryState::btnCreateTemplateClick, Options::keyInvCreateTemplate);
@@ -259,9 +256,9 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 		updateTemplateButtons(true);
 	}
 
-	_inv->draw();
 	_inv->setTuMode(_tu);
 	_inv->setSelectedUnit(_game->getSavedGame()->getSavedBattle()->getSelectedUnit());
+	_inv->draw();
 	_inv->onMouseClick((ActionHandler)&InventoryState::invClick, 0);
 	_inv->onMouseOver((ActionHandler)&InventoryState::invMouseOver);
 	_inv->onMouseOut((ActionHandler)&InventoryState::invMouseOut);
@@ -458,6 +455,7 @@ void InventoryState::init()
 		_inv->arrangeGround();
 	}
 
+	_inv->draw();
 	updateStats();
 	refreshMouse();
 }
@@ -596,6 +594,11 @@ void InventoryState::btnArmorClick(Action *action)
 
 	// equipment in the base
 	BattleUnit *unit = _battleGame->getSelectedUnit();
+	if (!unit || unit->getArmor()->inventoryOverlapsPaperdoll())
+	{
+		//no unit or armor inventory overlaps paperdoll
+		return;
+	}
 	Soldier *s = unit->getGeoscapeSoldier();
 
 	if (!(s->getCraft() && s->getCraft()->getStatus() == "STR_OUT"))
@@ -628,6 +631,11 @@ void InventoryState::btnArmorClickRight(Action *action)
 
 	// equipment in the base
 	BattleUnit *unit = _battleGame->getSelectedUnit();
+	if (!unit || unit->getArmor()->inventoryOverlapsPaperdoll())
+	{
+		//armor inventory overlaps paperdoll
+		return;
+	}
 	Soldier *s = unit->getGeoscapeSoldier();
 
 	if (!(s->getCraft() && s->getCraft()->getStatus() == "STR_OUT"))
@@ -654,6 +662,11 @@ void InventoryState::btnArmorClickMiddle(Action *action)
 	BattleUnit *unit = _inv->getSelectedUnit();
 	if (unit != 0)
 	{
+		if (unit->getArmor()->inventoryOverlapsPaperdoll())
+		{
+			//armor inventory overlaps paperdoll
+			return;
+		}
 		std::string articleId = unit->getArmor()->getType();
 		Ufopaedia::openArticle(_game, articleId);
 	}
@@ -1652,6 +1665,11 @@ void InventoryState::txtArmorTooltipIn(Action *action)
 		BattleUnit *unit = _inv->getSelectedUnit();
 		if (unit != 0)
 		{
+			if (unit->getArmor()->inventoryOverlapsPaperdoll())
+			{
+				//armor inventory overlaps paperdoll
+				return;
+			}
 			action->getSender()->setTooltip(unit->getArmor()->getType());
 			_currentTooltip = action->getSender()->getTooltip();
 			if (Options::showItemNameAndWeightInInventory)
@@ -1677,6 +1695,12 @@ void InventoryState::txtArmorTooltipIn(Action *action)
 */
 void InventoryState::txtArmorTooltipOut(Action *action)
 {
+	BattleUnit *unit = _battleGame->getSelectedUnit();
+	if (!unit || unit->getArmor()->inventoryOverlapsPaperdoll())
+	{
+		//no unit or armor inventory overlaps paperdoll
+		return;
+	}
 	if (_inv->getSelectedItem() == 0)
 	{
 		if (_currentTooltip == action->getSender()->getTooltip())
