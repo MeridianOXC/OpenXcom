@@ -112,20 +112,21 @@ void AlienInventory::drawGrid()
 	RuleInterface *rule = _game->getMod()->getInterface("inventory");
 	Uint8 color = rule->getElement("grid")->color;
 
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
+	if (_selUnit != 0) for (std::vector<std::string>::const_iterator i = _selUnit->getArmor()->getInventorySlots().cbegin(); i != _selUnit->getArmor()->getInventorySlots().cend(); i++)
 	{
-		if (i->second->getType() == INV_HAND)
+		RuleInventory *ruleI = (*_game->getMod()->getInventories())[*i];
+		if (ruleI->getType() == INV_HAND)
 		{
 			SDL_Rect r;
-			r.x = i->second->getX();
+			r.x = ruleI->getX();
 			r.x += ALIEN_INVENTORY_STATIC_OFFSET;
 
-			if (i->second->getId() == "STR_RIGHT_HAND")
+			if (ruleI->getId() == _selUnit->getArmor()->getDefaultInventoryMap("STR_RIGHT_HAND"))
 				r.x -= _dynamicOffset;
-			else if (i->second->getId() == "STR_LEFT_HAND")
+			else if (ruleI->getId() == _selUnit->getArmor()->getDefaultInventoryMap("STR_LEFT_HAND"))
 				r.x += _dynamicOffset;
 
-			r.y = i->second->getY();
+			r.y = ruleI->getY();
 			r.w = RuleInventory::HAND_W * RuleInventory::SLOT_W;
 			r.h = RuleInventory::HAND_H * RuleInventory::SLOT_H;
 			_grid->drawRect(&r, color);
@@ -159,9 +160,9 @@ void AlienInventory::drawItems()
 				int x = (*i)->getSlot()->getX() + (*i)->getRules()->getHandSpriteOffX();
 				x += ALIEN_INVENTORY_STATIC_OFFSET;
 
-				if ((*i)->getSlot()->getId() == "STR_RIGHT_HAND")
+				if ((*i)->getSlot()->getId() == _selUnit->getArmor()->getDefaultInventoryMap("STR_RIGHT_HAND"))
 					x -= _dynamicOffset;
-				else if ((*i)->getSlot()->getId() == "STR_LEFT_HAND")
+				else if ((*i)->getSlot()->getId() == _selUnit->getArmor()->getDefaultInventoryMap("STR_LEFT_HAND"))
 					x += _dynamicOffset;
 
 				frame->blitNShade(_items, x, (*i)->getSlot()->getY() + (*i)->getRules()->getHandSpriteOffY());
@@ -182,11 +183,12 @@ void AlienInventory::drawItems()
  */
 RuleInventory *AlienInventory::getSlotInPosition(int *x, int *y) const
 {
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
+	if (_selUnit != 0) for (std::vector<std::string>::const_iterator i = _selUnit->getArmor()->getInventorySlots().cbegin(); i != _selUnit->getArmor()->getInventorySlots().cend(); i++)
 	{
-		if (i->second->checkSlotInPosition(x, y))
+		RuleInventory *ruleI = (*_game->getMod()->getInventories())[*i];
+		if (ruleI->checkSlotInPosition(x, y))
 		{
-			return i->second;
+			return ruleI;
 		}
 	}
 	return 0;
