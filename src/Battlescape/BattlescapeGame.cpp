@@ -2480,6 +2480,7 @@ bool BattlescapeGame::takeItem(BattleItem* item, BattleAction *action)
 	auto rightWeapon = action->actor->getRightHandWeapon();
 	auto leftWeapon = action->actor->getLeftHandWeapon();
 	auto unit = action->actor;
+	auto armor = unit->getArmor();
 
 	auto reloadWeapon = [&unit](BattleItem* weapon, BattleItem* i)
 	{
@@ -2528,28 +2529,28 @@ bool BattlescapeGame::takeItem(BattleItem* item, BattleAction *action)
 		}
 		else
 		{
-			placed = equipItem(mod->getInventory("STR_BELT", true), item);
+			placed = equipItem(mod->getInventory(armor->getDefaultInventoryMap("STR_BELT"), true), item);
 		}
 		break;
 	case BT_GRENADE:
 	case BT_PROXIMITYGRENADE:
-		placed = equipItem(mod->getInventory("STR_BELT", true), item);
+		placed = equipItem(mod->getInventory(armor->getDefaultInventoryMap("STR_BELT"), true), item);
 		break;
 	case BT_FIREARM:
 	case BT_MELEE:
 		if (!rightWeapon)
 		{
-			placed = equipItem(mod->getInventory("STR_RIGHT_HAND", true), item);
+			placed = equipItem(mod->getInventory(armor->getDefaultInventoryMap("STR_RIGHT_HAND"), true), item);
 		}
 		break;
 	case BT_MEDIKIT:
 	case BT_SCANNER:
-		placed = equipItem(mod->getInventory("STR_BACK_PACK", true), item);
+		placed = equipItem(mod->getInventory(armor->getDefaultInventoryMap("STR_BACK_PACK"), true), item);
 		break;
 	case BT_MINDPROBE:
 		if (!leftWeapon)
 		{
-			placed = equipItem(mod->getInventory("STR_LEFT_HAND", true), item);
+			placed = equipItem(mod->getInventory(armor->getDefaultInventoryMap("STR_LEFT_HAND"), true), item);
 		}
 		break;
 	default: break;
