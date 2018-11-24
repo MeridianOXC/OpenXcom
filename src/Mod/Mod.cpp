@@ -278,7 +278,6 @@ public:
  * Creates an empty mod.
  */
 Mod::Mod() :
-	_inventoryOverlapsPaperdoll(false),
 	_maxViewDistance(20), _maxDarknessToSeeUnits(9), _maxStaticLightDistance(16), _maxDynamicLightDistance(24), _enhancedLighting(0),
 	_costHireEngineer(0), _costHireScientist(0),
 	_costEngineer(0), _costScientist(0), _timePersonnel(0), _initialFunding(0),
@@ -1060,35 +1059,12 @@ void Mod::loadAll(const std::vector< std::pair< std::string, std::vector<std::st
 		j->second->updateCategories(&replacementRules);
 	}
 
-	// find out if paperdoll overlaps with inventory slots
-	int x1 = RuleInventory::PAPERDOLL_X;
-	int y1 = RuleInventory::PAPERDOLL_Y;
-	int w1 = RuleInventory::PAPERDOLL_W;
-	int h1 = RuleInventory::PAPERDOLL_H;
-	for (auto invCategory : _invs)
-	{
-		for (auto invSlot : *invCategory.second->getSlots())
-		{
-			int x2 = invCategory.second->getX() + (invSlot.x * RuleInventory::SLOT_W);
-			int y2 = invCategory.second->getY() + (invSlot.y * RuleInventory::SLOT_H);
-			int w2 = RuleInventory::SLOT_W;
-			int h2 = RuleInventory::SLOT_H;
-			if (x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1)
-			{
-				// intersection is empty
-			}
-			else
-			{
-				_inventoryOverlapsPaperdoll = true;
-			}
-		}
-	}
-
 	afterLoadHelper("research", this, _research, &RuleResearch::afterLoad);
 	afterLoadHelper("items", this, _items, &RuleItem::afterLoad);
 	afterLoadHelper("manufacture", this, _manufacture, &RuleManufacture::afterLoad);
 	afterLoadHelper("units", this, _units, &Unit::afterLoad);
 	afterLoadHelper("facilities", this, _facilities, &RuleBaseFacility::afterLoad);
+	afterLoadHelper("armors", this, _armors, &Armor::afterLoad);
 
 	// fixed user options
 	if (!_fixedUserOptions.empty())
