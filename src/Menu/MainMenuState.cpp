@@ -31,6 +31,7 @@
 #include "ListLoadState.h"
 #include "OptionsVideoState.h"
 #include "ModListState.h"
+#include "MapEditorMenuState.h"
 #include "../Engine/Options.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/SDL2Helpers.h"
@@ -67,16 +68,30 @@ MainMenuState::MainMenuState(bool updateCheck)
 #endif
 
 	// Create objects
+	int buttonYSpacing = 28;
+	int quitWidth = 92;
+	int quitXOffset = 100;
+	int quitYSpacing = 2;
+	if (Options::debug)
+	{
+		buttonYSpacing = 22;
+		quitWidth = 192;
+		quitXOffset = 0;
+		quitYSpacing = 3;
+	}
 	_window = new Window(this, 256, 160, 32, 20, POPUP_BOTH);
 	_btnNewGame = new TextButton(92, 20, 64, 90);
 	_btnNewBattle = new TextButton(92, 20, 164, 90);
-	_btnLoad = new TextButton(92, 20, 64, 118);
-	_btnOptions = new TextButton(92, 20, 164, 118);
-	_btnMods = new TextButton(92, 20, 64, 146);
-	_btnQuit = new TextButton(92, 20, 164, 146);
+	_btnLoad = new TextButton(92, 20, 64, 90 + buttonYSpacing);
+	_btnOptions = new TextButton(92, 20, 164, 90 + buttonYSpacing);
+	_btnMods = new TextButton(92, 20, 64, 90 + 2 * buttonYSpacing);
+	_btnModTools = new TextButton(92, 20, 164, 90 + 2 * buttonYSpacing);
+	_btnQuit = new TextButton(quitWidth, 20, 64 + quitXOffset, 90 + quitYSpacing * buttonYSpacing);
 	_btnUpdate = new TextButton(72, 16, 209, 27);
 	_txtUpdateInfo = new Text(320, 17, 0, 11);
 	_txtTitle = new Text(256, 30, 32, 45);
+
+	_btnModTools->setVisible(Options::debug);
 
 	// Set palette
 	setInterface("mainMenu");
@@ -90,6 +105,7 @@ MainMenuState::MainMenuState(bool updateCheck)
 	add(_btnQuit, "button", "mainMenu");
 	add(_btnUpdate, "button", "mainMenu");
 	add(_txtUpdateInfo, "text", "mainMenu");
+	add(_btnModTools, "button", "mainMenu");
 	add(_txtTitle, "text", "mainMenu");
 
 	centerAllSurfaces();
@@ -226,6 +242,9 @@ MainMenuState::MainMenuState(bool updateCheck)
 			_txtUpdateInfo->setVisible(true);
 		}
 	}
+	
+	_btnModTools->setText(tr("STR_MOD_TOOLS"));
+	_btnModTools->onMouseClick((ActionHandler)&MainMenuState::btnModToolsClick);
 
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setBig();
@@ -518,6 +537,15 @@ void MainMenuState::btnUpdateClick(Action*)
 	_game->setUpdateFlag(true);
 	_game->quit();
 #endif
+}
+
+/**
+ * Brings up the menu for mod tools.
+ * @param action Pointer to an action.
+ */
+void MainMenuState::btnModToolsClick(Action *)
+{
+	_game->pushState(new MapEditorMenuState);
 }
 
 /**

@@ -206,6 +206,8 @@ public:
 	// Auto-equip a set of units
 	static void autoEquip(std::vector<BattleUnit*> units, Mod *mod, std::vector<BattleItem*> *craftInv,
 		RuleInventory *groundRuleInv, int worldShade, bool allowAutoLoadout, bool overrideEquipmentLayout);
+	/// Sets up a single map block for editing.
+	void loadMapForEditing(MapBlock *block);
 };
 
 }

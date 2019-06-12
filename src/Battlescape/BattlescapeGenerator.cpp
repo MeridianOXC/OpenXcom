@@ -4781,4 +4781,45 @@ void BattlescapeGenerator::setMusic(const AlienDeployment* ruleDeploy, bool next
 	}
 }
 
+
+/**
+ * Creates a mini-battle-save for editing map files.
+ * @param block Pointer to the map block to edit.
+ */
+void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
+{
+	_mapsize_x = block->getSizeX();
+	_mapsize_y = block->getSizeY();
+	_mapsize_z = block->getSizeZ();
+	init(true);
+
+	for (std::vector<MapDataSet*>::iterator i = _terrain->getMapDataSets()->begin(); i != _terrain->getMapDataSets()->end(); ++i)
+	{
+		(*i)->loadData();
+		if (_game->getMod()->getMCDPatch((*i)->getName()))
+		{
+			_game->getMod()->getMCDPatch((*i)->getName())->modifyData(*i);
+		}
+		_save->getMapDataSets()->push_back(*i);
+		//mapDataSetIDOffset++;
+	}
+
+	loadMAP(block, 0, 0, 0, _terrain, 0, true);
+	// How to handle nodes?
+	_dummy = new MapBlock("dummy");
+	loadNodes();
+	attachNodeLinks();
+	delete _dummy;
+	//_craftInventoryTile = _save->getTile(0);
+
+	// ok now generate the battleitems for inventory
+	//if (craft != 0) setCraft(craft);
+	//deployXCOM(nullptr, nullptr);
+	//delete data;
+	//delete set;
+	_save->setGlobalShade(_worldShade);
+
+	_save->getTileEngine()->calculateLighting(LL_AMBIENT, TileEngine::invalid, 0, true);
+}
+
 }

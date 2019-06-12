@@ -44,7 +44,7 @@ public:
 class MainMenuState : public State
 {
 private:
-	TextButton *_btnNewGame, *_btnNewBattle, *_btnLoad, *_btnOptions, *_btnMods, *_btnQuit, *_btnUpdate;
+	TextButton *_btnNewGame, *_btnNewBattle, *_btnLoad, *_btnOptions, *_btnMods, *_btnQuit, *_btnUpdate, *_btnModTools;
 	Window *_window;
 	Text *_txtTitle, *_txtUpdateInfo;
 #ifdef _WIN32
@@ -70,6 +70,8 @@ public:
 	void btnQuitClick(Action *action);
 	/// Handler for clicking the Update button.
 	void btnUpdateClick(Action* action);
+	/// Handler for clicking the Mod Tools button.
+	void btnModToolsClick(Action *action);
 	/// Update the resolution settings, we just resized the window.
 	void resize(int &dX, int &dY) override;
 	void init() override;
