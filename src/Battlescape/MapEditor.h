@@ -25,6 +25,8 @@
 namespace OpenXcom
 {
 
+enum EditType {MET_DO, MET_UNDO, MET_REDO};
+
 struct TileEdit
 {
     Position position;
@@ -32,6 +34,18 @@ struct TileEdit
     int tileBeforeDataSetIDs[O_MAX];
     int tileAfterDataIDs[O_MAX];
     int tileAfterDataSetIDs[O_MAX];
+
+    TileEdit(Position pos, int beforeDataIDs[], int beforeDataSetIDs[], int afterDataIDs[], int afterDataSetIDs[])
+    {
+        position = pos;
+        for (int i = 0; i < O_MAX; ++i)
+        {
+            tileBeforeDataIDs[i] = beforeDataIDs[i];
+            tileBeforeDataSetIDs[i] = beforeDataSetIDs[i];
+            tileAfterDataIDs[i] = afterDataIDs[i];
+            tileAfterDataSetIDs[i] = afterDataSetIDs[i];
+        }
+    }
 };
 
 class Action;
@@ -43,7 +57,8 @@ class MapEditor
 private :
     SavedBattleGame *_save;
     std::vector< std::vector< TileEdit > > _editRegister;
-    int _selectedMapDataID;
+    int _selectedMapDataID, _editRegisterPosition;
+    std::vector< Tile* > _selectedTiles;
 
 public :
     /// Creates the Map Editor
@@ -52,6 +67,16 @@ public :
     ~MapEditor();
     /// Handles input passed to the Editor from the BattlescapeState
     void handleEditorInput(Action *action, Tile *tile);
+    /// Changes tile data according to the selected tiles and map data
+    void changeTiles(EditType action);
+    /// Un-does an action pointed to by the current position in the edit register
+    void undo();
+    /// Re-does an action pointed to by the current position in the edit register
+    void redo();
+    /// Gets the current position of the edit register
+    int getEditRegisterPosition();
+    /// Gets the number of edits in the register
+    int getEditRegisterSize();
     /// Sets the map data ID index selected
     void setSelectedMapDataID(int selectedIndex);
     /// Gets the map data ID index selected
