@@ -18,18 +18,37 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <vector>
+#include "Position.h"
+#include "../Mod/MapData.h"
+
 namespace OpenXcom
 {
+
+struct TileEdit
+{
+    Position position;
+    int tileBeforeDataIDs[O_MAX];
+    int tileBeforeDataSetIDs[O_MAX];
+    int tileAfterDataIDs[O_MAX];
+    int tileAfterDataSetIDs[O_MAX];
+};
 
 class MapEditor
 {
 private :
+    std::vector< std::vector< TileEdit > > _editRegister;
+    int _selectedMapDataID;
 
 public :
     /// Creates the Map Editor
     MapEditor();
     /// Cleans up the Map Editor
     ~MapEditor();
+    /// Sets the map data ID index selected
+    void setSelectedMapDataID(int selectedIndex);
+    /// Gets the map data ID index selected
+    int getSelectedMapDataID();
 
 };
 

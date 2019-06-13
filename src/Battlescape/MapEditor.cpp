@@ -25,14 +25,35 @@ namespace OpenXcom
 /**
  * Initializes all the Map Editor.
  */
-MapEditor::MapEditor()
+MapEditor::MapEditor() : _selectedMapDataID(-1)
+{
+    _editRegister.clear();
+
+}
+
+/**
+ * Cleans up the Map Editor.
+ */
+MapEditor::~MapEditor()
 {
 
 }
 
-MapEditor::~MapEditor()
+/**
+ * Sets the selected Map Data ID
+ * @param selectedIndex the Map Data ID
+ */
+void MapEditor::setSelectedMapDataID(int selectedIndex)
 {
+    _selectedMapDataID = selectedIndex;
+}
 
+/**
+ * Gets the selected Map Data ID
+ */
+ int MapEditor::getSelectedMapDataID()
+{
+    return _selectedMapDataID;
 }
 
 }
