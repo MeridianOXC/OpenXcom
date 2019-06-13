@@ -189,7 +189,7 @@ void MapEditorMenuState::btnOkClick(Action *)
 	Options::baseYResolution = Options::baseYBattlescape;
 	_game->getScreen()->resetDisplay(false);
 
-	MapEditor *editor = new MapEditor;
+	MapEditor *editor = new MapEditor(savedBattleGame);
 	BattlescapeState *battlescapeState = new BattlescapeState(editor);
 	//int liveAliens = 0, liveSoldiers = 0;
 	//bs->getBattleGame()->tallyUnits(liveAliens, liveSoldiers);

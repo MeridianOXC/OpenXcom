@@ -17,6 +17,11 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MapEditor.h"
+#include "../Engine/Action.h"
+#include "../Mod/MapData.h"
+#include "../Mod/MapDataSet.h"
+#include "../Savegame/SavedBattleGame.h"
+#include "../Savegame/Tile.h"
 #include <sstream>
 
 namespace OpenXcom
@@ -25,7 +30,7 @@ namespace OpenXcom
 /**
  * Initializes all the Map Editor.
  */
-MapEditor::MapEditor() : _selectedMapDataID(-1)
+MapEditor::MapEditor(SavedBattleGame *save) : _save(save), _selectedMapDataID(-1)
 {
     _editRegister.clear();
 
@@ -37,6 +42,54 @@ MapEditor::MapEditor() : _selectedMapDataID(-1)
 MapEditor::~MapEditor()
 {
 
+}
+
+/**
+ * Handles inputs passed to the editor from the BattlescapeState
+ * @param action Pointer to the action
+ * @param tile Pointer to a selected tile
+ */
+void MapEditor::handleEditorInput(Action *action, Tile *tile)
+{
+    if (tile != 0 && action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+    {
+        // TODO change this to actual IDs later
+        int selectedIndex = _selectedMapDataID;
+
+        if (selectedIndex == -1)
+        {
+            for (int part = O_FLOOR; part < O_MAX; part++)
+            {
+                TilePart tp = (TilePart)part;
+                tile->setMapData(0, -1, -1, tp);
+            }
+        }
+        else
+        {
+            MapDataSet *mapDataSet;
+            int mapDataSetID = 0;
+            for (auto i : *_save->getMapDataSets())
+            {
+                if (selectedIndex < i->getSize())
+                {
+                    mapDataSet = i;
+                    break;
+                }
+                else
+                {
+                    selectedIndex -= i->getSize();
+                    ++mapDataSetID;
+                }
+            }
+
+            if (mapDataSet)
+            {
+                // TODO: try-catch error handling for changing sprites using the undo/redo register
+                MapData *mapData = mapDataSet->getObjects()->at(selectedIndex);
+                tile->setMapData(mapData, selectedIndex, mapDataSetID, mapData->getObjectType());
+            }
+        }
+    }
 }
 
 /**

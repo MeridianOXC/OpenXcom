@@ -34,17 +34,24 @@ struct TileEdit
     int tileAfterDataSetIDs[O_MAX];
 };
 
+class Action;
+class SavedBattleGame;
+class Tile;
+
 class MapEditor
 {
 private :
+    SavedBattleGame *_save;
     std::vector< std::vector< TileEdit > > _editRegister;
     int _selectedMapDataID;
 
 public :
     /// Creates the Map Editor
-    MapEditor();
+    MapEditor(SavedBattleGame *save);
     /// Cleans up the Map Editor
     ~MapEditor();
+    /// Handles input passed to the Editor from the BattlescapeState
+    void handleEditorInput(Action *action, Tile *tile);
     /// Sets the map data ID index selected
     void setSelectedMapDataID(int selectedIndex);
     /// Gets the map data ID index selected
