@@ -108,25 +108,12 @@ void MapEditor::changeTiles(EditType action)
                     else
                     {
                         int selectedMapDataSetID = 0;
-                        MapDataSet *selectedMapDataSet = 0;
-                        for (auto i : *_save->getMapDataSets())
-                        {
-                            if (selectedIndex < (int)i->getSize())
-                            {
-                                selectedMapDataSet = i;
-                                break;
-                            }
-                            else
-                            {
-                                selectedIndex -= i->getSize();
-                                ++selectedMapDataSetID;
-                            }
-                        }
+                        MapData *selectedMapData = getMapDataFromIndex(_selectedMapDataID, &selectedMapDataSetID, &selectedIndex);
 
-                        if (selectedMapDataSet)
+                        if (selectedMapData)
                         {
                             // TODO: try-catch error handling for changing sprites using the undo/redo register
-                            MapData *selectedMapData = selectedMapDataSet->getObjects()->at(selectedIndex);
+                            MapDataSet *selectedMapDataSet = _save->getMapDataSets()->at(selectedMapDataSetID);
                             parts.push_back(selectedMapData->getObjectType());
 
                             int partIndex = (int)selectedMapData->getObjectType();
@@ -256,6 +243,44 @@ void MapEditor::redo()
     changeTiles(MET_REDO);
     ++_editRegisterPosition;
     _selectedTiles.clear();
+}
+
+/**
+ * Helper function for getting MapData, MapDataSetIDs, and MapDataIDs from index of a tile
+ * @param index The index of the tile object data we want
+ * @param mapDataSetID The index of the MapDataSet
+ * @param mapDataID The index of the MapData within the MapDataSet
+ */
+MapData *MapEditor::getMapDataFromIndex(int index, int *mapDataSetID, int *mapDataID)
+{
+    MapDataSet *mapDataSet = 0;
+    int dataSetID = 0;
+
+    for (auto i : *_save->getMapDataSets())
+    {
+        if (index < (int)i->getSize())
+        {
+            mapDataSet = i;
+            break;
+        }
+        else
+        {
+            index -= i->getSize();
+            ++dataSetID;
+        }
+    }
+
+    if (mapDataSet)
+    {
+        *mapDataSetID = dataSetID;
+        *mapDataID = index;
+        return mapDataSet->getObjects()->at(index);
+    }
+
+    // If the index is greater than the number of available tile objects, return that we've found nothing
+    *mapDataSetID = -1;
+    *mapDataID = -1;
+    return 0;
 }
 
 /**

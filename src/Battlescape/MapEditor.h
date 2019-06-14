@@ -73,6 +73,8 @@ public :
     void undo();
     /// Re-does an action pointed to by the current position in the edit register
     void redo();
+    /// Helper function for getting MapData, MapDataSetIDs, and MapDataIDs from index of a tile
+    MapData *getMapDataFromIndex(int index, int *mapDataSetID, int *mapDataID);
     /// Gets the current position of the edit register
     int getEditRegisterPosition();
     /// Gets the number of edits in the register
