@@ -18,7 +18,6 @@
  */
 #include <algorithm>
 #include <sstream>
-#include <string> // TODO remove later
 #include <iomanip>
 #include "../fmath.h"
 #include <SDL_gfxPrimitives.h>
@@ -97,7 +96,6 @@ namespace OpenXcom
 /**
  * Initializes all the elements in the Battlescape screen.
  * @param game Pointer to the core game.
- * @param editor Pointer to the data structure for the in-game map editor
  */
 BattlescapeState::BattlescapeState() :
 	_reserve(0), _touchButtonsEnabled(false), _touchButtonsEnabledLastTurn(false), _manaBarVisible(false),
