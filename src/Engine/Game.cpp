@@ -44,6 +44,7 @@
 #include "../Menu/TestState.h"
 #include <algorithm>
 #include "../fallthrough.h"
+#include "../Battlescape/MapEditor.h"
 
 namespace OpenXcom
 {
@@ -56,7 +57,8 @@ const double Game::VOLUME_GRADIENT = 10.0;
  * @param title Title of the game window.
  */
 Game::Game(const std::string &title) : _screen(0), _cursor(0), _lang(0), _save(0), _mod(0), _quit(false), _init(false), _update(false),  _mouseActive(true), _timeUntilNextFrame(0),
-	_ctrl(false), _alt(false), _shift(false), _rmb(false), _mmb(false)
+	_ctrl(false), _alt(false), _shift(false), _rmb(false), _mmb(false),
+	_mapEditor(0)
 {
 	Options::reload = false;
 	Options::mute = false;
@@ -127,6 +129,7 @@ Game::~Game()
 	delete _mod;
 	delete _screen;
 	delete _fpsCounter;
+	delete _mapEditor;
 
 	Mix_CloseAudio();
 
@@ -743,6 +746,7 @@ bool Game::isShiftPressed(bool considerTouchButtons) const
 }
 
 /**
+<<<<<<< HEAD
  * Is LMB pressed?
  */
 bool Game::isLeftClick(Action* action, bool considerTouchButtons) const
@@ -788,6 +792,23 @@ void Game::resetTouchButtonFlags()
 	_shift = false;
 	_rmb = false;
 	_mmb = false;
+=======
+ * Sets the pointer to the Map Editor to save it for multiple states
+ * param mapEditor Pointer to the new Map Editor
+ */
+void Game::setMapEditor(MapEditor *mapEditor)
+{
+	delete _mapEditor; // there can only be one!
+	_mapEditor = mapEditor;
+}
+
+/**
+ * Gets the Map Editor
+ */
+MapEditor *Game::getMapEditor()
+{
+	return _mapEditor;
+>>>>>>> Moved handling of MapEditor from BattlescapeState to Game, but still crashing on changing video options
 }
 
 }

@@ -83,6 +83,8 @@ public :
     void setSelectedMapDataID(int selectedIndex);
     /// Gets the map data ID index selected
     int getSelectedMapDataID();
+    /// Sets the SavedBattleGame
+    void setSave(SavedBattleGame *save);
 
 };
 

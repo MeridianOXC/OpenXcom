@@ -190,13 +190,12 @@ void MapEditorMenuState::btnOkClick(Action *)
 	_game->getScreen()->resetDisplay(false);
 
 	MapEditor *editor = new MapEditor(savedBattleGame);
-	BattlescapeState *battlescapeState = new BattlescapeState(editor);
+	_game->setMapEditor(editor);
+	BattlescapeState *battlescapeState = new BattlescapeState();
 	//int liveAliens = 0, liveSoldiers = 0;
 	//bs->getBattleGame()->tallyUnits(liveAliens, liveSoldiers);
 	_game->pushState(battlescapeState);
 	_game->getSavedGame()->getSavedBattle()->setBattleState(battlescapeState);
-	battlescapeState->getMap()->getCamera()->centerOnPosition(Position(0, 0, 0), true);
-	battlescapeState->getMap()->refreshSelectorPosition();
 	//	_game->pushState(new NextTurnState(_game->getSavedGame()->getSavedBattle(), bs));
 	//	_game->pushState(new InventoryState(false, bs, 0));
 	//}
