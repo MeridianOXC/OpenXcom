@@ -163,7 +163,9 @@ void OptionsBaseState::restart(OptionsOrigin origin)
 		}
 
 		_game->setState(new GeoscapeState);
-		_game->getMapEditor()->setSave(_game->getSavedGame()->getSavedBattle());
+		MapEditor *editor = _game->getMapEditor();
+		if (editor)
+			editor->setSave(_game->getSavedGame()->getSavedBattle());
 		BattlescapeState *bs = new BattlescapeState();
 		_game->pushState(bs);
 		_game->getSavedGame()->getSavedBattle()->setBattleState(bs);
