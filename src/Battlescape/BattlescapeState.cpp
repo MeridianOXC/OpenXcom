@@ -2842,24 +2842,6 @@ inline void BattlescapeState::handle(Action *action)
 						}
 					}
 				}
-				// Map Editor undo/redo
-				else if (_editor && key == SDLK_z && ctrlPressed)
-				{
-					if (shiftPressed)
-					{
-						_editor->redo();
-					}
-					else
-					{
-						_editor->undo();
-					}
-
-					_map->draw();
-
-					std::ostringstream ss;
-					ss << _editor->getEditRegisterPosition() << "/" << _editor->getEditRegisterSize();
-					_txtEditRegister->setText(ss.str().c_str());
-				}
 
 				if (Options::debug)
 				{
