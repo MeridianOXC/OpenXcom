@@ -190,6 +190,7 @@ void MapEditorMenuState::btnOkClick(Action *)
 	_game->getScreen()->resetDisplay(false);
 
 	MapEditor *editor = new MapEditor(savedBattleGame);
+	editor->setMapName(block->getName());
 	_game->setMapEditor(editor);
 	BattlescapeState *battlescapeState = new BattlescapeState();
 	//int liveAliens = 0, liveSoldiers = 0;

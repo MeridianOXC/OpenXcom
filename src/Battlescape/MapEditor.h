@@ -59,6 +59,7 @@ private :
     std::vector< std::vector< TileEdit > > _editRegister;
     int _selectedMapDataID, _editRegisterPosition;
     std::vector< Tile* > _selectedTiles;
+    std::string _mapname;
 
 public :
     /// Creates the Map Editor
@@ -85,6 +86,12 @@ public :
     int getSelectedMapDataID();
     /// Sets the SavedBattleGame
     void setSave(SavedBattleGame *save);
+    /// Sets the name of the map we're editing
+    void setMapName(std::string mapname);
+    /// Gets the name of the map we're editing
+    std::string getMapName();
+    /// Saves the map file
+    void saveMapFile(std::string filename);
 
 };
 

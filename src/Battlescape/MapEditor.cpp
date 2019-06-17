@@ -19,6 +19,8 @@
 #include "MapEditor.h"
 #include "Position.h"
 #include "../Engine/Action.h"
+#include "../Engine/Logger.h"
+#include "../Engine/Options.h"
 #include "../Mod/MapData.h"
 #include "../Mod/MapDataSet.h"
 #include "../Savegame/SavedBattleGame.h"
@@ -32,7 +34,7 @@ namespace OpenXcom
  * Initializes all the Map Editor.
  */
 MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
-    _selectedMapDataID(-1), _editRegisterPosition(0)
+    _selectedMapDataID(-1), _editRegisterPosition(0), _mapname("")
 {
     _editRegister.clear();
     _selectedTiles.clear();
@@ -325,6 +327,89 @@ int MapEditor::getSelectedMapDataID()
 void MapEditor::setSave(SavedBattleGame *save)
 {
     _save = save;
+}
+
+/**
+ * Sets the name of the map file we're editing
+ * @param mapname String of the map's name
+ */
+void MapEditor::setMapName(std::string mapname)
+{
+    _mapname = mapname;
+}
+
+/**
+ * Gets the name of the map file we're editing
+ */
+std::string MapEditor::getMapName()
+{
+    return _mapname;
+}
+
+/**
+ * Saves the map file
+ * @param filename String for the name of the file to save
+ */
+void MapEditor::saveMapFile(std::string filename)
+{
+    std::string filepath = Options::getMasterUserFolder() + filename + ".MAP";
+    std::string logInfo = "    mapDataSets:\n";
+    for (auto i : *_save->getMapDataSets())
+    {
+        logInfo += "      - " + i->getName() + "\n";
+    }
+    logInfo += "    mapBlocks:\n";
+    logInfo += "      - name: " + filename + "\n";
+    logInfo += "        width: " + std::to_string(_save->getMapSizeX()) + "\n";
+    logInfo += "        length: " + std::to_string(_save->getMapSizeY()) + "\n";
+    logInfo += "        height: " + std::to_string(_save->getMapSizeZ());
+    Log(LOG_INFO) << "Saving edited map file " << filepath << "\n" << logInfo;
+
+    std::vector<unsigned char> data;
+    data.clear();
+
+    data.push_back((unsigned char)_save->getMapSizeY()); // x and y are in opposite order in MAP files
+    data.push_back((unsigned char)_save->getMapSizeX());
+    data.push_back((unsigned char)_save->getMapSizeZ());
+
+    for (int z = _save->getMapSizeZ() - 1; z > -1; --z)
+    {
+        for (int y = 0; y < _save->getMapSizeY(); ++y)
+        {
+            for (int x = 0; x < _save->getMapSizeX(); ++x)
+            {
+                // TODO use tile->isVoid() to determine if we can speed up the process by adding an empty tile?
+                Tile *tile = _save->getTile(Position(x, y, z));
+
+                for (int part = O_FLOOR; part < O_MAX; ++part)
+                {
+                    int mapDataID;
+                    int mapDataSetID;
+                    tile->getMapData(&mapDataID, &mapDataSetID, (TilePart)part);
+
+                    if (mapDataSetID != -1 && mapDataID != -1)
+                    {
+                        for (int i = 0; i < mapDataSetID; ++i)
+                        {
+                            mapDataID += _save->getMapDataSets()->at(i)->getSize();
+                        }
+                    }
+                    else
+                    {
+                        mapDataID = 0;
+                    }
+
+                    data.push_back((unsigned char)mapDataID);
+                }
+            }
+        }
+    }
+
+	if (!CrossPlatform::writeFile(filepath, data))
+	{
+		throw Exception("Failed to save " + filepath);
+	}
+
 }
 
 }
