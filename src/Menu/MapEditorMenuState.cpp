@@ -192,7 +192,7 @@ void MapEditorMenuState::btnOkClick(Action *)
 	MapEditor *editor = new MapEditor(savedBattleGame);
 	editor->setMapName(block->getName());
 	_game->setMapEditor(editor);
-	BattlescapeState *battlescapeState = new BattlescapeState();
+	BattlescapeState *battlescapeState = new BattlescapeState(editor);
 	//int liveAliens = 0, liveSoldiers = 0;
 	//bs->getBattleGame()->tallyUnits(liveAliens, liveSoldiers);
 	_game->pushState(battlescapeState);

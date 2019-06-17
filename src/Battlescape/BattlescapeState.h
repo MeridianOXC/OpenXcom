@@ -117,7 +117,7 @@ public:
 	void selectPreviousPlayerUnit(bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
 	static const int DEFAULT_ANIM_SPEED = 100;
 	/// Creates the Battlescape state.
-	BattlescapeState();
+	BattlescapeState(MapEditor *editor = 0);
 	/// Cleans up the Battlescape state.
 	~BattlescapeState();
 	void resetPalettes();
