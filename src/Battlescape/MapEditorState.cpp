@@ -78,7 +78,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_tooltipDefaultColor = _game->getMod()->getInterface("battlescape")->getElement("textTooltip")->color;
 
 	// Create the battlemap view
-	// the actual map height is the total height minus the height of the buttonbar
 	_map = new Map(_game, screenWidth, screenHeight, 0, 0, screenHeight);
 
 	// Create buttons
@@ -151,10 +150,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	
 	_editor->setSave(_save);
 	_editor->setSelectedMapDataID(-1);
-	int midpointX = _save->getMapSizeX() / 2;
-	int midpointY = _save->getMapSizeY() / 2;
-	_map->getCamera()->centerOnPosition(Position(midpointX, midpointY, 0), true);
-	_map->refreshSelectorPosition();
 
 	_txtSelectedIndex = new Text(100, 10, 32, 10);
 	_edtSelectedIndex = new TextEdit(this, 50, 10, 32, 20);
@@ -285,6 +280,9 @@ void MapEditorState::init()
 	_map->setFocus(true);
 	_map->draw();
 
+	int midpointX = _save->getMapSizeX() / 2;
+	int midpointY = _save->getMapSizeY() / 2;
+
 	if (_firstInit)
 	{
 		// Set music
@@ -299,6 +297,10 @@ void MapEditorState::init()
 				_game->getMod()->playMusic(_save->getMusic());
 			}
 		}
+
+		_map->getCamera()->centerOnPosition(Position(midpointX, midpointY, 0), true);
+		_map->refreshSelectorPosition();
+		_map->setCursorType(CT_NORMAL);
 
 		_firstInit = false;
 	}

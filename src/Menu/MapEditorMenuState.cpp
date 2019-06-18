@@ -169,22 +169,13 @@ void MapEditorMenuState::btnOkClick(Action *)
 
     RuleTerrain *terrain = _game->getMod()->getTerrain(_mapsList.at(_selectedMap).second);
 	battlescapeGenerator.setTerrain(terrain);
-
-	//_game->getSavedGame()->setDifficulty((GameDifficulty)_cbxDifficulty->getSelected());
-
 	battlescapeGenerator.setWorldShade(0);
-	//bgen.setAlienRace(_alienRaces[_cbxAlienRace->getSelected()]);
-	//bgen.setAlienItemlevel(_slrAlienTech->getValue());
-	//bgame->setDepth(_slrDepth->getValue());
-
     MapBlock *block = terrain->getMapBlock(_mapsList.at(_selectedMap).first);
 	battlescapeGenerator.loadMapForEditing(block);
 
 	_game->popState();
 	_game->popState();
-	//_game->pushState(new BriefingState(_craft, base));
 
-    savedBattleGame->setRandomHiddenMovementBackground(_game->getMod());
 	Options::baseXResolution = Options::baseXBattlescape;
 	Options::baseYResolution = Options::baseYBattlescape;
 	_game->getScreen()->resetDisplay(false);
