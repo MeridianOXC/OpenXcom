@@ -42,9 +42,9 @@
 #include "../Engine/Logger.h"
 #include "../Engine/Timer.h"
 #include "../Engine/CrossPlatform.h"
+#include "../Interface/BattlescapeButton.h"
 #include "../Interface/Cursor.h"
 #include "../Interface/Text.h"
-#include "../Interface/TextEdit.h"
 #include "../Interface/TextButton.h"
 #include "../Menu/PauseState.h"
 #include "../Mod/MapData.h"
@@ -65,15 +65,10 @@ namespace OpenXcom
  * @param editor Pointer to the data structure for the in-game map editor
  */
 MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseScrolling(false), _isMouseScrolled(false), _xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(0), _mouseOverIcons(false), _autosave(false),
-	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0)
+	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0), _selectedTileIndex(0)
 {
 	const int screenWidth = Options::baseXResolution;
 	const int screenHeight = Options::baseYResolution;
-	//const int iconsWidth = _game->getMod()->getInterface("battlescape")->getElement("icons")->w;
-	//const int iconsHeight = _game->getMod()->getInterface("battlescape")->getElement("icons")->h;
-	//const int visibleMapHeight = screenHeight - iconsHeight;
-	//const int x = screenWidth/2 - iconsWidth/2;
-	//const int y = screenHeight - iconsHeight;
 
 	_tooltipDefaultColor = _game->getMod()->getInterface("battlescape")->getElement("textTooltip")->color;
 
@@ -84,76 +79,68 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	//_btnMapUp = new BattlescapeButton(32, 16, x + 80, y);
 	//_btnMapDown = new BattlescapeButton(32, 16, x + 80, y + 16);
 
-	// Create soldier stats summary
-	_txtDebug = new Text(300, 10, 20, 0);
 	_txtTooltip = new Text(300, 10, 2, screenHeight - 50);
 
-	// Set palette
-	_game->getSavedGame()->getSavedBattle()->setPaletteByDepth(this);
-
-	add(_map);
-	add(_txtDebug);
-	add(_txtTooltip, "textTooltip", "battlescape");
-
-	// Set up objects
-	_save = _game->getSavedGame()->getSavedBattle();
-	_map->init();
-	_map->onMouseOver((ActionHandler)&MapEditorState::mapOver);
-	_map->onMousePress((ActionHandler)&MapEditorState::mapPress);
-	_map->onMouseClick((ActionHandler)&MapEditorState::mapClick, 0);
-	_map->onMouseIn((ActionHandler)&MapEditorState::mapIn);
-
-	//_icons->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
-	//_icons->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
-
-	//_btnMapUp->onMouseClick((ActionHandler)&MapEditorState::btnMapUpClick);
-	//_btnMapUp->onKeyboardPress((ActionHandler)&MapEditorState::btnMapUpClick, Options::keyBattleLevelUp);
-	//_btnMapUp->setTooltip("STR_VIEW_LEVEL_ABOVE");
-	//_btnMapUp->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
-	//_btnMapUp->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
-
-	//_btnMapDown->onMouseClick((ActionHandler)&MapEditorState::btnMapDownClick);
-	//_btnMapDown->onKeyboardPress((ActionHandler)&MapEditorState::btnMapDownClick, Options::keyBattleLevelDown);
-	//_btnMapDown->setTooltip("STR_VIEW_LEVEL_BELOW");
-	//_btnMapDown->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
-	//_btnMapDown->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
-
-	_txtDebug->setColor(Palette::blockOffset(8));
-	_txtDebug->setHighContrast(true);
-
-	_txtTooltip->setHighContrast(true);
-
-	// Set music
-	if (!Options::oxcePlayBriefingMusicDuringEquipment)
-	{
-		if (_save->getMusic().empty())
-		{
-			_game->getMod()->playMusic("GMTACTIC");
-		}
-		else
-		{
-			_game->getMod()->playMusic(_save->getMusic());
-		}
-	}
-
-	_animTimer = new Timer(DEFAULT_ANIM_SPEED, true);
-	_animTimer->onTimer((StateHandler)&MapEditorState::animate);
-
-	_gameTimer = new Timer(DEFAULT_ANIM_SPEED, true);
-	_gameTimer->onTimer((StateHandler)&MapEditorState::handleState);
-
-	//_battleGame = new BattlescapeGame(_save, this);
+	SurfaceSet *icons = _game->getMod()->getSurfaceSet("MapEditorIcons");
 
 	// TODO: create interface ruleset for the map editor for all these hardcoded colors
-	_btnOptions = new TextButton(32, 40, screenWidth - 32, screenHeight - 40);
+	_iconsLowerLeft = new InteractiveSurface(160, 40, 0, screenHeight - 40);
+	for (int i = 0; i < 5; ++i)
+	{
+		icons->getFrame(i)->blitNShade(_iconsLowerLeft, i * 32, 0);
+	}
+	_btnOptions = new BattlescapeButton(32, 40, 0, screenHeight - 40);
 	_btnOptions->setColor(232);
-	
-	_editor->setSave(_save);
-	_editor->setSelectedMapDataID(-1);
+	_btnSave = new BattlescapeButton(32, 40, 32, screenHeight - 40);
+	_btnSave->setColor(232);
+	_btnLoad = new BattlescapeButton(32, 40, 64, screenHeight - 40);
+	_btnLoad->setColor(232);
+	_btnUndo = new BattlescapeButton(32, 40, 96, screenHeight - 40);
+	_btnUndo->setColor(232);
+	_btnRedo = new BattlescapeButton(32, 40, 128, screenHeight - 40);
+	_btnRedo->setColor(232);
 
-	_txtSelectedIndex = new Text(100, 10, 32, 10);
-	_edtSelectedIndex = new TextEdit(this, 50, 10, 32, 20);
-	_txtEditRegister = new Text(200, 10, 32, 30);
+	_iconsLowerRight = new InteractiveSurface(160, 40, screenWidth - 160, screenHeight - 40);
+	for (int i = 0; i < 5; ++i)
+	{
+		icons->getFrame(i + 5)->blitNShade(_iconsLowerRight, i * 32, 0);
+	}
+	_btnFill = new BattlescapeButton(32, 40, screenWidth - 160, screenHeight - 40);
+	_btnFill->setColor(232);
+	_btnClear = new BattlescapeButton(32, 40, screenWidth - 128, screenHeight - 40);
+	_btnClear->setColor(232);
+	_btnCut = new BattlescapeButton(32, 40, screenWidth - 96, screenHeight - 40);
+	_btnCut->setColor(232);
+	_btnCopy = new BattlescapeButton(32, 40, screenWidth - 64, screenHeight - 40);
+	_btnCopy->setColor(232);
+	_btnPaste = new BattlescapeButton(32, 40, screenWidth - 32, screenHeight - 40);
+	_btnPaste->setColor(232);
+
+	_tileEditMode = _btnClear;
+	_btnFill->setGroup(&_tileEditMode);
+	_btnClear->setGroup(&_tileEditMode);
+
+	_iconsUpperRight = new InteractiveSurface(160, 40, screenWidth - 160, 0);
+	for (int i = 0; i < 5; ++i)
+	{
+		icons->getFrame(i + 10)->blitNShade(_iconsUpperRight, i * 32, 0);
+	}
+	_btnSelectedTile = new BattlescapeButton(32, 40, screenWidth - 160, 0);
+	_btnSelectedTile->setColor(232);
+	_btnTileFilterGround = new BattlescapeButton(32, 40, screenWidth - 128, 0);
+	_btnTileFilterGround->setColor(232);
+	_btnTileFilterWestWall = new BattlescapeButton(32, 40, screenWidth - 96, 0);
+	_btnTileFilterWestWall->setColor(232);
+	_btnTileFilterNorthWall = new BattlescapeButton(32, 40, screenWidth - 64, 0);
+	_btnTileFilterNorthWall->setColor(232);
+	_btnTileFilterObject = new BattlescapeButton(32, 40, screenWidth - 32, 0);
+	_btnTileFilterObject->setColor(232);
+
+	_tileObjectSelected = _btnTileFilterGround;
+	_btnTileFilterGround->setGroup(&_tileObjectSelected);
+	_btnTileFilterWestWall->setGroup(&_tileObjectSelected);
+	_btnTileFilterNorthWall->setGroup(&_tileObjectSelected);
+	_btnTileFilterObject->setGroup(&_tileObjectSelected);
 
 	_tileSelectionColumns = screenWidth / 2 / 32;
 	_tileSelectionRows = (screenHeight - 2 * 40) / 40;
@@ -174,10 +161,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		}
 	}
 
-	add(_btnOptions);
-	add(_txtSelectedIndex);
-	add(_edtSelectedIndex);
-	add(_txtEditRegister);
+	// Set palette
+	_game->getSavedGame()->getSavedBattle()->setPaletteByDepth(this);
+
+	add(_map);
+	add(_txtTooltip, "textTooltip", "battlescape");
 	add(_tileSelection);
 	add(_panelTileSelection);
 	add(_tileSelectionPageCount);
@@ -188,6 +176,69 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		add(i);
 		i->onMouseClick((ActionHandler)&MapEditorState::tileSelectionGridClick);
 	}
+	add(_iconsLowerLeft);
+	add(_iconsLowerRight);
+	add(_iconsUpperRight);
+	add(_btnOptions, "", "battlescape", _iconsLowerLeft);
+	add(_btnSave, "", "battlescape", _iconsLowerLeft);
+	add(_btnLoad, "", "battlescape", _iconsLowerLeft);
+	add(_btnUndo, "", "battlescape", _iconsLowerLeft);
+	add(_btnRedo, "", "battlescape", _iconsLowerLeft);
+	add(_btnFill, "", "battlescape", _iconsLowerRight);
+	add(_btnClear, "", "battlescape", _iconsLowerRight);
+	add(_btnCut, "", "battlescape", _iconsLowerRight);
+	add(_btnCopy, "", "battlescape", _iconsLowerRight);
+	add(_btnPaste, "", "battlescape", _iconsLowerRight);
+	add(_btnSelectedTile, "", "battlescape", _iconsUpperRight);
+	add(_btnTileFilterGround, "", "battlescape", _iconsUpperRight);
+	add(_btnTileFilterWestWall, "", "battlescape", _iconsUpperRight);
+	add(_btnTileFilterNorthWall, "", "battlescape", _iconsUpperRight);
+	add(_btnTileFilterObject, "", "battlescape", _iconsUpperRight);
+
+	// Set up objects
+	_save = _game->getSavedGame()->getSavedBattle();
+	_editor->setSave(_save);
+	_editor->setSelectedMapDataID(-1);
+
+	_map->init();
+	_map->onMouseOver((ActionHandler)&MapEditorState::mapOver);
+	_map->onMousePress((ActionHandler)&MapEditorState::mapPress);
+	_map->onMouseClick((ActionHandler)&MapEditorState::mapClick, 0);
+	_map->onMouseIn((ActionHandler)&MapEditorState::mapIn);
+
+	//_btnMapUp->onMouseClick((ActionHandler)&MapEditorState::btnMapUpClick);
+	//_btnMapUp->onKeyboardPress((ActionHandler)&MapEditorState::btnMapUpClick, Options::keyBattleLevelUp);
+	//_btnMapUp->setTooltip("STR_VIEW_LEVEL_ABOVE");
+	//_btnMapUp->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	//_btnMapUp->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	//_btnMapDown->onMouseClick((ActionHandler)&MapEditorState::btnMapDownClick);
+	//_btnMapDown->onKeyboardPress((ActionHandler)&MapEditorState::btnMapDownClick, Options::keyBattleLevelDown);
+	//_btnMapDown->setTooltip("STR_VIEW_LEVEL_BELOW");
+	//_btnMapDown->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	//_btnMapDown->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	_txtTooltip->setHighContrast(true);
+
+	// Set music
+	if (!Options::oxcePlayBriefingMusicDuringEquipment)
+	{
+		if (_save->getMusic().empty())
+		{
+			_game->getMod()->playMusic("GMTACTIC");
+		}
+		else
+		{
+			_game->getMod()->playMusic(_save->getMusic());
+		}
+	}
+
+	_iconsLowerLeft->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_iconsLowerLeft->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_iconsLowerRight->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_iconsLowerRight->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_iconsUpperRight->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_iconsUpperRight->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 
 	_btnOptions->onMouseClick((ActionHandler)&MapEditorState::btnOptionsClick);
 	_btnOptions->onKeyboardPress((ActionHandler)&MapEditorState::btnOptionsClick, Options::keyBattleOptions);
@@ -195,26 +246,99 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnOptions->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnOptions->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	_txtSelectedIndex->setColor(Palette::blockOffset(8));
-	_txtSelectedIndex->setHighContrast(true);
-	std::string txtIndex = "Index:";
-	_txtSelectedIndex->setText(txtIndex.c_str());
+	_btnSave->onMouseClick((ActionHandler)&MapEditorState::btnSaveClick);
+	//_btnSave->onKeyboardPress((ActionHandler)&MapEditorState::btnSaveClick, SDLK_s); // change to options
+	_btnSave->setTooltip("STR_TOOLTIP_SAVE_MAP");
+	_btnSave->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnSave->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	_edtSelectedIndex->setColor(Palette::blockOffset(8));
-	_edtSelectedIndex->setHighContrast(true);
-	_edtSelectedIndex->onChange((ActionHandler)&MapEditorState::edtSelectedIndexChange);
-	_edtSelectedIndex->setConstraint(TEC_NUMERIC);
-	std::string edtIndex = "-1";
-	_edtSelectedIndex->setText(edtIndex.c_str());
+	//_btnLoad->onMouseClick((ActionHandler)&MapEditorState::btnLoadClick);
+	//_btnLoad->onKeyboardPress((ActionHandler)&MapEditorState::btnLoadClick, SDLK_o); // change to options
+	_btnLoad->setTooltip("STR_TOOLTIP_LOAD_MAP");
+	_btnLoad->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnLoad->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	_txtEditRegister->setColor(Palette::blockOffset(8));
-	_txtEditRegister->setHighContrast(true);
-	std::ostringstream ss;
-	ss << _editor->getEditRegisterPosition() << "/" << _editor->getEditRegisterSize();
-	_txtEditRegister->setText(ss.str().c_str());
+	_btnUndo->onMouseClick((ActionHandler)&MapEditorState::btnUndoClick);
+	//_btnUndo->onKeyboardPress((ActionHandler)&MapEditorState::btnUndoClick, SDLK_z); // change to options
+	_btnUndo->setTooltip("STR_TOOLTIP_UNDO");
+	_btnUndo->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnUndo->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	_btnRedo->onMouseClick((ActionHandler)&MapEditorState::btnRedoClick);
+	//_btnRedo->onKeyboardPress((ActionHandler)&MapEditorState::btnRedoClick, SDLK_z); // change to options
+	_btnRedo->setTooltip("STR_TOOLTIP_REDO");
+	_btnRedo->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnRedo->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	_btnFill->onMouseClick((ActionHandler)&MapEditorState::btnFillClick);
+	//_btnFill->onKeyboardPress((ActionHandler)&MapEditorState::btnFillClick, SDLK_z); // change to options
+	_btnFill->setTooltip("STR_TOOLTIP_FILL");
+	_btnFill->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnFill->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	_btnClear->onMouseClick((ActionHandler)&MapEditorState::btnClearClick);
+	//_btnClear->onKeyboardPress((ActionHandler)&MapEditorState::btnClearClick, SDLK_z); // change to options
+	_btnClear->setTooltip("STR_TOOLTIP_CLEAR");
+	_btnClear->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnClear->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	//_btnCut->onMouseClick((ActionHandler)&MapEditorState::btnCutClick);
+	//_btnCut->onKeyboardPress((ActionHandler)&MapEditorState::btnCutClick, SDLK_x); // change to options
+	_btnCut->setTooltip("STR_TOOLTIP_CUT");
+	_btnCut->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnCut->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	//_btnCopy->onMouseClick((ActionHandler)&MapEditorState::btnCopyClick);
+	//_btnCopy->onKeyboardPress((ActionHandler)&MapEditorState::btnCopyClick, SDLK_c); // change to options
+	_btnCopy->setTooltip("STR_TOOLTIP_COPY");
+	_btnCopy->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnCopy->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	//_btnPaste->onMouseClick((ActionHandler)&MapEditorState::btnPasteClick);
+	//_btnPaste->onKeyboardPress((ActionHandler)&MapEditorState::btnPasteClick, SDLK_v); // change to options
+	_btnPaste->setTooltip("STR_TOOLTIP_PASTE");
+	_btnPaste->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnPaste->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	//_btnSelectedTile->onMouseClick((ActionHandler)&MapEditorState::btnSelectedTileClick);
+	//_btnSelectedTile->onKeyboardPress((ActionHandler)&MapEditorState::btnSelectedTileClick, SDLK_v); // change to options
+	_btnSelectedTile->setTooltip("STR_TOOLTIP_SELECTED_TILE");
+	_btnSelectedTile->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnSelectedTile->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+
+	_btnTileFilterGround->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
+	_btnTileFilterGround->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_1); // change to options
+	_btnTileFilterGround->setTooltip("STR_TOOLTIP_TILE_GROUND");
+	_btnTileFilterGround->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnTileFilterGround->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+
+	_btnTileFilterWestWall->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
+	_btnTileFilterWestWall->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_2); // change to options
+	_btnTileFilterWestWall->setTooltip("STR_TOOLTIP_TILE_WESTWALL");
+	_btnTileFilterWestWall->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnTileFilterWestWall->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+
+	_btnTileFilterNorthWall->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
+	_btnTileFilterNorthWall->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_3); // change to options
+	_btnTileFilterNorthWall->setTooltip("STR_TOOLTIP_TILE_NORTHWALL");
+	_btnTileFilterNorthWall->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnTileFilterNorthWall->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+
+	_btnTileFilterObject->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
+	_btnTileFilterObject->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_4); // change to options
+	_btnTileFilterObject->setTooltip("STR_TOOLTIP_TILE_OBJECT");
+	_btnTileFilterObject->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnTileFilterObject->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
 	_tileSelection->setColor(232); // Goal of background color 235
 	_tileSelection->onMouseClick((ActionHandler)&MapEditorState::tileSelectionClick);
+	_tileSelection->setTooltip("STR_TOOLTIP_TILE_SELECTION");
+	_tileSelection->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_tileSelection->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
 	_tileSelectionPageCount->setColor(224);
 	_tileSelectionPageCount->setHighContrast(true);
@@ -224,7 +348,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		mapDataObjects += mapDataSet->getSize();
 	}
 	_tileSelectionLastPage = mapDataObjects / (_tileSelectionColumns * _tileSelectionRows);
-	ss.str(std::string());
+	std::ostringstream ss;
 	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
 	_tileSelectionPageCount->setText(ss.str().c_str());
 	_tileSelectionPageCount->setVisible(false);
@@ -260,6 +384,12 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		i->setVisible(false);
 	}
 	_panelTileSelection->setVisible(false);
+
+	_animTimer = new Timer(DEFAULT_ANIM_SPEED, true);
+	_animTimer->onTimer((StateHandler)&MapEditorState::animate);
+
+	_gameTimer = new Timer(DEFAULT_ANIM_SPEED, true);
+	_gameTimer->onTimer((StateHandler)&MapEditorState::handleState);
 }
 
 
@@ -270,7 +400,6 @@ MapEditorState::~MapEditorState()
 {
 	delete _animTimer;
 	delete _gameTimer;
-	//delete _battleGame;
 }
 
 /**
@@ -337,6 +466,28 @@ void MapEditorState::think()
         State::think();
         _animTimer->think(this, 0);
         _gameTimer->think(this, 0);
+	}
+
+	if (_editor->getEditRegisterPosition() == 0 && _btnUndo->getColor() != 8)
+	{
+		_btnUndo->offset(8 - 232, 0, 255, 1);
+		_btnUndo->setColor(8); // change to disabled button color
+	}
+	else if (_editor->getEditRegisterPosition() > 0 && _btnUndo->getColor() != 232)
+	{
+		_btnUndo->offset(232 - 8, 0, 255, 1);
+		_btnUndo->setColor(232); // change to default color
+	}
+
+	if (_editor->getEditRegisterPosition() == _editor->getEditRegisterSize() && _btnRedo->getColor() != 8)
+	{
+		_btnRedo->offset(8 - 232, 0, 255, 1);
+		_btnRedo->setColor(8);
+	}
+	else if (_editor->getEditRegisterPosition() < _editor->getEditRegisterSize() && _btnRedo->getColor() != 232)
+	{
+		_btnRedo->offset(232 - 8, 0, 255, 1);
+		_btnRedo->setColor(232);
 	}
 }
 
@@ -528,21 +679,18 @@ void MapEditorState::mapClick(Action *action)
 	Position pos;
 	_map->getSelectorPosition(&pos);
 
-	if (_save->getDebugMode())
-	{
-		std::ostringstream ss;
-		ss << "Clicked " << pos;
-		debug(ss.str());
-	}
+	//if (_save->getDebugMode())
+	//{
+	//	std::ostringstream ss;
+	//	ss << "Clicked " << pos;
+	//	debug(ss.str());
+	//}
 
 	// Have the map editor capture the mouse input here for editing tiles
 	if (_editor)
 	{
 		Tile *selectedTile = _save->getTile(pos);
 		_editor->handleEditorInput(action, selectedTile);
-		std::ostringstream ss;
-		ss << _editor->getEditRegisterPosition() << "/" << _editor->getEditRegisterSize();
-		_txtEditRegister->setText(ss.str().c_str());
 		return;
 	}
 }
@@ -603,6 +751,96 @@ void MapEditorState::btnSelectMusicTrackClick(Action *)
 }
 
 /**
+ * Saves the edited map.
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnSaveClick(Action *action)
+{
+	_editor->saveMapFile(_editor->getMapName());
+}
+
+/**
+ * Un-does the action on the top of the editor's register
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnUndoClick(Action *action)
+{
+	_editor->undo();
+	if (_txtTooltip->getVisible())
+		txtTooltipIn(action);
+	_map->draw();
+}
+
+/**
+ * Re-does the next action on the editor's register
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnRedoClick(Action *action)
+{
+	_editor->redo();
+	if (_txtTooltip->getVisible())
+		txtTooltipIn(action);
+	_map->draw();
+}
+
+/**
+ * Handles pressing the fill button
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnFillClick(Action *action)
+{
+	SDL_Event ev;
+	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.button.button = SDL_BUTTON_LEFT;
+	Action a = Action(&ev, 0.0, 0.0, 0, 0);
+	action->getSender()->mousePress(&a, this);
+
+	_editor->setSelectedMapDataID(_selectedTileIndex);
+	_tileEditMode = _btnFill;
+}
+
+/**
+ * Handles pressing the clear button
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnClearClick(Action *action)
+{
+	SDL_Event ev;
+	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.button.button = SDL_BUTTON_LEFT;
+	Action a = Action(&ev, 0.0, 0.0, 0, 0);
+	action->getSender()->mousePress(&a, this);
+
+	_editor->setSelectedMapDataID(-1);
+	_tileEditMode = _btnClear;
+}
+
+/**
+ * Handles pressing the tile filter buttons
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnTileFilterClick(Action *action)
+{
+	SDL_Event ev;
+	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.button.button = SDL_BUTTON_LEFT;
+	Action a = Action(&ev, 0.0, 0.0, 0, 0);
+	action->getSender()->mousePress(&a, this);
+
+	if (action->getSender() == _btnTileFilterGround)
+		_tileObjectSelected = _btnTileFilterGround;
+	else if (action->getSender() == _btnTileFilterWestWall)
+		_tileObjectSelected = _btnTileFilterWestWall;
+	else if (action->getSender() == _btnTileFilterNorthWall)
+		_tileObjectSelected = _btnTileFilterNorthWall;
+	else if (action->getSender() == _btnTileFilterObject)
+		_tileObjectSelected = _btnTileFilterObject;
+
+	// consume the event
+	action->getDetails()->type = SDL_NOEVENT;
+}
+
+/**
  * Animates map objects on the map
  */
 void MapEditorState::animate()
@@ -647,18 +885,6 @@ Map *MapEditorState::getMap() const
 }
 
 /**
- * Shows a debug message in the topleft corner.
- * @param message Debug message.
- */
-void MapEditorState::debug(const std::string &message)
-{
-	if (_save->getDebugMode())
-	{
-		_txtDebug->setText(message);
-	}
-}
-
-/**
  * Takes care of any events from the core game engine.
  * @param action Pointer to an action.
  */
@@ -680,30 +906,20 @@ inline void MapEditorState::handle(Action *action)
 				SDLKey key = action->getDetails()->key.keysym.sym;
 				bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
 				bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
-				bool altPressed = (SDL_GetModState() & KMOD_ALT) != 0;
 
-				// Map Editor undo/redo
-				if (key == SDLK_z && ctrlPressed)
+				if (key == SDLK_z && ctrlPressed) // change z to options
 				{
 					if (shiftPressed)
-					{
-						_editor->redo();
-					}
+						btnRedoClick(action);
 					else
-					{
-						_editor->undo();
-					}
-
-					_map->draw();
-
-					std::ostringstream ss;
-					ss << _editor->getEditRegisterPosition() << "/" << _editor->getEditRegisterSize();
-					_txtEditRegister->setText(ss.str().c_str());
+						btnUndoClick(action);
 				}
-				// Map Editor save
-				else if (key == SDLK_s && ctrlPressed)
+				else if (key == SDLK_s && ctrlPressed) // change s to options
 				{
-					_editor->saveMapFile(_editor->getMapName());
+					if (shiftPressed)
+						;// save as
+					else
+						btnSaveClick(action);
 				}
 
 				// quick save and quick load
@@ -767,7 +983,16 @@ void MapEditorState::txtTooltipIn(Action *action)
 	if (Options::battleTooltips)
 	{
 		_currentTooltip = action->getSender()->getTooltip();
-		_txtTooltip->setText(tr(_currentTooltip));
+		if (action->getSender() == _btnUndo || action->getSender() == _btnRedo)
+		{
+			std::ostringstream ss;
+			ss << tr(_currentTooltip).arg(std::to_string(_editor->getEditRegisterPosition())).arg(std::to_string(_editor->getEditRegisterSize()));
+			_txtTooltip->setText(ss.str());
+		}
+		else
+		{
+			_txtTooltip->setText(tr(_currentTooltip));
+		}
 	}
 }
 
@@ -842,12 +1067,12 @@ void MapEditorState::resize(int &dX, int &dY)
 
 	for (std::vector<Surface*>::const_iterator i = _surfaces.begin(); i != _surfaces.end(); ++i)
 	{
-		if (*i != _map && *i != _txtDebug)
+		if (*i != _map)
 		{
 			(*i)->setX((*i)->getX() + dX / 2);
 			(*i)->setY((*i)->getY() + dY);
 		}
-		else if (*i != _map && *i != _txtDebug)
+		else if (*i != _map)
 		{
 			(*i)->setX((*i)->getX() + dX);
 		}
@@ -894,67 +1119,6 @@ MapEditor *MapEditorState::getMapEditor()
 }
 
 /**
- * Changes which map tile index the map editor has selected
- * @param action Pointer to an action.
- */
-void MapEditorState::edtSelectedIndexChange(Action *action)
-{
-	if (!_editor)
-		return;
-
-	if (_edtSelectedIndex->getText().size() == 0 &&
-		(action->getDetails()->key.keysym.sym == SDLK_RETURN ||
-		action->getDetails()->key.keysym.sym == SDLK_KP_ENTER))
-	{
-		_edtSelectedIndex->setText(std::to_string(_editor->getSelectedMapDataID()));
-		_edtSelectedIndex->setFocus(false);
-	}
-	else
-	{
-		std::string input = _edtSelectedIndex->getText();
-		int selectedIndex = 0;
-
-		// Try to convert input to a number.
-		try
-		{
-			selectedIndex = stoi(input);
-
-			if (selectedIndex < -1)
-			{
-				selectedIndex = -1;
-			}
-			
-			int maxIndex = 0;
-			for (auto i : *_save->getMapDataSets())
-			{
-				maxIndex += i->getSize();
-			}
-			if (selectedIndex > maxIndex - 1)
-			{
-				selectedIndex = maxIndex;
-			}
-
-			if (action->getDetails()->key.keysym.sym == SDLK_RETURN ||
-				action->getDetails()->key.keysym.sym == SDLK_KP_ENTER)
-			{
-				_edtSelectedIndex->setText(std::to_string(selectedIndex));
-			}
-
-			_editor->setSelectedMapDataID(selectedIndex);
-			drawTileSpriteOnSurface(_tileSelection, selectedIndex);
-		}
-		catch (...)
-		{
-			if (action->getDetails()->key.keysym.sym == SDLK_RETURN ||
-				action->getDetails()->key.keysym.sym == SDLK_KP_ENTER)
-			{
-				_edtSelectedIndex->setText(std::to_string(selectedIndex));
-			}
-		}
-	}
-}
-
-/**
  * Toggles the tile selection UI
  * @param action Pointer to an action.
  */
@@ -969,8 +1133,12 @@ void MapEditorState::tileSelectionClick(Action *action)
 	}
 	_panelTileSelection->setVisible(!_panelTileSelection->getVisible());
 
-	if (_editor->getSelectedMapDataID() > -0)
-		drawTileSpriteOnSurface(_tileSelection, _editor->getSelectedMapDataID());
+	if (_panelTileSelection->getVisible())
+		_txtTooltip->setX(_panelTileSelection->getWidth() + 2);
+	else
+		_txtTooltip->setX(2);
+
+	drawTileSpriteOnSurface(_tileSelection, _selectedTileIndex);
 }
 
 /**
@@ -1030,8 +1198,9 @@ void MapEditorState::tileSelectionGridClick(Action *action)
 	index += _tileSelectionCurrentPage * _tileSelectionRows * _tileSelectionColumns;
 	if (drawTileSpriteOnSurface(_tileSelection, index))
 	{
-		_editor->setSelectedMapDataID(index);
-		_edtSelectedIndex->setText(std::to_string(index));
+		_selectedTileIndex = index;
+		if (_editor->getSelectedMapDataID() != -1)
+			_editor->setSelectedMapDataID(index);
 	}
 }
 

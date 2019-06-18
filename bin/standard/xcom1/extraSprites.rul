@@ -73,6 +73,13 @@ extraSprites:
     singleImage: true
     files:
       0: Resources/Extended/Pedia/PAL_UFOPAEDIA/info-button-ufo.png
+  - type: MapEditorIcons
+    width: 160
+    height: 160
+    subX: 32
+    subY: 40
+    files:
+      0: Resources/Extended/UI/mapeditor_icons.png
   - type: Pathfinding
     files:
       0: Resources/Pathfinding/Pathfinding.png

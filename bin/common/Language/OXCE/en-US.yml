@@ -292,6 +292,22 @@ en-US:
   STR_SLOT: "Slot>{ALT}{0}"
 #Map.cpp
   STR_THINKING: "Thinking..."
+#MapEditorState.cpp
+  STR_TOOLTIP_SAVE_MAP: "Save Map"
+  STR_TOOLTIP_LOAD_MAP: "Load Map (Not yet implemented)"
+  STR_TOOLTIP_UNDO: "Undo {0}/{1}"
+  STR_TOOLTIP_REDO: "Redo {0}/{1}"
+  STR_TOOLTIP_FILL: "Fill Tile/Place Object Mode"
+  STR_TOOLTIP_CLEAR: "Clear Tile/Remove Object Mode"
+  STR_TOOLTIP_CUT: "Cut Selected Tiles (Not yet implemented)"
+  STR_TOOLTIP_COPY: "Copy Selected Tiles (Not yet implemented)"
+  STR_TOOLTIP_PASTE: "Paste Copied/Cut Tiles (Not yet implemented)"
+  STR_TOOLTIP_TILE_SELECTION: "Select Tile Object"
+  STR_TOOLTIP_SELECTED_TILE: "Selected Tile (Not yet implemented)"
+  STR_TOOLTIP_TILE_GROUND: "Place Tiles on Ground (Not yet implemented)"
+  STR_TOOLTIP_TILE_WESTWALL: "Place Tiles on West Wall (Not yet implemented)"
+  STR_TOOLTIP_TILE_NORTHWALL: "Place Tiles on North Wall (Not yet implemented)"
+  STR_TOOLTIP_TILE_OBJECT: "Place Tiles as Object (Not yet implemented)"
 #NextTurnState.cpp
   STR_TELL_ME_MORE: "Tell me more..."
   STR_REINFORCEMENTS_ALERT: "Reinforcements alert!"

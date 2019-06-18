@@ -33,7 +33,6 @@ class BattlescapeButton;
 class InteractiveSurface;
 class Text;
 class TextButton;
-class TextEdit;
 class SavedBattleGame;
 class Timer;
 class MapEditor;
@@ -48,8 +47,17 @@ private:
 	Map *_map;
 	Timer *_animTimer, *_gameTimer;
 	SavedBattleGame *_save;
-    TextButton *_btnOptions;
-	Text *_txtDebug, *_txtTooltip;
+	MapEditor *_editor;
+	InteractiveSurface *_iconsLowerLeft, *_iconsLowerRight, *_iconsUpperRight;
+    BattlescapeButton *_btnOptions, *_btnSave, *_btnLoad, *_btnUndo, *_btnRedo;
+	BattlescapeButton *_btnFill, *_btnClear, *_btnCut, *_btnCopy, *_btnPaste;
+	BattlescapeButton *_tileEditMode;
+	BattlescapeButton *_btnSelectedTile, *_btnTileFilterGround, *_btnTileFilterWestWall, *_btnTileFilterNorthWall, *_btnTileFilterObject;
+	BattlescapeButton *_tileObjectSelected;
+	TextButton *_tileSelection, *_panelTileSelection, *_tileSelectionPageCount;
+	TextButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow;
+	std::vector<InteractiveSurface*> _tileSelectionGrid;
+	Text *_txtTooltip;
     int _tooltipDefaultColor;
 	bool _firstInit;
 	bool _isMouseScrolling, _isMouseScrolled;
@@ -63,13 +71,8 @@ private:
 	Position _cursorPosition;
 	bool _autosave;
 	Uint8 _indicatorTextColor, _indicatorGreen, _indicatorBlue, _indicatorPurple;
-	MapEditor *_editor;
-	Text *_txtSelectedIndex, *_txtEditRegister;
-	TextEdit *_edtSelectedIndex;
-	TextButton *_tileSelection, *_panelTileSelection, *_tileSelectionPageCount;
-	TextButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow;
-	std::vector<InteractiveSurface*> _tileSelectionGrid;
 	int _tileSelectionColumns, _tileSelectionRows, _tileSelectionCurrentPage, _tileSelectionLastPage;
+	int _selectedTileIndex;
 public:
 	static const int DEFAULT_ANIM_SPEED = 100;
 	/// Creates the Map Editor state.
@@ -96,6 +99,26 @@ public:
 	//void btnMapDownClick(Action *action);
 	/// Handler for clicking the [SelectMusicTrack] button.
 	void btnSelectMusicTrackClick(Action *action);;
+	/// Handler for pressing the save button.
+	void btnSaveClick(Action *action);
+	/// Handler for pressing the load button.
+	//void btnLoadClick(Action *action);
+	/// Handler for pressing the undo button.
+	void btnUndoClick(Action *action);
+	/// Handler for pressing the redo button.
+	void btnRedoClick(Action *action);
+	/// Handler for pressing the fill button.
+	void btnFillClick(Action *action);
+	/// Handler for pressing the clear button.
+	void btnClearClick(Action *action);
+	/// Handler for pressing the cut button.
+	//void btnCutClick(Action *action);
+	/// Handler for pressing the copy button.
+	//void btnCopyClick(Action *action);
+	/// Handler for pressing the paste button.
+	//void btnPasteClick(Action *action);
+	/// Handler for pressing the tile filter buttons.
+	void btnTileFilterClick(Action *action);
 	/// Animates map objects on the map
 	void animate();
 	/// Handles the battle game state.
@@ -106,10 +129,6 @@ public:
 	Game *getGame() const;
 	/// Gets map.
 	Map *getMap() const;
-	/// Show debug message.
-	void debug(const std::string &message);
-	/// Show warning message.
-	void warning(const std::string &message);
 	/// Handles keypresses.
 	void handle(Action *action) override;
 	/// Clears mouse-scrolling state.
@@ -134,8 +153,6 @@ public:
 	//void autosave();
 	/// Gets the pointer to the map editor
 	MapEditor *getMapEditor();
-	/// Changes the tile index selected for the map editor
-	void edtSelectedIndexChange(Action *action);
 	/// Toggles the tile selection UI
 	void tileSelectionClick(Action *action);
 	/// Draws the tile sprites on the selection grid
