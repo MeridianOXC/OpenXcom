@@ -230,17 +230,21 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_tileSelectionPageCount->setVisible(false);
 	_tileSelectionPageCount->onMousePress((ActionHandler)&MapEditorState::tileSelectionMousePress);
 
-	size_t arrowColor = _tileSelectionCurrentPage == _tileSelectionLastPage ? 0 : 224; //8 : 232 for not-high-contrast
+	size_t arrowColor = 8;
+	if (_tileSelectionCurrentPage != _tileSelectionLastPage)
+	{
+		arrowColor = 224;
+		_tileSelectionLeftArrow->setHighContrast(true);
+		_tileSelectionRightArrow->setHighContrast(true);
+	}
 
 	_tileSelectionLeftArrow->setColor(arrowColor);
-	_tileSelectionLeftArrow->setHighContrast(true);
 	_tileSelectionLeftArrow->onMouseClick((ActionHandler)&MapEditorState::tileSelectionLeftArrowClick);
 	_tileSelectionLeftArrow->onMousePress((ActionHandler)&MapEditorState::tileSelectionMousePress);
 	_tileSelectionLeftArrow->setText(std::string("<<").c_str());
 	_tileSelectionLeftArrow->setVisible(false);
 
 	_tileSelectionRightArrow->setColor(arrowColor);
-	_tileSelectionRightArrow->setHighContrast(true);
 	_tileSelectionRightArrow->onMouseClick((ActionHandler)&MapEditorState::tileSelectionRightArrowClick);
 	_tileSelectionRightArrow->onMousePress((ActionHandler)&MapEditorState::tileSelectionMousePress);
 	_tileSelectionRightArrow->setText(std::string(">>").c_str());
