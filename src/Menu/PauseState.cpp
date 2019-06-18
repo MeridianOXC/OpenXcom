@@ -107,12 +107,17 @@ PauseState::PauseState(OptionsOrigin origin) : _origin(origin)
 			_btnOptions->setVisible(false);
 		}
 	}
+	else if (origin == OPT_MAPEDITOR)
+	{
+		_btnCancel->onKeyboardPress((ActionHandler)&PauseState::btnCancelClick, Options::keyBattleOptions);
+	}
 
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setBig();
 	_txtTitle->setText(tr("STR_OPTIONS_UC"));
 
-	if (_origin == OPT_BATTLESCAPE)
+	if (_origin == OPT_BATTLESCAPE ||
+		_origin == OPT_MAPEDITOR)
 	{
 		applyBattlescapeTheme("pauseMenu");
 	}

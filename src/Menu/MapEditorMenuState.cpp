@@ -31,8 +31,8 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextList.h"
 #include "../Battlescape/MapEditor.h"
+#include "../Battlescape/MapEditorState.h"
 #include "../Battlescape/BattlescapeGenerator.h"
-#include "../Battlescape/BattlescapeState.h"
 #include "../Battlescape/Camera.h"
 #include "../Battlescape/Map.h"
 #include "../Savegame/SavedGame.h"
@@ -192,22 +192,9 @@ void MapEditorMenuState::btnOkClick(Action *)
 	MapEditor *editor = new MapEditor(savedBattleGame);
 	editor->setMapName(block->getName());
 	_game->setMapEditor(editor);
-	BattlescapeState *battlescapeState = new BattlescapeState(editor);
-	//int liveAliens = 0, liveSoldiers = 0;
-	//bs->getBattleGame()->tallyUnits(liveAliens, liveSoldiers);
-	_game->pushState(battlescapeState);
-	_game->getSavedGame()->getSavedBattle()->setBattleState(battlescapeState);
-	//	_game->pushState(new NextTurnState(_game->getSavedGame()->getSavedBattle(), bs));
-	//	_game->pushState(new InventoryState(false, bs, 0));
-	//}
-	//else
-	//{
-	//	Options::baseXResolution = Options::baseXGeoscape;
-	//	Options::baseYResolution = Options::baseYGeoscape;
-	//	_game->getScreen()->resetDisplay(false);
-	//	delete bs;
-	//	_game->pushState(new AliensCrashState);
-	//}
+	MapEditorState *mapEditorState = new MapEditorState(editor);
+	_game->pushState(mapEditorState);
+	_game->getSavedGame()->getSavedBattle()->setMapEditorState(mapEditorState);
 }
 
 /**
