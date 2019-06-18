@@ -215,7 +215,7 @@ void OptionsBaseState::btnOkClick(Action *)
 	int dX = Options::baseXResolution;
 	int dY = Options::baseYResolution;
 	Screen::updateScale(Options::battlescapeScale, Options::baseXBattlescape, Options::baseYBattlescape, _origin == OPT_BATTLESCAPE || _origin == OPT_MAPEDITOR);
-	Screen::updateScale(Options::geoscapeScale, Options::baseXGeoscape, Options::baseYGeoscape, _origin != OPT_BATTLESCAPE);
+	Screen::updateScale(Options::geoscapeScale, Options::baseXGeoscape, Options::baseYGeoscape, _origin != OPT_BATTLESCAPE && _origin != OPT_MAPEDITOR);
 	dX = Options::baseXResolution - dX;
 	dY = Options::baseYResolution - dY;
 	recenter(dX, dY);
