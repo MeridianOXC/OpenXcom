@@ -60,6 +60,7 @@ private :
     int _selectedMapDataID, _editRegisterPosition;
     std::vector< Tile* > _selectedTiles;
     std::string _mapname;
+    TilePart _selectedObject;
 
 public :
     /// Creates the Map Editor
@@ -84,6 +85,10 @@ public :
     void setSelectedMapDataID(int selectedIndex);
     /// Gets the map data ID index selected
     int getSelectedMapDataID();
+    /// Sets the selected object type within a tile
+    void setSelectedObject(TilePart part);
+    /// Gets the object type within a tile (floor, walls, or object) selected
+    TilePart getSelectedObject();
     /// Sets the SavedBattleGame
     void setSave(SavedBattleGame *save);
     /// Sets the name of the map we're editing

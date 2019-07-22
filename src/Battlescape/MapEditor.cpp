@@ -34,7 +34,7 @@ namespace OpenXcom
  * Initializes all the Map Editor.
  */
 MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
-    _selectedMapDataID(-1), _editRegisterPosition(0), _mapname("")
+    _selectedMapDataID(-1), _editRegisterPosition(0), _mapname(""), _selectedObject(O_MAX)
 {
     _editRegister.clear();
     _selectedTiles.clear();
@@ -98,12 +98,21 @@ void MapEditor::changeTiles(EditType action)
                     // TODO change this to actual IDs later
                     int selectedIndex = _selectedMapDataID;
 
-                    // If no index is selected, we're clearing the tile
+                    // If no index is selected, we're clearing something from the tile
                     if (selectedIndex == -1)
                     {
-                        for (int part = O_FLOOR; part < O_MAX; part++)
+                        // No particular object selected, clear the whole tile
+                        if (_selectedObject == O_MAX)
                         {
-                            parts.push_back((TilePart)part);
+                            for (int part = O_FLOOR; part < O_MAX; part++)
+                            {
+                                parts.push_back((TilePart)part);
+                            }
+                        }
+                        // Clear just the selected part of the tile
+                        else
+                        {
+                            parts.push_back(_selectedObject);
                         }
                     }
                     // Otherwise, we need to find which object the index is pointing to
@@ -114,11 +123,17 @@ void MapEditor::changeTiles(EditType action)
 
                         if (selectedMapData)
                         {
-                            // TODO: try-catch error handling for changing sprites using the undo/redo register
                             MapDataSet *selectedMapDataSet = _save->getMapDataSets()->at(selectedMapDataSetID);
-                            parts.push_back(selectedMapData->getObjectType());
+                            if (_selectedObject == O_MAX)
+                            {
+                                parts.push_back(selectedMapData->getObjectType());
+                            }
+                            else
+                            {
+                                parts.push_back(_selectedObject);
+                            }
 
-                            int partIndex = (int)selectedMapData->getObjectType();
+                            int partIndex = (int)parts.back();
                             mapData[partIndex] = selectedMapData;
                             mapDataSet[partIndex] = selectedMapDataSet;
                             mapDataID[partIndex] = selectedIndex;
@@ -317,6 +332,23 @@ void MapEditor::setSelectedMapDataID(int selectedIndex)
 int MapEditor::getSelectedMapDataID()
 {
     return _selectedMapDataID;
+}
+
+/**
+ * Sets the selected tile part
+ * @param part the part of the tile to edit
+ */
+void MapEditor::setSelectedObject(TilePart part)
+{
+    _selectedObject = part;
+}
+
+/**
+ * Gets the selected part of the tile
+ */
+TilePart MapEditor::getSelectedObject()
+{
+    return _selectedObject;
 }
 
 /**

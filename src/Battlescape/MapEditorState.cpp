@@ -136,11 +136,10 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnTileFilterObject = new BattlescapeButton(32, 40, screenWidth - 32, 0);
 	_btnTileFilterObject->setColor(232);
 
-	_tileObjectSelected = _btnTileFilterGround;
-	_btnTileFilterGround->setGroup(&_tileObjectSelected);
-	_btnTileFilterWestWall->setGroup(&_tileObjectSelected);
-	_btnTileFilterNorthWall->setGroup(&_tileObjectSelected);
-	_btnTileFilterObject->setGroup(&_tileObjectSelected);
+	_tileFilters[O_FLOOR] = _btnTileFilterGround;
+	_tileFilters[O_WESTWALL] = _btnTileFilterWestWall;
+	_tileFilters[O_NORTHWALL] = _btnTileFilterNorthWall;
+	_tileFilters[O_OBJECT] = _btnTileFilterObject;
 
 	_tileSelectionColumns = screenWidth / 2 / 32;
 	_tileSelectionRows = (screenHeight - 2 * 40) / 40;
@@ -434,6 +433,8 @@ void MapEditorState::init()
 		_map->getCamera()->centerOnPosition(Position(midpointX, midpointY, 0), true);
 		_map->refreshSelectorPosition();
 		_map->setCursorType(CT_NORMAL);
+
+		_editor->setSelectedObject(O_MAX);
 
 		_firstInit = false;
 	}
@@ -827,16 +828,56 @@ void MapEditorState::btnTileFilterClick(Action *action)
 	Action a = Action(&ev, 0.0, 0.0, 0, 0);
 	action->getSender()->mousePress(&a, this);
 
-	if (action->getSender() == _btnTileFilterGround)
-		_tileObjectSelected = _btnTileFilterGround;
-	else if (action->getSender() == _btnTileFilterWestWall)
-		_tileObjectSelected = _btnTileFilterWestWall;
-	else if (action->getSender() == _btnTileFilterNorthWall)
-		_tileObjectSelected = _btnTileFilterNorthWall;
-	else if (action->getSender() == _btnTileFilterObject)
-		_tileObjectSelected = _btnTileFilterObject;
+	TilePart clickedFilter = O_MAX;
 
-	// consume the event
+	if (action->getSender() == _btnTileFilterGround)
+	{
+		clickedFilter = O_FLOOR;
+	}
+	else if (action->getSender() == _btnTileFilterWestWall)
+	{
+		clickedFilter = O_WESTWALL;
+	}
+	else if (action->getSender() == _btnTileFilterNorthWall)
+	{
+		clickedFilter = O_NORTHWALL;
+	}
+	else if (action->getSender() == _btnTileFilterObject)
+	{
+		clickedFilter = O_OBJECT;
+	}
+
+	// Clicking on the currently selected filter: de-select the filter
+	if (_editor->getSelectedObject() == clickedFilter)
+	{
+		_editor->setSelectedObject(O_MAX);
+
+		_btnTileFilterGround->setGroup(0);
+		_btnTileFilterWestWall->setGroup(0);
+		_btnTileFilterNorthWall->setGroup(0);
+		_btnTileFilterObject->setGroup(0);
+		
+		action->getDetails()->type = SDL_MOUSEBUTTONUP;
+		_tileObjectSelected->mouseRelease(action, this);
+		_tileObjectSelected->draw();
+		_tileObjectSelected = 0;
+
+		return;
+	}
+
+	_tileObjectSelected = _tileFilters[clickedFilter];
+	// If no filter was previously selected, the filters need to be re-grouped
+	if (_editor->getSelectedObject() == O_MAX)
+	{
+		_btnTileFilterGround->setGroup(&_tileObjectSelected);
+		_btnTileFilterWestWall->setGroup(&_tileObjectSelected);
+		_btnTileFilterNorthWall->setGroup(&_tileObjectSelected);
+		_btnTileFilterObject->setGroup(&_tileObjectSelected);
+	}
+
+	_editor->setSelectedObject(clickedFilter);
+
+	// consume the event to keep the button held down
 	action->getDetails()->type = SDL_NOEVENT;
 }
 
