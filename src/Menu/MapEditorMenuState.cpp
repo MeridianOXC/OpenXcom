@@ -24,12 +24,16 @@
 #include "../Mod/Mod.h"
 #include "../Mod/RuleTerrain.h"
 #include "../Mod/MapBlock.h"
+#include "../Mod/RuleCraft.h"
+#include "../Mod/RuleUfo.h"
+#include "../Engine/Action.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Screen.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextList.h"
+#include "../Interface/Frame.h"
 #include "../Battlescape/MapEditor.h"
 #include "../Battlescape/MapEditorState.h"
 #include "../Battlescape/BattlescapeGenerator.h"
@@ -56,10 +60,22 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1)
 	_btnOk = new TextButton(100, 16, 8, 176);
 	_btnCancel = new TextButton(100, 16, 110, 176);
 
-    _lstMaps = new TextList(148, 128, 8, 46);
+    _filterTerrain = new TextButton(48, 16, 8, 28);
+    _filterCraft = new TextButton(48, 16, 58, 28);
+    _filterUFOs = new TextButton(48, 16, 108, 28);
+    _mapFilter = _filterTerrain;
+
+    _filterTerrain->setGroup(&_mapFilter);
+    _filterCraft->setGroup(&_mapFilter);
+    _filterUFOs->setGroup(&_mapFilter);
+
+    _lstMaps = new TextList(119, 104, 14, 52);
     
-    _txtSelectedMap = new Text(100, 8, 174, 46);
-    _txtSelectedMapTerrain = new Text(100, 8, 174, 56);
+    _txtSelectedMap = new Text(100, 8, 170, 52);
+    _txtSelectedMapTerrain = new Text(100, 8, 170, 62);
+
+    _frameLeft = new Frame(148, 116, 8, 46);
+    _frameRight = new Frame(148, 116, 164, 46);
 
 	// Set palette
 	setInterface("mainMenu");
@@ -68,9 +84,14 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1)
 	add(_txtTitle, "text", "mainMenu");
 	add(_btnOk, "button", "mainMenu");
 	add(_btnCancel, "button", "mainMenu");
+    add(_filterTerrain, "button", "mainMenu");
+    add(_filterCraft, "button", "mainMenu");
+    add(_filterUFOs, "button", "mainMenu");
     add(_lstMaps, "list", "saveMenus");
     add(_txtSelectedMap, "text", "mainMenu");
     add(_txtSelectedMapTerrain, "text", "mainMenu");
+    add(_frameLeft, "frames", "newBattleMenu");
+    add(_frameRight, "frames", "newBattleMenu");
 
 	centerAllSurfaces();
 
@@ -89,6 +110,15 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1)
 	_btnCancel->setText(tr("STR_CANCEL"));
 	_btnCancel->onMouseClick((ActionHandler)&MapEditorMenuState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&MapEditorMenuState::btnCancelClick, Options::keyCancel);
+
+    _filterTerrain->setText(tr("STR_TERRAIN"));
+    _filterTerrain->onMouseClick((ActionHandler)&MapEditorMenuState::btnMapFilterClick);
+
+    _filterCraft->setText(tr("STR_CRAFT"));
+    _filterCraft->onMouseClick((ActionHandler)&MapEditorMenuState::btnMapFilterClick);
+
+    _filterUFOs->setText(tr("STR_UFOS"));
+    _filterUFOs->onMouseClick((ActionHandler)&MapEditorMenuState::btnMapFilterClick);
 
     _lstMaps->setColumns(1, 120);
     _lstMaps->setAlign(ALIGN_LEFT);
@@ -111,15 +141,46 @@ void MapEditorMenuState::init()
 
 void MapEditorMenuState::populateMapsList()
 {
-    // TODO: populate list according to terrain/craft/ufo filter
     _mapsList.clear();
+    _lstMaps->clearList();
 
-    for (auto &i : _game->getMod()->getTerrainList())
+    if (_mapFilter == _filterTerrain)
     {
-        for (auto j : *_game->getMod()->getTerrain(i)->getMapBlocks())
+        for (auto &i : _game->getMod()->getTerrainList())
         {
-            _lstMaps->addRow(1, j->getName().c_str());
-            _mapsList.push_back(std::make_pair(j->getName(), i));
+            for (auto j : *_game->getMod()->getTerrain(i)->getMapBlocks())
+            {
+                _lstMaps->addRow(1, j->getName().c_str());
+                _mapsList.push_back(std::make_pair(j->getName(), i));
+            }
+        }
+    }
+    else if (_mapFilter == _filterCraft)
+    {
+        for (auto &i : _game->getMod()->getCraftsList())
+        {
+            if (_game->getMod()->getCraft(i)->getBattlescapeTerrainData() == 0)
+                continue;
+
+            for (auto j : *_game->getMod()->getCraft(i)->getBattlescapeTerrainData()->getMapBlocks())
+            {
+                _lstMaps->addRow(1, j->getName().c_str());
+                _mapsList.push_back(std::make_pair(j->getName(), i));
+            }
+        }
+    }
+    else if (_mapFilter == _filterUFOs)
+    {
+        for (auto &i : _game->getMod()->getUfosList())
+        {
+            if (_game->getMod()->getUfo(i)->getBattlescapeTerrainData() == 0)
+                continue;
+
+            for (auto j : *_game->getMod()->getUfo(i)->getBattlescapeTerrainData()->getMapBlocks())
+            {
+                _lstMaps->addRow(1, j->getName().c_str());
+                _mapsList.push_back(std::make_pair(j->getName(), i));
+            }
         }
     }
 
@@ -127,6 +188,37 @@ void MapEditorMenuState::populateMapsList()
     _txtSelectedMap->setText("");
     _txtSelectedMapTerrain->setText("");
     _btnOk->setVisible(false);
+}
+
+/**
+ * Handles clicking on the filter buttons for the type of map to display
+ * @param action Pointer to an action.
+ */
+void MapEditorMenuState::btnMapFilterClick(Action *action)
+{
+	SDL_Event ev;
+	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.button.button = SDL_BUTTON_LEFT;
+	Action a = Action(&ev, 0.0, 0.0, 0, 0);
+	action->getSender()->mousePress(&a, this);
+
+    if (action->getSender() == _filterTerrain)
+    {
+        _mapFilter = _filterTerrain;
+    }
+    else if (action->getSender() == _filterCraft)
+    {
+        _mapFilter = _filterCraft;
+    }
+    else if (action->getSender() == _filterUFOs)
+    {
+        _mapFilter = _filterUFOs;
+    }
+
+    populateMapsList();
+
+    // consume the action to keep the selected filter button pressed
+    action->getDetails()->type = SDL_NOEVENT;
 }
 
 /**
@@ -167,7 +259,14 @@ void MapEditorMenuState::btnOkClick(Action *)
 	_game->getSavedGame()->setBattleGame(savedBattleGame);
 	BattlescapeGenerator battlescapeGenerator = BattlescapeGenerator(_game);
 
-    RuleTerrain *terrain = _game->getMod()->getTerrain(_mapsList.at(_selectedMap).second);
+    RuleTerrain *terrain = 0;
+    if (_mapFilter == _filterTerrain)
+        terrain = _game->getMod()->getTerrain(_mapsList.at(_selectedMap).second);
+    else if (_mapFilter == _filterCraft)
+        terrain = _game->getMod()->getCraft(_mapsList.at(_selectedMap).second)->getBattlescapeTerrainData();
+    else if (_mapFilter == _filterUFOs)
+        terrain = _game->getMod()->getUfo(_mapsList.at(_selectedMap).second)->getBattlescapeTerrainData();
+
 	battlescapeGenerator.setTerrain(terrain);
 	battlescapeGenerator.setWorldShade(0);
     MapBlock *block = terrain->getMapBlock(_mapsList.at(_selectedMap).first);

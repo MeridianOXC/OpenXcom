@@ -28,14 +28,17 @@ class TextButton;
 class TextList;
 class Window;
 class Text;
+class Frame;
 
 class MapEditorMenuState : public State
 {
 private :
 	Window *_window;
 	Text *_txtTitle, *_txtSelectedMap, *_txtSelectedMapTerrain;
+    TextButton *_filterTerrain, *_filterCraft, *_filterUFOs, *_mapFilter;
 	TextButton *_btnOk, *_btnCancel;
     TextList *_lstMaps;
+    Frame *_frameLeft, *_frameRight;
     std::vector< std::pair<std::string, std::string> > _mapsList;
     int _selectedMap;
 
@@ -48,6 +51,8 @@ public :
     void init();
     /// Populates the list of available maps
     void populateMapsList();
+    /// Handles clicking on the filter buttons for available maps
+    void btnMapFilterClick(Action *action);
     /// Handles clicking on the list of available maps
     void lstMapsClick(Action *action);
     /// Starts the Map Editor
