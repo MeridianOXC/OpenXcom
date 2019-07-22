@@ -4788,9 +4788,25 @@ void BattlescapeGenerator::setMusic(const AlienDeployment* ruleDeploy, bool next
  */
 void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
 {
-	_mapsize_x = block->getSizeX();
-	_mapsize_y = block->getSizeY();
-	_mapsize_z = block->getSizeZ();
+	// Since this mapblock might not have been loaded before, the size might be wrong
+	// We check the size defined in the file instead since we need to set the 'battlescape' size
+	int sizex, sizey, sizez;
+	char size[3];
+	unsigned char value[4];
+	std::string filename = "MAPS/" + block->getName() + ".MAP";
+	unsigned int terrainObjectID;
+
+	// Load file
+	auto mapFile = FileMap::getIStream(filename);
+
+	mapFile->read((char*)&size, sizeof(size));
+	sizey = (int)size[0];
+	sizex = (int)size[1];
+	sizez = (int)size[2];
+
+	_mapsize_x = sizex;
+	_mapsize_y = sizey;
+	_mapsize_z = sizez;
 	init(true);
 
 	for (std::vector<MapDataSet*>::iterator i = _terrain->getMapDataSets()->begin(); i != _terrain->getMapDataSets()->end(); ++i)
@@ -4801,7 +4817,6 @@ void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
 			_game->getMod()->getMCDPatch((*i)->getName())->modifyData(*i);
 		}
 		_save->getMapDataSets()->push_back(*i);
-		//mapDataSetIDOffset++;
 	}
 
 	loadMAP(block, 0, 0, 0, _terrain, 0, true);
@@ -4810,13 +4825,7 @@ void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
 	loadNodes();
 	attachNodeLinks();
 	delete _dummy;
-	//_craftInventoryTile = _save->getTile(0);
 
-	// ok now generate the battleitems for inventory
-	//if (craft != 0) setCraft(craft);
-	//deployXCOM(nullptr, nullptr);
-	//delete data;
-	//delete set;
 	_save->setGlobalShade(_worldShade);
 
 	_save->getTileEngine()->calculateLighting(LL_AMBIENT, TileEngine::invalid, 0, true);
