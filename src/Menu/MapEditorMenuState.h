@@ -36,11 +36,12 @@ private :
 	Window *_window;
 	Text *_txtTitle, *_txtSelectedMap, *_txtSelectedMapTerrain;
     TextButton *_filterTerrain, *_filterCraft, *_filterUFOs, *_mapFilter;
-	TextButton *_btnOk, *_btnCancel;
+	TextButton *_btnOk, *_btnCancel, *_btnNew;
     TextList *_lstMaps;
     Frame *_frameLeft, *_frameRight;
     std::vector< std::pair<std::string, std::string> > _mapsList;
     int _selectedMap;
+    bool _newMapMode;
 
 public :
     /// Creates the Map Editor Menu State
@@ -51,14 +52,20 @@ public :
     void init();
     /// Populates the list of available maps
     void populateMapsList();
+    /// Populates the list of available terrains
+    void populateTerrainsList();
     /// Handles clicking on the filter buttons for available maps
     void btnMapFilterClick(Action *action);
     /// Handles clicking on the list of available maps
     void lstMapsClick(Action *action);
-    /// Starts the Map Editor
+    /// Handles clicking the OK button
     void btnOkClick(Action *action);
-    /// Returns to the Main Menue
+    /// Starts the Map Editor
+    void startEditor();
+    /// Returns to the Main Menu
     void btnCancelClick(Action *action);
+    /// Handles toggling the new map mode
+    void btnNewMapClick(Action *action);
 
 };
 

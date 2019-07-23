@@ -4788,38 +4788,77 @@ void BattlescapeGenerator::setMusic(const AlienDeployment* ruleDeploy, bool next
  */
 void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
 {
-	// Since this mapblock might not have been loaded before, the size might be wrong
-	// We check the size defined in the file instead since we need to set the 'battlescape' size
-	int sizex, sizey, sizez;
-	char size[3];
-	unsigned char value[4];
-	std::string filename = "MAPS/" + block->getName() + ".MAP";
-	unsigned int terrainObjectID;
-
-	// Load file
-	auto mapFile = FileMap::getIStream(filename);
-
-	mapFile->read((char*)&size, sizeof(size));
-	sizey = (int)size[0];
-	sizex = (int)size[1];
-	sizez = (int)size[2];
-
-	_mapsize_x = sizex;
-	_mapsize_y = sizey;
-	_mapsize_z = sizez;
-	init(true);
-
-	for (std::vector<MapDataSet*>::iterator i = _terrain->getMapDataSets()->begin(); i != _terrain->getMapDataSets()->end(); ++i)
+	// Load in the existing map block if we're editing one
+	if (block)
 	{
-		(*i)->loadData();
-		if (_game->getMod()->getMCDPatch((*i)->getName()))
+		// Since this mapblock might not have been loaded before, the size might be wrong
+		// We check the size defined in the file instead since we need to set the 'battlescape' size
+		int sizex, sizey, sizez;
+		char size[3];
+		unsigned char value[4];
+		std::string filename = "MAPS/" + block->getName() + ".MAP";
+		unsigned int terrainObjectID;
+
+		// Load file
+		auto mapFile = FileMap::getIStream(filename);
+
+		mapFile->read((char*)&size, sizeof(size));
+		sizey = (int)size[0];
+		sizex = (int)size[1];
+		sizez = (int)size[2];
+
+		_mapsize_x = sizex;
+		_mapsize_y = sizey;
+		_mapsize_z = sizez;
+		init(true);
+
+		for (std::vector<MapDataSet*>::iterator i = _terrain->getMapDataSets()->begin(); i != _terrain->getMapDataSets()->end(); ++i)
 		{
-			_game->getMod()->getMCDPatch((*i)->getName())->modifyData(*i);
+			(*i)->loadData();
+			if (_game->getMod()->getMCDPatch((*i)->getName()))
+			{
+				_game->getMod()->getMCDPatch((*i)->getName())->modifyData(*i);
+			}
+			_save->getMapDataSets()->push_back(*i);
 		}
-		_save->getMapDataSets()->push_back(*i);
+
+		loadMAP(block, 0, 0, 0, _terrain, 0, true);
+	}
+	else
+	{
+		// The size of the map was set before starting the generator for new maps
+		_mapsize_x = _save->getMapSizeX();
+		_mapsize_y = _save->getMapSizeY();
+		_mapsize_z = _save->getMapSizeZ();
+		init(true);
+
+		for (std::vector<MapDataSet*>::iterator i = _terrain->getMapDataSets()->begin(); i != _terrain->getMapDataSets()->end(); ++i)
+		{
+			(*i)->loadData();
+			if (_game->getMod()->getMCDPatch((*i)->getName()))
+			{
+				_game->getMod()->getMCDPatch((*i)->getName())->modifyData(*i);
+			}
+			_save->getMapDataSets()->push_back(*i);
+		}
+
+		for (int z = 0; z < _mapsize_z; ++z)
+		{
+			for (int y = 0; y < _mapsize_y; ++y)
+			{
+				for (int x = 0; x < _mapsize_x; ++x)
+				{
+					for (int t = 0; t < O_MAX; ++t)
+					{
+						TilePart part = (TilePart)t;
+						_save->getTile(Position(x, y, z))->setMapData(0, -1, -1, part);
+					}
+					_save->getTile(Position(x, y, z))->setDiscovered(true, 2);
+				}
+			}
+		}
 	}
 
-	loadMAP(block, 0, 0, 0, _terrain, 0, true);
 	// How to handle nodes?
 	_dummy = new MapBlock("dummy");
 	loadNodes();

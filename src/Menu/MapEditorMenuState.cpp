@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MapEditorMenuState.h"
+#include "MapEditorSetSizeState.h"
 #include <sstream>
 #include "../version.h"
 #include "../Engine/Game.h"
@@ -49,16 +50,17 @@ namespace OpenXcom
  * Initializes all the elements in the Map Editor Menu window.
  * @param game Pointer to the core game.
  */
-MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1)
+MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false)
 {
 	// Create objects
-    // TODO: add filters for terrain/craft/UFO
-    // TODO: clean up and make it look pretty
+    // TODO: make right pane for info on selection, single Text*
+    // TODO: interfaces ruleset for colors
 	_window = new Window(this, 320, 200, 0, 0, POPUP_BOTH);
 	_txtTitle = new Text(320, 17, 0, 9);
 
 	_btnOk = new TextButton(100, 16, 8, 176);
 	_btnCancel = new TextButton(100, 16, 110, 176);
+    _btnNew = new TextButton(100, 16, 212, 176);
 
     _filterTerrain = new TextButton(48, 16, 8, 28);
     _filterCraft = new TextButton(48, 16, 58, 28);
@@ -84,6 +86,7 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1)
 	add(_txtTitle, "text", "mainMenu");
 	add(_btnOk, "button", "mainMenu");
 	add(_btnCancel, "button", "mainMenu");
+    add(_btnNew, "button", "mainMenu");
     add(_filterTerrain, "button", "mainMenu");
     add(_filterCraft, "button", "mainMenu");
     add(_filterUFOs, "button", "mainMenu");
@@ -110,6 +113,9 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1)
 	_btnCancel->setText(tr("STR_CANCEL"));
 	_btnCancel->onMouseClick((ActionHandler)&MapEditorMenuState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&MapEditorMenuState::btnCancelClick, Options::keyCancel);
+
+    _btnNew->setText(tr("STR_NEW_MAP"));
+    _btnNew->onMouseClick((ActionHandler)&MapEditorMenuState::btnNewMapClick);
 
     _filterTerrain->setText(tr("STR_TERRAIN"));
     _filterTerrain->onMouseClick((ActionHandler)&MapEditorMenuState::btnMapFilterClick);
@@ -139,10 +145,25 @@ void MapEditorMenuState::init()
     populateMapsList();
 }
 
+/**
+ * Fills the list with available map names
+ */
 void MapEditorMenuState::populateMapsList()
 {
     _mapsList.clear();
     _lstMaps->clearList();
+
+    _selectedMap = -1;
+    _txtSelectedMap->setText("");
+    _txtSelectedMapTerrain->setText("");
+    _btnOk->setVisible(false);
+
+    // If we're creating a new map, the list should have terrains instead of map names
+    if (_newMapMode)
+    {
+        populateTerrainsList();
+        return;
+    }
 
     if (_mapFilter == _filterTerrain)
     {
@@ -183,11 +204,53 @@ void MapEditorMenuState::populateMapsList()
             }
         }
     }
+}
 
-    _selectedMap = -1;
-    _txtSelectedMap->setText("");
-    _txtSelectedMapTerrain->setText("");
-    _btnOk->setVisible(false);
+/**
+ * Fills the list with available terrain names
+ */
+void MapEditorMenuState::populateTerrainsList()
+{
+    if (_mapFilter == _filterTerrain)
+    {
+        for (auto &i : _game->getMod()->getTerrainList())
+        {
+            _lstMaps->addRow(1, i.c_str());
+            _mapsList.push_back(std::make_pair(i, i));
+        }
+    }
+    else if (_mapFilter == _filterCraft)
+    {
+        for (auto &i : _game->getMod()->getCraftsList())
+        {
+            if (!_game->getMod()->getCraft(i)->getBattlescapeTerrainData())
+                continue;
+
+            std::string terrain = _game->getMod()->getCraft(i)->getBattlescapeTerrainData()->getName();
+			auto it = std::find_if(_mapsList.begin(), _mapsList.end(), [&](const std::pair<std::string, std::string>& str) { return str.first == terrain; });
+			if (it == _mapsList.end())
+			{
+                _lstMaps->addRow(1, terrain.c_str());
+                _mapsList.push_back(std::make_pair(terrain, i));
+			}
+        }
+    }
+    else if (_mapFilter == _filterUFOs)
+    {
+        for (auto &i : _game->getMod()->getUfosList())
+        {
+            if (!_game->getMod()->getUfo(i)->getBattlescapeTerrainData())
+                continue;
+            
+            std::string terrain = _game->getMod()->getUfo(i)->getBattlescapeTerrainData()->getName();
+			auto it = std::find_if(_mapsList.begin(), _mapsList.end(), [&](const std::pair<std::string, std::string>& str) { return str.first == terrain; });
+			if (it == _mapsList.end())
+			{
+                _lstMaps->addRow(1, terrain.c_str());
+                _mapsList.push_back(std::make_pair(terrain, i));
+			}
+        }
+    }
 }
 
 /**
@@ -245,32 +308,62 @@ void MapEditorMenuState::lstMapsClick(Action *)
 }
 
 /**
- * Starts the Map Editor.
+ * Handles clicking the OK button
  * @param action Pointer to an action.
  */
 void MapEditorMenuState::btnOkClick(Action *)
 {
-    // TODO: Move handling of any battlescape objects to the MapEditor class, this menu should only be for initializing that class
-
 	SavedGame *save = new SavedGame();
     _game->setSavedGame(save);
 
 	SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod());
 	_game->getSavedGame()->setBattleGame(savedBattleGame);
+
+    MapEditor *editor = new MapEditor(savedBattleGame);
+    _game->setMapEditor(editor);
+
+    if (_newMapMode)
+    {
+        MapEditorSetSizeState *mapEditorSetSizeState = new MapEditorSetSizeState(this);
+        _game->pushState(mapEditorSetSizeState);
+    }
+    else
+    {
+        startEditor();
+    }
+}
+
+/**
+ * Starts the Map Editor.
+ */
+void MapEditorMenuState::startEditor()
+{
+    // TODO: Move handling of any battlescape objects to the MapEditor class, this menu should only be for initializing that class
 	BattlescapeGenerator battlescapeGenerator = BattlescapeGenerator(_game);
 
     RuleTerrain *terrain = 0;
     if (_mapFilter == _filterTerrain)
+    {
         terrain = _game->getMod()->getTerrain(_mapsList.at(_selectedMap).second);
+    }
     else if (_mapFilter == _filterCraft)
+    {
         terrain = _game->getMod()->getCraft(_mapsList.at(_selectedMap).second)->getBattlescapeTerrainData();
+    }
     else if (_mapFilter == _filterUFOs)
+    {
         terrain = _game->getMod()->getUfo(_mapsList.at(_selectedMap).second)->getBattlescapeTerrainData();
+    }
 
 	battlescapeGenerator.setTerrain(terrain);
 	battlescapeGenerator.setWorldShade(0);
-    MapBlock *block = terrain->getMapBlock(_mapsList.at(_selectedMap).first);
+    MapBlock *block = 0;
+    if (!_newMapMode)
+    {
+        block = terrain->getMapBlock(_mapsList.at(_selectedMap).first);
+    }
 	battlescapeGenerator.loadMapForEditing(block);
+    // TODO: not loading terrain selected for new maps correctly
 
 	_game->popState();
 	_game->popState();
@@ -279,9 +372,12 @@ void MapEditorMenuState::btnOkClick(Action *)
 	Options::baseYResolution = Options::baseYBattlescape;
 	_game->getScreen()->resetDisplay(false);
 
-	MapEditor *editor = new MapEditor(savedBattleGame);
-	editor->setMapName(block->getName());
-	_game->setMapEditor(editor);
+	MapEditor *editor = _game->getMapEditor();
+    if (block)
+    {
+	    editor->setMapName(block->getName());
+    }
+
 	MapEditorState *mapEditorState = new MapEditorState(editor);
 	_game->pushState(mapEditorState);
 	_game->getSavedGame()->getSavedBattle()->setMapEditorState(mapEditorState);
@@ -295,6 +391,36 @@ void MapEditorMenuState::btnCancelClick(Action *)
 {
 	//_game->setSavedGame(0);
 	_game->popState();
+}
+
+/**
+ * Switches between new and existing map modes
+ * @param action Pointer to an action.
+ */
+void MapEditorMenuState::btnNewMapClick(Action *action)
+{
+    _newMapMode = !_newMapMode;
+
+    if (_newMapMode)
+    {
+        // Press the button down
+        _btnNew->setGroup(&_btnNew);
+
+        // Consume the action to keep the button held down
+        action->getDetails()->type = SDL_NOEVENT;
+    }
+    else
+    {
+        // Release the button so it pops back up
+        _btnNew->setGroup(0);
+        action->getDetails()->type = SDL_MOUSEBUTTONUP;
+        _btnNew->mouseRelease(action, this);
+        _btnNew->draw();
+    }
+
+    // We have populateMapsList() call populateTerrainsList() instead if necessary
+    // This is so it can also handle changing the terrain/crafts/ufos filter
+    populateMapsList();
 }
 
 }
