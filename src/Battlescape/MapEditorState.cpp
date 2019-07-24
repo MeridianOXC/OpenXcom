@@ -46,7 +46,7 @@
 #include "../Interface/Cursor.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
-#include "../Menu/PauseState.h"
+#include "../Menu/MapEditorOptionsState.h"
 #include "../Mod/MapData.h"
 #include "../Mod/MapDataSet.h"
 #include "../Mod/Mod.h"
@@ -739,7 +739,7 @@ void MapEditorState::mapIn(Action *)
  */
 void MapEditorState::btnOptionsClick(Action *)
 {
-	_game->pushState(new PauseState(OPT_MAPEDITOR));
+	_game->pushState(new MapEditorOptionsState(OPT_MAPEDITOR));
 }
 
 /**
