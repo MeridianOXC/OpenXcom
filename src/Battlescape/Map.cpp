@@ -1833,55 +1833,6 @@ void Map::drawTerrain(Surface *surface)
 		}
 	}
 
-	if (_camera->getShowAllLayers())
-	{
-		Position topLeft, topRight, bottomLeft, bottomRight;
-		// The extra offset of (2, 1, 0) was determined by testing
-		// Why it's necessary in the first place? Some offset convention elsewhere in the code or something.
-		_camera->convertMapToScreen(Position(2, 1, 0), &topLeft);
-		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, 1, 0), &topRight);
-		_camera->convertMapToScreen(Position(2, _camera->getMapSizeY() + 1, 0), &bottomLeft);
-		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, _camera->getMapSizeY() + 1, 0), &bottomRight);
-
-		topLeft += _camera->getMapOffset();
-		topRight += _camera->getMapOffset();
-		bottomLeft += _camera->getMapOffset();
-		bottomRight += _camera->getMapOffset();
-
-		// Give interface color in mod
-		Uint8 lineColor = 70;
-		Uint8 colorOffset = 6;
-
-		// Dashed lines for west and north edges of map
-		int numberOfSegments = (_camera->getMapSizeY() + 1) * 4;
-		double dx = (double)(topLeft.x - bottomLeft.x) / (double)numberOfSegments;
-		double dy = (double)(topLeft.y - bottomLeft.y) / (double)numberOfSegments;
-		for (int i = 0; i < numberOfSegments; i += 2)
-		{
-			surface->drawLine(bottomLeft.x + i * dx, bottomLeft.y + i * dy + 1, bottomLeft.x + (i + 1) * dx, bottomLeft.y + (i + 1) * dy + 1, lineColor + colorOffset);
-			surface->drawLine(bottomLeft.x + i * dx, bottomLeft.y + i * dy, bottomLeft.x + (i + 1) * dx, bottomLeft.y + (i + 1) * dy, lineColor);
-			surface->drawLine(bottomLeft.x + i * dx, bottomLeft.y + i * dy - 1, bottomLeft.x + (i + 1) * dx, bottomLeft.y + (i + 1) * dy - 1, lineColor + colorOffset);
-		}
-
-		numberOfSegments = (_camera->getMapSizeX() + 1) * 4;
-		dx = (double)(topRight.x - topLeft.x) / (double)numberOfSegments;
-		dy = (double)(topRight.y - topLeft.y) / (double)numberOfSegments;
-		for (int i = 0; i < numberOfSegments; i += 2)
-		{
-			surface->drawLine(topLeft.x + i * dx, topLeft.y + i * dy + 1, topLeft.x + (i + 1) * dx, topLeft.y + (i + 1) * dy + 1, lineColor + colorOffset);
-			surface->drawLine(topLeft.x + i * dx, topLeft.y + i * dy, topLeft.x + (i + 1) * dx, topLeft.y + (i + 1) * dy, lineColor);
-			surface->drawLine(topLeft.x + i * dx, topLeft.y + i * dy - 1, topLeft.x + (i + 1) * dx, topLeft.y + (i + 1) * dy - 1, lineColor + colorOffset);
-		}
-
-		// Solid lines for east and south edges of map
-		surface->drawLine(topRight.x, topRight.y + 1, bottomRight.x, bottomRight.y + 1, lineColor + colorOffset);
-		surface->drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y, lineColor);
-		surface->drawLine(topRight.x, topRight.y - 1, bottomRight.x, bottomRight.y - 1, lineColor + colorOffset);
-		surface->drawLine(bottomRight.x, bottomRight.y + 1, bottomLeft.x, bottomLeft.y + 1, lineColor + colorOffset);
-		surface->drawLine(bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, lineColor);
-		surface->drawLine(bottomRight.x, bottomRight.y - 1, bottomLeft.x, bottomLeft.y - 1, lineColor + colorOffset);
-	}
-
 	surface->unlock();
 }
 
