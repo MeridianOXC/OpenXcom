@@ -406,6 +406,9 @@ void createOptionsOXCE()
 
 	// TODO: needs restart (or code change) to work properly
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMaxEquipmentLayoutTemplates", &oxceMaxEquipmentLayoutTemplates, 20, "", "HIDDEN"));
+
+	// Map Editor
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMapEditorBoundsColor", &oxceMapEditorBoundsColor, 13));
 }
 
 void createAdvancedOptionsOXCE()

@@ -753,6 +753,29 @@ void Map::drawTerrain(Surface *surface)
 
 	NumberText *_numWaypid = 0;
 
+	// Highlight the boundaries of the map when editing
+	if (_game->isState(_save->getMapEditorState()))
+	{
+		// Paints the ground floor of a map a different color to highlight it
+		Uint8 color = Options::oxceMapEditorBoundsColor;
+		Position topLeft, topRight, bottomLeft, bottomRight;
+		// The extra offset of (2, 1, 0) was determined by testing
+		// Why it's necessary in the first place? Some offset convention elsewhere in the code or something.
+		_camera->convertMapToScreen(Position(2, 1, 0), &topLeft);
+		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, 1, 0), &topRight);
+		_camera->convertMapToScreen(Position(2, _camera->getMapSizeY() + 1, 0), &bottomLeft);
+		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, _camera->getMapSizeY() + 1, 0), &bottomRight);
+
+		topLeft += _camera->getMapOffset();
+		topRight += _camera->getMapOffset();
+		bottomLeft += _camera->getMapOffset();
+		bottomRight += _camera->getMapOffset();
+
+		Sint16 x[4] = {topLeft.x, topRight.x, bottomRight.x, bottomLeft.x};
+		Sint16 y[4] = {topLeft.y, topRight.y, bottomRight.y, bottomLeft.y};
+		surface->drawPolygon(x, y, 4, color);
+	}
+
 	// if we got bullet, get the highest x and y tiles to draw it on
 	if (_projectile && _explosions.empty())
 	{

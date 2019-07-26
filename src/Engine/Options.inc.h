@@ -152,6 +152,8 @@ OPT bool oxceInventoryShowUnitSlot;
 
 OPT int oxceMaxEquipmentLayoutTemplates;
 
+OPT int oxceMapEditorBoundsColor;
+
 // Flags and other stuff that don't need OptionInfo's.
 OPT bool mute, reload, newOpenGL, newScaleFilter, newHQXFilter, newXBRZFilter, newRootWindowedMode, newFullscreen, newAllowResize, newBorderless;
 OPT int newDisplayWidth, newDisplayHeight, newBattlescapeScale, newGeoscapeScale, newWindowedModePositionX, newWindowedModePositionY;
