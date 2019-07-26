@@ -273,7 +273,6 @@ MapData *MapEditor::getMapDataFromIndex(int index, int *mapDataSetID, int *mapDa
     MapDataSet *mapDataSet = 0;
     int dataSetID = 0;
 
-    // This causes a segfault when called at the initialization of BattlescapeState after changing resolution in video options- why?
     for (const auto &i : *_save->getMapDataSets())
     {
         if (index < (int)i->getSize())

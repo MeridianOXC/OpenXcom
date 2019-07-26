@@ -26,6 +26,8 @@
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Battlescape/MapEditor.h"
+#include "../Savegame/SavedGame.h"
+#include "../Savegame/SavedBattleGame.h"
 #include "AbandonGameState.h"
 #include "OptionsVideoState.h"
 #include "OptionsGeoscapeState.h"
@@ -53,19 +55,20 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 	_btnCancel = new TextButton(180, 18, 70, 150);
 
 	// Set palette
-	setInterface("mainMenu");
+	setInterface("optionsMenu", false, _game->getSavedGame()->getSavedBattle());
 
-    add(_window, "window", "mainMenu");
-    add(_txtTitle, "text", "mainMenu");
-	add(_btnLoad, "button", "mainMenu");
-	add(_btnSave, "button", "mainMenu");
-	add(_btnAbandon, "button", "mainMenu");
-	add(_btnOptions, "button", "mainMenu");
-	add(_btnCancel, "button", "mainMenu");
+    add(_window, "window", "optionsMenu");
+    add(_txtTitle, "text", "optionsMenu");
+	add(_btnLoad, "button", "optionsMenu");
+	add(_btnSave, "button", "optionsMenu");
+	add(_btnAbandon, "button", "optionsMenu");
+	add(_btnOptions, "button", "optionsMenu");
+	add(_btnCancel, "button", "optionsMenu");
 
     centerAllSurfaces();
 
     // Set up objects
+	applyBattlescapeTheme();
 	setWindowBackground(_window, "mainMenu");
 
 	_txtTitle->setAlign(ALIGN_CENTER);

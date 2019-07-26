@@ -83,7 +83,7 @@ AbandonGameState::AbandonGameState(OptionsOrigin origin) : _origin(origin)
 	_txtTitle->setBig();
 	_txtTitle->setText(tr("STR_ABANDON_GAME_QUESTION"));
 
-	if (_origin == OPT_BATTLESCAPE)
+	if (_origin == OPT_BATTLESCAPE || _origin == OPT_MAPEDITOR)
 	{
 		applyBattlescapeTheme("geoscape");
 	}
