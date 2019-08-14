@@ -55,10 +55,10 @@ MapEditorSetSizeState::MapEditorSetSizeState(MapEditorMenuState *parent) : _pare
     _txtZ = new Text(100, 8, 68, 100);
     _txtMapName = new Text(100, 8, 68, 110);
 
-    _edtX = new TextEdit(this, 30, 8, 170, 80);
-    _edtY = new TextEdit(this, 30, 8, 170, 90);
-    _edtZ = new TextEdit(this, 30, 8, 170, 100);
-    _edtMapName = new TextEdit(this, 80, 8, 170, 110);
+    _edtX = new TextEdit(this, 30, 8, 160, 80);
+    _edtY = new TextEdit(this, 30, 8, 160, 90);
+    _edtZ = new TextEdit(this, 30, 8, 160, 100);
+    _edtMapName = new TextEdit(this, 80, 8, 160, 110);
 
 	// Set palette
 	setInterface("mainMenu");

@@ -29,6 +29,8 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "AbandonGameState.h"
+#include "MapEditorInfoState.h"
+#include "MapEditorSaveAsState.h"
 #include "OptionsVideoState.h"
 #include "OptionsGeoscapeState.h"
 #include "OptionsBattlescapeState.h"
@@ -48,10 +50,11 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
     _window = new Window(this, 216, 160, 52, 20, POPUP_BOTH);
 	_txtTitle = new Text(206, 17, 57, 32);
 
-	_btnLoad = new TextButton(180, 18, 70, 52);
-	_btnSave = new TextButton(180, 18, 70, 74);
-	_btnAbandon = new TextButton(180, 18, 70, 96);
-	_btnOptions = new TextButton(180, 18, 70, 122);
+	_btnInfo = new TextButton(180, 18, 70, 52);
+	_btnLoad = new TextButton(180, 18, 70, 72);
+	_btnSave = new TextButton(180, 18, 70, 92);
+	_btnAbandon = new TextButton(180, 18, 70, 112);
+	_btnOptions = new TextButton(180, 18, 70, 132);
 	_btnCancel = new TextButton(180, 18, 70, 150);
 
 	// Set palette
@@ -59,6 +62,7 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 
     add(_window, "window", "optionsMenu");
     add(_txtTitle, "text", "optionsMenu");
+	add(_btnInfo, "text", "optionsMenu");
 	add(_btnLoad, "button", "optionsMenu");
 	add(_btnSave, "button", "optionsMenu");
 	add(_btnAbandon, "button", "optionsMenu");
@@ -74,6 +78,9 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setBig();
 	_txtTitle->setText(tr("STR_OPTIONS_UC"));
+
+	_btnInfo->setText(tr("STR_MAP_INFO"));
+	_btnInfo->onMouseClick((ActionHandler)&MapEditorOptionsState::btnInfoClick);
 
 	_btnLoad->setText(tr("STR_LOAD_MAP"));
 	_btnLoad->onMouseClick((ActionHandler)&MapEditorOptionsState::btnLoadClick);
@@ -102,6 +109,15 @@ MapEditorOptionsState::~MapEditorOptionsState()
 }
 
 /**
+ * Opens the info screen
+ * @param action Pointer to an action.
+ */
+void MapEditorOptionsState::btnInfoClick(Action *)
+{
+	_game->pushState(new MapEditorInfoState());
+}
+
+/**
  * Opens the load map screen
  * @param action Pointer to an action.
  */
@@ -116,7 +132,14 @@ void MapEditorOptionsState::btnLoadClick(Action *)
  */
 void MapEditorOptionsState::btnSaveClick(Action *)
 {
-    _game->getMapEditor()->saveMapFile(_game->getMapEditor()->getMapName());
+	if (_game->getMapEditor()->getMapName().size() == 0)
+	{
+		_game->pushState(new MapEditorSaveAsState());
+	}
+	else
+	{
+    	_game->getMapEditor()->saveMapFile(_game->getMapEditor()->getMapName());
+	}
 }
 
 /**

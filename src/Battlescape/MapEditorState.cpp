@@ -47,6 +47,8 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Menu/MapEditorOptionsState.h"
+#include "../Menu/MapEditorInfoState.h"
+#include "../Menu/MapEditorSaveAsState.h"
 #include "../Mod/MapData.h"
 #include "../Mod/MapDataSet.h"
 #include "../Mod/Mod.h"
@@ -957,10 +959,14 @@ inline void MapEditorState::handle(Action *action)
 				}
 				else if (key == SDLK_s && ctrlPressed) // change s to options
 				{
-					if (shiftPressed)
-						;// save as
+					if (shiftPressed || _editor->getMapName().size() == 0)
+						_game->pushState(new MapEditorSaveAsState());
 					else
 						btnSaveClick(action);
+				}
+				else if (key == SDLK_i)
+				{
+					_game->pushState(new MapEditorInfoState());
 				}
 
 				// quick save and quick load

@@ -1,3 +1,4 @@
+
 #pragma once
 /*
  * Copyright 2010-2019 OpenXcom Developers.
@@ -18,39 +19,37 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../Engine/State.h"
-#include "OptionsBaseState.h"
+#include <string>
 
 namespace OpenXcom
 {
 
 class TextButton;
+class TextEdit;
 class Window;
 class Text;
 
-class MapEditorOptionsState : public State
+class MapEditorSaveAsState : public State
 {
 private :
-	OptionsOrigin _origin;
-	TextButton *_btnInfo, *_btnLoad, *_btnSave, *_btnAbandon, *_btnOptions, *_btnCancel;
 	Window *_window;
-	Text *_txtTitle;
+	Text *_txtTitle, *_txtMapName;
+	TextButton *_btnOk, *_btnCancel;
+    TextEdit *_edtMapName;
+    std::string _mapName;
 
 public :
-    /// Creates the options menu window for the map editor
-    MapEditorOptionsState(OptionsOrigin origin);
-    /// Cleans up the map editor options menu
-    ~MapEditorOptionsState();
-    /// Shows the info for the map being edited
-    void btnInfoClick(Action *action);
-    /// Opens the menu for loading a different map in the editor
-    void btnLoadClick(Action *action);
-    /// Saves the current map
-    void btnSaveClick(Action *action);
-    /// Opens the options menu
-    void btnOptionsClick(Action *action);
-    /// Opens the abandon game window
-    void btnAbandonClick(Action *action);
-    /// Returns to the map editor
+    /// Creates the New Map size window
+    MapEditorSaveAsState();
+    /// Cleans up the New Map size window
+    ~MapEditorSaveAsState();
+    /// Handles entering a name for the map
+    void edtMapNameOnChange(Action *action);
+    /// Clears the text for the map name when first clicking on it
+    void edtMapNameOnClick(Action *action);
+    /// Confirms the sizes and starts the map editor
+    void btnOkClick(Action *action);
+    /// Returns to the map editor menu
     void btnCancelClick(Action *action);
 
 };

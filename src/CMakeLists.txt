@@ -261,7 +261,9 @@ set ( menu_src
   Menu/LoadGameState.cpp
   Menu/MainMenuState.cpp
   Menu/MapEditorMenuState.cpp
+  Menu/MapEditorInfoState.cpp
   Menu/MapEditorOptionsState.cpp
+  Menu/MapEditorSaveAsState.cpp
   Menu/MapEditorSetSizeState.cpp
   Menu/NewBattleState.cpp
   Menu/NewGameState.cpp

@@ -18,40 +18,32 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../Engine/State.h"
-#include "OptionsBaseState.h"
+#include <string>
 
 namespace OpenXcom
 {
 
 class TextButton;
+class TextEdit;
 class Window;
 class Text;
+class TextList;
 
-class MapEditorOptionsState : public State
+class MapEditorInfoState : public State
 {
 private :
-	OptionsOrigin _origin;
-	TextButton *_btnInfo, *_btnLoad, *_btnSave, *_btnAbandon, *_btnOptions, *_btnCancel;
 	Window *_window;
-	Text *_txtTitle;
+	Text *_txtTitle, *_txtName, *_txtSize, *_txtTerrain;
+    TextList *_lstTerrain;
+	TextButton *_btnReturn;
 
 public :
-    /// Creates the options menu window for the map editor
-    MapEditorOptionsState(OptionsOrigin origin);
-    /// Cleans up the map editor options menu
-    ~MapEditorOptionsState();
-    /// Shows the info for the map being edited
-    void btnInfoClick(Action *action);
-    /// Opens the menu for loading a different map in the editor
-    void btnLoadClick(Action *action);
-    /// Saves the current map
-    void btnSaveClick(Action *action);
-    /// Opens the options menu
-    void btnOptionsClick(Action *action);
-    /// Opens the abandon game window
-    void btnAbandonClick(Action *action);
-    /// Returns to the map editor
-    void btnCancelClick(Action *action);
+    /// Creates the Map Editor Info window
+    MapEditorInfoState();
+    /// Creates the Map Editor Info window
+    ~MapEditorInfoState();
+    /// Returns to the previous menu
+    void btnReturnClick(Action *action);
 
 };
 
