@@ -520,9 +520,10 @@ en-US:
 #UfoTrackerState.cpp
   STR_UFO_TRACKER: "UFO Tracker"
 #=================== Menu ===================
-#MainMenuState.cpp
+#MainMenu.cpp
   STR_UPDATE: "Update"
   STR_LATEST_VERSION_INFO: "You are using the latest OpenXcom version."
+  STR_MOD_TOOLS: "Map Editor"
 #ModConfirmExtendedState.cpp
   STR_MASTER_MOD_VERSION_REQUIRED_QUESTION: "This mod requires base game v{0} to run correctly. Enable this mod?"
   STR_VERSION_REQUIRED_QUESTION: "This mod requires OXCE v{0} to run correctly. Enable this mod?"
@@ -533,6 +534,29 @@ en-US:
 #NotesState.cpp
   STR_NOTES: "Notes"
   STR_NEW_NOTE: "<NEW NOTE>"
+#MapEditorInfoState.cpp
+  STR_MAP_EDITOR_INFO: "MAP INFORMATION"
+  STR_EDITOR_MAP_NAME: "Map Name: {0}"
+  STR_EDITOR_MAP_SIZE: "Map Size (x, y, z): ({0}, {1}, {2})"
+  STR_EDITOR_TERRAINS: "Terrain Data Sets:"
+  STR_RETURN_TO_PREVIOUS_MENU: "RETURN"
+#MapEditorMenuState.cpp
+  STR_MAP_EDITOR: "MAP EDITOR"
+  STR_TERRAIN: "TERRAIN"
+  STR_NEW_MAP: "Create New Map"
+#MapEditorOptionsState.cpp
+  STR_MAP_INFO: "MAP INFORMATION"
+  STR_LOAD_MAP: "LOAD MAP (Not yet implemented)"
+  STR_SAVE_MAP: "SAVE MAP"
+#MapEditorSaveAsState.cpp
+  STR_MAP_EDITOR_SAVEAS: "SAVE MAP AS"
+#MapEditorSetSizeState.cpp
+  STR_SET_MAP_SIZES: "SET MAP SIZE"
+  STR_MAP_SIZE_X: "Map Width (x):"
+  STR_MAP_SIZE_Y: "Map Length (y):"
+  STR_MAP_SIZE_Z: "Map Height (z):"
+  STR_ENTER_MAP_NAME: "Map Name:"
+  STR_EMPTY_MAP_NAME: "{Enter Name Here}"
 #OptionsAdvancedState.cpp
   STR_ENGINE_OXC: "OXC"
   STR_ENGINE_OXCE: "OXCE"
