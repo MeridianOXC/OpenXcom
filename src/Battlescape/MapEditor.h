@@ -46,6 +46,19 @@ struct TileEdit
             tileAfterDataSetIDs[i] = afterDataSetIDs[i];
         }
     }
+
+    // Test for whether an edit does anything
+    // Used to prevent pushing back useless changes to the edit register
+    bool isEditEmpty()
+    {
+        bool equal = true;
+        for (int i = 0; i < O_MAX; ++i)
+        {
+            equal &= (tileBeforeDataIDs[i] == tileAfterDataIDs[i]);
+            equal &= (tileBeforeDataSetIDs[i] == tileAfterDataSetIDs[i]);
+        }
+        return equal;
+    }
 };
 
 class Action;

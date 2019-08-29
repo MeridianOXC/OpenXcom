@@ -205,13 +205,18 @@ void MapEditor::changeTiles(EditType action)
             {
                 (*tile)->getMapData(&changes.back().tileAfterDataIDs[part], &changes.back().tileAfterDataSetIDs[part], (TilePart)part);
             }
+
+            if (changes.back().isEditEmpty())
+            {
+                changes.pop_back();
+            }
         }
 
         ++tile;
         ++tileIndex;
     }
 
-    if (action == MET_DO)
+    if (action == MET_DO && changes.size() != 0)
     {
         if (_editRegisterPosition < (int)_editRegister.size())
         {
