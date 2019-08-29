@@ -67,7 +67,8 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 	add(_btnOXCE, "button", "advancedMenu");
 	add(_btnOTHER, "button", "advancedMenu");
 
-	if (origin != OPT_BATTLESCAPE)
+	if (origin != OPT_BATTLESCAPE &&
+		origin != OPT_MAPEDITOR)
 	{
 		_greyedOutColor = _game->getMod()->getInterface("advancedMenu")->getElement("disabledUserOption")->color;
 		add(_lstOptions, "optionLists", "advancedMenu");

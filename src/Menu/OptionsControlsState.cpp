@@ -49,7 +49,7 @@ OptionsControlsState::OptionsControlsState(OptionsOrigin origin) : OptionsBaseSt
 	add(_btnOXCE, "button", "controlsMenu");
 	add(_btnOTHER, "button", "controlsMenu");
 
-	if (origin != OPT_BATTLESCAPE)
+	if (origin != OPT_BATTLESCAPE && origin != OPT_MAPEDITOR)
 	{
 		add(_lstControls, "optionLists", "controlsMenu");
 	}

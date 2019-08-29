@@ -79,7 +79,8 @@ OptionsConfirmState::OptionsConfirmState(OptionsOrigin origin) : _origin(origin)
 	_txtTimer->setWordWrap(true);
 	_txtTimer->setText(tr("STR_DISPLAY_OPTIONS_REVERT").arg(_countdown));
 
-	if (_origin == OPT_BATTLESCAPE)
+	if (_origin == OPT_BATTLESCAPE ||
+		_origin == OPT_MAPEDITOR)
 	{
 		applyBattlescapeTheme("optionsMenu");
 	}
@@ -138,8 +139,8 @@ void OptionsConfirmState::btnYesClick(Action *)
 void OptionsConfirmState::btnNoClick(Action *)
 {
 	Options::switchDisplay();
-	Screen::updateScale(Options::battlescapeScale, Options::baseXBattlescape, Options::baseYBattlescape, _origin == OPT_BATTLESCAPE);
-	Screen::updateScale(Options::geoscapeScale, Options::baseXGeoscape, Options::baseYGeoscape, _origin != OPT_BATTLESCAPE);
+	Screen::updateScale(Options::battlescapeScale, Options::baseXBattlescape, Options::baseYBattlescape, (_origin == OPT_BATTLESCAPE || _origin == OPT_MAPEDITOR));
+	Screen::updateScale(Options::geoscapeScale, Options::baseXGeoscape, Options::baseYGeoscape, (_origin != OPT_BATTLESCAPE && _origin != OPT_MAPEDITOR));
 	Options::save();
 	_game->getScreen()->resetDisplay();
 	_game->popState();

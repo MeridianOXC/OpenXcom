@@ -70,7 +70,8 @@ OptionsDefaultsState::OptionsDefaultsState(OptionsOrigin origin, OptionsBaseStat
 	_txtTitle->setWordWrap(true);
 	_txtTitle->setText(tr("STR_RESTORE_DEFAULTS_QUESTION"));
 
-	if (_origin == OPT_BATTLESCAPE)
+	if (_origin == OPT_BATTLESCAPE ||
+		_origin == OPT_MAPEDITOR)
 	{
 		applyBattlescapeTheme("optionsMenu");
 	}
