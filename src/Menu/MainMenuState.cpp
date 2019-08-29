@@ -74,7 +74,7 @@ MainMenuState::MainMenuState(bool updateCheck)
 	int quitYSpacing = 2;
 	if (Options::debug)
 	{
-		buttonYSpacing = 22;
+		buttonYSpacing = 21;
 		quitWidth = 192;
 		quitXOffset = 0;
 		quitYSpacing = 3;
