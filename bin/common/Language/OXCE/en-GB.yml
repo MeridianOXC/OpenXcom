@@ -293,6 +293,14 @@ en-GB:
 #Map.cpp
   STR_THINKING: "Thinking..."
 #MapEditorState.cpp
+  STR_DEBUG_MAP_EDITOR: "Selected Tile Mode: {0}{NEWLINE}Selected Tile Part: {1}{NEWLINE}Cursor Position: {2}"
+  STR_DEBUG_CLEAR: "CLEAR TILES"
+  STR_DEBUG_PLACE: "PLACE TILES"
+  STR_DEBUG_O_FLOOR: "FLOOR"
+  STR_DEBUG_O_WESTWALL: "WEST WALL"
+  STR_DEBUG_O_NORTHWALL: "NORTH WALL"
+  STR_DEBUG_O_OBJECT: "OBJECT"
+  STR_DEBUG_O_MAX: "NONE"
   STR_TOOLTIP_SAVE_MAP: "Save Map"
   STR_TOOLTIP_LOAD_MAP: "Load Map (Not yet implemented)"
   STR_TOOLTIP_UNDO: "Undo {0}/{1}"

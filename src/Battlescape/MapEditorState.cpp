@@ -82,6 +82,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	//_btnMapDown = new BattlescapeButton(32, 16, x + 80, y + 16);
 
 	_txtTooltip = new Text(300, 10, 2, screenHeight - 50);
+	_txtDebug = new Text(158, 30, screenWidth - 160, 40);
 
 	SurfaceSet *icons = _game->getMod()->getSurfaceSet("MapEditorIcons");
 
@@ -191,6 +192,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 
 	add(_map);
 	add(_txtTooltip, "textTooltip", "battlescape");
+	add(_txtDebug, "textTooltip", "battlescape");
 	add(_iconsLowerLeft);
 	add(_iconsLowerRight);
 	add(_iconsUpperRight);
@@ -247,6 +249,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	//_btnMapDown->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
 	_txtTooltip->setHighContrast(true);
+
+	updateDebugText();
+	_txtDebug->setColor(_tooltipDefaultColor);
+	_txtDebug->setHighContrast(true);
+	_txtDebug->setAlign(ALIGN_RIGHT);
 
 	// Set music
 	if (!Options::oxcePlayBriefingMusicDuringEquipment)
@@ -525,6 +532,8 @@ void MapEditorState::think()
 		_btnRedo->offset(232 - 8, 0, 255, 1);
 		_btnRedo->setColor(232);
 	}
+
+	updateDebugText();
 }
 
 /**
@@ -714,13 +723,6 @@ void MapEditorState::mapClick(Action *action)
 
 	Position pos;
 	_map->getSelectorPosition(&pos);
-
-	//if (_save->getDebugMode())
-	//{
-	//	std::ostringstream ss;
-	//	ss << "Clicked " << pos;
-	//	debug(ss.str());
-	//}
 
 	// Have the map editor capture the mouse input here for editing tiles
 	if (_editor)
@@ -1004,7 +1006,12 @@ inline void MapEditorState::handle(Action *action)
 					else
 						btnSaveClick(action);
 				}
-				else if (key == SDLK_i)
+				else if (key == SDLK_d && ctrlPressed) // change d to options
+				{
+					updateDebugText();
+					_txtDebug->setVisible(!_txtDebug->getVisible());
+				}
+				else if (key == SDLK_i) // change i to options
 				{
 					_game->pushState(new MapEditorInfoState());
 				}
@@ -1024,6 +1031,52 @@ inline void MapEditorState::handle(Action *action)
 			}
 		}
 	}
+}
+
+/**
+ * Updates the debug text
+ */
+void MapEditorState::updateDebugText()
+{
+	std::string selectedMode;
+	if (_editor->getSelectedMapDataID() == -1)
+	{
+		selectedMode = tr("STR_DEBUG_CLEAR");
+	}
+	else
+	{
+		selectedMode = tr("STR_DEBUG_PLACE");
+	}
+
+	std::string selectedObject;
+	switch (_editor->getSelectedObject())
+	{
+		case O_FLOOR:
+			selectedObject = tr("STR_DEBUG_O_FLOOR");
+			break;
+		case O_WESTWALL:
+			selectedObject = tr("STR_DEBUG_O_WESTWALL");
+			break;
+		case O_NORTHWALL:
+			selectedObject = tr("STR_DEBUG_O_NORTHWALL");
+			break;
+		case O_OBJECT:
+			selectedObject = tr("STR_DEBUG_O_OBJECT");
+			break;
+		default:
+			selectedObject = tr("STR_DEBUG_O_MAX");
+			break;
+	}
+
+	Position pos;
+	_map->getSelectorPosition(&pos);
+	Tile *selectedTile = _save->getTile(pos);
+	if (!selectedTile)
+	{
+		pos = Position(-1, -1, -1);
+	}
+
+	_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR").arg(selectedMode).arg(selectedObject).arg(pos));
 }
 
 /**

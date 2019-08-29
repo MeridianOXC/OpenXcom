@@ -62,7 +62,7 @@ private:
 	BattlescapeButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow, *_tileSelectionPageCount;
 	Text *_txtSelectionPageCount;
 	std::vector<InteractiveSurface*> _tileSelectionGrid;
-	Text *_txtTooltip;
+	Text *_txtTooltip, *_txtDebug;
     int _tooltipDefaultColor;
 	bool _firstInit;
 	bool _isMouseScrolling, _isMouseScrolled;
@@ -136,6 +136,8 @@ public:
 	Map *getMap() const;
 	/// Handles keypresses.
 	void handle(Action *action) override;
+	/// Updates the debug text.
+	void updateDebugText();
 	/// Clears mouse-scrolling state.
 	void clearMouseScrollingState();
 	/// Returns a pointer to the battlegame, in case we need its functions.
