@@ -143,21 +143,45 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_tileFilters[O_NORTHWALL] = _btnTileFilterNorthWall;
 	_tileFilters[O_OBJECT] = _btnTileFilterObject;
 
+	_backgroundTileSelection = new InteractiveSurface(32, 40, 0, 0);
+	icons->getFrame(15)->blitNShade(_backgroundTileSelection, 0, 0);
+	_backgroundTileSelectionNavigation = new InteractiveSurface(96, 40, 32, 0);
+	for (int i = 0; i < 3; ++i)
+	{
+		icons->getFrame(i + 16)->blitNShade(_backgroundTileSelectionNavigation, i * 32, 0);
+	}
 	_tileSelectionColumns = screenWidth / 2 / 32;
 	_tileSelectionRows = (screenHeight - 2 * 40) / 40;
 	int tileSelectionWidth = _tileSelectionColumns * 32;
 	int tileSelectionHeight = _tileSelectionRows * 40;
-	// TODO: change text buttons that are only images to ImageButton?
-	_tileSelection = new TextButton(32, 40, 0, 0);
-	_panelTileSelection = new TextButton(tileSelectionWidth, tileSelectionHeight, 0, 40);
-	_tileSelectionPageCount = new TextButton(32, 12, 64, 28);
-	_tileSelectionLeftArrow = new TextButton(32, 12, 32, 28);
-	_tileSelectionRightArrow = new TextButton(32, 12, 96, 28);
+	_tileSelection = new InteractiveSurface(32, 40, 0, 0);
+	_panelTileSelection = new InteractiveSurface(tileSelectionWidth, tileSelectionHeight, 0, 40);
+	_tileSelectionPageCount = new BattlescapeButton(32, 12, 64, 28);
+	_tileSelectionLeftArrow = new BattlescapeButton(32, 12, 32, 28);
+	_tileSelectionRightArrow = new BattlescapeButton(32, 12, 96, 28);
+	_txtSelectionPageCount = new Text(32, 12, 64, 28);
 	_tileSelectionGrid.clear();
 	for (int i = 0; i < _tileSelectionRows; ++i)
 	{
 		for (int j = 0; j < _tileSelectionColumns; ++j)
 		{
+			// select which of the background panel frames is appropriate for this position on the grid
+			int panelSpriteOffset = 20;
+			if (i % (_tileSelectionRows - 1) != 0) // we're in a middle row
+				panelSpriteOffset += 3;
+			else if (i / (_tileSelectionRows - 1) == 1) // we're on the bottom row
+				panelSpriteOffset += 6;
+			// else we're on the top row
+
+			if (j % (_tileSelectionColumns - 1) != 0) // we're in a middle column
+				panelSpriteOffset += 1;
+			else if (j / (_tileSelectionColumns - 1) == 1) // we're on the right edge
+				panelSpriteOffset += 2;
+			// else we're on the left edge
+
+			// draw the background
+			icons->getFrame(panelSpriteOffset)->blitNShade(_panelTileSelection, j * 32, i * 40);
+
 			_tileSelectionGrid.push_back(new InteractiveSurface(32, 40, j * 32, i * 40 + 40));
 		}
 	}
@@ -167,16 +191,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 
 	add(_map);
 	add(_txtTooltip, "textTooltip", "battlescape");
-	add(_tileSelection);
-	add(_panelTileSelection);
-	add(_tileSelectionPageCount);
-	add(_tileSelectionLeftArrow);
-	add(_tileSelectionRightArrow);
-	for (auto i : _tileSelectionGrid)
-	{
-		add(i);
-		i->onMouseClick((ActionHandler)&MapEditorState::tileSelectionGridClick);
-	}
 	add(_iconsLowerLeft);
 	add(_iconsLowerRight);
 	add(_iconsUpperRight);
@@ -195,6 +209,19 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	add(_btnTileFilterWestWall, "", "battlescape", _iconsUpperRight);
 	add(_btnTileFilterNorthWall, "", "battlescape", _iconsUpperRight);
 	add(_btnTileFilterObject, "", "battlescape", _iconsUpperRight);
+	add(_backgroundTileSelection);
+	add(_backgroundTileSelectionNavigation);
+	add(_tileSelection, "", "battlescape", _backgroundTileSelection);
+	add(_panelTileSelection);
+	add(_tileSelectionPageCount, "", "battlescape", _backgroundTileSelectionNavigation);
+	add(_tileSelectionLeftArrow, "", "battlescape", _backgroundTileSelectionNavigation);
+	add(_tileSelectionRightArrow, "", "battlescape", _backgroundTileSelectionNavigation);
+	add(_txtSelectionPageCount);
+	for (auto i : _tileSelectionGrid)
+	{
+		add(i);
+		i->onMouseClick((ActionHandler)&MapEditorState::tileSelectionGridClick);
+	}
 
 	// Set up objects
 	_save = _game->getSavedGame()->getSavedBattle();
@@ -307,13 +334,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnSelectedTile->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnSelectedTile->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-
 	_btnTileFilterGround->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
 	_btnTileFilterGround->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_1); // change to options
 	_btnTileFilterGround->setTooltip("STR_TOOLTIP_TILE_GROUND");
 	_btnTileFilterGround->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnTileFilterGround->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
-
 
 	_btnTileFilterWestWall->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
 	_btnTileFilterWestWall->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_2); // change to options
@@ -321,13 +346,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnTileFilterWestWall->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnTileFilterWestWall->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-
 	_btnTileFilterNorthWall->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
 	_btnTileFilterNorthWall->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_3); // change to options
 	_btnTileFilterNorthWall->setTooltip("STR_TOOLTIP_TILE_NORTHWALL");
 	_btnTileFilterNorthWall->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnTileFilterNorthWall->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
-
 
 	_btnTileFilterObject->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
 	_btnTileFilterObject->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_4); // change to options
@@ -335,47 +358,48 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnTileFilterObject->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnTileFilterObject->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	_tileSelection->setColor(232); // Goal of background color 235
+	//_tileSelection->setColor(232); // Goal of background color 235
 	_tileSelection->onMouseClick((ActionHandler)&MapEditorState::tileSelectionClick);
 	_tileSelection->setTooltip("STR_TOOLTIP_TILE_SELECTION");
 	_tileSelection->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_tileSelection->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	_tileSelectionPageCount->setColor(224);
-	_tileSelectionPageCount->setHighContrast(true);
 	int mapDataObjects = 0;
 	for (auto mapDataSet : *_save->getMapDataSets())
 	{
 		mapDataObjects += mapDataSet->getSize();
 	}
 	_tileSelectionLastPage = mapDataObjects / (_tileSelectionColumns * _tileSelectionRows);
+	_txtSelectionPageCount->setSmall();
+	_txtSelectionPageCount->setAlign(ALIGN_CENTER);
+	_txtSelectionPageCount->setVerticalAlign(ALIGN_MIDDLE);
+	_txtSelectionPageCount->setWordWrap(true);
+	_txtSelectionPageCount->setColor(224);
+	_txtSelectionPageCount->setHighContrast(true);
 	std::ostringstream ss;
 	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
-	_tileSelectionPageCount->setText(ss.str().c_str());
+	_txtSelectionPageCount->setText(ss.str().c_str());
+	_txtSelectionPageCount->setVisible(false);
+
 	_tileSelectionPageCount->setVisible(false);
 	_tileSelectionPageCount->onMousePress((ActionHandler)&MapEditorState::tileSelectionMousePress);
 
-	size_t arrowColor = 8;
-	if (_tileSelectionCurrentPage != _tileSelectionLastPage)
+	if (_tileSelectionCurrentPage == _tileSelectionLastPage)
 	{
-		arrowColor = 224;
-		_tileSelectionLeftArrow->setHighContrast(true);
-		_tileSelectionRightArrow->setHighContrast(true);
+		size_t arrowColor = 1;
+		icons->getFrame(16)->blitNShade(_tileSelectionLeftArrow, 0, -28, 0, false, arrowColor);
+		icons->getFrame(18)->blitNShade(_tileSelectionRightArrow, 0, -28, 0, false, arrowColor);
 	}
 
-	_tileSelectionLeftArrow->setColor(arrowColor);
 	_tileSelectionLeftArrow->onMouseClick((ActionHandler)&MapEditorState::tileSelectionLeftArrowClick);
 	_tileSelectionLeftArrow->onMousePress((ActionHandler)&MapEditorState::tileSelectionMousePress);
-	_tileSelectionLeftArrow->setText(std::string("<<").c_str());
 	_tileSelectionLeftArrow->setVisible(false);
 
-	_tileSelectionRightArrow->setColor(arrowColor);
 	_tileSelectionRightArrow->onMouseClick((ActionHandler)&MapEditorState::tileSelectionRightArrowClick);
 	_tileSelectionRightArrow->onMousePress((ActionHandler)&MapEditorState::tileSelectionMousePress);
-	_tileSelectionRightArrow->setText(std::string(">>").c_str());
 	_tileSelectionRightArrow->setVisible(false);
 
-	_panelTileSelection->setColor(232); // nice purple
+	//_panelTileSelection->setColor(232); // nice purple
 	_panelTileSelection->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
 	_panelTileSelection->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 	_panelTileSelection->onMousePress((ActionHandler)&MapEditorState::tileSelectionMousePress);
@@ -385,6 +409,8 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		i->setVisible(false);
 	}
 	_panelTileSelection->setVisible(false);
+
+	_backgroundTileSelectionNavigation->setVisible(false);
 
 	_animTimer = new Timer(DEFAULT_ANIM_SPEED, true);
 	_animTimer->onTimer((StateHandler)&MapEditorState::animate);
@@ -1171,6 +1197,8 @@ MapEditor *MapEditorState::getMapEditor()
  */
 void MapEditorState::tileSelectionClick(Action *action)
 {
+	_backgroundTileSelectionNavigation->setVisible(!_backgroundTileSelectionNavigation->getVisible());
+	_txtSelectionPageCount->setVisible(!_txtSelectionPageCount->getVisible());
 	_tileSelectionPageCount->setVisible(!_tileSelectionPageCount->getVisible());
 	_tileSelectionLeftArrow->setVisible(!_tileSelectionLeftArrow->getVisible());
 	_tileSelectionRightArrow->setVisible(!_tileSelectionRightArrow->getVisible());
@@ -1213,7 +1241,7 @@ void MapEditorState::tileSelectionLeftArrowClick(Action *action)
 	drawTileSelectionGrid();
 	std::ostringstream ss;
 	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
-	_tileSelectionPageCount->setText(ss.str().c_str());
+	_txtSelectionPageCount->setText(ss.str().c_str());
 }
 
 /**
@@ -1229,7 +1257,7 @@ void MapEditorState::tileSelectionRightArrowClick(Action *action)
 	drawTileSelectionGrid();
 	std::ostringstream ss;
 	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
-	_tileSelectionPageCount->setText(ss.str().c_str());
+	_txtSelectionPageCount->setText(ss.str().c_str());
 }
 
 /**

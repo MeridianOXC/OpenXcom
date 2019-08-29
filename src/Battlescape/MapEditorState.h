@@ -55,8 +55,11 @@ private:
 	BattlescapeButton *_btnSelectedTile, *_btnTileFilterGround, *_btnTileFilterWestWall, *_btnTileFilterNorthWall, *_btnTileFilterObject;
 	BattlescapeButton *_tileObjectSelected;
 	std::map<TilePart, BattlescapeButton*> _tileFilters;
-	TextButton *_tileSelection, *_panelTileSelection, *_tileSelectionPageCount;
-	TextButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow;
+	InteractiveSurface *_backgroundTileSelection, *_tileSelection;
+	InteractiveSurface *_panelTileSelection;
+	InteractiveSurface *_backgroundTileSelectionNavigation;
+	BattlescapeButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow, *_tileSelectionPageCount;
+	Text *_txtSelectionPageCount;
 	std::vector<InteractiveSurface*> _tileSelectionGrid;
 	Text *_txtTooltip;
     int _tooltipDefaultColor;
