@@ -1015,6 +1015,10 @@ inline void MapEditorState::handle(Action *action)
 				{
 					_game->pushState(new MapEditorInfoState());
 				}
+				else if (key == Options::keySelectMusicTrack)
+				{
+					_game->pushState(new SelectMusicTrackState(SMT_BATTLESCAPE));
+				}
 
 				// quick save and quick load
 				//if (!_game->getSavedGame()->isIronman())
