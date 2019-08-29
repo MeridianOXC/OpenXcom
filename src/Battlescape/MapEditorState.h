@@ -49,6 +49,7 @@ private:
 	SavedBattleGame *_save;
 	MapEditor *_editor;
 	InteractiveSurface *_iconsLowerLeft, *_iconsLowerRight, *_iconsUpperRight;
+	std::vector<InteractiveSurface*> _iconsMousedOver;
     BattlescapeButton *_btnOptions, *_btnSave, *_btnLoad, *_btnUndo, *_btnRedo;
 	BattlescapeButton *_btnFill, *_btnClear, *_btnCut, *_btnCopy, *_btnPaste;
 	BattlescapeButton *_tileEditMode;

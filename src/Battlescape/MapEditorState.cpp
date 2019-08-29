@@ -267,6 +267,13 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_iconsLowerRight->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 	_iconsUpperRight->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
 	_iconsUpperRight->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_backgroundTileSelection->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_backgroundTileSelection->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_backgroundTileSelectionNavigation->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_backgroundTileSelectionNavigation->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_panelTileSelection->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_panelTileSelection->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_iconsMousedOver.clear();
 
 	_btnOptions->onMouseClick((ActionHandler)&MapEditorState::btnOptionsClick);
 	_btnOptions->onKeyboardPress((ActionHandler)&MapEditorState::btnOptionsClick, Options::keyBattleOptions);
@@ -765,8 +772,15 @@ void MapEditorState::mapIn(Action *)
  * Shows options.
  * @param action Pointer to an action.
  */
-void MapEditorState::btnOptionsClick(Action *)
+void MapEditorState::btnOptionsClick(Action *action)
 {
+	// Pressing escape closes the tile selection UI first
+	if (_panelTileSelection->getVisible() && action->getDetails()->type == SDL_KEYDOWN)
+	{
+		tileSelectionClick(action);
+		return;
+	}
+
 	_game->pushState(new MapEditorOptionsState(OPT_MAPEDITOR));
 }
 
@@ -1024,18 +1038,37 @@ void MapEditorState::clearMouseScrollingState()
  * Handler for the mouse moving over the icons, disabling the tile selection cube.
  * @param action Pointer to an action.
  */
-void MapEditorState::mouseInIcons(Action *)
+void MapEditorState::mouseInIcons(Action *action)
 {
-	_mouseOverIcons = true;
+	InteractiveSurface *sender = action->getSender();
+	if (sender && std::find_if(_iconsMousedOver.begin(), _iconsMousedOver.end(),
+		[&](const InteractiveSurface* s){ return s == sender; }) == _iconsMousedOver.end())
+	{
+		_iconsMousedOver.push_back(sender);
+	}
+
+	_mouseOverIcons = _iconsMousedOver.size() != 0;
 }
 
 /**
  * Handler for the mouse going out of the icons, enabling the tile selection cube.
  * @param action Pointer to an action.
  */
-void MapEditorState::mouseOutIcons(Action *)
+void MapEditorState::mouseOutIcons(Action *action)
 {
-	_mouseOverIcons = false;
+	InteractiveSurface *sender = action->getSender();
+	if (sender)
+	{
+		std::vector<InteractiveSurface*>::iterator it = std::find_if(_iconsMousedOver.begin(), _iconsMousedOver.end(),
+		[&](const InteractiveSurface* s){ return s == sender; });
+
+		if (it != _iconsMousedOver.end())
+		{
+			_iconsMousedOver.erase(it);
+		}
+	}
+
+	_mouseOverIcons = _iconsMousedOver.size() != 0;
 }
 
 /**
@@ -1214,6 +1247,14 @@ void MapEditorState::tileSelectionClick(Action *action)
 		_txtTooltip->setX(2);
 
 	drawTileSpriteOnSurface(_tileSelection, _selectedTileIndex);
+
+	// Make sure the hidden surfaces are no longer stored as "moused over"
+	InteractiveSurface *surface = _backgroundTileSelectionNavigation;
+	action->setSender(surface);
+	mouseOutIcons(action);
+	surface = _panelTileSelection;
+	action->setSender(surface);
+	mouseOutIcons(action);
 }
 
 /**
