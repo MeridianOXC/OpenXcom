@@ -159,6 +159,11 @@ void MapEditorSetSizeState::edtSizeOnChange(Action *action)
             {
                 newSize = std::stoi(input);
 
+                // Put a lower bound on map height at 1, width and length at 10
+                int lowerBound = sender == _edtZ ? 1 : 10;
+                // Force values of 0 to the next highest valid size
+                newSize = std::max(newSize, lowerBound);
+
                 // Round to the nearest 10 for width or length
                 if ((sender == _edtX || sender == _edtY) && newSize % 10 != 0)
                 {
