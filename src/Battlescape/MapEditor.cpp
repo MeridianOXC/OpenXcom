@@ -163,7 +163,7 @@ void MapEditor::changeTiles(EditType action)
                         if (mapDataSetID[part] != -1)
                             mapDataSet[part] = _save->getMapDataSets()->at(mapDataSetID[part]);
                         if (mapDataID[part] != -1)
-                        mapData[part] = mapDataSet[part]->getObjects()->at(mapDataID[part]);
+                        mapData[part] = mapDataSet[part]->getObject(mapDataID[part]);
 
                         parts.push_back((TilePart)part);
                     }
@@ -180,7 +180,7 @@ void MapEditor::changeTiles(EditType action)
                         if (mapDataSetID[part] != -1)
                             mapDataSet[part] = _save->getMapDataSets()->at(mapDataSetID[part]);
                         if (mapDataID[part] != -1)
-                        mapData[part] = mapDataSet[part]->getObjects()->at(mapDataID[part]);
+                        mapData[part] = mapDataSet[part]->getObject(mapDataID[part]);
 
                         parts.push_back((TilePart)part);
                     }
@@ -296,7 +296,7 @@ MapData *MapEditor::getMapDataFromIndex(int index, int *mapDataSetID, int *mapDa
     {
         *mapDataSetID = dataSetID;
         *mapDataID = index;
-        return mapDataSet->getObjects()->at(index);
+        return mapDataSet->getObject(index);
     }
 
     // If the index is greater than the number of available tile objects, return that we've found nothing
