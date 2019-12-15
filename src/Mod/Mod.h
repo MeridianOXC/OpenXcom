@@ -151,7 +151,7 @@ private:
 	std::map<std::string, Armor*> _armors;
 	std::map<std::string, ArticleDefinition*> _ufopaediaArticles;
 	std::map<std::string, RuleInventory*> _invs;
-	bool _inventoryOverlapsPaperdoll;
+	bool _explicitInventoriesByArmor;
 	std::map<std::string, RuleResearch *> _research;
 	std::map<std::string, RuleManufacture *> _manufacture;
 	std::map<std::string, RuleSoldierBonus *> _soldierBonus;
@@ -471,8 +471,6 @@ public:
 	std::map<std::string, RuleInventory*> *getInventories();
 	/// Gets the ruleset for a specific inventory.
 	RuleInventory *getInventory(const std::string &id, bool error = false) const;
-	/// Gets whether or not the inventory slots overlap with the paperdoll button
-	bool getInventoryOverlapsPaperdoll() const { return _inventoryOverlapsPaperdoll; }
 	/// Gets max view distance in BattleScape.
 	int getMaxViewDistance() const { return _maxViewDistance; }
 	/// Gets threshold of darkness for LoS calculation.
@@ -758,6 +756,11 @@ public:
 	StatAdjustment *getStatAdjustment(int difficulty);
 	int getDefeatScore() const;
 	int getDefeatFunds() const;
+	/// returns explicitInventoriesByArmor mod setting
+	bool getExplicitInventoriesByArmor() const {
+		return _explicitInventoriesByArmor
+			;
+	}
 };
 
 }

@@ -1489,7 +1489,15 @@ bool BattlescapeGenerator::placeItemByLayout(BattleItem *item, const std::vector
 				if (itemType != layoutItem->getItemType()) continue;
 
 				auto inventorySlot = _game->getMod()->getInventory(layoutItem->getSlot(), true);
-
+				bool hasSlot = false;
+				for(auto inv:unit->getArmor()->getInventorySlots())
+					if (inv == inventorySlot)
+					{
+						hasSlot = true;
+						break;
+					}
+				if (!hasSlot)
+					continue;
 				if (unit->getItem(inventorySlot, layoutItem->getSlotX(), layoutItem->getSlotY())) continue;
 
 				auto toLoad = 0;

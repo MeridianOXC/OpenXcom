@@ -112,34 +112,8 @@ void AlienInventory::drawGrid()
 	RuleInterface *rule = _game->getMod()->getInterface("inventory");
 	Uint8 color = rule->getElement("grid")->color;
 
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
-	{
-		if (i->second->getType() == INV_HAND)
-		{
-			SDL_Rect r;
-			r.x = i->second->getX();
-			r.x += _game->getMod()->getAlienInventoryOffsetX();
-
-			if (i->second->getId() == "STR_RIGHT_HAND")
-				r.x -= _dynamicOffset;
-			else if (i->second->getId() == "STR_LEFT_HAND")
-				r.x += _dynamicOffset;
-
-			r.y = i->second->getY();
-			r.w = RuleInventory::HAND_W * RuleInventory::SLOT_W;
-			r.h = RuleInventory::HAND_H * RuleInventory::SLOT_H;
-			_grid->drawRect(&r, color);
-			r.x++;
-			r.y++;
-			r.w -= 2;
-			r.h -= 2;
-			_grid->drawRect(&r, 0);
-		}
-		else
-		{
-			continue;
-		}
-	}
+	if (_selUnit != 0) for (auto i : _selUnit->getArmor()->getInventorySlots())
+		i->draw(_grid, color);
 }
 
 /**
@@ -159,9 +133,9 @@ void AlienInventory::drawItems()
 				int x = (*i)->getSlot()->getX() + (*i)->getRules()->getHandSpriteOffX();
 				x += _game->getMod()->getAlienInventoryOffsetX();
 
-				if ((*i)->getSlot()->getId() == "STR_RIGHT_HAND")
+				if ((*i)->getSlot()->isRightHand())
 					x -= _dynamicOffset;
-				else if ((*i)->getSlot()->getId() == "STR_LEFT_HAND")
+				else if ((*i)->getSlot()->isLeftHand())
 					x += _dynamicOffset;
 
 				frame->blitNShade(_items, x, (*i)->getSlot()->getY() + (*i)->getRules()->getHandSpriteOffY());

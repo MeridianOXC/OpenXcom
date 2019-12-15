@@ -1362,7 +1362,7 @@ void BattlescapeState::btnLeftHandItemClick(Action *action)
 
 		_battleGame->cancelCurrentAction();
 
-		_save->getSelectedUnit()->setActiveHand("STR_LEFT_HAND");
+		_save->getSelectedUnit()->setActiveHand(_save->getSelectedUnit()->getArmor()->getLeftHand()->getId());
 		_map->draw();
 		BattleItem *leftHandItem = _save->getSelectedUnit()->getLeftHandWeapon();
 		if (!leftHandItem)
@@ -1402,7 +1402,7 @@ void BattlescapeState::btnRightHandItemClick(Action *action)
 
 		_battleGame->cancelCurrentAction();
 
-		_save->getSelectedUnit()->setActiveHand("STR_RIGHT_HAND");
+		_save->getSelectedUnit()->setActiveHand(_save->getSelectedUnit()->getArmor()->getRightHand()->getId());
 		_map->draw();
 		BattleItem *rightHandItem = _save->getSelectedUnit()->getRightHandWeapon();
 		if (!rightHandItem)
@@ -1687,8 +1687,8 @@ void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<Num
 		{
 			const int Pulsate[8] = { 0, 1, 2, 3, 4, 3, 2, 1 };
 			Surface *tempSurface = _game->getMod()->getSurfaceSet("SCANG.DAT")->getFrame(6);
-			int x = (RuleInventory::HAND_W - rule->getInventoryWidth()) * RuleInventory::SLOT_W / 2;
-			int y = (RuleInventory::HAND_H - rule->getInventoryHeight()) * RuleInventory::SLOT_H / 2;
+			int x = (RuleInventory::MAX_HAND_W - rule->getInventoryWidth()) * RuleInventory::SLOT_W / 2;
+			int y = (RuleInventory::MAX_HAND_H - rule->getInventoryHeight()) * RuleInventory::SLOT_H / 2;
 			tempSurface->blitNShade(hand, x, y, Pulsate[_save->getAnimFrame() % 8], false, item->isFuseEnabled() ? 0 : 32);
 		}
 	}
@@ -3036,7 +3036,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 		BattleItem *weapon;
 		if (leftHand)
 		{
-			weapon = selectedUnit->getItem("STR_LEFT_HAND");
+			weapon = selectedUnit->getItem(selectedUnit->getArmor()->getRightHand()->getId());
 		}
 		else if (special)
 		{
@@ -3045,7 +3045,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 		}
 		else
 		{
-			weapon = selectedUnit->getItem("STR_RIGHT_HAND");
+			weapon = selectedUnit->getItem(selectedUnit->getArmor()->getRightHand()->getId());
 		}
 
 		// no weapon selected... do normal tooltip

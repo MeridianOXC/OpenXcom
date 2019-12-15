@@ -2648,58 +2648,68 @@ bool BattlescapeGame::takeItem(BattleItem* item, BattleAction *action)
 		return false;
 	};
 
-	auto equipItem = [&unit](RuleInventory *slot, BattleItem* i)
+	auto equipItem = [&unit](BattleItem* i)
 	{
 		BattleActionCost cost{ unit };
-		cost.Time += i->getSlot()->getCost(slot);
-		if (cost.haveTU() && unit->fitItemToInventory(slot, i))
+		std::vector<RuleInventory*> slots = cost.actor->getArmor()->getInventorySlots(), equipSlots = slots;
+		RuleInventory* p = *equipSlots.cbegin();
+		switch (i->getRules()->getBattleType())
 		{
-			cost.spendTU();
-			return true;
+		case BT_FIREARM:
+		case BT_MELEE:
+			break;
+		case BT_MINDPROBE:
+			if (p->isRightHand())
+			{
+				equipSlots.erase(equipSlots.cbegin());
+				equipSlots.push_back(p);
+			}
+			break;
+		case BT_AMMO:
+		case BT_GRENADE:
+		case BT_PROXIMITYGRENADE:
+		case BT_MEDIKIT:
+		case BT_SCANNER:
+			if (p->isRightHand())
+			{
+				equipSlots.erase(equipSlots.cbegin());
+				equipSlots.push_back(p);
+			}
+			if((p = *equipSlots.cbegin())->isLeftHand())
+			{
+				equipSlots.erase(equipSlots.cbegin());
+				equipSlots.push_back(p);
+			}
+			break;
+		default:
+			return false;
+		}
+		for (auto slot : equipSlots)
+		{
+			if (slot->getType() != INV_GROUND)
+			{
+				cost.Time += i->getSlot()->getCost(slot);
+				if (cost.haveTU() && unit->fitItemToInventory(slot, i))
+				{
+					cost.spendTU();
+					return true;
+				}
+				cost.Time -= i->getSlot()->getCost(slot);
+			}
 		}
 		return false;
 	};
 
-	switch (item->getRules()->getBattleType())
+	if (item->getRules()->getBattleType() == BT_AMMO)
 	{
-	case BT_AMMO:
-		// find equipped weapons that can be loaded with this ammo
 		if (reloadWeapon(rightWeapon, item))
-		{
 			placed = true;
-		}
 		else if (reloadWeapon(leftWeapon, item))
-		{
 			placed = true;
-		}
-		else
-		{
-			placed = equipItem(mod->getInventory("STR_BELT", true), item);
-		}
-		break;
-	case BT_GRENADE:
-	case BT_PROXIMITYGRENADE:
-		placed = equipItem(mod->getInventory("STR_BELT", true), item);
-		break;
-	case BT_FIREARM:
-	case BT_MELEE:
-		if (!rightWeapon)
-		{
-			placed = equipItem(mod->getInventory("STR_RIGHT_HAND", true), item);
-		}
-		break;
-	case BT_MEDIKIT:
-	case BT_SCANNER:
-		placed = equipItem(mod->getInventory("STR_BACK_PACK", true), item);
-		break;
-	case BT_MINDPROBE:
-		if (!leftWeapon)
-		{
-			placed = equipItem(mod->getInventory("STR_LEFT_HAND", true), item);
-		}
-		break;
-	default: break;
 	}
+
+	if (!placed)
+		placed = equipItem(item);
 	return placed;
 }
 

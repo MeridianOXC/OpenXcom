@@ -949,7 +949,7 @@ void UnitSprite::drawRoutine4()
 		}
 		else
 		{
-			if (_itemR->getSlot()->getId() == "STR_RIGHT_HAND")
+			if (_itemR->getSlot() == _unit->getArmor()->getRightHand())
 			{
 				selectItem(itemR, _itemR, unitDir);
 				itemR.offX = (0);
@@ -1460,7 +1460,7 @@ void UnitSprite::sortRifles()
 	{
 		if (_itemL && _itemL->getRules()->isTwoHanded())
 		{
-			if (_unit->getActiveHand() == "STR_LEFT_HAND")
+			if (_unit->getActiveHand() == _unit->getArmor()->getLeftHand()->getId())
 			{
 				_itemR = _itemL;
 			}

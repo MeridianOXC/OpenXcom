@@ -1572,7 +1572,7 @@ void RuleItem::drawHandSprite(SurfaceSet *texture, Surface *surface, BattleItem 
  */
 int RuleItem::getHandSpriteOffX() const
 {
-	return (RuleInventory::HAND_W - getInventoryWidth()) * RuleInventory::SLOT_W/2;
+	return (RuleInventory::MAX_HAND_W - getInventoryWidth()) * RuleInventory::SLOT_W/2;
 }
 
 /**
@@ -1581,7 +1581,7 @@ int RuleItem::getHandSpriteOffX() const
  */
 int RuleItem::getHandSpriteOffY() const
 {
-	return (RuleInventory::HAND_H - getInventoryHeight()) * RuleInventory::SLOT_H/2;
+	return (RuleInventory::MAX_HAND_H - getInventoryHeight()) * RuleInventory::SLOT_H/2;
 }
 
 /**

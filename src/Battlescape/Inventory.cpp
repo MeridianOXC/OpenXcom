@@ -68,7 +68,7 @@ Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base)
 	_depth = _game->getSavedGame()->getSavedBattle()->getDepth();
 	_grid = new Surface(width, height, 0, 0);
 	_items = new Surface(width, height, 0, 0);
-	_selection = new Surface(RuleInventory::HAND_W * RuleInventory::SLOT_W, RuleInventory::HAND_H * RuleInventory::SLOT_H, x, y);
+	_selection = new Surface(RuleInventory::MAX_HAND_W * RuleInventory::SLOT_W, RuleInventory::MAX_HAND_H * RuleInventory::SLOT_H, x, y);
 	_warning = new WarningMessage(224, 24, 48, 176);
 	_stackNumber = new NumberText(15, 15, 0, 0);
 	_stackNumber->setBordered(true);
@@ -99,12 +99,7 @@ Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base)
 		}
 	}
 
-	_inventorySlotRightHand = _game->getMod()->getInventory("STR_RIGHT_HAND", true);
-	_inventorySlotLeftHand = _game->getMod()->getInventory("STR_LEFT_HAND", true);
-	_inventorySlotBackPack = _game->getMod()->getInventory("STR_BACK_PACK", true);
-	_inventorySlotBelt = _game->getMod()->getInventory("STR_BELT", true);
-	_inventorySlotGround = _game->getMod()->getInventory("STR_GROUND", true);
-
+	_inventorySlotGround = game->getMod()->getInventory("STR_GROUND");
 	_groundSlotsX = (Screen::ORIGINAL_WIDTH - _inventorySlotGround->getX()) / RuleInventory::SLOT_W;
 	_groundSlotsY = (Screen::ORIGINAL_HEIGHT - _inventorySlotGround->getY()) / RuleInventory::SLOT_H;
 	_occupiedSlotsCache.resize(_groundSlotsY, std::vector<char>(_groundSlotsX * 2, false));
@@ -171,6 +166,9 @@ void Inventory::setSelectedUnit(BattleUnit *unit, bool resetGroundOffset)
 		_groundOffset = 999;
 		arrangeGround(1);
 	}
+	_inventories = _selUnit->getArmor()->getInventorySlots();
+	_inventorySlotLeftHand = (RuleInventory*)_selUnit->getArmor()->getRightHand();
+	_inventorySlotRightHand = (RuleInventory*)_selUnit->getArmor()->getLeftHand();
 }
 
 /**
@@ -191,61 +189,8 @@ void Inventory::drawGrid()
 	RuleInterface *rule = _game->getMod()->getInterface("inventory");
 	Uint8 color = rule->getElement("grid")->color;
 
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
-	{
-		// Draw grid
-		if (i->second->getType() == INV_SLOT)
-		{
-			for (std::vector<RuleSlot>::iterator j = i->second->getSlots()->begin(); j != i->second->getSlots()->end(); ++j)
-			{
-				SDL_Rect r;
-				r.x = i->second->getX() + RuleInventory::SLOT_W * j->x;
-				r.y = i->second->getY() + RuleInventory::SLOT_H * j->y;
-				r.w = RuleInventory::SLOT_W + 1;
-				r.h = RuleInventory::SLOT_H + 1;
-				_grid->drawRect(&r, color);
-				r.x++;
-				r.y++;
-				r.w -= 2;
-				r.h -= 2;
-				_grid->drawRect(&r, 0);
-			}
-		}
-		else if (i->second->getType() == INV_HAND)
-		{
-			SDL_Rect r;
-			r.x = i->second->getX();
-			r.y = i->second->getY();
-			r.w = RuleInventory::HAND_W * RuleInventory::SLOT_W;
-			r.h = RuleInventory::HAND_H * RuleInventory::SLOT_H;
-			_grid->drawRect(&r, color);
-			r.x++;
-			r.y++;
-			r.w -= 2;
-			r.h -= 2;
-			_grid->drawRect(&r, 0);
-		}
-		else if (i->second->getType() == INV_GROUND)
-		{
-			for (int x = i->second->getX(); x <= 320; x += RuleInventory::SLOT_W)
-			{
-				for (int y = i->second->getY(); y <= 200; y += RuleInventory::SLOT_H)
-				{
-					SDL_Rect r;
-					r.x = x;
-					r.y = y;
-					r.w = RuleInventory::SLOT_W + 1;
-					r.h = RuleInventory::SLOT_H + 1;
-					_grid->drawRect(&r, color);
-					r.x++;
-					r.y++;
-					r.w -= 2;
-					r.h -= 2;
-					_grid->drawRect(&r, 0);
-				}
-			}
-		}
-	}
+	if (_selUnit != 0) for (auto i:_selUnit->getArmor()->getInventorySlots())
+		i->draw(_grid, color);
 	drawGridLabels();
 }
 
@@ -263,22 +208,22 @@ void Inventory::drawGridLabels(bool showTuCost)
 	text.setColor(rule->getElement("textSlots")->color);
 	text.setHighContrast(true);
 
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
+	if (_selUnit != 0) for (auto i : _selUnit->getArmor()->getInventorySlots())
 	{
 		// Draw label
-		text.setX(i->second->getX());
-		text.setY(i->second->getY() - text.getFont()->getHeight() - text.getFont()->getSpacing());
+		text.setX(i->getX());
+		text.setY(i->getY() - text.getFont()->getHeight() - text.getFont()->getSpacing());
 		if (showTuCost && _selItem != 0)
 		{
 			std::ostringstream ss;
-			ss << _game->getLanguage()->getString(i->second->getId());
+			ss << _game->getLanguage()->getString(i->getId());
 			ss << ":";
-			ss << _selItem->getSlot()->getCost(i->second);
+			ss << _selItem->getSlot()->getCost(i);
 			text.setText(ss.str().c_str());
 		}
 		else
 		{
-			text.setText(_game->getLanguage()->getString(i->second->getId()));
+			text.setText(_game->getLanguage()->getString(i->getId()));
 		}
 		text.blit(_grid->getSurface());
 	}
@@ -323,8 +268,9 @@ void Inventory::drawItems()
 			}
 			else if ((*i)->getSlot()->getType() == INV_HAND)
 			{
-				x = ((*i)->getSlot()->getX() + (*i)->getRules()->getHandSpriteOffX());
-				y = ((*i)->getSlot()->getY() + (*i)->getRules()->getHandSpriteOffY());
+				int fit = (*i)->getSlot()->fitItemInSlot((*i)->getRules(), 0, 0);
+				x = ((*i)->getSlot()->getX() + fit % (RuleInventory::SLOT_W * RuleInventory::MAX_HAND_W));
+				y = ((*i)->getSlot()->getY() + fit / (RuleInventory::SLOT_W * RuleInventory::MAX_HAND_W));
 			}
 			else
 			{
@@ -342,8 +288,8 @@ void Inventory::drawItems()
 					text.setPalette(getPalette());
 					text.setColor((*i)->getRules()->isBlockingBothHands() ? _twoHandedRed : _twoHandedGreen);
 					text.setBordered(false);
-					text.setX((*i)->getSlot()->getX() + RuleInventory::HAND_W * RuleInventory::SLOT_W - 5);
-					text.setY((*i)->getSlot()->getY() + RuleInventory::HAND_H * RuleInventory::SLOT_H - 7);
+					text.setX((*i)->getSlot()->getX() + RuleInventory::MAX_HAND_W * RuleInventory::SLOT_W - 5);
+					text.setY((*i)->getSlot()->getY() + RuleInventory::MAX_HAND_H * RuleInventory::SLOT_H - 7);
 					text.setValue(2);
 					text.blit(_items->getSurface());
 				}
@@ -489,7 +435,7 @@ std::vector<std::vector<char>>* Inventory::clearOccupiedSlotsCache()
  * @param x X position in slot.
  * @param y Y position in slot.
  */
-void Inventory::moveItem(BattleItem *item, RuleInventory *slot, int x, int y)
+void Inventory::moveItem(BattleItem *item, const RuleInventory *slot, int x, int y)
 {
 	_game->getSavedGame()->getSavedBattle()->getTileEngine()->itemMoveInventory(_selUnit->getTile(), _selUnit, item, slot, x, y);
 }
@@ -504,7 +450,7 @@ void Inventory::moveItem(BattleItem *item, RuleInventory *slot, int x, int y)
  * @param y Y position in slot.
  * @return If there's overlap.
  */
-bool Inventory::overlapItems(BattleUnit *unit, BattleItem *item, RuleInventory *slot, int x, int y)
+bool Inventory::overlapItems(BattleUnit *unit, BattleItem *item, const RuleInventory *slot, int x, int y)
 {
 	if (slot->getType() != INV_GROUND)
 	{
@@ -537,11 +483,11 @@ bool Inventory::overlapItems(BattleUnit *unit, BattleItem *item, RuleInventory *
  */
 RuleInventory *Inventory::getSlotInPosition(int *x, int *y) const
 {
-	for (std::map<std::string, RuleInventory*>::iterator i = _game->getMod()->getInventories()->begin(); i != _game->getMod()->getInventories()->end(); ++i)
+	if (_selUnit != 0) for (auto i : _selUnit->getArmor()->getInventorySlots())
 	{
-		if (i->second->checkSlotInPosition(x, y))
+		if (i->checkSlotInPosition(x, y))
 		{
-			return i->second;
+			return i;
 		}
 	}
 	return 0;
@@ -697,7 +643,7 @@ void Inventory::mouseClick(Action *action, State *state)
 			RuleInventory *slot = getSlotInPosition(&x, &y);
 			if (slot != 0)
 			{
-				if (slot->getType() == INV_GROUND)
+				if (slot == _inventorySlotGround)
 				{
 					x += _groundOffset;
 				}
@@ -740,65 +686,55 @@ void Inventory::mouseClick(Action *action, State *state)
 					}
 					else if ((SDL_GetModState() & KMOD_CTRL))
 					{
-						RuleInventory *newSlot = _inventorySlotGround;
 						std::string warning = "STR_NOT_ENOUGH_SPACE";
 						bool placed = false;
-
-						if (slot->getType() == INV_GROUND)
+						std::vector<RuleInventory*> fitInventory = _inventories;
+						if (slot == _inventorySlotGround)
 						{
 							switch (item->getRules()->getBattleType())
 							{
 							case BT_FIREARM:
-								newSlot = _inventorySlotRightHand;
 								break;
 							case BT_MINDPROBE:
 							case BT_PSIAMP:
 							case BT_MELEE:
 							case BT_CORPSE:
-								newSlot = _inventorySlotLeftHand;
+								if (_inventorySlotRightHand)
+								{
+									fitInventory.erase(fitInventory.cbegin());
+									fitInventory.push_back(_inventorySlotRightHand);
+								}
 								break;
 							default:
-								if (item->getRules()->getInventoryHeight() > 2)
+								if (_inventorySlotRightHand)
+									fitInventory.erase(fitInventory.cbegin());
+								if (_inventorySlotLeftHand)
 								{
-									newSlot = _inventorySlotBackPack;
+									fitInventory.erase(fitInventory.cbegin());
+									fitInventory.push_back(_inventorySlotLeftHand);
 								}
-								else
-								{
-									newSlot = _inventorySlotBelt;
-								}
+								if (_inventorySlotRightHand)
+									fitInventory.push_back(_inventorySlotRightHand);
 								break;
 							}
-						}
 
-						if (newSlot->getType() != INV_GROUND)
-						{
-							_stackLevel[item->getSlotX()][item->getSlotY()] -= 1;
-
-							placed = fitItem(newSlot, item, warning);
-
-							if (!placed)
+							for (std::vector<RuleInventory *>::const_iterator wildCard = fitInventory.begin(); wildCard != fitInventory.end() && !placed; ++wildCard)
 							{
-								for (std::map<std::string, RuleInventory *>::const_iterator wildCard = _game->getMod()->getInventories()->begin(); wildCard != _game->getMod()->getInventories()->end() && !placed; ++wildCard)
+								RuleInventory *newSlot = *wildCard;
+								if (newSlot->getType() == INV_GROUND)
 								{
-									newSlot = wildCard->second;
-									if (newSlot->getType() == INV_GROUND)
-									{
-										continue;
-									}
-									placed = fitItem(newSlot, item, warning);
+									continue;
 								}
-							}
-							if (!placed)
-							{
-								_stackLevel[item->getSlotX()][item->getSlotY()] += 1;
+								if(placed = fitItem(newSlot, item, warning))
+									_stackLevel[item->getSlotX()][item->getSlotY()] -= 1;
 							}
 						}
 						else
 						{
-							if (!_tu || _selUnit->spendTimeUnits(item->getSlot()->getCost(newSlot)))
+							if (!_tu || _selUnit->spendTimeUnits(item->getSlot()->getCost(_inventorySlotGround)))
 							{
 								placed = true;
-								moveItem(item, newSlot, 0, 0);
+								moveItem(item, _inventorySlotGround, 0, 0);
 								_game->getMod()->getSoundByDepth(_depth, Mod::ITEM_DROP)->play();
 								arrangeGround();
 							}
@@ -827,8 +763,8 @@ void Inventory::mouseClick(Action *action, State *state)
 		// Drop item
 		else
 		{
-			int x = _selection->getX() + (RuleInventory::HAND_W - _selItem->getRules()->getInventoryWidth()) * RuleInventory::SLOT_W/2 + RuleInventory::SLOT_W/2,
-				y = _selection->getY() + (RuleInventory::HAND_H - _selItem->getRules()->getInventoryHeight()) * RuleInventory::SLOT_H/2 + RuleInventory::SLOT_H/2;
+			int x = _selection->getX() + (RuleInventory::MAX_HAND_W - _selItem->getRules()->getInventoryWidth()) * RuleInventory::SLOT_W/2 + RuleInventory::SLOT_W/2,
+				y = _selection->getY() + (RuleInventory::MAX_HAND_H - _selItem->getRules()->getInventoryHeight()) * RuleInventory::SLOT_H/2 + RuleInventory::SLOT_H/2;
 			RuleInventory *slot = getSlotInPosition(&x, &y);
 			if (slot != 0)
 			{
@@ -848,7 +784,7 @@ void Inventory::mouseClick(Action *action, State *state)
 				// Put item in empty slot, or stack it, if possible.
 				else if (item == 0 || item == _selItem || canStack)
 				{
-					if (!overlapItems(_selUnit, _selItem, slot, x, y) && slot->fitItemInSlot(_selItem->getRules(), x, y))
+					if (!overlapItems(_selUnit, _selItem, slot, x, y) && (slot->fitItemInSlot(_selItem->getRules(), x, y) >= 0))
 					{
 						if (!_tu || _selUnit->spendTimeUnits(_selItem->getSlot()->getCost(slot)))
 						{
@@ -1560,7 +1496,7 @@ void Inventory::arrangeGround(int alterOffset)
  * @param warning Warning message if item could not be placed.
  * @return True, if the item was successfully placed in the inventory.
  */
-bool Inventory::fitItem(RuleInventory *newSlot, BattleItem *item, std::string &warning)
+bool Inventory::fitItem(const RuleInventory *newSlot, BattleItem *item, std::string &warning)
 {
 	// Check if this inventory section supports the item
 	if (!item->getRules()->canBePlacedIntoInventorySection(newSlot->getId()))
@@ -1572,7 +1508,7 @@ bool Inventory::fitItem(RuleInventory *newSlot, BattleItem *item, std::string &w
 	bool placed = false;
 	int maxSlotX = 0;
 	int maxSlotY = 0;
-	for (std::vector<RuleSlot>::iterator j = newSlot->getSlots()->begin(); j != newSlot->getSlots()->end(); ++j)
+	for (std::vector<RuleSlot>::const_iterator j = newSlot->getSlots()->cbegin(); j != newSlot->getSlots()->cend(); ++j)
 	{
 		if (j->x > maxSlotX) maxSlotX = j->x;
 		if (j->y > maxSlotY) maxSlotY = j->y;
@@ -1581,7 +1517,7 @@ bool Inventory::fitItem(RuleInventory *newSlot, BattleItem *item, std::string &w
 	{
 		for (int x2 = 0; x2 <= maxSlotX && !placed; ++x2)
 		{
-			if (!overlapItems(_selUnit, item, newSlot, x2, y2) && newSlot->fitItemInSlot(item->getRules(), x2, y2))
+			if (!overlapItems(_selUnit, item, newSlot, x2, y2) && (newSlot->fitItemInSlot(item->getRules(), x2, y2) >= 0))
 			{
 				if (!_tu || _selUnit->spendTimeUnits(item->getSlot()->getCost(newSlot)))
 				{

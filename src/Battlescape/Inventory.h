@@ -58,14 +58,13 @@ private:
 	int _depth, _groundSlotsX, _groundSlotsY;
 	RuleInventory *_inventorySlotRightHand = nullptr;
 	RuleInventory *_inventorySlotLeftHand = nullptr;
-	RuleInventory *_inventorySlotBackPack = nullptr;
-	RuleInventory *_inventorySlotBelt = nullptr;
 	RuleInventory *_inventorySlotGround = nullptr;
+	std::vector<RuleInventory*> _inventories;
 
 	/// Clear all occupied slots markers.
 	std::vector<std::vector<char>>* clearOccupiedSlotsCache();
 	/// Moves an item to a specified slot.
-	void moveItem(BattleItem *item, RuleInventory *slot, int x, int y);
+	void moveItem(BattleItem *item, const RuleInventory *slot, int x, int y);
 	/// Gets the slot in the specified position.
 	RuleInventory *getSlotInPosition(int *x, int *y) const;
 public:
@@ -116,11 +115,11 @@ public:
 	/// Arranges items on the ground.
 	void arrangeGround(int alterOffset = 0);
 	/// Attempts to place an item in an inventory slot.
-	bool fitItem(RuleInventory *newSlot, BattleItem *item, std::string &warning);
+	bool fitItem(const RuleInventory *newSlot, BattleItem *item, std::string &warning);
 	/// Checks if two items can be stacked on one another.
 	bool canBeStacked(BattleItem *itemA, BattleItem *itemB);
 	/// Checks for item overlap.
-	static bool overlapItems(BattleUnit *unit, BattleItem *item, RuleInventory *slot, int x = 0, int y = 0);
+	static bool overlapItems(BattleUnit *unit, BattleItem *item, const RuleInventory *slot, int x = 0, int y = 0);
 	/// Shows a warning message.
 	void showWarning(const std::string &msg);
 	/// Animate surface.

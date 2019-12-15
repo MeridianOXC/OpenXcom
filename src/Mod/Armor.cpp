@@ -244,6 +244,8 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	_standHeight = node["standHeight"].as<int>(_standHeight);
 	_kneelHeight = node["kneelHeight"].as<int>(_kneelHeight);
 	_floatHeight = node["floatHeight"].as<int>(_floatHeight);
+	if (const YAML::Node& tst = node["inventorySlots"])
+		_inventorySlots = tst.as< std::vector<std::string> >(_inventorySlots);
 }
 
 /**
@@ -1017,4 +1019,99 @@ int Armor::getFloatHeight() const
 	return _floatHeight;
 }
 
+/**
+* Cross link with other Rules.
+* computes if the slots overlaps the paperdoll
+* sets the armor's real inventory slots SORTED wrt
+*  * transfer for usage speed (min (move to RH, move to LH, if any))
+*  * pick up speed (move from ground, if any)
+*/
+void Armor::afterLoad(const Mod* mod)
+{
+	// find out if paperdoll overlaps with inventory slots
+	const int x1 = RuleInventory::PAPERDOLL_X, y1 = RuleInventory::PAPERDOLL_Y, w1 = RuleInventory::PAPERDOLL_W, h1 = RuleInventory::PAPERDOLL_H;
+	std::vector<RuleInventory*> realInvs;
+	if (! mod->getExplicitInventoriesByArmor())
+	{
+		_inventorySlots.clear();
+		_inventorySlots = mod->getInvsList();
+	}
+	for (auto inventory : _inventorySlots)
+	{
+		RuleInventory* invCategory = mod->getInventory(inventory);
+		if (invCategory->isRightHand())
+			_rhs = invCategory;
+		else if (invCategory->isLeftHand())
+			_lhs = invCategory;
+		else if (invCategory->getType() == INV_GROUND)
+			_gnd = invCategory;
+		else realInvs.push_back(invCategory);
+		for (auto invSlot : *invCategory->getSlots())
+		{
+			int x2 = invCategory->getX() + (invSlot.x * RuleInventory::SLOT_W);
+			int y2 = invCategory->getY() + (invSlot.y * RuleInventory::SLOT_H);
+			int w2 = RuleInventory::SLOT_W;
+			int h2 = RuleInventory::SLOT_H;
+			if (x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1)
+			{
+				// intersection is empty
+			}
+			else
+			{
+				_inventoryOverlapsPaperdoll = true;
+			}
+		}
+	}
+	for (auto inv : realInvs)
+	{
+		std::vector<RuleInventory*>::iterator pos = _invRules.end();
+		for (std::vector<RuleInventory*>::iterator i = _invRules.begin(); i != _invRules.end(); i++)
+		{
+			if (compCost(inv, *i))
+			{
+				pos = i;
+				break;
+			}
+		}
+		_invRules.insert(pos, inv);
+	}
+	if (!_lhs || !_rhs)
+		throw Exception("Armor " + _type + " hasn't two hands!!!!");
+	_invRules.insert(_invRules.begin(), _lhs);
+	_invRules.insert(_invRules.begin(), _rhs);
+	if (!_gnd)
+		_gnd = mod->getInventory("STR_GROUND");
+	_invRules.push_back(_gnd);
+}
+
+/**
+* Is the coordinate in an inventory slot.
+* @return true if inside an inventory slot.
+*/
+bool Armor::isCoordInInventory(int x, int y) const
+{
+	if (_inventoryOverlapsPaperdoll)
+	{
+		for (auto inventory : _invRules)
+		{
+			for (std::vector<struct RuleSlot>::const_iterator invSlot = inventory->getSlots()->cbegin(); invSlot != inventory->getSlots()->cend(); invSlot++)
+			{
+				int x1 = inventory->getX() + (invSlot->x * RuleInventory::SLOT_W);
+				int y1 = inventory->getY() + (invSlot->y * RuleInventory::SLOT_H);
+				if (x1 <= x && x <= x1 + RuleInventory::SLOT_W && y1 <= y && y <= y1 + RuleInventory::SLOT_H)
+				{
+					return true;
+				}
+			}
+		}
+
+	}
+	return false;
+}
+
+bool Armor::compCost(const RuleInventory* lop, const RuleInventory* rop) const
+{
+	int lch = std::min(lop->getCost(_rhs), lop->getCost(_lhs)), rch = std::min(rop->getCost(_rhs), rop->getCost(_lhs)), lcg = lop->getCost(_gnd), rcg = rop->getCost(_gnd);
+	return (lch < rch) || (lch == rch) && (lcg <= rcg);
+}
 }

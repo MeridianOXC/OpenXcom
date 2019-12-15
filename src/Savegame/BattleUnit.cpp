@@ -172,7 +172,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 	for (int i = 0; i < SPEC_WEAPON_MAX; ++i)
 		_specWeapon[i] = 0;
 
-	_activeHand = "STR_RIGHT_HAND";
+	_activeHand = _armor->getRightHand()->getId();
 
 	lastCover = TileEngine::invalid;
 
@@ -491,7 +491,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	for (int i = 0; i < SPEC_WEAPON_MAX; ++i)
 		_specWeapon[i] = 0;
 
-	_activeHand = "STR_RIGHT_HAND";
+	_activeHand = _armor->getRightHand()->getId();
 	_gender = GENDER_MALE;
 
 	lastCover = TileEngine::invalid;
@@ -2467,12 +2467,12 @@ std::vector<BattleItem*> *BattleUnit::getInventory()
  * @param item Item to fit.
  * @return True if succeeded, false otherwise.
  */
-bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
+bool BattleUnit::fitItemToInventory(const RuleInventory *slot, BattleItem *item)
 {
 	auto rule = item->getRules();
 	if (slot->getType() == INV_HAND)
 	{
-		if (!Inventory::overlapItems(this, item, slot))
+		if (!Inventory::overlapItems(this, item, slot) && (slot->fitItemInSlot(rule, 0, 0) >= 0))
 		{
 			item->moveToOwner(this);
 			item->setSlot(slot);
@@ -2483,7 +2483,7 @@ bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
 	{
 		for (const RuleSlot &rs : *slot->getSlots())
 		{
-			if (!Inventory::overlapItems(this, item, slot, rs.x, rs.y) && slot->fitItemInSlot(rule, rs.x, rs.y))
+			if (!Inventory::overlapItems(this, item, slot, rs.x, rs.y) && (slot->fitItemInSlot(rule, rs.x, rs.y) >= 0))
 			{
 				item->moveToOwner(this);
 				item->setSlot(slot);
@@ -2508,8 +2508,8 @@ bool BattleUnit::fitItemToInventory(RuleInventory *slot, BattleItem *item)
  */
 bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip, bool allowAutoLoadout, bool allowUnloadedWeapons)
 {
-	RuleInventory *rightHand = mod->getInventory("STR_RIGHT_HAND");
-	RuleInventory *leftHand = mod->getInventory("STR_LEFT_HAND");
+	const RuleInventory *rightHand = _armor->getRightHand();
+	const RuleInventory *leftHand = _armor->getLeftHand();
 	bool placed = false;
 	bool loaded = false;
 	const RuleItem *rule = item->getRules();
@@ -2671,9 +2671,8 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		{
 			if (getBaseStats()->strength >= weight) // weight is always considered 0 for aliens
 			{
-				for (const std::string &s : mod->getInvsList())
+				for (auto slot: _armor->getInventorySlots())
 				{
-					RuleInventory *slot = mod->getInventory(s);
 					if (slot->getType() == INV_SLOT)
 					{
 						placed = fitItemToInventory(slot, item);
@@ -3846,8 +3845,8 @@ void BattleUnit::setActiveHand(const std::string &hand)
 std::string BattleUnit::getActiveHand() const
 {
 	if (getItem(_activeHand)) return _activeHand;
-	if (getLeftHandWeapon()) return "STR_LEFT_HAND";
-	return "STR_RIGHT_HAND";
+	if (getLeftHandWeapon()) return _armor->getLeftHand()->getId();
+	return _armor->getRightHand()->getId();
 }
 
 /**

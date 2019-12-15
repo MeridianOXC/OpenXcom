@@ -25,6 +25,7 @@
 #include "RuleStatBonus.h"
 #include "RuleDamageType.h"
 #include "ModScript.h"
+#include "RuleInventory.h"
 
 namespace OpenXcom
 {
@@ -83,12 +84,16 @@ private:
 	RuleStatBonus _timeRecovery, _energyRecovery, _moraleRecovery, _healthRecovery, _stunRecovery, _manaRecovery;
 	ModScript::BattleUnitScripts::Container _battleUnitScripts;
 
-	std::vector<std::string> _units;
+	std::vector<std::string> _units, _inventorySlots;
 	ScriptValues<Armor> _scriptValues;
 	std::vector<int> _customArmorPreviewIndex;
 	Sint8 _allowsRunning, _allowsStrafing, _allowsKneeling, _allowsMoving;
 	bool _instantWoundRecovery;
 	int _standHeight, _kneelHeight, _floatHeight;
+	bool _inventoryOverlapsPaperdoll;
+	std::vector<RuleInventory*> _invRules;
+	RuleInventory *_rhs, *_lhs, *_gnd;
+	bool compCost(const RuleInventory* lop, const RuleInventory* rop) const;
 public:
 	/// Creates a blank armor ruleset.
 	Armor(const std::string &type);
@@ -289,6 +294,15 @@ public:
 	int getKneelHeight() const;
 	/// Gets a unit's float elevation while wearing this armor.
 	int getFloatHeight() const;
+	/// Cross link with other rules.
+	void afterLoad(const Mod * mod);
+	/// Gets the armor's inventory slots, cost-ordered wrt utilization.
+	const std::vector<RuleInventory*> getInventorySlots() const { return _invRules; }
+	/// coordinate is in the armor's inventory slots
+	bool isCoordInInventory(int x, int y) const;
+	const RuleInventory* getRightHand() const { return _rhs; }
+	const RuleInventory* getLeftHand() const { return _lhs; }
+	const RuleInventory* getGround() const { return _gnd; }
 };
 
 }

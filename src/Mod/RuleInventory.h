@@ -27,12 +27,15 @@ namespace OpenXcom
 
 struct RuleSlot
 {
-	int x, y;
+	int x, y, adj;
+	RuleSlot(int x_ = 0, int y_ = 0, int adj_ = 0) :x(x_), y(y_), adj(adj_) {};
 };
 
 enum InventoryType { INV_SLOT, INV_HAND, INV_GROUND };
 
 class RuleItem;
+class Surface;
+class Mod;
 
 /**
  * Represents a specific section of the inventory,
@@ -41,6 +44,15 @@ class RuleItem;
  */
 class RuleInventory
 {
+public:
+	static const int SLOT_W = 16;
+	static const int SLOT_H = 16;
+	static const int MAX_HAND_W = 2;
+	static const int MAX_HAND_H = 3;
+	static const int PAPERDOLL_W = 40;
+	static const int PAPERDOLL_H = 85;
+	static const int PAPERDOLL_X = 60;
+	static const int PAPERDOLL_Y = 50;
 private:
 	std::string _id;
 	int _x, _y;
@@ -48,16 +60,8 @@ private:
 	std::vector<RuleSlot> _slots;
 	std::map<std::string, int> _costs;
 	int _listOrder;
-	int _hand;
+	int _hand, _handWidth, _handHeight, _fit[MAX_HAND_W][MAX_HAND_H];
 public:
-	static const int SLOT_W = 16;
-	static const int SLOT_H = 16;
-	static const int HAND_W = 2;
-	static const int HAND_H = 3;
-	static const int PAPERDOLL_W = 40;
-	static const int PAPERDOLL_H = 70;
-	static const int PAPERDOLL_X = 60;
-	static const int PAPERDOLL_Y = 65;
 	/// Creates a blank inventory ruleset.
 	RuleInventory(const std::string &id);
 	/// Cleans up the inventory ruleset.
@@ -77,14 +81,18 @@ public:
 	/// Gets if this slot is left hand;
 	bool isLeftHand() const;
 	/// Gets all the slots in the inventory.
-	std::vector<struct RuleSlot> *getSlots();
+	const std::vector<struct RuleSlot> *getSlots() const;
 	/// Checks for a slot in a certain position.
 	bool checkSlotInPosition(int *x, int *y) const;
 	/// Checks if an item fits in a slot.
-	bool fitItemInSlot(const RuleItem *item, int x, int y) const;
+	int fitItemInSlot(const RuleItem *item, int x, int y) const;
 	/// Gets a certain cost in the inventory.
-	int getCost(RuleInventory *slot) const;
-	int getListOrder() const;
+	int getCost(const RuleInventory *slot) const;
+	int getListOrder() const { return _listOrder; };
+	int getHandWidth() const { return _handWidth; };
+	int getHandHeight() const { return _handHeight; };
+	void draw(Surface *, int) const;
+	void afterLoad(const Mod*);
 };
 
 }

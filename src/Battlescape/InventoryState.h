@@ -56,7 +56,7 @@ private:
 	const bool _tu, _noCraft;
 	BattlescapeState *_parent;
 	Base *_base;
-	std::string _currentTooltip;
+	std::string _currentTooltip, _armorToolTip;
 	std::string _currentDamageTooltip;
 	int _mouseHoverItemFrame = 0;
 	BattleItem *_mouseHoverItem = nullptr;

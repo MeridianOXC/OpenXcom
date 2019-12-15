@@ -20,6 +20,8 @@
 #include <cmath>
 #include "RuleItem.h"
 #include "../Engine/Screen.h"
+#include "../Engine/Exception.h"
+#include "../Engine/InteractiveSurface.h"
 
 namespace YAML
 {
@@ -54,7 +56,7 @@ namespace OpenXcom
  * type of inventory section.
  * @param id String defining the id.
  */
-RuleInventory::RuleInventory(const std::string &id): _id(id), _x(0), _y(0), _type(INV_SLOT), _listOrder(0), _hand(0)
+RuleInventory::RuleInventory(const std::string &id): _id(id), _x(0), _y(0), _type(INV_SLOT), _listOrder(0), _hand(0), _handWidth(0), _handHeight(0)
 {
 }
 
@@ -80,18 +82,22 @@ void RuleInventory::load(const YAML::Node &node, int listOrder)
 	_slots = node["slots"].as< std::vector<RuleSlot> >(_slots);
 	_costs = node["costs"].as< std::map<std::string, int> >(_costs);
 	_listOrder = node["listOrder"].as<int>(listOrder);
-	if (_id == "STR_RIGHT_HAND")
-	{
+	bool mainHand = node["mainHand"].as<bool>(false), offHand = node["offHand"].as<bool>(false);
+	//coherency checks - error if redefining default hands as something else than hands
+	//or new hands without properly qualyfying them as such
+	if ((_type == INV_HAND) && (_id != "STR_RIGHT_HAND" && _id != "STR_LEFT_HAND" && !mainHand && !offHand ||
+		_id == "STR_RIGHT_HAND" && offHand || _id == "STR_LEFT_HAND" && mainHand ||
+		mainHand && offHand) || (_type != INV_HAND) && (mainHand || offHand || _id == "STR_RIGHT_HAND" || _id == "STR_LEFT_HAND"))
+		throw Exception("Wrong inventory " + _id + " (re)definition");
+	// no another ground definition (no real use, anyways)!!!
+	if(_type == INV_GROUND && _id != "STR_GROUND")
+		throw Exception("New ground " + _id + " definition");
+	if (_id == "STR_RIGHT_HAND" || mainHand)
 		_hand = 2;
-	}
-	else if (_id == "STR_LEFT_HAND")
-	{
+	else if (_id == "STR_LEFT_HAND" || offHand)
 		_hand = 1;
-	}
 	else
-	{
 		_hand = 0;
-	}
 }
 
 /**
@@ -156,7 +162,7 @@ bool RuleInventory::isLeftHand() const
  * Gets all the slots in the inventory section.
  * @return The list of slots.
  */
-std::vector<struct RuleSlot> *RuleInventory::getSlots()
+const std::vector<struct RuleSlot> *RuleInventory::getSlots() const
 {
 	return &_slots;
 }
@@ -170,23 +176,7 @@ std::vector<struct RuleSlot> *RuleInventory::getSlots()
 bool RuleInventory::checkSlotInPosition(int *x, int *y) const
 {
 	int mouseX = *x, mouseY = *y;
-	if (_type == INV_HAND)
-	{
-		for (int xx = 0; xx < HAND_W; ++xx)
-		{
-			for (int yy = 0; yy < HAND_H; ++yy)
-			{
-				if (mouseX >= _x + xx * SLOT_W && mouseX < _x + (xx + 1) * SLOT_W &&
-					mouseY >= _y + yy * SLOT_H && mouseY < _y + (yy + 1) * SLOT_H)
-				{
-					*x = 0;
-					*y = 0;
-					return true;
-				}
-			}
-		}
-	}
-	else if (_type == INV_GROUND)
+	if (_type == INV_GROUND)
 	{
 		if (mouseX >= _x && mouseX < Screen::ORIGINAL_WIDTH && mouseY >= _y && mouseY < Screen::ORIGINAL_HEIGHT)
 		{
@@ -202,8 +192,16 @@ bool RuleInventory::checkSlotInPosition(int *x, int *y) const
 			if (mouseX >= _x + i->x * SLOT_W && mouseX < _x + (i->x + 1) * SLOT_W &&
 				mouseY >= _y + i->y * SLOT_H && mouseY < _y + (i->y + 1) * SLOT_H)
 			{
-				*x = i->x;
-				*y = i->y;
+				if (_type == INV_HAND)
+				{
+					*x = 0;
+					*y = 0;
+				}
+				else
+				{
+					*x = i->x;
+					*y = i->y;
+				}
 				return true;
 			}
 		}
@@ -217,15 +215,14 @@ bool RuleInventory::checkSlotInPosition(int *x, int *y) const
  * @param item Pointer to item ruleset.
  * @param x Slot X position.
  * @param y Slot Y position.
- * @return True if there's a slot there.
+ * @return <0 if not fit or
+ *         0 if there's a slot there, or a sum of the following.
+ *         +1 * n, n < MAX_HAND_W, in order to horizontally align item
+ *         +MAX_HAND_W * m, m < MAX_HAND_H to vertically align item
  */
-bool RuleInventory::fitItemInSlot(const RuleItem *item, int x, int y) const
+int RuleInventory::fitItemInSlot(const RuleItem *item, int x, int y) const
 {
-	if (_type == INV_HAND)
-	{
-		return true;
-	}
-	else if (_type == INV_GROUND)
+	if (_type == INV_GROUND)
 	{
 		int width = (320 - _x) / SLOT_W;
 		int height = (200 - _y) / SLOT_H;
@@ -237,12 +234,12 @@ bool RuleInventory::fitItemInSlot(const RuleItem *item, int x, int y) const
 			for (int yy = y; yy < y + item->getInventoryHeight(); ++yy)
 			{
 				if (!(xx >= xOffset && xx < xOffset + width && yy >= 0 && yy < height))
-					return false;
+					return -1;
 			}
 		}
-		return true;
+		return 0;
 	}
-	else
+	else if (_type == INV_SLOT)
 	{
 		int totalSlots = item->getInventoryWidth() * item->getInventoryHeight();
 		int foundSlots = 0;
@@ -254,7 +251,13 @@ bool RuleInventory::fitItemInSlot(const RuleItem *item, int x, int y) const
 				foundSlots++;
 			}
 		}
-		return (foundSlots == totalSlots);
+		return foundSlots - totalSlots;
+	}
+	else if (_type == INV_HAND)
+	{
+		if (item->getInventoryWidth() > _handWidth || item->getInventoryHeight() > _handHeight)
+			return -1;
+		return _fit[item->getInventoryWidth() - 1][item->getInventoryHeight() - 1];
 	}
 }
 
@@ -263,16 +266,128 @@ bool RuleInventory::fitItemInSlot(const RuleItem *item, int x, int y) const
  * @param slot The new section id.
  * @return The time unit cost.
  */
-int RuleInventory::getCost(RuleInventory* slot) const
+int RuleInventory::getCost(const RuleInventory* slot) const
 {
 	if (slot == this)
 		return 0;
-	return _costs.find(slot->getId())->second;
+	std::map<std::string, int>::const_iterator i = _costs.find(slot->getId());
+	if (i == _costs.cend())
+		return -1;
+	return i->second;
 }
 
-int RuleInventory::getListOrder() const
+void RuleInventory::draw(Surface* grid_, int color_) const
 {
-	return _listOrder;
+	// Draw grid
+	if (_type == INV_GROUND)
+	{
+		for (int x = _x; x <= 320; x += SLOT_W)
+		{
+			for (int y = _y; y <= 200; y += SLOT_H)
+			{
+				SDL_Rect r;
+				r.x = x;
+				r.y = y;
+				r.w = SLOT_W + 1;
+				r.h = SLOT_H + 1;
+				grid_->drawRect(&r, color_);
+				r.x++;
+				r.y++;
+				r.w -= 2;
+				r.h -= 2;
+				grid_->drawRect(&r, 0);
+			}
+		}
+	}
+	else
+	{
+		for (auto j : _slots)
+		{
+			SDL_Rect r;
+			r.x = _x + SLOT_W * j.x;
+			r.y = _y + SLOT_H * j.y;
+			r.w = SLOT_W + 1;
+			r.h = SLOT_H + 1;
+			grid_->drawRect(&r, color_);
+			if (!(j.adj & 1)) r.x++;
+			if (!(j.adj & 2)) r.y++;
+			if (!(j.adj & 4)) r.w -= ((j.adj & 1) ? 1 : 2);
+			if (!(j.adj & 8)) r.h -= ((j.adj & 2) ? 1 : 2);
+			grid_->drawRect(&r, 0);
+		}
+	}
+}
+
+void RuleInventory::afterLoad(const Mod* mod_)
+{
+	if (_hand)
+	{
+		//compute the adjacency for all hand slots
+		for (std::vector<RuleSlot>::iterator i = _slots.begin(); i != _slots.end();i++)
+		{
+			if (_handWidth < i->x) _handWidth = i->x;
+			if (_handHeight < i->y) _handHeight = i->y;
+			for (std::vector<RuleSlot>::iterator j = i; j != _slots.end(); j++)
+			{
+				if (i == j) continue;
+				if (i->x == j->x)
+				{
+					if (i->y == j->y + 1)
+					{
+						i->adj |= 2;
+						j->adj |= 8;
+					}
+					else if(i->y + 1 == j->y)
+					{
+						i->adj |= 8;
+						j->adj |= 2;
+					}
+				}
+				else if (i->y == j->y)
+				{
+					if (i->x == j->x + 1)
+					{
+						i->adj |= 1;
+						j->adj |= 4;
+					}
+					else if (i->x + 1 == j->x)
+					{
+						i->adj |= 4;
+						j->adj |= 1;
+					}
+				}
+			}
+		}
+		_handWidth++; _handHeight++;
+		//now fill the _fit matrix
+		for(int i = 0;i < MAX_HAND_W; i++)
+			for (int j = 0; j < MAX_HAND_H; j++)
+			{
+				int maxhfit = -1, maxvfit = -1, minhfit = -1, minvfit = -1;
+				for(int x = 0; x < _handWidth; x++)
+					for (int y = 0; y < _handHeight; y++)
+					{
+						int totalSlots = (i+1) * (j+1);
+						int foundSlots = 0;
+						for (std::vector<RuleSlot>::const_iterator s = _slots.begin(); s != _slots.end() && foundSlots < totalSlots; ++s)
+						{
+							if (s->x >= x && s->x < x + i + 1 &&
+								s->y >= y && s->y < y + j + 1)
+							{
+								foundSlots++;
+							}
+						}
+						if (foundSlots == totalSlots)
+						{
+							if (maxhfit < x) maxhfit = x;
+							if (minhfit < 0 || minhfit > x) minhfit = x;
+							if (maxvfit < y) maxvfit = y;
+							if (minvfit < 0 || minvfit > y) minvfit = y;
+						}
+					}
+				_fit[i][j] = (maxhfit + minhfit) * SLOT_W / 2 + (MAX_HAND_W * SLOT_W) * ((maxvfit + minvfit) * SLOT_H / 2);
+			}
+	}
 }
 
 }
