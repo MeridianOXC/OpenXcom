@@ -3515,7 +3515,7 @@ int BattleUnit::getMotionPoints() const
  * Gets the unit's armor.
  * @return Pointer to armor.
  */
-const Armor *BattleUnit::getArmor()
+Armor *BattleUnit::getArmor() const
 {
 	return _armor;
 }
@@ -4697,6 +4697,22 @@ void getLookVariantScript(const BattleUnit *bu, int &ret)
 	ret = 0;
 }
 
+struct getRuleArmorScript
+{
+    static RetEnum func(const BattleUnit *bu, Armor* &ret)
+    {
+        if (bu)
+        {
+            ret = bu->getArmor();
+        }
+        else
+        {
+            ret = nullptr;
+        }
+        return RetContinue;
+    }
+};
+
 struct getRuleSoldierScript
 {
 	static RetEnum func(const BattleUnit *bu, const RuleSoldier* &ret)
@@ -5082,8 +5098,11 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getFatalWounds>("getFatalwoundsTotal");
 	bu.add<&BattleUnit::getFatalWound>("getFatalwounds");
 	bu.add<&BattleUnit::getOverKillDamage>("getOverKillDamage");
-	bu.addRules<Armor, &BattleUnit::getArmor>("getRuleArmor");
-	bu.addFunc<getRuleSoldierScript>("getRuleSoldier");
+    //changed by memmaker, previously was:
+    // bu.addRules<Armor, &BattleUnit::getArmor>("getRuleArmor");
+    bu.addFunc<getRuleArmorScript>("getRuleArmor");
+    
+    bu.addFunc<getRuleSoldierScript>("getRuleSoldier");
 	bu.addFunc<getGeoscapeSoldierScript>("getGeoscapeSoldier");
 	bu.addFunc<getGeoscapeSoldierConstScript>("getGeoscapeSoldier");
 	bu.addFunc<getRightHandWeaponScript>("getRightHandWeapon");

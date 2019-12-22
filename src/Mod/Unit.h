@@ -344,7 +344,7 @@ public:
 	/// Gets the unit's float elevation.
 	int getFloatHeight() const;
 	/// Gets the armor type.
-	Armor* getArmor();
+	Armor* getArmor() const;
 	/// Gets the alien race type.
 	std::string getRace() const;
 	/// Gets the alien rank.

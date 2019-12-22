@@ -460,7 +460,7 @@ public:
 	/// Set turn when unit was scanned by the motion scanner.
 	void setScannedTurn(int turn) { _scannedTurn = turn; }
 	/// Gets the unit's armor.
-	const Armor *getArmor() const;
+	Armor *getArmor() const;
 	/// Sets the unit's name.
 	void setName(const std::string &name);
 	/// Gets the unit's name.
