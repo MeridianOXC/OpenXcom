@@ -3515,7 +3515,7 @@ int BattleUnit::getMotionPoints() const
  * Gets the unit's armor.
  * @return Pointer to armor.
  */
-const Armor *BattleUnit::getArmor() const
+const Armor *BattleUnit::getArmor()
 {
 	return _armor;
 }

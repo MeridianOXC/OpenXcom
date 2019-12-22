@@ -1645,7 +1645,6 @@ void Soldier::ScriptRegister(ScriptParserBase* parser)
 
 	Bind<Soldier> so = { parser };
 
-
 	so.addField<&Soldier::_id>("getId");
 	so.add<&getRankScript>("getRank");
 	so.add<&getGenderScript>("getGender");

@@ -945,11 +945,8 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	ar.add<&Armor::getVisibilityAtDay>("getVisibilityAtDay");
     ar.add<&Armor::getCamouflageAtDark>("getCamouflageAtDark");
     ar.add<&Armor::getCamouflageAtDay>("getCamouflageAtDay");
-    
-    // memmaker: test for the setter:
     ar.add<&Armor::setCamouflageAtDark>("setCamouflageAtDark");
     ar.add<&Armor::setCamouflageAtDay>("setCamouflageAtDay");
-    
 	ar.add<&Armor::getPersonalLight>("getPersonalLight");
 	ar.add<&Armor::getSize>("getSize");
 
