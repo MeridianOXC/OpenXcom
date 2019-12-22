@@ -646,6 +646,24 @@ int Armor::getCamouflageAtDark() const
 }
 
 /**
+ * Sets the camouflage at dark value.
+ * @param The vision distance modifier.
+ */
+void Armor::setCamouflageAtDay(int modifier)
+{
+    _camouflageAtDay = modifier;
+}
+    
+/**
+ * Sets the camouflage at dark value.
+ * @param The vision distance modifier.
+ */
+void Armor::setCamouflageAtDark(int modifier)
+{
+    _camouflageAtDark = modifier;
+}
+
+/**
 * Gets info about anti camouflage at day.
 * @return The vision distance modifier.
 */
@@ -888,7 +906,7 @@ void getArmorValueScript(const Armor *ar, int &ret, int side)
 	}
 	ret = 0;
 }
-
+    
 std::string debugDisplayScript(const Armor* ar)
 {
 	if (ar)
@@ -925,6 +943,13 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	ar.add<&Armor::getDrawingRoutine>("getDrawingRoutine");
 	ar.add<&Armor::getVisibilityAtDark>("getVisibilityAtDark");
 	ar.add<&Armor::getVisibilityAtDay>("getVisibilityAtDay");
+    ar.add<&Armor::getCamouflageAtDark>("getCamouflageAtDark");
+    ar.add<&Armor::getCamouflageAtDay>("getCamouflageAtDay");
+    
+    // memmaker: test for the setter:
+    ar.add<&Armor::setCamouflageAtDark>("setCamouflageAtDark");
+    ar.add<&Armor::setCamouflageAtDay>("setCamouflageAtDay");
+    
 	ar.add<&Armor::getPersonalLight>("getPersonalLight");
 	ar.add<&Armor::getSize>("getSize");
 

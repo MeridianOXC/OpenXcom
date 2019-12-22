@@ -219,7 +219,11 @@ public:
 	int getCamouflageAtDay() const;
 	/// Gets info about camouflage at dark.
 	int getCamouflageAtDark() const;
-	/// Gets info about anti camouflage at day.
+	/// Sets info about camouflage at day.
+    void setCamouflageAtDay(int modifier);
+    /// Sets info about camouflage at dark.
+    void setCamouflageAtDark(int modifier);
+    /// Gets info about anti camouflage at day.
 	int getAntiCamouflageAtDay() const;
 	/// Gets info about anti camouflage at dark.
 	int getAntiCamouflageAtDark() const;
