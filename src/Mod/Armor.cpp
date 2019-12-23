@@ -646,7 +646,7 @@ int Armor::getCamouflageAtDark() const
 }
 
 /**
- * Sets the camouflage at dark value.
+ * Sets the camouflage at day value.
  * @param The vision distance modifier.
  */
 void Armor::setCamouflageAtDay(int modifier)
@@ -906,7 +906,7 @@ void getArmorValueScript(const Armor *ar, int &ret, int side)
 	}
 	ret = 0;
 }
-    
+
 std::string debugDisplayScript(const Armor* ar)
 {
 	if (ar)
