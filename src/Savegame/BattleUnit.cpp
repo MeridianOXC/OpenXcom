@@ -5098,8 +5098,7 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getFatalWounds>("getFatalwoundsTotal");
 	bu.add<&BattleUnit::getFatalWound>("getFatalwounds");
 	bu.add<&BattleUnit::getOverKillDamage>("getOverKillDamage");
-    //changed by memmaker, previously was:
-    // bu.addRules<Armor, &BattleUnit::getArmor>("getRuleArmor");
+    bu.add<&BattleUnit::getTurnsSinceSpotted>("getTurnsSinceSpotted");
     bu.addFunc<getRuleArmorScript>("getRuleArmor");
     
     bu.addFunc<getRuleSoldierScript>("getRuleSoldier");
