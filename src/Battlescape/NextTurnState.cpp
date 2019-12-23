@@ -209,16 +209,14 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 		}
 	}
 
-	// start new hit log
 	if (message.empty())
 	{
-		_battleGame->hitLog.str(tr("STR_HIT_LOG_NEW_TURN"));
+		_battleGame->appendToHitLog(HITLOG_NEW_TURN, _battleGame->getSide());
 	}
 	else
 	{
-		_battleGame->hitLog.str(message);
+		_battleGame->appendToHitLog(HITLOG_NEW_TURN_WITH_MESSAGE, _battleGame->getSide(), message);
 	}
-	_battleGame->hitLog.clear();
 
 	if (_battleGame->getSide() == FACTION_PLAYER)
 	{

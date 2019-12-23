@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2010-2016 OpenXcom Developers.
+ * Copyright 2010-2019 OpenXcom Developers.
  *
  * This file is part of OpenXcom.
  *
@@ -17,11 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "../Engine/State.h"
 
-#define OPENXCOM_VERSION_SHORT "Extended 6.2"
-#define OPENXCOM_VERSION_LONG "6.2.0.0"
-#define OPENXCOM_VERSION_NUMBER 6,2,0,0
+namespace OpenXcom
+{
 
-#ifndef OPENXCOM_VERSION_GIT
-#define OPENXCOM_VERSION_GIT " (v2019-12-22)"
-#endif
+class Window;
+class Text;
+class TextButton;
+class TextList;
+class HitLog;
+
+/**
+ * Turn Diary window that displays the hit log history (for the current turn).
+ */
+class TurnDiaryState : public State
+{
+private:
+	Window *_window;
+	Text *_txtTitle;
+	TextButton *_btnCancel;
+	TextList *_lstTurnDiary;
+public:
+	/// Creates the Turn Diary state.
+	TurnDiaryState(const HitLog *hitLog);
+	/// Cleans up the Turn Diary state.
+	~TurnDiaryState() = default;
+	/// Handler for clicking the Cancel button.
+	void btnCancelClick(Action *action);
+};
+
+}

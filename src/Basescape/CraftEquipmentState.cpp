@@ -833,7 +833,7 @@ void CraftEquipmentState::btnInventoryClick(Action *)
 	Craft *craft = _base->getCrafts()->at(_craft);
 	if (craft->getNumSoldiers() != 0)
 	{
-		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod());
+		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
 		_game->getSavedGame()->setBattleGame(bgame);
 
 		if ((SDL_GetModState() & KMOD_CTRL) && (SDL_GetModState() & KMOD_ALT))

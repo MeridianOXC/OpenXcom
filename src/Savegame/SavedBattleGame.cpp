@@ -55,7 +55,7 @@ namespace OpenXcom
 /**
  * Initializes a brand new battlescape saved game.
  */
-SavedBattleGame::SavedBattleGame(Mod *rule) :
+SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang) :
 	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0),
 	_lastSelectedUnit(0), _pathfinding(0), _tileEngine(0), _enviroEffects(nullptr), _ecEnabledFriendly(false), _ecEnabledHostile(false), _ecEnabledNeutral(false),
 	_globalShade(0), _side(FACTION_PLAYER), _turn(0), _bughuntMinTurn(20), _animFrame(0),
@@ -71,6 +71,7 @@ SavedBattleGame::SavedBattleGame(Mod *rule) :
 		_tileSearch[i].y = ((i/11) - 5);
 	}
 	_baseItems = new ItemContainer();
+	_hitLog = new HitLog(lang);
 
 	setRandomHiddenMovementBackground(0);
 }
@@ -115,6 +116,7 @@ SavedBattleGame::~SavedBattleGame()
 	delete _pathfinding;
 	delete _tileEngine;
 	delete _baseItems;
+	delete _hitLog;
 }
 
 /**
@@ -2646,6 +2648,33 @@ void SavedBattleGame::setRandomHiddenMovementBackground(const Mod *mod)
 std::string SavedBattleGame::getHiddenMovementBackground() const
 {
 	return _hiddenMovementBackground;
+}
+
+/**
+ * Appends a given entry to the hit log. Works only during the player's turn.
+ */
+void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction)
+{
+	if (_side != FACTION_PLAYER) return;
+	_hitLog->appendToHitLog(type, faction);
+}
+
+/**
+ * Appends a given entry to the hit log. Works only during the player's turn.
+ */
+void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction, const std::string &text)
+{
+	if (_side != FACTION_PLAYER) return;
+	_hitLog->appendToHitLog(type, faction, text);
+}
+
+/**
+ * Gets the hit log.
+ * @return hit log
+ */
+const HitLog *SavedBattleGame::getHitLog() const
+{
+	return _hitLog;
 }
 
 /**

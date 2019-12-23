@@ -390,8 +390,9 @@ SaveInfo SavedGame::getSaveInfo(const std::string &file, Language *lang)
  * @note Assumes the saved game is blank.
  * @param filename YAML filename.
  * @param mod Mod for the saved game.
+ * @param lang Loaded language.
  */
-void SavedGame::load(const std::string &filename, Mod *mod)
+void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 {
 	std::string filepath = Options::getMasterUserFolder() + filename;
 	std::vector<YAML::Node> file = YAML::LoadAll(*CrossPlatform::readFile(filepath));
@@ -759,7 +760,7 @@ void SavedGame::load(const std::string &filename, Mod *mod)
 
 	if (const YAML::Node &battle = doc["battleGame"])
 	{
-		_battleGame = new SavedBattleGame(mod);
+		_battleGame = new SavedBattleGame(mod, lang);
 		_battleGame->load(battle, mod, this);
 	}
 

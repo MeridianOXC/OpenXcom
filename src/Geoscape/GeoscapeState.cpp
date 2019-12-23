@@ -2072,12 +2072,13 @@ void GenerateSupplyMission::operator()(AlienBase *base) const
 	const Mod &_mod = *_engine.getMod();
 	SavedGame &_save = *_engine.getSavedGame();
 
-	if (_mod.getAlienMission(base->getDeployment()->getGenMissionType()))
+	std::string mission = base->getDeployment()->chooseGenMissionType();
+	if (_mod.getAlienMission(mission))
 	{
 		if (base->getGenMissionCount() < base->getDeployment()->getGenMissionLimit() && RNG::percent(base->getDeployment()->getGenMissionFrequency()))
 		{
 			//Spawn supply mission for this base.
-			const RuleAlienMission &rule = *_mod.getAlienMission(base->getDeployment()->getGenMissionType());
+			const RuleAlienMission &rule = *_mod.getAlienMission(mission);
 			AlienMission *mission = new AlienMission(rule);
 			std::string targetRegion;
 			if (RNG::percent(rule.getTargetBaseOdds()))
@@ -2121,9 +2122,9 @@ void GenerateSupplyMission::operator()(AlienBase *base) const
 			_save.getAlienMissions().push_back(mission);
 		}
 	}
-	else if (!base->getDeployment()->getGenMissionType().empty())
+	else if (!mission.empty())
 	{
-		throw Exception("Alien Base tried to generate undefined mission: " + base->getDeployment()->getGenMissionType());
+		throw Exception("Alien Base tried to generate undefined mission: " + mission);
 	}
 }
 
@@ -3122,7 +3123,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 	}
 	else if (base->getAvailableSoldiers(true, true) > 0 || !base->getVehicles()->empty())
 	{
-		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod());
+		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
 		_game->getSavedGame()->setBattleGame(bgame);
 		bgame->setMissionType("STR_BASE_DEFENSE");
 		BattlescapeGenerator bgen = BattlescapeGenerator(_game);

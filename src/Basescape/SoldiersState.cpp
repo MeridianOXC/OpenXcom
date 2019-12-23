@@ -595,7 +595,7 @@ void SoldiersState::btnInventoryClick(Action *)
 {
 	if (_base->getAvailableSoldiers(true, true) > 0)
 	{
-		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod());
+		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
 		_game->getSavedGame()->setBattleGame(bgame);
 		bgame->setMissionType("STR_BASE_DEFENSE");
 

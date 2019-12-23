@@ -23,6 +23,7 @@
 #include "Tile.h"
 #include "BattleUnit.h"
 #include "../Mod/AlienDeployment.h"
+#include "HitLog.h"
 
 namespace OpenXcom
 {
@@ -97,15 +98,14 @@ private:
 	ChronoTrigger _chronoTrigger;
 	bool _beforeGame;
 	std::string _hiddenMovementBackground;
+	HitLog *_hitLog;
 	ScriptValues<SavedBattleGame> _scriptValues;
 	/// Selects a soldier.
 	BattleUnit *selectPlayerUnit(int dir, bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
 
 public:
-    /// FIXME: hit log
-	std::ostringstream hitLog;
 	/// Creates a new battle save, based on the current generic save.
-	SavedBattleGame(Mod *rule);
+	SavedBattleGame(Mod *rule, Language *lang);
 	/// Cleans up the saved game.
 	~SavedBattleGame();
 	/// Loads a saved battle game from YAML.
@@ -470,6 +470,11 @@ public:
 	void setRandomHiddenMovementBackground(const Mod *mod);
 	/// Gets the hidden movement background ID.
 	std::string getHiddenMovementBackground() const;
+	/// Appends a given entry to the hit log. Works only during the player's turn.
+	void appendToHitLog(HitLogEntryType type, UnitFaction faction);
+	void appendToHitLog(HitLogEntryType type, UnitFaction faction, const std::string &text);
+	/// Gets the hit log.
+	const HitLog *getHitLog() const;
 	/// Reset all the unit hit state flags.
 	void resetUnitHitStates();
 };
