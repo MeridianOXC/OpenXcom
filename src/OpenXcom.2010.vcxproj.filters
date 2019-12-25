@@ -1092,6 +1092,12 @@
     <ClCompile Include="Menu\OptionsFoldersState.cpp">
       <Filter>Menu</Filter>
     </ClCompile>
+    <ClCompile Include="Savegame\HitLog.cpp">
+      <Filter>Savegame</Filter>
+    </ClCompile>
+    <ClCompile Include="Battlescape\TurnDiaryState.cpp">
+      <Filter>Battlescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2238,6 +2244,12 @@
     </ClInclude>
     <ClInclude Include="Menu\OptionsFoldersState.h">
       <Filter>Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="Savegame\HitLog.h">
+      <Filter>Savegame</Filter>
+    </ClInclude>
+    <ClInclude Include="Battlescape\TurnDiaryState.h">
+      <Filter>Battlescape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

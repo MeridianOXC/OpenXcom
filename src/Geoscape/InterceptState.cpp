@@ -36,6 +36,7 @@
 #include "SelectDestinationState.h"
 #include "ConfirmDestinationState.h"
 #include "../Basescape/BasescapeState.h"
+#include "../Basescape/CraftInfoState.h"
 #include "../Ufopaedia/Ufopaedia.h"
 
 namespace OpenXcom
@@ -313,6 +314,27 @@ void InterceptState::lstCraftsRightClick(Action *)
 	{
 		_globe->center(c->getLongitude(), c->getLatitude());
 		_game->popState();
+	}
+	else
+	{
+		_game->popState();
+
+		bool found = false;
+		for (auto &bi : *_game->getSavedGame()->getBases())
+		{
+			if (_base != 0 && bi != _base)
+				continue;
+			for (size_t ci = 0; ci < bi->getCrafts()->size(); ++ci)
+			{
+				if (c == bi->getCrafts()->at(ci))
+				{
+					_game->pushState(new CraftInfoState(bi, ci));
+					found = true;
+					break;
+				}
+			}
+			if (found) break;
+		}
 	}
 }
 

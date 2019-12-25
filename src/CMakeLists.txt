@@ -110,6 +110,7 @@ set ( battlescape_src
   Battlescape/ScannerState.cpp
   Battlescape/ScannerView.cpp
   Battlescape/TileEngine.cpp
+  Battlescape/TurnDiaryState.cpp
   Battlescape/UnitDieBState.cpp
   Battlescape/UnitFallBState.cpp
   Battlescape/UnitInfoState.cpp
@@ -342,6 +343,7 @@ set ( savegame_src
   Savegame/EquipmentLayoutItem.cpp
   Savegame/GameTime.cpp
   Savegame/GeoscapeEvent.cpp
+  Savegame/HitLog.cpp
   Savegame/ItemContainer.cpp
   Savegame/MissionSite.cpp
   Savegame/MovingTarget.cpp

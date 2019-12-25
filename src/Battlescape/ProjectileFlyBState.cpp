@@ -421,8 +421,6 @@ bool ProjectileFlyBState::createNewProjectile()
 
 	// create a new projectile
 	Projectile *projectile = new Projectile(_parent->getMod(), _parent->getSave(), _action, _origin, _targetVoxel, _ammo);
-	// hit log - new bullet
-	_parent->getSave()->hitLog << _parent->getSave()->getBattleState()->tr("STR_HIT_LOG_NEW_BULLET");
 
 	// add the projectile on the map
 	_parent->getMap()->setProjectile(projectile);
@@ -549,6 +547,9 @@ bool ProjectileFlyBState::createNewProjectile()
 
 	if (_action.type != BA_THROW && _action.type != BA_LAUNCH)
 		_unit->getStatistics()->shotsFiredCounter++;
+
+	// hit log - new bullet
+	_parent->getSave()->appendToHitLog(HITLOG_NEW_SHOT, _action.actor->getFaction());
 
 	return true;
 }

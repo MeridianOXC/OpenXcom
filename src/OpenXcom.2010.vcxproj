@@ -339,6 +339,7 @@
     <ClCompile Include="Battlescape\PsiAttackBState.cpp" />
     <ClCompile Include="Battlescape\ScannerState.cpp" />
     <ClCompile Include="Battlescape\ScannerView.cpp" />
+    <ClCompile Include="Battlescape\TurnDiaryState.cpp" />
     <ClCompile Include="Battlescape\UnitFallBState.cpp" />
     <ClCompile Include="Battlescape\UnitInfoState.cpp" />
     <ClCompile Include="Battlescape\TileEngine.cpp" />
@@ -564,6 +565,7 @@
     <ClCompile Include="Savegame\EquipmentLayoutItem.cpp" />
     <ClCompile Include="Savegame\GameTime.cpp" />
     <ClCompile Include="Savegame\GeoscapeEvent.cpp" />
+    <ClCompile Include="Savegame\HitLog.cpp" />
     <ClCompile Include="Savegame\ItemContainer.cpp" />
     <ClCompile Include="Savegame\MovingTarget.cpp" />
     <ClCompile Include="Savegame\Production.cpp" />
@@ -712,6 +714,7 @@
     <ClInclude Include="Battlescape\PsiAttackBState.h" />
     <ClInclude Include="Battlescape\ScannerState.h" />
     <ClInclude Include="Battlescape\ScannerView.h" />
+    <ClInclude Include="Battlescape\TurnDiaryState.h" />
     <ClInclude Include="Battlescape\UnitFallBState.h" />
     <ClInclude Include="Battlescape\UnitInfoState.h" />
     <ClInclude Include="Battlescape\TileEngine.h" />
@@ -949,6 +952,7 @@
     <ClInclude Include="Savegame\EquipmentLayoutItem.h" />
     <ClInclude Include="Savegame\GameTime.h" />
     <ClInclude Include="Savegame\GeoscapeEvent.h" />
+    <ClInclude Include="Savegame\HitLog.h" />
     <ClInclude Include="Savegame\ItemContainer.h" />
     <ClInclude Include="Savegame\MissionStatistics.h" />
     <ClInclude Include="Savegame\MovingTarget.h" />

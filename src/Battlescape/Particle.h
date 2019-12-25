@@ -32,13 +32,13 @@ private:
 public:
 	/// Create a particle.
 	Particle(int voxelZ, float xOffset, float yOffset, float density, Uint8 color, Uint8 opacity);
-	/// Defulat copy constuctor
+	/// Default copy constructor
 	Particle(const Particle&) = default;
-	/// Defulat move constuctor
+	/// Default move constructor
 	Particle(Particle&&) = default;
-	/// Copy assigment.
+	/// Copy assignment.
 	Particle& operator=(const Particle&) = default;
-	/// Move assigment.
+	/// Move assignment.
 	Particle& operator=(Particle&&) = default;
 	/// Destroy a particle.
 	~Particle() = default;

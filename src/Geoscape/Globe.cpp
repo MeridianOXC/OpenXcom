@@ -1124,21 +1124,6 @@ void Globe::drawRadars()
 {
 	_radars->clear();
 
-	// Draw craft circle instead of radar circles to avoid confusion
-	if (_craft)
-	{
-		_radars->lock();
-
-		if (_craftRange < M_PI)
-		{
-			drawGlobeCircle(_craftLat, _craftLon, _craftRange, 64);
-			drawGlobeCircle(_craftLat, _craftLon, _craftRange - 0.025, 64, 2);
-		}
-
-		_radars->unlock();
-		return;
-	}
-
 	if (!Options::globeRadarLines)
 		return;
 
@@ -1147,6 +1132,16 @@ void Globe::drawRadars()
 	std::vector<double> ranges;
 
 	_radars->lock();
+
+	// Draw craft range
+	if (_craft)
+	{
+		if (_craftRange < M_PI)
+		{
+			drawGlobeCircle(_craftLat, _craftLon, _craftRange, 64);
+			drawGlobeCircle(_craftLat, _craftLon, _craftRange - 0.025, 64, 2);
+		}
+	}
 
 	if (_hover)
 	{

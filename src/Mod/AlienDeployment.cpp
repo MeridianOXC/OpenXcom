@@ -661,7 +661,7 @@ bool AlienDeployment::isAlienBase() const
 	return _isAlienBase;
 }
 
-std::string AlienDeployment::getGenMissionType() const
+std::string AlienDeployment::chooseGenMissionType() const
 {
 	return _genMission.choose();
 }

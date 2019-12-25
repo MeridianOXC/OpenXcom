@@ -140,7 +140,7 @@ bool haveReserchVector(const std::vector<const RuleResearch*> &vec,  const std::
  */
 SavedGame::SavedGame() : _difficulty(DIFF_BEGINNER), _end(END_NONE), _ironman(false), _globeLon(0.0),
 						 _globeLat(0.0), _globeZoom(0), _battleGame(0), _debug(false),
-						 _warned(false), _monthsPassed(-1), _selectedBase(0), _autosales(), _disableSoldierEquipment(false)
+						 _warned(false), _monthsPassed(-1), _selectedBase(0), _autosales(), _disableSoldierEquipment(false), _alienContainmentChecked(false)
 {
 	_time = new GameTime(6, 1, 1, 1999, 12, 0, 0);
 	_alienStrategy = new AlienStrategy();
@@ -390,8 +390,9 @@ SaveInfo SavedGame::getSaveInfo(const std::string &file, Language *lang)
  * @note Assumes the saved game is blank.
  * @param filename YAML filename.
  * @param mod Mod for the saved game.
+ * @param lang Loaded language.
  */
-void SavedGame::load(const std::string &filename, Mod *mod)
+void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 {
 	std::string filepath = Options::getMasterUserFolder() + filename;
 	std::vector<YAML::Node> file = YAML::LoadAll(*CrossPlatform::readFile(filepath));
@@ -759,7 +760,7 @@ void SavedGame::load(const std::string &filename, Mod *mod)
 
 	if (const YAML::Node &battle = doc["battleGame"])
 	{
-		_battleGame = new SavedBattleGame(mod);
+		_battleGame = new SavedBattleGame(mod, lang);
 		_battleGame->load(battle, mod, this);
 	}
 

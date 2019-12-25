@@ -1515,7 +1515,7 @@ void Map::drawTerrain(Surface *surface)
 		{
 			offset.y += 4;
 		}
-		offset.y += Position::TileZ - unit->getHeight();
+		offset.y += Position::TileZ - (unit->getHeight() + unit->getFloatHeight());
 		if (unit->isKneeled())
 		{
 			offset.y -= 2;

@@ -149,7 +149,6 @@ en-US:
 #=================== Battlescape ===================
 #ActionMenuState.cpp
   STR_MUST_USE_BOTH_HANDS: "Both hands are required for this!"
-  STR_HIT_LOG_WEAPON: "Weapon"
 #BattlescapeGame.cpp
   STR_NOT_ENOUGH_MORALE: "Not Enough Morale!"
   STR_NOT_ENOUGH_HEALTH: "Not Enough Health!"
@@ -208,6 +207,8 @@ en-US:
   STR_HIT_LOG_SMALL_DAMAGE: "hit "
   STR_HIT_LOG_BIG_DAMAGE: "HIT "
   STR_HIT_LOG_REACTION_FIRE: "Reaction fire..."
+#TurnDiaryState.cpp
+  STR_HIT_LOG: "Hit Log"
 #=================== Engine ===================
 #Options.cpp
   STR_UPDATE_CHECK: "Automatic update check"

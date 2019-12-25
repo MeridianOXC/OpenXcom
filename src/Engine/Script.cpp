@@ -692,7 +692,7 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 		{
 			Log(LOG_ERROR) << "Conflicting overloads for operator '" + proc.begin()->name.toString() + "' for:";
 			Log(LOG_ERROR) << "  " << displayArgs(&ph.parser, ScriptRange<ScriptRefData>{ begin, end }, [](const ScriptRefData& r){ return r.type; });
-			Log(LOG_ERROR) << "Excepted:";
+			Log(LOG_ERROR) << "Expected:";
 			for (auto& p : proc)
 			{
 				if (p.parserArg != nullptr && p.overloadArg)
@@ -707,7 +707,7 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 	{
 		Log(LOG_ERROR) << "Can't match overload for operator '" + proc.begin()->name.toString() + "' for:";
 		Log(LOG_ERROR) << "  " << displayArgs(&ph.parser, ScriptRange<ScriptRefData>{ begin, end }, [](const ScriptRefData& r){ return r.type; });
-		Log(LOG_ERROR) << "Excepted:";
+		Log(LOG_ERROR) << "Expected:";
 		for (auto& p : proc)
 		{
 			if (p.parserArg != nullptr && p.overloadArg)

@@ -489,11 +489,7 @@ void ActionMenuState::btnActionMenuItemClick(Action *action)
 
 		if (newHitLog)
 		{
-			// start new hit log
-			_game->getSavedGame()->getSavedBattle()->hitLog.str("");
-			_game->getSavedGame()->getSavedBattle()->hitLog.clear();
-			// log weapon
-			_game->getSavedGame()->getSavedBattle()->hitLog << tr("STR_HIT_LOG_WEAPON") << ": " << tr(weapon->getType()) << "\n\n";
+			_game->getSavedGame()->getSavedBattle()->appendToHitLog(HITLOG_PLAYER_FIRING, FACTION_PLAYER, tr(weapon->getType()));
 		}
 	}
 }

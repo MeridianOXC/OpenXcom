@@ -2023,11 +2023,7 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 
 			if (RNG::percent(arg.getFirst()))
 			{
-				// start new hit log
-				_save->hitLog.str("");
-				_save->hitLog.clear();
-				// log weapon?
-				_save->hitLog << _save->getBattleState()->tr("STR_HIT_LOG_REACTION_FIRE") << "\n\n";
+				_save->appendToHitLog(HITLOG_REACTION_FIRE, unit->getFaction());
 
 				if (action.type == BA_HIT)
 				{
@@ -2292,15 +2288,15 @@ bool TileEngine::hitUnit(BattleActionAttack attack, BattleUnit *target, const Po
 		const int damagePercent = (totalDamage * 100) / target->getBaseStats()->health;
 		if (damagePercent <= 0)
 		{
-			_save->hitLog << _save->getBattleState()->tr("STR_HIT_LOG_NO_DAMAGE");
+			_save->appendToHitLog(HITLOG_NO_DAMAGE, attack.attacker->getFaction());
 		}
 		else if (damagePercent <= 20)
 		{
-			_save->hitLog << _save->getBattleState()->tr("STR_HIT_LOG_SMALL_DAMAGE");
+			_save->appendToHitLog(HITLOG_SMALL_DAMAGE, attack.attacker->getFaction());
 		}
 		else
 		{
-			_save->hitLog << _save->getBattleState()->tr("STR_HIT_LOG_BIG_DAMAGE");
+			_save->appendToHitLog(HITLOG_BIG_DAMAGE, attack.attacker->getFaction());
 		}
 	}
 
@@ -3930,6 +3926,8 @@ bool TileEngine::meleeAttack(BattleActionAttack attack, BattleUnit *victim)
 	else
 	{
 		hitChance = attack.attacker->getFiringAccuracy(BA_HIT, attack.weapon_item, _save->getBattleGame()->getMod());
+		// hit log - new melee attack
+		_save->appendToHitLog(HITLOG_NEW_SHOT, attack.attacker->getFaction());
 	}
 
 	if (victim)
@@ -3941,8 +3939,6 @@ bool TileEngine::meleeAttack(BattleActionAttack attack, BattleUnit *victim)
 			hitChance -= victim->getArmor()->getMeleeDodge(victim) * penalty;
 		}
 	}
-	// hit log - new melee attack
-	_save->hitLog << _save->getBattleState()->tr("STR_HIT_LOG_NEW_BULLET");
 	if (!RNG::percent(hitChance))
 	{
 		return false;

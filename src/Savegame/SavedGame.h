@@ -157,6 +157,7 @@ private:
 	std::set<int> _ignoredUfos;
 	std::set<const RuleItem *> _autosales;
 	bool _disableSoldierEquipment;
+	bool _alienContainmentChecked;
 
 	static SaveInfo getSaveInfo(const std::string &file, Language *lang);
 public:
@@ -170,7 +171,7 @@ public:
 	/// Gets list of saves in the user directory.
 	static std::vector<SaveInfo> getList(Language *lang, bool autoquick);
 	/// Loads a saved game from YAML.
-	void load(const std::string &filename, Mod *mod);
+	void load(const std::string &filename, Mod *mod, Language *lang);
 	/// Saves a saved game to YAML.
 	void save(const std::string &filename, Mod *mod) const;
 	/// Gets the game name.
@@ -421,6 +422,10 @@ public:
 	bool getDisableSoldierEquipment() const;
 	/// Sets the corresponding flag.
 	void setDisableSoldierEquipment(bool disableSoldierEquipment);
+	/// Is alien containment check finished?
+	bool getAlienContainmentChecked() const { return _alienContainmentChecked; }
+	/// Sets the corresponding flag.
+	void setAlienContainmentChecked(bool alienContainmentChecked) { _alienContainmentChecked = alienContainmentChecked; }
 	/// Is the mana feature already unlocked?
 	bool isManaUnlocked(Mod *mod) const;
 	/// Gets the current score based on research score and xcom/alien activity in regions.

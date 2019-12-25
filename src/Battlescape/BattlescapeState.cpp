@@ -33,6 +33,7 @@
 #include "BattlescapeGame.h"
 #include "WarningMessage.h"
 #include "InfoboxState.h"
+#include "TurnDiaryState.h"
 #include "DebriefingState.h"
 #include "MiniMapState.h"
 #include "BattlescapeGenerator.h"
@@ -2223,7 +2224,21 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)
 				{
-					_game->pushState(new InfoboxState(_save->hitLog.str()));
+					if (_save->getSide() == FACTION_PLAYER)
+					{
+						if (altPressed)
+						{
+							// turn diary
+							_game->pushState(new TurnDiaryState(_save->getHitLog()));
+						}
+						else
+						{
+							// hit log
+							std::string hitLogText = _save->getHitLog()->getHitLogText();
+							if (!hitLogText.empty())
+								_game->pushState(new InfoboxState(hitLogText));
+						}
+					}
 				}
 				// "ctrl-Home" - reset default palettes
 				else if (key == SDLK_HOME && ctrlPressed)
