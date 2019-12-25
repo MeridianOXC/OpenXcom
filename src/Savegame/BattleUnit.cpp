@@ -777,6 +777,35 @@ Position BattleUnit::getPositionVexels() const
 	center += Position(8, 8, 0) * _armor->getSize();
 	return center;
 }
+	
+/* memaker: testing script access */
+
+/**
+ * Get the X part of the tile coordinate of this unit.
+ * @return X Position.
+ */
+int BattleUnit::getPositionX() const
+{
+	return getPosition().x;
+}
+
+/**
+ * Get the Y part of the tile coordinate of this unit.
+ * @return Y Position.
+ */
+int BattleUnit::getPositionY() const
+{
+	return getPosition().y;
+}
+
+/**
+ * Get the Z part of the tile coordinate of this unit.
+ * @return Z Position.
+ */
+int BattleUnit::getPositionZ() const
+{
+	return getPosition().z;
+}
 
 /**
  * Gets the BattleUnit's destination.
@@ -5093,6 +5122,10 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addFunc<reduceByBraveryScript>("reduceByBravery");
 	bu.addFunc<reduceByResistanceScript>("reduceByResistance");
 
+	//memmaker: testing getters for position
+	bu.add<&BattleUnit::getPositionX>("getPositionX");
+	bu.add<&BattleUnit::getPositionY>("getPositionY");
+	bu.add<&BattleUnit::getPositionZ>("getPositionZ");
 
 	bu.addScriptValue<&BattleUnit::_scriptValues>();
 	bu.addDebugDisplay<&debugDisplayScript>();
