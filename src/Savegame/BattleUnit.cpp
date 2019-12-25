@@ -779,6 +779,46 @@ Position BattleUnit::getPositionVexels() const
 }
 
 /**
+ * Get the X part of the tile coordinate of this unit.
+ * @return X Position.
+ */
+void getPositionX(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getPosition().x;
+		return;
+	}
+	ret = 0;
+}
+
+/**
+* Get the Y part of the tile coordinate of this unit.
+* @return Y Position.
+*/
+void getPositionY(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getPosition().y;
+		return;
+	}
+	ret = 0;
+}
+/**
+ * Get the Z part of the tile coordinate of this unit.
+ * @return Z Position.
+ */
+void getPositionZ(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getPosition().z;
+		return;
+	}
+	ret = 0;
+}
+/**
  * Gets the BattleUnit's destination.
  * @return destination
  */
@@ -5093,6 +5133,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addFunc<reduceByBraveryScript>("reduceByBravery");
 	bu.addFunc<reduceByResistanceScript>("reduceByResistance");
 
+	bu.add<&getPositionX>("getPosition.getX");
+	bu.add<&getPositionY>("getPosition.getY");
+	bu.add<&getPositionZ>("getPosition.getZ");
 
 	bu.addScriptValue<&BattleUnit::_scriptValues>();
 	bu.addDebugDisplay<&debugDisplayScript>();
