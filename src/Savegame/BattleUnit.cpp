@@ -777,8 +777,6 @@ Position BattleUnit::getPositionVexels() const
 	center += Position(8, 8, 0) * _armor->getSize();
 	return center;
 }
-	
-/* memaker: testing script access */
 
 /**
  * Get the X part of the tile coordinate of this unit.
