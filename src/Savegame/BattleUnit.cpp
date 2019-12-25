@@ -5122,10 +5122,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addFunc<reduceByBraveryScript>("reduceByBravery");
 	bu.addFunc<reduceByResistanceScript>("reduceByResistance");
 
-	//memmaker: testing getters for position
-	bu.add<&BattleUnit::getPositionX>("getPositionX");
-	bu.add<&BattleUnit::getPositionY>("getPositionY");
-	bu.add<&BattleUnit::getPositionZ>("getPositionZ");
+	bu.add<&BattleUnit::getPositionX>("getPosition.getX");
+	bu.add<&BattleUnit::getPositionY>("getPosition.getY");
+	bu.add<&BattleUnit::getPositionZ>("getPosition.getZ");
 
 	bu.addScriptValue<&BattleUnit::_scriptValues>();
 	bu.addDebugDisplay<&debugDisplayScript>();
