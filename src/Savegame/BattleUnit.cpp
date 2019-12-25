@@ -4973,6 +4973,47 @@ void setBaseStatRangeScript(BattleUnit *bu, int val)
 	}
 }
 
+/**
+ * Get the X part of the tile coordinate of this unit.
+ * @return X Position.
+ */
+void getPositionXScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getPosition().x;
+		return;
+	}
+	ret = 0;
+}
+
+/**
+ * Get the Y part of the tile coordinate of this unit.
+ * @return Y Position.
+ */
+void getPositionYScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getPosition().y;
+		return;
+	}
+	ret = 0;
+}
+/**
+ * Get the Z part of the tile coordinate of this unit.
+ * @return Z Position.
+ */
+void getPositionZScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getPosition().z;
+		return;
+	}
+	ret = 0;
+}
+
 std::string debugDisplayScript(const BattleUnit* bu)
 {
 	if (bu)
@@ -5093,6 +5134,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addFunc<reduceByBraveryScript>("reduceByBravery");
 	bu.addFunc<reduceByResistanceScript>("reduceByResistance");
 
+	bu.add<&getPositionXScript>("getPosition.getX");
+	bu.add<&getPositionYScript>("getPosition.getY");
+	bu.add<&getPositionZScript>("getPosition.getZ");
 
 	bu.addScriptValue<&BattleUnit::_scriptValues>();
 	bu.addDebugDisplay<&debugDisplayScript>();
