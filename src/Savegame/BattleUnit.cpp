@@ -782,27 +782,42 @@ Position BattleUnit::getPositionVexels() const
  * Get the X part of the tile coordinate of this unit.
  * @return X Position.
  */
-int BattleUnit::getPositionX() const
+void getPositionX(const BattleUnit *bu, int &ret)
 {
-	return getPosition().x;
+	if (bu)
+	{
+		ret = bu->getPosition().x;
+		return;
+	}
+	ret = 0;
 }
 
 /**
  * Get the Y part of the tile coordinate of this unit.
  * @return Y Position.
  */
-int BattleUnit::getPositionY() const
+void getPositionY(const BattleUnit *bu, int &ret)
 {
-	return getPosition().y;
+	if (bu)
+	{
+		ret = bu->getPosition().y;
+		return;
+	}
+	ret = 0;
 }
 
 /**
  * Get the Z part of the tile coordinate of this unit.
  * @return Z Position.
  */
-int BattleUnit::getPositionZ() const
+void getPositionZ(const BattleUnit *bu, int &ret)
 {
-	return getPosition().z;
+	if (bu)
+	{
+		ret = bu->getPosition().z;
+		return;
+	}
+	ret = 0;
 }
 
 /**
@@ -5120,9 +5135,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addFunc<reduceByBraveryScript>("reduceByBravery");
 	bu.addFunc<reduceByResistanceScript>("reduceByResistance");
 
-	bu.add<&BattleUnit::getPositionX>("getPosition.getX");
-	bu.add<&BattleUnit::getPositionY>("getPosition.getY");
-	bu.add<&BattleUnit::getPositionZ>("getPosition.getZ");
+	bu.add<&getPositionX>("getPosition.getX");
+	bu.add<&getPositionY>("getPosition.getY");
+	bu.add<&getPositionZ>("getPosition.getZ");
 
 	bu.addScriptValue<&BattleUnit::_scriptValues>();
 	bu.addDebugDisplay<&debugDisplayScript>();

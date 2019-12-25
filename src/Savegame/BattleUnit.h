@@ -207,12 +207,6 @@ public:
 	Position getLastPosition() const;
 	/// Gets the unit's position of center in voxels.
 	Position getPositionVexels() const;
-	/// Gets the unit's X position.
-	int getPositionX() const;
-	/// Gets the unit's Y position.
-	int getPositionY() const;
-	/// Gets the unit's Z position.
-	int getPositionZ() const;
 	/// Sets the unit's direction 0-7.
 	void setDirection(int direction);
 	/// Sets the unit's face direction (only used by strafing moves)
