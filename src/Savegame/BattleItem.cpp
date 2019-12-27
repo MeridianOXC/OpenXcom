@@ -1316,6 +1316,19 @@ std::string debugDisplayScript(const BattleItem* bt)
 	}
 }
 
+void getActionTUsScript(const BattleItem* bt, int& i, const BattleUnit* bu, const int battle_action)
+{
+	BattleActionType bat = (BattleActionType)battle_action;
+	if (bt && bu)
+	{
+		i = bu->getActionTUs(bat, bt).Time;
+	}
+	else
+	{
+		i = -1;
+	}
+}
+
 void getFuseTimerDefaultScript(const BattleItem* bt, int& i)
 {
 	if (bt)
@@ -1416,6 +1429,8 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 	bi.add<&BattleItem::getStimulantQuantity>("getStimulantQuantity");
 	bi.add<&setStimulantQuantityScript>("setStimulantQuantity");
 
+	bi.add<&getActionTUsScript>("getActionCost.getTimeUnits");
+	
 	bi.addScriptValue<&BattleItem::_scriptValues>();
 	bi.addDebugDisplay<&debugDisplayScript>();
 
