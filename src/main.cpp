@@ -43,7 +43,8 @@
 using namespace OpenXcom;
 
 // Crash handling routines
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
+#if 1
 #include <windows.h>
 LONG WINAPI crashLogger(PEXCEPTION_POINTERS exception)
 {
