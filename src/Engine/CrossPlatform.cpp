@@ -1774,6 +1774,7 @@ void memUpdateProtect()
 bool handleGuardPage(void* exc)
 {
 	auto exception = static_cast<PEXCEPTION_POINTERS>(exc);
+	Log(LOG_INFO) << "handleGuardPage enter " << exception->ExceptionRecord->ExceptionCode;
 	if (exception->ExceptionRecord->ExceptionCode == EXCEPTION_GUARD_PAGE)
 	{
 		protect_set = false;

@@ -453,6 +453,7 @@ void GeoscapeState::blit()
  */
 void GeoscapeState::handle(Action *action)
 {
+	CrossPlatform::memUpdateProtect();
 	if (_dogfights.size() == _minimizedDogfights)
 	{
 		State::handle(action);
