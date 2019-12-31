@@ -1737,6 +1737,7 @@ bool protect_set = false;
 
 void memProtect(const void *ptr, size_t size)
 {
+	Log(LOG_INFO) << "memProtect " << ptr << " " << size;
 	protect_ptr = ptr;
 	protect_size = size;
 	protect_set = false;
@@ -1745,6 +1746,7 @@ void memProtect(const void *ptr, size_t size)
 
 void memUnprotect()
 {
+	Log(LOG_INFO) << "memUnprotect";
 	protect_ptr = nullptr;
 	protect_size = 0;
 }
@@ -1759,7 +1761,8 @@ void memUpdateProtect()
 		auto ptr = reinterpret_cast<void*>(val1);
 		auto size = val2 - val1;
 		DWORD prev = 0;
-		auto res = ::VirtualProtect(ptr, size, PAGE_READWRITE | PAGE_GUARD, &prev);\
+		auto res = ::VirtualProtect(ptr, size, PAGE_READWRITE | PAGE_GUARD, &prev);
+		Log(LOG_INFO) << "memUpdateProtect " << ptr << " " << size << " " << res;
 		if (0 == res)
 		{
 			::DebugBreak();
@@ -1775,13 +1778,15 @@ bool handleGuardPage(void* exc)
 	{
 		protect_set = false;
 		bool is_write = (1 == exception->ExceptionRecord->ExceptionInformation[0]);
+		auto ptr = reinterpret_cast<const char*>(exception->ExceptionRecord->ExceptionInformation[1]);
+		auto begin = static_cast<const char*>(protect_ptr);
+		auto end = begin + protect_size;
+		Log(LOG_INFO) << "handleGuardPage " << is_write << " " << (void*)ptr << " " << (void*)begin << " " << (void*)end;
 		if (is_write)
 		{
-			auto ptr = reinterpret_cast<const char*>(exception->ExceptionRecord->ExceptionInformation[1]);
-			auto begin = static_cast<const char*>(protect_ptr);
-			auto end = begin + protect_size;
 			if (ptr >= begin && ptr < end)
 			{
+				Log(LOG_INFO) << "invalid access";
 				return false;
 			}
 		}
