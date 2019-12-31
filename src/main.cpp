@@ -42,6 +42,8 @@
 
 using namespace OpenXcom;
 
+#include <signal.h>
+
 // Crash handling routines
 //#ifdef _MSC_VER
 #if 1
@@ -56,7 +58,6 @@ LONG WINAPI crashLogger(PEXCEPTION_POINTERS exception)
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 #else
-#include <signal.h>
 void signalLogger(int sig)
 {
 	CrossPlatform::crashDump(&sig, "");
