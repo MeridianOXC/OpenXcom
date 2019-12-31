@@ -161,6 +161,8 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 	_btn1Hour = new TextButton(31, 13, screenWidth-63, screenHeight/2+40);
 	_btn1Day = new TextButton(31, 13, screenWidth-31, screenHeight/2+40);
 
+	CrossPlatform::memProtect(_btn5Secs, sizeof(*_btn5Secs));
+
 	_btnRotateLeft = new InteractiveSurface(12, 10, screenWidth-61, screenHeight/2+76);
 	_btnRotateRight = new InteractiveSurface(12, 10, screenWidth-37, screenHeight/2+76);
 	_btnRotateUp = new InteractiveSurface(13, 12, screenWidth-49, screenHeight/2+62);
@@ -413,6 +415,7 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
  */
 GeoscapeState::~GeoscapeState()
 {
+	CrossPlatform::memUnprotect();
 	delete _gameTimer;
 	delete _zoomInEffectTimer;
 	delete _zoomOutEffectTimer;
@@ -658,6 +661,7 @@ void GeoscapeState::init()
  */
 void GeoscapeState::think()
 {
+	CrossPlatform::memUpdateProtect();
 	State::think();
 
 	_zoomInEffectTimer->think(this, 0);

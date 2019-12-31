@@ -47,6 +47,10 @@ using namespace OpenXcom;
 #include <windows.h>
 LONG WINAPI crashLogger(PEXCEPTION_POINTERS exception)
 {
+	if (CrossPlatform::handleGuardPage(exception))
+	{
+		return EXCEPTION_CONTINUE_EXECUTION;
+	}
 	CrossPlatform::crashDump(exception, "");
 	return EXCEPTION_CONTINUE_SEARCH;
 }

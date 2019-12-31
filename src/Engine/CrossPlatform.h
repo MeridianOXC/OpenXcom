@@ -126,6 +126,11 @@ namespace CrossPlatform
 	std::string getExeFilename(bool includingPath);
 	/// Starts the update process.
 	void startUpdateProcess();
+
+	void memProtect(const void* ptr, size_t size);
+	void memUnprotect();
+	void memUpdateProtect();
+	bool handleGuardPage(void* exc);
 }
 
 }

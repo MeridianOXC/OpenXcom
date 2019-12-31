@@ -275,18 +275,18 @@ std::vector<std::string> findDataFolders()
 
 	// Get user-specific data folders
 	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
- 	{
+	{
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
- 	}
- 	else
- 	{
+	}
+	else
+	{
 #ifdef __APPLE__
 		snprintf(path, MAXPATHLEN, "%s/Library/Application Support/OpenXcom/", home);
 #else
 		snprintf(path, MAXPATHLEN, "%s/.local/share/openxcom/", home);
 #endif
- 	}
- 	list.push_back(path);
+	}
+	list.push_back(path);
 
 	// Get global data folders
 	if (char const *const xdg_data_dirs = getenv("XDG_DATA_DIRS"))
@@ -378,17 +378,17 @@ std::vector<std::string> findUserFolders()
 
 	// Get user folders
 	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
- 	{
+	{
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
- 	}
- 	else
- 	{
+	}
+	else
+	{
 #ifdef __APPLE__
 		snprintf(path, MAXPATHLEN, "%s/Library/Application Support/OpenXcom/", home);
 #else
 		snprintf(path, MAXPATHLEN, "%s/.local/share/openxcom/", home);
 #endif
- 	}
+	}
 	list.push_back(path);
 
 	// Get old-style folder
@@ -601,10 +601,10 @@ std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::
 #endif
 	std::sort(files.begin(), files.end(),
 		[](const std::tuple<std::string,bool,time_t>& a,
-           const std::tuple<std::string,bool,time_t>& b) -> bool
-       {
-         return std::get<0>(a) > std::get<0>(b);
-       });
+		   const std::tuple<std::string,bool,time_t>& b) -> bool
+	   {
+		 return std::get<0>(a) > std::get<0>(b);
+	   });
 	return files;
 }
 
@@ -841,7 +841,7 @@ bool isQuitShortcut(const SDL_Event &ev)
 	return (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_q && ev.key.keysym.mod & KMOD_LMETA);
 #else
 	//TODO add other OSs shortcuts.
-    (void)ev;
+	(void)ev;
 	return false;
 #endif
 }
@@ -1529,13 +1529,13 @@ static size_t CommonZipAssetSize = 0;
 static void *StandardZipAssetPtr = 0;
 static size_t StandardZipAssetSize = 0;
 static void *getWindowsResource(int res_id, size_t *size) {
-    HMODULE handle = GetModuleHandle(NULL);
-    HRSRC rc = FindResource(handle, MAKEINTRESOURCE(res_id), MAKEINTRESOURCE(10));
+	HMODULE handle = GetModuleHandle(NULL);
+	HRSRC rc = FindResource(handle, MAKEINTRESOURCE(res_id), MAKEINTRESOURCE(10));
 	if (!rc) { return NULL; }
-    HGLOBAL rcData = LoadResource(handle, rc);
+	HGLOBAL rcData = LoadResource(handle, rc);
 	if (!rcData) { return NULL; }
-    *size = SizeofResource(handle, rc);
-    return LockResource(rcData);
+	*size = SizeofResource(handle, rc);
+	return LockResource(rcData);
 }
 # elif defined(__MOBILE__)
 /* This space is intentionally left blank */
@@ -1726,6 +1726,68 @@ void startUpdateProcess()
 	auto fileW = pathToWindows("oxce-upd.bat", false);
 	ShellExecuteW(NULL, operationW.c_str(), fileW.c_str(), NULL, NULL, SW_SHOWNORMAL);
 #endif
+}
+
+namespace
+{
+const void* protect_ptr = nullptr;
+size_t protect_size = 0;
+bool protect_set = false;
+}
+
+void memProtect(const void *ptr, size_t size)
+{
+	protect_ptr = ptr;
+	protect_size = size;
+	protect_set = false;
+	memUpdateProtect();
+}
+
+void memUnprotect()
+{
+	protect_ptr = nullptr;
+	protect_size = 0;
+}
+
+void memUpdateProtect()
+{
+	if (nullptr != protect_ptr && !protect_set)
+	{
+		uintptr_t pageSize = 1024*4;
+		auto val1 = reinterpret_cast<uintptr_t>(protect_ptr) & ~(pageSize - 1);
+		auto val2 = (reinterpret_cast<uintptr_t>(protect_ptr) + protect_size + pageSize - 1) & ~(pageSize - 1);
+		auto ptr = reinterpret_cast<void*>(val1);
+		auto size = val2 - val1;
+		DWORD prev = 0;
+		auto res = ::VirtualProtect(ptr, size, PAGE_READWRITE | PAGE_GUARD, &prev);\
+		if (0 == res)
+		{
+			::DebugBreak();
+		}
+		protect_set = true;
+	}
+}
+
+bool handleGuardPage(void* exc)
+{
+	auto exception = static_cast<PEXCEPTION_POINTERS>(exc);
+	if (exception->ExceptionRecord->ExceptionCode == EXCEPTION_GUARD_PAGE)
+	{
+		protect_set = false;
+		bool is_write = (1 == exception->ExceptionRecord->ExceptionInformation[0]);
+		if (is_write)
+		{
+			auto ptr = reinterpret_cast<const char*>(exception->ExceptionRecord->ExceptionInformation[1]);
+			auto begin = static_cast<const char*>(protect_ptr);
+			auto end = begin + protect_size;
+			if (ptr >= begin && ptr < end)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 }
