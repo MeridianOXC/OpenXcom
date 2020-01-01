@@ -171,18 +171,19 @@ void Game::run()
 		}
 
 		// Process events
-		while (SDL_PollEvent(&_event))
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
 		{
-			if (CrossPlatform::isQuitShortcut(_event))
-				_event.type = SDL_QUIT;
-			switch (_event.type)
+			if (CrossPlatform::isQuitShortcut(event))
+				event.type = SDL_QUIT;
+			switch (event.type)
 			{
 				case SDL_QUIT:
 					quit();
 					break;
 				case SDL_ACTIVEEVENT:
 					// An event other than SDL_APPMOUSEFOCUS change happened.
-					if (reinterpret_cast<SDL_ActiveEvent*>(&_event)->state & ~SDL_APPMOUSEFOCUS)
+					if (reinterpret_cast<SDL_ActiveEvent*>(&event)->state & ~SDL_APPMOUSEFOCUS)
 					{
 						Uint8 currentState = SDL_GetAppState();
 						// Game is minimized
@@ -219,8 +220,8 @@ void Game::run()
 					{
 						if (!startupEvent)
 						{
-							Options::newDisplayWidth = Options::displayWidth = std::max(Screen::ORIGINAL_WIDTH, _event.resize.w);
-							Options::newDisplayHeight = Options::displayHeight = std::max(Screen::ORIGINAL_HEIGHT, _event.resize.h);
+							Options::newDisplayWidth = Options::displayWidth = std::max(Screen::ORIGINAL_WIDTH, event.resize.w);
+							Options::newDisplayHeight = Options::displayHeight = std::max(Screen::ORIGINAL_HEIGHT, event.resize.h);
 							int dX = 0, dY = 0;
 							Screen::updateScale(Options::battlescapeScale, Options::baseXBattlescape, Options::baseYBattlescape, false);
 							Screen::updateScale(Options::geoscapeScale, Options::baseXGeoscape, Options::baseYGeoscape, false);
@@ -246,7 +247,7 @@ void Game::run()
 					// Go on, feed the event to others
 					FALLTHROUGH;
 				default:
-					Action action = Action(&_event, _screen->getXScale(), _screen->getYScale(), _screen->getCursorTopBlackBand(), _screen->getCursorLeftBlackBand());
+					Action action = Action(&event, _screen->getXScale(), _screen->getYScale(), _screen->getCursorTopBlackBand(), _screen->getCursorLeftBlackBand());
 					_screen->handle(&action);
 					_cursor->handle(&action);
 					_fpsCounter->handle(&action);
@@ -274,6 +275,12 @@ void Game::run()
 					}
 					_states.back()->handle(&action);
 					break;
+			}
+			if (!_init)
+			{
+				// States stack was changed, break the loop so new state
+				// can be initialized before processing new events
+				break;
 			}
 		}
 

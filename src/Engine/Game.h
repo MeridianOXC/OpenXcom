@@ -42,7 +42,6 @@ class FpsCounter;
 class Game
 {
 private:
-	SDL_Event _event;
 	Screen *_screen;
 	Cursor *_cursor;
 	Language *_lang;
