@@ -2033,8 +2033,8 @@ bool TileEngine::tryReaction(ReactionScore *reaction, BattleUnit *target, const 
 				{
 					_save->getBattleGame()->statePushBack(new ProjectileFlyBState(_save->getBattleGame(), action));
 				}
+				return true;
 			}
-			return arg.getFirst() > 0;
 		}
 	}
 	return false;
