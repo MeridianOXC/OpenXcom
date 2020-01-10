@@ -174,6 +174,7 @@ private:
 	bool _canBeSkipped;
 	std::vector<SDL_Rect*> _rects;
 	std::vector<int> _groups, _blocks, _frequencies, _maxUses, _conditionals;
+	int _verticalGroup, _horizontalGroup, _crossingGroup;
 	std::vector<int> _groupsTemp, _blocksTemp, _frequenciesTemp, _maxUsesTemp;
 	int _sizeX, _sizeY, _sizeZ, _executionChances, _executions, _cumulativeFrequency, _label;
 	MapDirection _direction;
@@ -218,6 +219,12 @@ public:
 	const std::vector<int> *getGroups() const {return &_groups;};
 	/// Gets the blocks vector for iteration.
 	const std::vector<int> *getBlocks() const {return &_blocks;};
+	/// Gets the verticalGroups for this command.
+	int getVerticalGroup() const { return _verticalGroup; };
+	/// Gets the horizontalGroups for this command.
+	int getHorizontalGroup() const { return _horizontalGroup; };
+	/// Gets the crossingGroups for this command.
+	int getCrossingGroup() const { return _crossingGroup; };
 	/// Gets the direction this command goes (for lines and tunnels).
    	MapDirection getDirection() const {return _direction;};
 	/// Gets the mcd replacement data for tunnel replacements.

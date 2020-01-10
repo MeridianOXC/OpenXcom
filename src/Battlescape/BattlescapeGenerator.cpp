@@ -2310,7 +2310,7 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 
 					break;
 				case MSC_ADDLINE:
-					success = addLine((MapDirection)(command->getDirection()), command->getRects(), terrain);
+					success = addLine((MapDirection)(command->getDirection()), command->getRects(), terrain, command->getVerticalGroup(), command->getHorizontalGroup(), command->getCrossingGroup());
 
 					if (doLevels && success)
 					{
@@ -3584,13 +3584,13 @@ bool BattlescapeGenerator::addCraft(MapBlock *craftMap, MapScript *command, SDL_
  * @param rects the positions to allow the line to be drawn in.
  * @return if the blocks were added or not.
  */
-bool BattlescapeGenerator::addLine(MapDirection direction, const std::vector<SDL_Rect*> *rects, RuleTerrain *terrain)
+bool BattlescapeGenerator::addLine(MapDirection direction, const std::vector<SDL_Rect*> *rects, RuleTerrain *terrain, int verticalGroup, int horizontalGroup, int crossingGroup)
 {
 	if (direction == MD_BOTH)
 	{
-		if (addLine(MD_VERTICAL, rects, terrain))
+		if (addLine(MD_VERTICAL, rects, terrain, verticalGroup, horizontalGroup, crossingGroup))
 		{
-			addLine(MD_HORIZONTAL, rects, terrain);
+			addLine(MD_HORIZONTAL, rects, terrain, verticalGroup, horizontalGroup, crossingGroup);
 			return true;
 		}
 		return false;
@@ -3601,14 +3601,14 @@ bool BattlescapeGenerator::addLine(MapDirection direction, const std::vector<SDL
 
 	int roadX, roadY = 0;
 	int *iteratorValue = &roadX;
-	MapBlockType comparator = MT_NSROAD;
-	MapBlockType typeToAdd = MT_EWROAD;
+	int comparator = verticalGroup;
+	int typeToAdd = horizontalGroup;
 	int limit = _mapsize_x / 10;
 	if (direction == MD_VERTICAL)
 	{
 		iteratorValue = &roadY;
-		comparator = MT_EWROAD;
-		typeToAdd = MT_NSROAD;
+		comparator = horizontalGroup;
+		typeToAdd = verticalGroup;
 		limit = _mapsize_y / 10;
 	}
 	while (!placed)
@@ -3649,7 +3649,7 @@ bool BattlescapeGenerator::addLine(MapDirection direction, const std::vector<SDL
 		}
 		else if (_blocks[roadX][roadY]->isInGroup(comparator))
 		{
-			_blocks[roadX][roadY] = terrain->getRandomMapBlock(10, 10, MT_CROSSING);
+			_blocks[roadX][roadY] = terrain->getRandomMapBlock(10, 10, crossingGroup);
 			clearModule(roadX * 10, roadY * 10, 10, 10);
 			loadMAP(_blocks[roadX][roadY], roadX * 10, roadY * 10, 0, terrain, 0);
 
