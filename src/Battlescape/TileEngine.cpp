@@ -4059,7 +4059,7 @@ bool TileEngine::medikitUse(BattleAction *action, BattleUnit *target, BattleMedi
 			awardExperience(attack, target, false);
 		}
 		
-		target->heal(bodyPart, healthRecovery, woundRecovery);
+		target->heal(bodyPart, woundRecovery, healthRecovery);
 	}
 	
 	_save->getBattleGame()->playSound(action->weapon->getRules()->getHitSound());
