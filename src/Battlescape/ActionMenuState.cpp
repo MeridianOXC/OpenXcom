@@ -387,7 +387,7 @@ void ActionMenuState::btnActionMenuItemClick(Action *action)
 									{
 										if (targetUnit->getFatalWound(i))
 										{
-											tileEngine->medikitHeal(_action, targetUnit, i);
+											tileEngine->medikitUse(_action, targetUnit, BMA_HEAL, i);
 											tileEngine->medikitRemoveIfEmpty(_action);
 											break;
 										}
@@ -395,16 +395,16 @@ void ActionMenuState::btnActionMenuItemClick(Action *action)
 								}
 								else
 								{
-									tileEngine->medikitHeal(_action, targetUnit, BODYPART_TORSO);
+									tileEngine->medikitUse(_action, targetUnit, BMA_HEAL, BODYPART_TORSO);
 									tileEngine->medikitRemoveIfEmpty(_action);
 								}
 								break;
 							case BMT_STIMULANT:
-								tileEngine->medikitStimulant(_action, targetUnit);
+								tileEngine->medikitUse(_action, targetUnit, BMA_STIMULANT, BODYPART_TORSO);
 								tileEngine->medikitRemoveIfEmpty(_action);
 								break;
 							case BMT_PAINKILLER:
-								tileEngine->medikitPainKiller(_action, targetUnit);
+								tileEngine->medikitUse(_action, targetUnit, BMA_PAINKILLER, BODYPART_TORSO);
 								tileEngine->medikitRemoveIfEmpty(_action);
 								break;
 							case BMT_NORMAL:

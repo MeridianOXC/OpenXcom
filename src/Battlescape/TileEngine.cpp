@@ -3986,62 +3986,123 @@ void TileEngine::medikitRemoveIfEmpty(BattleAction *action)
 	}
 }
 
-/**
- * Try using medikit heal ability.
- * @param action
- * @param target
- * @param bodyPart
- */
-void TileEngine::medikitHeal(BattleAction *action, BattleUnit *target, int bodyPart)
+bool TileEngine::medikitUse(BattleAction *action, BattleUnit *target, BattleMediKitAction originalMedikitAction, int bodyPart)
 {
+	BattleActionAttack attack;
+	attack.type = action->type;
+	attack.attacker = action->actor;
+	attack.weapon_item = action->weapon;
+	attack.damage_item = action->weapon;
+	
+	bool canContinueHealing = true;
+	
 	const RuleItem *rule = action->weapon->getRules();
+	
+	BattleMediKitType type = rule->getMediKitType();
+	
+	constexpr int medikitActionKey = 0;
+	constexpr int bodyPartKey = 1;
+	constexpr int woundRecoveryKey = 2;
+	constexpr int healthRecoveryKey = 3;
+	constexpr int energyRecoveryKey = 4;
+	constexpr int stunRecoveryKey = 5;
+	constexpr int manaRecoveryKey = 6;
+	constexpr int moraleRecoveryKey = 7;
+	constexpr int painkillerRecoveryKey = 8;
 
-	if (target->getFatalWound(bodyPart))
+	action->weapon->spendHealingItemUse(originalMedikitAction);
+	
+	ModScript::HealUnit::Output args { };
+	
+	std::get<medikitActionKey>(args.data) += originalMedikitAction;
+	std::get<bodyPartKey>(args.data) += bodyPart;
+	std::get<woundRecoveryKey>(args.data) += rule->getWoundRecovery();
+	std::get<healthRecoveryKey>(args.data) += rule->getHealthRecovery();
+	std::get<energyRecoveryKey>(args.data) += rule->getEnergyRecovery();
+	std::get<stunRecoveryKey>(args.data) += rule->getStunRecovery();
+	std::get<manaRecoveryKey>(args.data) += rule->getManaRecovery();
+	std::get<moraleRecoveryKey>(args.data) += rule->getMoraleRecovery();
+	std::get<painkillerRecoveryKey>(args.data) += (int)(rule->getPainKillerRecovery() * 100.0f);
+	
+	ModScript::HealUnit::Worker work { action->actor, action->weapon, _save, target, action->type };
+	
+	work.execute(target->getArmor()->getScript<ModScript::HealUnit>(), args);
+
+	int medikitAction = std::get<medikitActionKey>(args.data);
+	bodyPart = (UnitBodyPart)std::get<bodyPartKey>(args.data);
+	int healthRecovery = std::get<healthRecoveryKey>(args.data);
+	int woundRecovery = std::get<woundRecoveryKey>(args.data);
+	int energyRecovery = std::get<energyRecoveryKey>(args.data);
+	int stunRecovery = std::get<stunRecoveryKey>(args.data);
+	int manaRecovery = std::get<manaRecoveryKey>(args.data);
+	int moraleRecovery = std::get<moraleRecoveryKey>(args.data);
+	float painkillerRecovery = std::get<painkillerRecoveryKey>(args.data) / 100.0f;
+	
+	// 0 = normal, 1 = heal, 2 = stim, 4 = pain
+	if (medikitAction & BMA_PAINKILLER)
 	{
-		// award experience only if healed body part has a fatal wound (to prevent abuse)
-		BattleActionAttack attack;
-		attack.type = action->type;
-		attack.attacker = action->actor;
-		attack.weapon_item = action->weapon;
-		attack.damage_item = action->weapon;
-
-		awardExperience(attack, target, false);
+		target->painKillers(moraleRecovery, painkillerRecovery);
 	}
-
-	target->heal(bodyPart, rule->getWoundRecovery(), rule->getHealthRecovery());
-	action->weapon->setHealQuantity(action->weapon->getHealQuantity() - 1);
-
+	
+	if (medikitAction & BMA_STIMULANT)
+	{
+		target->stimulant(energyRecovery, stunRecovery, manaRecovery);
+	}
+	
+	if (medikitAction & BMA_HEAL)
+	{
+		if (target->getFatalWound(bodyPart))
+		{
+			// award experience only if healed body part has a fatal wound (to prevent abuse)
+			awardExperience(attack, target, false);
+		}
+		
+		target->heal(bodyPart, healthRecovery, woundRecovery);
+	}
+	
 	_save->getBattleGame()->playSound(action->weapon->getRules()->getHitSound());
-}
-
-/**
- * Try using medikit stimulant ability.
- * @param action
- * @param target
- */
-void TileEngine::medikitStimulant(BattleAction *action, BattleUnit *target)
-{
-	const RuleItem *rule = action->weapon->getRules();
-
-	target->stimulant(rule->getEnergyRecovery(), rule->getStunRecovery(), rule->getManaRecovery());
-	action->weapon->setStimulantQuantity(action->weapon->getStimulantQuantity() - 1);
-
-	_save->getBattleGame()->playSound(action->weapon->getRules()->getHitSound());
-}
-
-/**
- * Try using medikit pain killer ability.
- * @param action
- * @param target
- */
-void TileEngine::medikitPainKiller(BattleAction *action, BattleUnit *target)
-{
-	const RuleItem *rule = action->weapon->getRules();
-
-	target->painKillers(rule->getMoraleRecovery(), rule->getPainKillerRecovery());
-	action->weapon->setPainKillerQuantity(action->weapon->getPainKillerQuantity() - 1);
-
-	_save->getBattleGame()->playSound(action->weapon->getRules()->getHitSound());
+	
+	if (type == BMT_NORMAL) // normal medikit usage, track statistics
+	{
+		if (medikitAction & BMA_PAINKILLER)
+		{
+			action->actor->getStatistics()->appliedPainKill++;
+		}
+		if (medikitAction & BMA_STIMULANT)
+		{
+			action->actor->getStatistics()->appliedStimulant++;
+		}
+		if (medikitAction & BMA_HEAL)
+		{
+			action->actor->getStatistics()->woundsHealed++;
+		}
+		
+		if (target->getStatus() == STATUS_UNCONSCIOUS && !target->isOutThresholdExceed())
+		{
+			if(target->getOriginalFaction() == FACTION_PLAYER)
+			{
+				action->actor->getStatistics()->revivedSoldier++;
+			}
+			else if(target->getOriginalFaction() == FACTION_HOSTILE)
+			{
+				action->actor->getStatistics()->revivedHostile++;
+			}
+			else
+			{
+				action->actor->getStatistics()->revivedNeutral++;
+			}
+			// if the unit has revived and has no more wounds, we cannot continue healing
+			if (target->getFatalWounds() == 0)
+			{
+				canContinueHealing = false;
+			}
+		}
+	}
+	
+	// check for casualties, revive unconscious unit (+ change status), re-calc fov & lighting
+	updateGameStateAfterScript(attack, action->actor->getPosition());
+	
+	return canContinueHealing;
 }
 
 /**
@@ -4742,6 +4803,17 @@ bool TileEngine::isPositionValidForUnit(Position &position, BattleUnit *unit, bo
 	}
 
 	return false;
+}
+	
+void TileEngine::updateGameStateAfterScript(BattleActionAttack battleActionAttack, Position pos)
+{
+	_save->getBattleGame()->checkForCasualties(nullptr, battleActionAttack, false, false);
+	
+	_save->reviveUnconsciousUnits(true);
+	
+	// limit area of the following calls to the Position pos
+	calculateFOV(pos, 1, false);
+	calculateLighting(LL_ITEMS, pos, 2, true);
 }
 
 }

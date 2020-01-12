@@ -5237,6 +5237,13 @@ void moveTypesImpl(BindBase& b)
 	b.addCustomConst("move_run", BAM_RUN);
 	b.addCustomConst("move_strafe", BAM_STRAFE);
 }
+	
+void medikitBattleActionImpl(BindBase& b)
+{
+	b.addCustomConst("medikit_action_heal", BMA_HEAL);
+	b.addCustomConst("medikit_action_stimulant", BMA_STIMULANT);
+	b.addCustomConst("medikit_action_painkiller", BMA_PAINKILLER);
+}
 
 }
 
@@ -5361,6 +5368,32 @@ ModScript::HitUnitParser::HitUnitParser(ScriptGlobal* shared, const std::string&
 	b.addCustomPtr<const Mod>("rules", mod);
 
 	battleActionImpl(b);
+}
+
+ModScript::HealUnitParser::HealUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"medikit_action_type",
+	"body_part",
+	"wound_recovery",
+	"health_recovery",
+	"energy_recovery",
+	"stun_recovery",
+	"mana_recovery",
+	"morale_recovery",
+	"painkiller_recovery",
+	"actor",
+	"item",
+	"battle_game",
+	"target", "battle_action"}
+{
+	BindBase b { this };
+	
+	b.addCustomPtr<const Mod>("rules", mod);
+	
+	battleActionImpl(b);
+	
+	medikitBattleActionImpl(b);
+	
+	setEmptyReturn();
 }
 
 ModScript::CreateUnitParser::CreateUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name, "unit", "battle_game", "turn", }

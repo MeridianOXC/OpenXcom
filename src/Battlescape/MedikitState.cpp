@@ -232,35 +232,13 @@ void MedikitState::onHealClick(Action *)
 
 	if (_action->spendTU(&_action->result))
 	{
-		_tileEngine->medikitHeal(_action, _targetUnit, _medikitView->getSelectedPart());
+		bool canContinueHealing = _tileEngine->medikitUse(_action, _targetUnit, BMA_HEAL, _medikitView->getSelectedPart());
 		_medikitView->updateSelectedPart();
 		_medikitView->invalidate();
-		_action->actor->getStatistics()->woundsHealed++;
 		update();
-
-		if (_targetUnit->getStatus() == STATUS_UNCONSCIOUS && !_targetUnit->isOutThresholdExceed())
+		if (!canContinueHealing)
 		{
-			if (!_revivedTarget)
-			{
-				if(_targetUnit->getOriginalFaction() == FACTION_PLAYER)
-				{
-					_action->actor->getStatistics()->revivedSoldier++;
-				}
-				else if(_targetUnit->getOriginalFaction() == FACTION_HOSTILE)
-				{
-					_action->actor->getStatistics()->revivedHostile++;
-				}
-				else
-				{
-					_action->actor->getStatistics()->revivedNeutral++;
-				}
-				_revivedTarget = true;
-			}
-			// if the unit has revived and has no more wounds, we quit this screen automatically
-			if (_targetUnit->getFatalWounds() == 0)
-			{
-				onEndClick(0);
-			}
+			onEndClick(0);
 		}
 	}
 	else
@@ -282,25 +260,10 @@ void MedikitState::onStimulantClick(Action *)
 
 	if (_action->spendTU(&_action->result))
 	{
-		_tileEngine->medikitStimulant(_action, _targetUnit);
-		_action->actor->getStatistics()->appliedStimulant++;
+		bool canContinueHealing = _tileEngine->medikitUse(_action, _targetUnit, BMA_STIMULANT, BODYPART_TORSO);
 		update();
-
-		// if the unit has revived we quit this screen automatically
-		if (_targetUnit->getStatus() == STATUS_UNCONSCIOUS && !_targetUnit->isOutThresholdExceed())
+		if (!canContinueHealing)
 		{
-			if(_targetUnit->getOriginalFaction() == FACTION_PLAYER)
-			{
-				_action->actor->getStatistics()->revivedSoldier++;
-			}
-			else if(_targetUnit->getOriginalFaction() == FACTION_HOSTILE)
-			{
-				_action->actor->getStatistics()->revivedHostile++;
-			}
-			else
-			{
-				_action->actor->getStatistics()->revivedNeutral++;
-			}
 			onEndClick(0);
 		}
 	}
@@ -323,9 +286,12 @@ void MedikitState::onPainKillerClick(Action *)
 
 	if (_action->spendTU(&_action->result))
 	{
-		_tileEngine->medikitPainKiller(_action, _targetUnit);
-		_action->actor->getStatistics()->appliedPainKill++;
+		bool canContinueHealing = _tileEngine->medikitUse(_action, _targetUnit, BMA_PAINKILLER, BODYPART_TORSO);
 		update();
+		if (!canContinueHealing)
+		{
+			onEndClick(0);
+		}
 	}
 	else
 	{

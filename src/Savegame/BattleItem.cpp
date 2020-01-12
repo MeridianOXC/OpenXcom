@@ -432,6 +432,21 @@ bool BattleItem::spendBullet()
 		return true;
 }
 
+void BattleItem::spendHealingItemUse(BattleMediKitAction mediKitAction)
+{
+	if (mediKitAction == BMA_PAINKILLER)
+	{
+		setPainKillerQuantity(getPainKillerQuantity() - 1);
+	}
+	else if (mediKitAction == BMA_STIMULANT)
+	{
+		setStimulantQuantity(getStimulantQuantity() - 1);
+	}
+	else if (mediKitAction == BMA_HEAL)
+	{
+		setHealQuantity(getHealQuantity() - 1);
+	}
+}
 /**
  * Gets the item's owner.
  * @return Pointer to Battleunit.

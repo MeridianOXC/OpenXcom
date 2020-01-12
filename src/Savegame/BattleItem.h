@@ -161,6 +161,8 @@ public:
 	BattleItem *getAmmoForAction(BattleActionType action, std::string* message = nullptr);
 	/// Spend weapon ammo.
 	void spendAmmoForAction(BattleActionType action, SavedBattleGame *save);
+	/// Spend one quantity of a healing item use
+	void spendHealingItemUse(BattleMediKitAction mediKitAction);
 	/// How many auto shots does this weapon fire.
 	bool haveNextShotsForAction(BattleActionType action, int shotCount) const;
 	/// Determines if this item uses ammo.
