@@ -4966,6 +4966,16 @@ void setBaseStatRangeScript(BattleUnit *bu, int val)
 		(bu->*StatCurr) = Clamp(val, Min, Max);
 	}
 }
+	
+void getVisibleUnitsCountScript(BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		
+		auto visibleUnits = bu->getVisibleUnits();
+		ret = visibleUnits->size();
+	}
+}
 
 /**
  * Get the X part of the tile coordinate of this unit.
@@ -5006,6 +5016,16 @@ void getPositionZScript(const BattleUnit *bu, int &ret)
 		return;
 	}
 	ret = 0;
+}
+
+void getFactionScript(const BattleUnit *bu, int &faction)
+{
+	if (bu)
+	{
+		faction = (int)bu->getFaction();
+		return;
+	}
+	faction = 0;
 }
 
 std::string debugDisplayScript(const BattleUnit* bu)
@@ -5114,6 +5134,13 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	UnitStats::addGetStatsScript<&BattleUnit::_exp>(bu, "Exp.", true);
 
+	bu.add<&getVisibleUnitsCountScript>("getVisibleUnitsCount");
+	bu.add<&getFactionScript>("getFaction");
+
+	bu.addCustomConst("FACTION_PLAYER", FACTION_PLAYER);
+	bu.addCustomConst("FACTION_HOSTILE", FACTION_HOSTILE);
+	bu.addCustomConst("FACTION_NEUTRAL", FACTION_NEUTRAL);
+	
 	bu.add<&BattleUnit::getFatalWounds>("getFatalwoundsTotal");
 	bu.add<&BattleUnit::getFatalWound>("getFatalwounds");
 	bu.add<&BattleUnit::getOverKillDamage>("getOverKillDamage");

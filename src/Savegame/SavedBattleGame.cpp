@@ -2748,6 +2748,18 @@ void difficultyLevelScript(const SavedBattleGame* sbg, int& val)
 	}
 }
 
+void turnSideScript(const SavedBattleGame* sbg, int& val)
+{
+	if (sbg)
+	{
+		val = sbg->getSide();
+	}
+	else
+	{
+		val = 0;
+	}
+}
+
 void getGeoscapeSaveScript(const SavedBattleGame* sbg, const SavedGame*& val)
 {
 	if (sbg)
@@ -2826,6 +2838,11 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	
 	sbg.add<&randomChanceScript>("randomChance");
 	sbg.add<&randomRangeScript>("randomRange");
+	sbg.add<&turnSideScript>("getTurnSide", "Return the faction whose turn it is.");
+	sbg.addCustomConst("FACTION_PLAYER", FACTION_PLAYER);
+	sbg.addCustomConst("FACTION_HOSTILE", FACTION_HOSTILE);
+	sbg.addCustomConst("FACTION_NEUTRAL", FACTION_NEUTRAL);
+	
 	sbg.add<&tryConcealUnitScript>("tryConcealUnit");
 
 	sbg.add<&difficultyLevelScript>("difficultyLevel");
