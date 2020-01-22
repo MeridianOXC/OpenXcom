@@ -58,7 +58,7 @@ namespace OpenXcom
 SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang) :
 	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0),
 	_lastSelectedUnit(0), _pathfinding(0), _tileEngine(0), _enviroEffects(nullptr), _ecEnabledFriendly(false), _ecEnabledHostile(false), _ecEnabledNeutral(false),
-	_globalShade(0), _side(FACTION_PLAYER), _turn(0), _bughuntMinTurn(20), _animFrame(0),
+	_globalShade(0), _side(FACTION_PLAYER), _turn(0), _bughuntMinTurn(20), _animFrame(0), _nameDisplay(false),
 	_debugMode(false), _bughuntMode(false), _aborted(false), _itemId(0), _objectiveType(-1), _objectivesDestroyed(0), _objectivesNeeded(0), _unitsFalling(false),
 	_cheating(false), _tuReserved(BA_NONE), _kneelReserved(false), _depth(0),
 	_ambience(-1), _ambientVolume(0.5), _minAmbienceRandomDelay(20), _maxAmbienceRandomDelay(60), _currentAmbienceDelay(0),
@@ -140,6 +140,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 		std::string enviroEffectsType = node["enviroEffectsType"].as<std::string>();
 		_enviroEffects = mod->getEnviroEffects(enviroEffectsType);
 	}
+	_nameDisplay = node["nameDisplay"].as<bool>(_nameDisplay);
 	_ecEnabledFriendly = node["ecEnabledFriendly"].as<bool>(_ecEnabledFriendly);
 	_ecEnabledHostile = node["ecEnabledHostile"].as<bool>(_ecEnabledHostile);
 	_ecEnabledNeutral = node["ecEnabledNeutral"].as<bool>(_ecEnabledNeutral);
@@ -450,6 +451,7 @@ YAML::Node SavedBattleGame::save() const
 	{
 		node["enviroEffectsType"] = _enviroEffects->getType();
 	}
+	node["nameDisplay"] = _nameDisplay;
 	node["ecEnabledFriendly"] = _ecEnabledFriendly;
 	node["ecEnabledHostile"] = _ecEnabledHostile;
 	node["ecEnabledNeutral"] = _ecEnabledNeutral;
@@ -1556,6 +1558,24 @@ BattleItem *SavedBattleGame::createItemForTile(RuleItem *rule, Tile *tile)
 	_items.push_back(item);
 	initItem(item);
 	return item;
+}
+
+/**
+ * Returns whether the battlescape should display the names of the soldiers or their callsigns.
+ * @return True, if the battlescape should show player names + statstrings (default behaviour), or false, if the battlescape should display callsigns.
+ */
+bool SavedBattleGame::isNameDisplay() const
+{
+	return _nameDisplay;
+}
+
+/**
+ * Sets whether the player names (true) or their callsigns (false) are displayed
+ * @param displayName True, if the battlescape should show player names + statstrings (default behaviour), or false, if the battlescape should display callsigns.
+ */
+void SavedBattleGame::setNameDisplay(bool displayName)
+{
+	_nameDisplay = displayName;
 }
 
 /**

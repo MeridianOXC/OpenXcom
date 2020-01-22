@@ -75,6 +75,7 @@ private:
 	UnitFaction _side;
 	int _turn, _bughuntMinTurn;
 	int _animFrame;
+	bool _nameDisplay;
 	bool _debugMode, _bughuntMode;
 	bool _aborted;
 	bool _baseCraftInventory = false;
@@ -389,6 +390,10 @@ public:
 	void resetTiles();
 	/// get an 11x11 grid of positions (-10 to +10) to check.
 	const std::vector<Position> &getTileSearch() const;
+	/// check if the names or the callsigns of the soldiers should be displayed
+	bool isNameDisplay() const;
+	/// set displaying the name (true) or the callsign (false)
+	void setNameDisplay(bool displayName);
 	/// check if the AI has engaged cheat mode.
 	bool isCheating() const;
 	/// get the reserved fire mode.
