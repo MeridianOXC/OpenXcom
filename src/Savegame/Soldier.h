@@ -59,6 +59,7 @@ public:
 
 private:
 	std::string _name;
+	std::string _callsign;
 	int _id, _nationality, _improvement, _psiStrImprovement;
 	RuleSoldier *_rules;
 	UnitStats _initialStats, _currentStats, _tmpStatsWithSoldierBonuses, _tmpStatsWithAllBonuses;
@@ -95,6 +96,12 @@ public:
 	std::string getName(bool statstring = false, unsigned int maxLength = 20) const;
 	/// Sets the soldier's name.
 	void setName(const std::string &name);
+	/// Gets the soldier's callsign.
+	std::string getCallsign(unsigned int maxLength = 20) const;
+	/// Sets the soldier's callsign.
+	void setCallsign(const std::string &callsign);
+	/// Check for callsign assignment
+	bool hasCallsign();
 	/// Gets the soldier's nationality.
 	int getNationality() const;
 	/// Sets the soldier's nationality.
@@ -240,6 +247,9 @@ public:
 	UnitStats *getStatsWithAllBonuses();
 	/// Pre-calculates soldier stats with various bonuses.
 	bool prepareStatsWithBonuses(const Mod *mod);
+	
+private:
+	std::string generateCallsign(const std::vector<SoldierNamePool*> &names);
 
 };
 

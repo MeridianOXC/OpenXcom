@@ -33,7 +33,7 @@ namespace OpenXcom
 class SoldierNamePool
 {
 private:
-	std::vector<std::string> _maleFirst, _femaleFirst, _maleLast, _femaleLast;
+	std::vector<std::string> _maleFirst, _femaleFirst, _maleLast, _femaleLast, _maleCallsign, _femaleCallsign;
 	std::vector<int> _lookWeights;
 	int _totalWeight, _femaleFrequency;
 public:
@@ -45,6 +45,8 @@ public:
 	void load(const std::string &filename);
 	/// Generates a new name from the pool.
 	std::string genName(SoldierGender *gender, int femaleFrequency) const;
+	/// Generates a new callsign from the pool.
+	std::string genCallsign(const SoldierGender gender) const;
 	/// Generates an int representing the index of the soldier's look, when passed the maximum index value.
 	size_t genLook(size_t numLooks);
 };

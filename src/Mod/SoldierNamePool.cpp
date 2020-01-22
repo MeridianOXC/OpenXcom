@@ -68,6 +68,20 @@ void SoldierNamePool::load(const std::string &filename)
 		std::string name = i->as<std::string>();
 		_femaleLast.push_back(name);
 	}
+	for (YAML::const_iterator i = doc["maleCallsign"].begin(); i != doc["maleCallsign"].end(); ++i)
+	{
+		std::string name = i->as<std::string>();
+		_maleCallsign.push_back(name);
+	}
+	for (YAML::const_iterator i = doc["femaleCallsign"].begin(); i != doc["femaleCallsign"].end(); ++i)
+	{
+		std::string name = i->as<std::string>();
+		_femaleCallsign.push_back(name);
+	}
+	if (_femaleCallsign.empty())
+	{
+		_femaleCallsign = _maleCallsign;
+	}
 	if (_femaleFirst.empty())
 	{
 		_femaleFirst = _maleFirst;
@@ -127,6 +141,36 @@ std::string SoldierNamePool::genName(SoldierGender *gender, int femaleFrequency)
 		}
 	}
 	return name.str();
+}
+
+/**
+ * Returns a new random callsign from the
+ * lists of names contained within.
+ * @param gender Returned gender of the callsign.
+ * @return The soldier's callsign.
+ */
+std::string SoldierNamePool::genCallsign(const SoldierGender gender) const
+{
+	std::ostringstream callsign;
+	if (!_femaleCallsign.empty())
+	{
+		if (gender == GENDER_MALE)
+		{
+			size_t first = RNG::generate(0, _maleCallsign.size() - 1);
+			callsign << _maleCallsign[first];
+		}
+		else
+		{
+			size_t first = RNG::generate(0, _femaleCallsign.size() - 1);
+			callsign << _femaleCallsign[first];
+		}
+	}
+	else
+	{
+		// meaning no callsigns defined in yaml, they are optional after all
+		callsign << "*UNDEFINED*";
+	}
+	return callsign.str();
 }
 
 /**
