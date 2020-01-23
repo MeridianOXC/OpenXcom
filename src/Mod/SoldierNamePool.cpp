@@ -151,26 +151,21 @@ std::string SoldierNamePool::genName(SoldierGender *gender, int femaleFrequency)
  */
 std::string SoldierNamePool::genCallsign(const SoldierGender gender) const
 {
-	std::ostringstream callsign;
+	std::string callsign;
 	if (!_femaleCallsign.empty())
 	{
 		if (gender == GENDER_MALE)
 		{
 			size_t first = RNG::generate(0, _maleCallsign.size() - 1);
-			callsign << _maleCallsign[first];
+			callsign = _maleCallsign[first];
 		}
 		else
 		{
 			size_t first = RNG::generate(0, _femaleCallsign.size() - 1);
-			callsign << _femaleCallsign[first];
+			callsign = _femaleCallsign[first];
 		}
 	}
-	else
-	{
-		// meaning no callsigns defined in yaml, they are optional after all
-		callsign << "*UNDEFINED*";
-	}
-	return callsign.str();
+	return callsign;
 }
 
 /**

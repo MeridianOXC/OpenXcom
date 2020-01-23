@@ -88,7 +88,7 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
 			_look = (SoldierLook)RNG::generate(0,3);
 			_name = (_gender == GENDER_FEMALE) ? "Jane" : "John";
 			_name += " Doe";
-			_callsign = "Unknown";
+			_callsign = "";
 		}
 	}
 	_lookVariant = RNG::seedless(0, RuleSoldier::LookVariantMax - 1);
@@ -117,7 +117,7 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 {
 	_id = node["id"].as<int>(_id);
 	_name = node["name"].as<std::string>();
-	_callsign = node["callsign"].as<std::string>(generateCallsign(_rules->getNames()));
+	_callsign = node["callsign"].as<std::string>();
 	_nationality = node["nationality"].as<int>(_nationality);
 	_initialStats = node["initialStats"].as<UnitStats>(_initialStats);
 	_currentStats = node["currentStats"].as<UnitStats>(_currentStats);
@@ -322,14 +322,24 @@ void Soldier::setCallsign(const std::string &callsign)
 	_callsign = callsign;
 }
 
+/**
+ * Check wether the soldier has a callsign assigned.
+ * @return true, if the soldier has a callsign, false, if he has not.
+ */
 bool Soldier::hasCallsign()
 {
-	return _callsign != "*UNDEFINED*";
+	return !_callsign.empty();
 }
+
+/**
+ * Generate a radom callsign from the pool of names. Tries to fallback to the first entry in
+ * in the namepool list if no callsigns for the given nationality are defined.
+ * @return true, if the soldier has a callsign, false, if he has not.
+ */
 std::string Soldier::generateCallsign(const std::vector<SoldierNamePool*> &names)
 {
 	std::string callsign = names.at(_nationality)->genCallsign(_gender);
-	if (callsign == "*UNDEFINED*")
+	if (callsign.empty())
 	{
 		callsign = names.at(0)->genCallsign(_gender);
 	}
