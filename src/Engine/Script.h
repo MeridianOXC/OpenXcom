@@ -506,11 +506,17 @@ struct TypeInfoImpl
 	static constexpr bool isPtr = std::is_pointer<t1>::value;
 	static constexpr bool isEditable = isPtr && !std::is_const<t2>::value;
 
+	 enum
+	 {
+		metaDestSize = std::is_pod<t3>::value ? sizeof(t3) : 0,
+		metaDestAlign = std::is_pod<t3>::value ? alignof(t3) : 0
+	 };
+
 	/// meta data of destination type (without pointer), invalid if type is not POD
 	static constexpr TypeInfo metaDest =
 	{
-		std::is_pod<t3>::value ? sizeof(t3) : 0,
-		std::is_pod<t3>::value ? alignof(t3) : 0,
+		metaDestSize,
+		metaDestAlign,
 	};
 	/// meta data of base type (with pointer if it is)
 	static constexpr TypeInfo metaBase =
@@ -519,8 +525,8 @@ struct TypeInfoImpl
 		alignof(t1),
 	};
 
-	static_assert(metaDest.size || isPtr, "Type need to be POD to be used as reg or const value.");
-	static_assert((metaBase.alignment & (metaBase.alignment - 1)) == 0, "Type alignment is not power of two");
+	static_assert(metaDestSize || isPtr, "Type need to be POD to be used as reg or const value.");
+	static_assert((alignof(t1) & (alignof(t1) - 1)) == 0, "Type alignment is not power of two");
 };
 
 template<typename T>

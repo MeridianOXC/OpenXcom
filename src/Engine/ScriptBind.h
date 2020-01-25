@@ -372,7 +372,11 @@ struct Arg<A1, A2...> : public Arg<A2...>
 	}
 	static ScriptRange<ArgEnum> argTypes()
 	{
-		const static ArgEnum types[ver()] = { typeHelper<A1>(), typeHelper<A2>()... };
+		enum
+		{
+			ver_temp = ver()
+		};
+		const static ArgEnum types[ver_temp] = { typeHelper<A1>(), typeHelper<A2>()... };
 		return { std::begin(types), std::end(types) };
 	}
 };

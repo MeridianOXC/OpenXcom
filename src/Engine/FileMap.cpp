@@ -238,7 +238,7 @@ SDL_RWops *FileRecord::getRWopsReadAll() const
 				rv = SDL_RWFromConstMem(data, size);
 
 				//close callback
-				rv->close = +[](struct SDL_RWops *context)
+				rv->close = [](struct SDL_RWops *context)
 				{
 					if (context)
 					{
