@@ -506,11 +506,11 @@ struct TypeInfoImpl
 	static constexpr bool isPtr = std::is_pointer<t1>::value;
 	static constexpr bool isEditable = isPtr && !std::is_const<t2>::value;
 
-	 enum
-	 {
+	enum
+	{
 		metaDestSize = std::is_pod<t3>::value ? sizeof(t3) : 0,
 		metaDestAlign = std::is_pod<t3>::value ? alignof(t3) : 0
-	 };
+	};
 
 	/// meta data of destination type (without pointer), invalid if type is not POD
 	static constexpr TypeInfo metaDest =
