@@ -1307,6 +1307,8 @@ void Mod::loadAll()
 	//back master
 	_modCurrent = &_modData.at(0);
 	_scriptGlobal->endLoad();
+	
+	cacheScriptTagNames();
 
 	// post-processing item categories
 	std::map<std::string, std::string> replacementRules;
@@ -2241,6 +2243,31 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	}
 }
 
+/**
+ * Helper function that makes tag names from rulesets/scripts readily available in the Mod
+ * class by caching them on load. Note: All Mods/Rulesets must have been loaded beforehand.
+ */
+void Mod::cacheScriptTagNames()
+{
+	_battleUnitTags.clear();
+	
+	ArgEnum index = ScriptParserBase::getArgType<ScriptTag<BattleUnit>>();
+	
+	for (const auto& v : _scriptGlobal->getTagNames().at(index).values)
+	{
+		_battleUnitTags.push_back(v.name.toString());
+	}
+}
+
+/**
+ * Access the tag names of the BattleUnits.
+ * @return A list of the tag names as strings.
+ */
+const std::vector<std::string> Mod::getBattleUnitTags() const
+{
+	return _battleUnitTags;
+}
+	
 /**
  * Helper function protecting from circular references in node definition.
  * @param node Node to test

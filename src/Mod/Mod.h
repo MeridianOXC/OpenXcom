@@ -244,6 +244,7 @@ private:
 	std::vector<SDL_Color> _transparencies;
 	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _researchListOrder,  _manufactureListOrder, _transformationListOrder, _ufopaediaListOrder, _invListOrder, _soldierListOrder;
 	std::vector<ModData> _modData;
+	std::vector<std::string> _battleUnitTags;
 	ModData* _modCurrent;
 	const SDL_Color *_statePalette;
 	std::vector<std::string> _psiRequirements; // it's a cache for psiStrengthEval
@@ -291,6 +292,8 @@ private:
 	void modResources();
 	/// Sorts all our lists according to their weight.
 	void sortLists();
+	/// Loads the tag names from ScriptGlobal and stores them in vectors for easy access
+	void cacheScriptTagNames();
 public:
 	static int DOOR_OPEN;
 	static int SLIDING_DOOR_OPEN;
@@ -761,6 +764,9 @@ public:
 	StatAdjustment *getStatAdjustment(int difficulty);
 	int getDefeatScore() const;
 	int getDefeatFunds() const;
+	
+	/// Get the tag names for the BattleUnits
+	const std::vector<std::string> getBattleUnitTags() const;
 };
 
 }

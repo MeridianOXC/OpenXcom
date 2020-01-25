@@ -269,9 +269,9 @@ std::string Soldier::getName(bool statstring, unsigned int maxLength) const
 		{
 			suffix += "/" + _statString;
 		}
-		if (!_stateString.empty())
+		if (!_statTagString.empty())
 		{
-			suffix += "/" + _stateString;
+			suffix += "/" + _statTagString;
 		}
 		if (_name.length() + suffix.length() > maxLength)
 		{
@@ -1065,11 +1065,12 @@ void Soldier::calcStatString(const std::vector<StatString *> &statStrings, bool 
 	}
 }
 	
-void Soldier::calcStateString(std::map<std::string, int> unitTags)
+void Soldier::calcStatTagString(const std::map<std::string, int> &unitTags)
 {
+	
 	if (_globalStatStrings != nullptr && !_globalStatStrings->empty())
 	{
-		_stateString = StatString::calculateStatString(*_globalStatStrings, unitTags, false);
+		_statTagString = StatString::calculateStatString(*_globalStatStrings, unitTags, false);
 	}
 }
 

@@ -78,7 +78,7 @@ private:
 	SoldierDeath *_death;
 	SoldierDiary *_diary;
 	std::string _statString;
-	std::string _stateString;
+	std::string _statTagString;
 	bool _corpseRecovered;
 	std::map<std::string, int> _previousTransformations, _transformationBonuses;
 	std::vector<const RuleSoldierBonus*> _bonusCache;
@@ -213,7 +213,7 @@ public:
 	/// Calculate statString.
 	void calcStatString(const std::vector<StatString *> &statStrings, bool psiStrengthEval);
 	/// Calculate unit state string
-	void calcStateString(std::map<std::string, int> unitTags);
+	void calcStatTagString(const std::map<std::string, int> &unitTags);
 	/// Trains a soldier's physical stats
 	void trainPhys(int customTrainingFactor);
 	/// Is the soldier already fully trained?

@@ -120,7 +120,7 @@ std::string StatString::calcStatString(UnitStats &currentStats, const std::vecto
 	return calculateStatString(statStrings, currentStatsMap, showPsi);
 }
 	
-std::string StatString::calculateStatString(const std::vector<StatString *> &statStrings, std::map<std::string, int> &currentStatsMap, bool showPsi)
+std::string StatString::calculateStatString(const std::vector<StatString *> &statStrings, const std::map<std::string, int> &currentStatsMap, bool showPsi)
 {
 	std::string statString;
 	for (std::vector<StatString *>::const_iterator i = statStrings.begin(); i != statStrings.end(); ++i)
@@ -128,7 +128,7 @@ std::string StatString::calculateStatString(const std::vector<StatString *> &sta
 		bool conditionsMet = true;
 		for (std::vector<StatStringCondition*>::const_iterator j = (*i)->getConditions().begin(); j != (*i)->getConditions().end() && conditionsMet; ++j)
 		{
-			std::map<std::string, int>::iterator name = currentStatsMap.find((*j)->getConditionName());
+			std::map<std::string, int>::const_iterator name = currentStatsMap.find((*j)->getConditionName());
 			if (name != currentStatsMap.end())
 			{
 				conditionsMet = conditionsMet && (*j)->isMet(name->second, showPsi);

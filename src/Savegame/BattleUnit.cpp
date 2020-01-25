@@ -69,6 +69,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false), _isLeeroyJenkins(false), _summonedPlayerUnit(false), _capturable(true)
 {
+	_mod = mod;
 	_name = soldier->getName(true);
 	_id = soldier->getId();
 	_type = "SOLDIER";
@@ -185,8 +186,6 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 
 	prepareUnitSounds();
 	prepareUnitResponseSounds(mod);
-	
-	prepareTagNames(mod->getScriptGlobal());
 }
 
 /**
@@ -292,20 +291,6 @@ void BattleUnit::prepareUnitSounds()
 	{
 		if (!_armor->getFemaleDeathSounds().empty())
 			_deathSound = _armor->getFemaleDeathSounds();
-	}
-}
-/**
- * Helper function preparing tag names.
- */
-void BattleUnit::prepareTagNames(const ScriptGlobal *shared)
-{
-	_tagData.clear();
-	
-	ArgEnum index = ScriptParserBase::getArgType<ScriptTag<BattleUnit>>();
-	
-	for (size_t i = 0; i < shared->getTagNames().at(index).values.size(); ++i)
-	{
-		_tagData.push_back(shared->getTagNames().at(index).values[i].name.toString());
 	}
 }
 /**
@@ -3571,15 +3556,15 @@ std::string BattleUnit::getName(Language *lang, bool debugAppendId) const
 	std::map<std::string, int> unitTags;
 	
 	auto tagValues = _scriptValues.getValuesRaw();
-
+	auto tagData = _mod->getBattleUnitTags();
 	for (size_t i = 0; i < tagValues.size(); ++i)
 	{
-		auto nameAsString = _tagData[i];
+		auto nameAsString = tagData[i];
 		int value = tagValues.at(i);
 		unitTags[nameAsString] = value;
 	}
 	
-	_geoscapeSoldier->calcStateString(unitTags);
+	_geoscapeSoldier->calcStatTagString(unitTags);
 	return _geoscapeSoldier->getName(true);
 }
 

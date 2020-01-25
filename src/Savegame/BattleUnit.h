@@ -123,6 +123,7 @@ private:
 	UnitSide _fatalShotSide;
 	UnitBodyPart _fatalShotBodyPart;
 	std::string _murdererWeapon, _murdererWeaponAmmo;
+	const Mod *_mod;
 
 	// static data
 	std::string _type;
@@ -155,7 +156,6 @@ private:
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
 	bool _capturable;
 	ScriptValues<BattleUnit> _scriptValues;
-	std::vector<std::string> _tagData;
 
 	/// Calculate stat improvement.
 	int improveStat(int exp) const;
@@ -177,8 +177,6 @@ private:
 	void prepareUnitSounds();
 	/// Helper function preparing unit response sounds.
 	void prepareUnitResponseSounds(const Mod *mod);
-	/// Helper function preparing tag names.
-	void prepareTagNames(const ScriptGlobal *shared);
 public:
 	static const int MAX_SOLDIER_ID = 1000000;
 	/// Name of class used in script.
