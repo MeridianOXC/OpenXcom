@@ -78,10 +78,12 @@ private:
 	SoldierDeath *_death;
 	SoldierDiary *_diary;
 	std::string _statString;
+	std::string _stateString;
 	bool _corpseRecovered;
 	std::map<std::string, int> _previousTransformations, _transformationBonuses;
 	std::vector<const RuleSoldierBonus*> _bonusCache;
 	ScriptValues<Soldier> _scriptValues;
+	const std::vector<StatString *> *_globalStatStrings;
 public:
 	/// Creates a new soldier.
 	Soldier(RuleSoldier *rules, Armor *armor, int id = 0);
@@ -210,6 +212,8 @@ public:
 	void resetDiary();
 	/// Calculate statString.
 	void calcStatString(const std::vector<StatString *> &statStrings, bool psiStrengthEval);
+	/// Calculate unit state string
+	void calcStateString(std::map<std::string, int> unitTags);
 	/// Trains a soldier's physical stats
 	void trainPhys(int customTrainingFactor);
 	/// Is the soldier already fully trained?

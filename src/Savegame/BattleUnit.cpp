@@ -185,6 +185,8 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth) :
 
 	prepareUnitSounds();
 	prepareUnitResponseSounds(mod);
+	
+	prepareTagNames(mod->getScriptGlobal());
 }
 
 /**
@@ -292,7 +294,20 @@ void BattleUnit::prepareUnitSounds()
 			_deathSound = _armor->getFemaleDeathSounds();
 	}
 }
-
+/**
+ * Helper function preparing tag names.
+ */
+void BattleUnit::prepareTagNames(const ScriptGlobal *shared)
+{
+	_tagData.clear();
+	
+	ArgEnum index = ScriptParserBase::getArgType<ScriptTag<BattleUnit>>();
+	
+	for (size_t i = 0; i < shared->getTagNames().at(index).values.size(); ++i)
+	{
+		_tagData.push_back(shared->getTagNames().at(index).values[i].name.toString());
+	}
+}
 /**
  * Helper function preparing unit response sounds.
  */
@@ -3551,8 +3566,21 @@ std::string BattleUnit::getName(Language *lang, bool debugAppendId) const
 		}
 		return ret;
 	}
+	
+	// prepare soldier tags
+	std::map<std::string, int> unitTags;
+	
+	auto tagValues = _scriptValues.getValuesRaw();
 
-	return _name;
+	for (size_t i = 0; i < tagValues.size(); ++i)
+	{
+		auto nameAsString = _tagData[i];
+		int value = tagValues.at(i);
+		unitTags[nameAsString] = value;
+	}
+	
+	_geoscapeSoldier->calcStateString(unitTags);
+	return _geoscapeSoldier->getName(true);
 }
 
 /**

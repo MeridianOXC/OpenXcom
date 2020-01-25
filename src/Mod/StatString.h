@@ -119,8 +119,10 @@ public:
 	const std::vector<StatStringCondition*> &getConditions() const;
 	/// Get the StatString string.
 	std::string getString() const;
-	/// Calculate a StatString.
+	/// Calculate a StatString from UnitStats.
 	static std::string calcStatString(UnitStats &currentStats, const std::vector<StatString*> &statStrings, bool psiStrengthEval, bool inTraining);
+	/// Calculate a StatString.
+	static std::string calculateStatString(const std::vector<StatString *> &statStrings, std::map<std::string, int> &currentStatsMap, bool showPsi);
 	/// Get the CurrentStats.
 	static std::map<std::string, int> getCurrentStats(UnitStats &currentStats);
 };

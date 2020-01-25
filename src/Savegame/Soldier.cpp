@@ -262,15 +262,24 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
  */
 std::string Soldier::getName(bool statstring, unsigned int maxLength) const
 {
-	if (statstring && !_statString.empty())
+	if (statstring)
 	{
-		if (_name.length() + _statString.length() > maxLength)
+		std::string suffix;
+		if (!_statString.empty())
 		{
-			return _name.substr(0, maxLength - _statString.length()) + "/" + _statString;
+			suffix += "/" + _statString;
+		}
+		if (!_stateString.empty())
+		{
+			suffix += "/" + _stateString;
+		}
+		if (_name.length() + suffix.length() > maxLength)
+		{
+			return _name.substr(0, maxLength - suffix.length()) + suffix;
 		}
 		else
 		{
-			return _name + "/" + _statString;
+			return _name + suffix;
 		}
 	}
 	else
@@ -1039,12 +1048,13 @@ void Soldier::resetDiary()
 
 /**
  * Calculates the soldier's statString
- * Calculates the soldier's statString.
  * @param statStrings List of statString rules.
  * @param psiStrengthEval Are psi stats available?
  */
 void Soldier::calcStatString(const std::vector<StatString *> &statStrings, bool psiStrengthEval)
 {
+	// cache the statstrings for statestrings
+	_globalStatStrings = &statStrings;
 	if (_rules->getStatStrings().empty())
 	{
 		_statString = StatString::calcStatString(_currentStats, statStrings, psiStrengthEval, _psiTraining);
@@ -1052,6 +1062,14 @@ void Soldier::calcStatString(const std::vector<StatString *> &statStrings, bool 
 	else
 	{
 		_statString = StatString::calcStatString(_currentStats, _rules->getStatStrings(), psiStrengthEval, _psiTraining);
+	}
+}
+	
+void Soldier::calcStateString(std::map<std::string, int> unitTags)
+{
+	if (_globalStatStrings != nullptr && !_globalStatStrings->empty())
+	{
+		_stateString = StatString::calculateStatString(*_globalStatStrings, unitTags, false);
 	}
 }
 
