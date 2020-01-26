@@ -1279,6 +1279,11 @@ struct Bind : BindBase
 	{
 		addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(X)>>(getName(func), description);
 	}
+	template<typename TX, TX X>
+	void add(const std::string& func, const std::string& description = BindBase::functionWithoutDescription)
+	{
+		addCustomFunc<helper::BindFunc<MACRO_CLANG_AUTO_HACK(X)>>(getName(func), description);
+	}
 };
 
 } //namespace OpenXcom

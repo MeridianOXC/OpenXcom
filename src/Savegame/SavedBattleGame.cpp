@@ -48,6 +48,7 @@
 #include "../Mod/RuleSoldier.h"
 #include "../Mod/RuleSoldierBonus.h"
 #include "../fallthrough.h"
+#include "../Engine/Language.h"
 
 namespace OpenXcom
 {
@@ -2698,7 +2699,19 @@ void SavedBattleGame::resetUnitHitStates()
 
 namespace
 {
-
+template<typename... Args>
+void flashMessageVariadicScriptImpl(SavedBattleGame* sbg, ScriptText message, Args... args)
+{
+	if (!sbg)
+	{
+		return;
+	}
+	const Language *lang = sbg->getBattleState()->getGame()->getLanguage();
+	LocalizedText translated = lang->getString(message);
+	(translated.arg(args), ...);
+	sbg->getBattleState()->warning(translated);
+}
+	
 void randomChanceScript(SavedBattleGame* sbg, int& val)
 {
 	if (sbg)
@@ -2797,6 +2810,12 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 
 	sbg.addPair<SavedGame, &getGeoscapeSaveScript, &getGeoscapeSaveScript>("getGeoscapeGame");
 
+	sbg.add<void(*)(SavedBattleGame*, ScriptText), &flashMessageVariadicScriptImpl>("flashMessage");
+	sbg.add<void(*)(SavedBattleGame*, ScriptText, int), &flashMessageVariadicScriptImpl>("flashMessage");
+	sbg.add<void(*)(SavedBattleGame*, ScriptText, int, int), &flashMessageVariadicScriptImpl>("flashMessage");
+	sbg.add<void(*)(SavedBattleGame*, ScriptText, int, int, int), &flashMessageVariadicScriptImpl>("flashMessage");
+	sbg.add<void(*)(SavedBattleGame*, ScriptText, int, int, int, int), &flashMessageVariadicScriptImpl>("flashMessage");
+	
 	sbg.add<&randomChanceScript>("randomChance");
 	sbg.add<&randomRangeScript>("randomRange");
 
