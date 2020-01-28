@@ -2772,6 +2772,14 @@ void getGeoscapeSaveScript(SavedBattleGame* sbg, SavedGame*& val)
 	}
 }
 
+void tryConcealUnitScript(SavedBattleGame* sbg, BattleUnit* bu, int& val)
+{
+	if (sbg && bu)
+	{
+		val = sbg->getTileEngine()->tryConcealUnit(bu);
+	}
+}
+	
 std::string debugDisplayScript(const SavedBattleGame* p)
 {
 	if (p)
@@ -2818,6 +2826,7 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	
 	sbg.add<&randomChanceScript>("randomChance");
 	sbg.add<&randomRangeScript>("randomRange");
+	sbg.add<&tryConcealUnitScript>("tryConcealUnit");
 
 	sbg.add<&difficultyLevelScript>("difficultyLevel");
 

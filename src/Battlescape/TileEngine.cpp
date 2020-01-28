@@ -4108,6 +4108,25 @@ bool TileEngine::medikitUse(BattleAction *action, BattleUnit *target, BattleMedi
 }
 
 /**
+ * Tries to conceal a unit. Only works if no unit of another faction is watching.
+ */
+bool TileEngine::tryConcealUnit(BattleUnit* unit)
+{
+	for (std::vector<BattleUnit*>::const_iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
+	{
+		if ((*i)->getFaction() != unit->getFaction() && (*i)->hasVisibleUnit(unit))
+		{
+			return false;
+		}
+	}
+	
+	unit->setTurnsSinceSpotted(255);
+	unit->setTurnsLeftSpottedForSnipers(0);
+	
+	return true;
+}
+
+/**
  * Applies gravity to a tile. Causes items and units to drop.
  * @param t Tile.
  * @return Tile where the items end up in eventually.
