@@ -64,6 +64,7 @@ private:
 	std::vector<std::string> _requiresBuyBaseFunc;
 	UnitStats _minStats, _maxStats, _statCaps, _trainingStatCaps, _dogfightExperience;
 	std::string _armor;
+	std::string _specWeapon;
 	int _costBuy, _costSalary, _costSalarySquaddie, _costSalarySergeant, _costSalaryCaptain, _costSalaryColonel, _costSalaryCommander;
 	int _standHeight, _kneelHeight, _floatHeight;
 	int _femaleFrequency, _value, _transferTime, _moraleLossWhenKilled;
@@ -130,6 +131,8 @@ public:
 	int getAvatarOffsetY() const;
 	/// Gets the flag offset.
 	int getFlagOffset() const;
+	/// Gets the special weapon type
+	std::string getSpecialWeapon() const;
 	/// Gets the allow promotion flag.
 	bool getAllowPromotion() const;
 	/// Gets the allow piloting flag.

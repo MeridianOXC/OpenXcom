@@ -95,6 +95,7 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
 	}
 	_dogfightExperience.merge(node["dogfightExperience"].as<UnitStats>(_dogfightExperience));
 	_armor = node["armor"].as<std::string>(_armor);
+	_specWeapon = node["specialWeapon"].as<std::string>(_specWeapon);
 	_armorForAvatar = node["armorForAvatar"].as<std::string>(_armorForAvatar);
 	_avatarOffsetX = node["avatarOffsetX"].as<int>(_avatarOffsetX);
 	_avatarOffsetY = node["avatarOffsetY"].as<int>(_avatarOffsetY);
@@ -347,6 +348,15 @@ int RuleSoldier::getFloatHeight() const
 std::string RuleSoldier::getArmor() const
 {
 	return _armor;
+}
+
+/**
+ * Gets the soldier's special weapon name.
+ * @return The name of the special weapon.
+ */
+std::string RuleSoldier::getSpecialWeapon() const
+{
+	return _specWeapon;
 }
 
 /**

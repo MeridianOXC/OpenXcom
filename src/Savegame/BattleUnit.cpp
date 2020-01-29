@@ -4385,6 +4385,21 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save)
 			_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
 		}
 	}
+	if (getGeoscapeSoldier())
+	{
+		item = mod->getItem(getGeoscapeSoldier()->getRules()->getSpecialWeapon());
+		if (item)
+		{
+			if ((item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE) && !item->getClipSize())
+			{
+				throw Exception("Weapon " + item->getType() + " is used as a special weapon on soldier " + getGeoscapeSoldier()->getRules()->getType() + " but doesn't have it's own ammo - give it a clipSize!");
+			}
+			if (i < SPEC_WEAPON_MAX)
+			{
+				_specWeapon[i++] = save->createItemForUnitBuildin(item, this);
+			}
+		}
+	}
 }
 
 /**
