@@ -66,7 +66,7 @@ RuleItem::RuleItem(const std::string &type) :
 	_experienceTrainingMode(ETM_DEFAULT), _manaExperience(0), _listOrder(0),
 	_maxRange(200), _minRange(0), _dropoff(2), _bulletSpeed(0), _explosionSpeed(0), _shotgunPellets(0), _shotgunBehaviorType(0), _shotgunSpread(100), _shotgunChoke(100),
 	_spawnUnitFaction(-1),
-	_LOSRequired(false), _underwaterOnly(false), _landOnly(false), _psiReqiured(false), _manaRequired(false),
+	_LOSRequired(false), _isFriendlyTargetingAllowed(false), _underwaterOnly(false), _landOnly(false), _psiReqiured(false), _manaRequired(false),
 	_meleePower(0), _specialType(-1), _vaporColor(-1), _vaporDensity(0), _vaporProbability(15),
 	_kneelBonus(-1), _oneHandedPenalty(-1),
 	_monthlySalary(0), _monthlyMaintenance(0),
@@ -513,7 +513,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 		}
 	}
 
-	if ((_battleType == BT_MELEE || _battleType == BT_FIREARM) && _clipSize == 0)
+	if ((_battleType == BT_MELEE || _battleType == BT_FIREARM || _battleType == BT_SCRIPTED) && _clipSize == 0)
 	{
 		for (RuleItemAction* conf : { &_confAimed, &_confAuto, &_confSnap, &_confMelee, })
 		{
@@ -599,6 +599,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, int listOrder, const ModSc
 	_spawnUnit = node["spawnUnit"].as<std::string>(_spawnUnit);
 	_spawnUnitFaction = node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
 	_LOSRequired = node["LOSRequired"].as<bool>(_LOSRequired);
+	_isFriendlyTargetingAllowed = node["friendlyTargetingAllowed"].as<bool>(_isFriendlyTargetingAllowed);
 	_meleePower = node["meleePower"].as<int>(_meleePower);
 	_underwaterOnly = node["underwaterOnly"].as<bool>(_underwaterOnly);
 	_landOnly = node["landOnly"].as<bool>(_landOnly);
@@ -2215,6 +2216,15 @@ int RuleItem::getMeleePower() const
 bool RuleItem::isLOSRequired() const
 {
 	return _LOSRequired;
+}
+
+/**
+ * Is targeting of units of the own faction allowed?
+ * @return If the item allows targeting of friendly units.
+ */
+bool RuleItem::isFriendlyTargetingAllowed() const
+{
+	return _isFriendlyTargetingAllowed;
 }
 
 /**

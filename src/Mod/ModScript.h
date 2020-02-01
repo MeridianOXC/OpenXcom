@@ -99,7 +99,6 @@ class ModScript
 	{
 		VisibilityUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-
 	struct HitUnitParser : ScriptParserEvents<ScriptOutputArgs<int&, int&, int&>, BattleUnit*, BattleItem*, BattleItem*, BattleUnit*, SavedBattleGame*, int, int, int>
 	{
 		HitUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
@@ -142,7 +141,10 @@ class ModScript
 	{
 		NewTurnItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-
+	struct ScriptedItemUseParser : ScriptParserEvents<ScriptOutputArgs<int&, int&>, BattleUnit*, BattleItem*, SavedBattleGame*>
+	{
+		ScriptedItemUseParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
 	struct RecolorItemParser : ScriptParserEvents<Output, const BattleItem*, int, int, int>
 	{
 		RecolorItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
@@ -256,6 +258,7 @@ public:
 	using SelectItemSprite = MACRO_NAMED_SCRIPT("selectItemSprite", SelectItemParser);
 
 	using ReactionWeaponAction = MACRO_NAMED_SCRIPT("reactionWeaponAction", ReactionUnitParser);
+	using ScriptedItemUse = MACRO_NAMED_SCRIPT("scriptedItemUse", ScriptedItemUseParser);
 
 	using CreateItem = MACRO_NAMED_SCRIPT("createItem", CreateItemParser);
 	using NewTurnItem = MACRO_NAMED_SCRIPT("newTurnItem", NewTurnItemParser);
@@ -330,6 +333,7 @@ public:
 		SelectItemSprite,
 
 		ReactionWeaponAction,
+		ScriptedItemUse,
 
 		CreateItem,
 		NewTurnItem

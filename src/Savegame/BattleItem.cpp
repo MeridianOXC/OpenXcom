@@ -55,7 +55,7 @@ BattleItem::BattleItem(const RuleItem *rules, int *id) : _id(*id), _rules(rules)
 			setStimulantQuantity (_rules->getStimulantQuantity());
 		}
 		// weapon does not need ammo, ammo item points to weapon
-		else if (_rules->getBattleType() == BT_FIREARM || _rules->getBattleType() == BT_MELEE)
+		else if (_rules->getBattleType() == BT_FIREARM || _rules->getBattleType() == BT_MELEE || _rules->getBattleType() == BT_SCRIPTED)
 		{
 			_confAimedOrLaunch = _rules->getConfigAimed();
 			_confAuto = _rules->getConfigAuto();
@@ -1495,6 +1495,21 @@ ModScript::SelectItemParser::SelectItemParser(ScriptGlobal* shared, const std::s
 
 	setDefault("add sprite_index sprite_offset; return sprite_index;");
 }
+
+ModScript::ScriptedItemUseParser::ScriptedItemUseParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"action_type",
+	"can_perform_action",
+	"actor",
+	"item",
+	"battle_game"}
+{
+	BindBase b { this };
+	
+	b.addCustomPtr<const Mod>("rules", mod);
+	
+	setEmptyReturn();
+}
+
 
 ModScript::CreateItemParser::CreateItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name, "item", "battle_game", "turn", }
 {

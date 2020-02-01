@@ -110,16 +110,20 @@ void ExplosionBState::init()
 			_damageType = itemRule->getDamageType();
 		}
 
-		if (type == BT_PSIAMP || _hit)
+		if ((type == BT_PSIAMP
+			 || (type == BT_SCRIPTED
+				  && (action == BA_MINDCONTROL || action == BA_PANIC))) || _hit)
 		{
 			Position targetPos = _center.toTile();
 			_targetPsiOrHit = _parent->getSave()->getTile(targetPos)->getOverlappingUnit(_parent->getSave());
 		}
 
 		//testing if we hit target
-		if (type == BT_PSIAMP && !_hit)
+		if ((type == BT_PSIAMP
+			 || (type == BT_SCRIPTED
+				 && (action == BA_MINDCONTROL || action == BA_PANIC))) && !_hit)
 		{
-			if (action != BA_USE)
+			if (action != BA_USE && type != BT_SCRIPTED)
 			{
 				_power = 0;
 			}
@@ -128,7 +132,7 @@ void ExplosionBState::init()
 				_power = 0;
 				miss = true;
 			}
-			else
+			else if (type != BT_SCRIPTED)
 			{
 				_parent->psiAttackMessage(_attack, _targetPsiOrHit);
 			}

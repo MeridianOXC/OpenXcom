@@ -4106,6 +4106,27 @@ bool TileEngine::medikitUse(BattleAction *action, BattleUnit *target, BattleMedi
 	
 	return canContinueHealing;
 }
+	
+void TileEngine::scriptedItemUse(BattleAction *action)
+{
+	BattleItem *item = action->weapon;
+	BattleActionType actionType = action->type;
+	bool canPerformAction = true;
+	ModScript::ScriptedItemUse::Output args { actionType, canPerformAction };
+	
+	ModScript::ScriptedItemUse::Worker work { action->actor, action->weapon, _save };
+	
+	work.execute(item->getRules()->getScript<ModScript::ScriptedItemUse>(), args);
+	
+	int newActionType = args.getFirst();
+	bool newCanPerformAction = args.getSecond();
+	
+	action->type = static_cast<BattleActionType>(newActionType);
+	if (!newCanPerformAction)
+	{
+		action->result = "STR_SCRIPTED_ITEM_DENIED";
+	}
+}
 
 /**
  * Tries to conceal a unit. Only works if no unit of another faction is watching.

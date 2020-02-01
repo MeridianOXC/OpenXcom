@@ -133,7 +133,7 @@ ActionMenuState::ActionMenuState(BattleAction *action, int x, int y) : _action(a
 		}
 	}
 
-	if (weapon->getCostMelee().Time > 0)
+	if (weapon->getCostMelee().Time > 0 && weapon->getBattleType() != BT_SCRIPTED)
 	{
 		std::string name = weapon->getConfigMelee()->name;
 		if (name.empty())
@@ -180,6 +180,56 @@ ActionMenuState::ActionMenuState(BattleAction *action, int x, int y) : _action(a
 	{
 		addItem(BA_USE, "STR_USE_MIND_PROBE", &id, Options::keyBattleActionItem1);
 	}
+	else if (weapon->getBattleType() == BT_SCRIPTED)
+	{
+		std::vector<SDLKey> hotKeys = {Options::keyBattleActionItem1, Options::keyBattleActionItem2, Options::keyBattleActionItem3, Options::keyBattleActionItem4, Options::keyBattleActionItem5};
+
+		if (!hotKeys.empty() && weapon->getCostUse().Time > 0)
+		{
+			addItem(BA_USE, "STR_USE_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostSnap().Time > 0)
+		{
+			addItem(BA_SNAPSHOT, "STR_SNAP_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostPanic().Time > 0)
+		{
+			addItem(BA_PANIC, "STR_PANIC_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostAimed().Time > 0)
+		{
+			addItem(BA_AIMEDSHOT, "STR_AIMED_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostMind().Time > 0)
+		{
+			addItem(BA_MINDCONTROL, "STR_MIND_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostAuto().Time > 0)
+		{
+			addItem(BA_AUTOSHOT, "STR_AUTO_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostMelee().Time > 0)
+		{
+			addItem(BA_HIT, "STR_MELEE_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostPrime().Time > 0)
+		{
+			addItem(BA_PRIME, "STR_PRIME_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+		if (!hotKeys.empty() && weapon->getCostUnprime().Time > 0)
+		{
+			addItem(BA_UNPRIME, "STR_UNPRIME_SCRIPTED", &id, hotKeys.back());
+			hotKeys.pop_back();
+		}
+	}
 
 }
 
@@ -213,12 +263,20 @@ void ActionMenuState::addItem(BattleActionType ba, const std::string &name, int 
 {
 	std::string s1, s2;
 	int acc = _action->actor->getFiringAccuracy(ba, _action->weapon, _game->getMod());
-	int tu = _action->actor->getActionTUs(ba, _action->weapon).Time;
+	OpenXcom::RuleItemUseCost useCost = _action->actor->getActionTUs(ba, _action->weapon);
 
 	if (ba == BA_THROW || ba == BA_AIMEDSHOT || ba == BA_SNAPSHOT || ba == BA_AUTOSHOT || ba == BA_LAUNCH || ba == BA_HIT)
 		s1 = tr("STR_ACCURACY_SHORT").arg(Unicode::formatPercentage(acc));
-	s2 = tr("STR_TIME_UNITS_SHORT").arg(tu);
-	_actionMenu[*id]->setAction(ba, tr(name), s1, s2, tu);
+	if (useCost.Time > 0)
+	{
+		s2 = tr("STR_TIME_UNITS_SHORT").arg(useCost.Time);
+	}
+	else if (useCost.Mana > 0)
+	{
+		s2 = tr("STR_MANA_SHORT").arg(useCost.Mana);
+	}
+	
+	_actionMenu[*id]->setAction(ba, tr(name), s1, s2, useCost.Time);
 	_actionMenu[*id]->setVisible(true);
 	if (key != SDLK_UNKNOWN)
 	{
@@ -287,7 +345,7 @@ void ActionMenuState::btnActionMenuItemClick(Action *action)
 			_action->result = actionResult;
 			_game->popState();
 		}
-		else if (_action->type == BA_PRIME)
+		else if (_action->type == BA_PRIME && weapon->getBattleType() != BT_SCRIPTED)
 		{
 			const BattleFuseType fuseType = weapon->getFuseTimerType();
 			if (fuseType == BFT_SET)
@@ -300,7 +358,7 @@ void ActionMenuState::btnActionMenuItemClick(Action *action)
 				_game->popState();
 			}
 		}
-		else if (_action->type == BA_UNPRIME)
+		else if (_action->type == BA_UNPRIME && weapon->getBattleType() != BT_SCRIPTED)
 		{
 			_game->popState();
 		}
@@ -464,6 +522,68 @@ void ActionMenuState::btnActionMenuItemClick(Action *action)
 				newHitLog = true;
 			}
 			_game->popState();
+		}
+		else if (weapon->getBattleType() == BT_SCRIPTED)
+		{
+			// check TUs first, then execute action
+			// NOTE: Fine tuning needed for melee, etc.
+			if (!_action->haveTU(&_action->result))
+			{
+				//nothing
+			}
+			else
+			{
+				TileEngine *tileEngine = _game->getSavedGame()->getSavedBattle()->getTileEngine();
+				// is targeting action? (set _action->targeting = true, newHitLog = true)
+				// is melee action? newHitLog = true
+				// action response to the user? (set _action->result)
+				// is simple activation?
+				tileEngine->scriptedItemUse(_action);
+				
+				// action could have been changed by script now
+				switch (_action->type) {
+					case BA_PRIME: // default prime code
+					{
+						const BattleFuseType fuseType = weapon->getFuseTimerType();
+						if (fuseType == BFT_SET)
+						{
+							_game->pushState(new PrimeGrenadeState(_action, false, 0));
+						}
+						else
+						{
+							_action->value = weapon->getFuseTimerDefault();
+							_game->popState();
+						}
+						break;
+					}
+					case BA_MINDCONTROL:
+					case BA_PANIC:
+					case BA_AIMEDSHOT:
+					case BA_SNAPSHOT:
+					case BA_AUTOSHOT:
+					{
+						_action->targeting = true;
+						newHitLog = true;
+						_game->popState();
+						break;
+					}
+					case BA_HIT:
+					{
+						newHitLog = true;
+						_game->popState();
+						break;
+					}
+					default:
+					{
+						if (_action->result.empty())
+						{
+							_action->spendTU(&_action->result);
+						}
+						_game->popState();
+						break;
+					}
+				}
+			}
 		}
 		else
 		{

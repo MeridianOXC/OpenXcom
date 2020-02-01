@@ -1805,9 +1805,15 @@ void BattlescapeGame::primaryAction(Position pos)
 				}
 			}
 		}
-		else if ((_currentAction.type == BA_PANIC || _currentAction.type == BA_MINDCONTROL || _currentAction.type == BA_USE) && _currentAction.weapon->getRules()->getBattleType() == BT_PSIAMP)
+		else if ((_currentAction.type == BA_PANIC
+				  || _currentAction.type == BA_MINDCONTROL
+				  || _currentAction.type == BA_USE)
+				 && (_currentAction.weapon->getRules()->getBattleType() == BT_PSIAMP
+					 || _currentAction.weapon->getRules()->getBattleType() == BT_SCRIPTED))
 		{
-			if (_save->selectUnit(pos) && _save->selectUnit(pos)->getFaction() != _save->getSelectedUnit()->getFaction() && _save->selectUnit(pos)->getVisible())
+			if (_save->selectUnit(pos)
+				&& (_save->selectUnit(pos)->getFaction() != _save->getSelectedUnit()->getFaction() || _currentAction.weapon->getRules()->isFriendlyTargetingAllowed())
+				&& _save->selectUnit(pos)->getVisible())
 			{
 				_currentAction.updateTU();
 				_currentAction.target = pos;
