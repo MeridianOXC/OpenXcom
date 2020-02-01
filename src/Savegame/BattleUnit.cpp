@@ -1974,7 +1974,7 @@ void BattleUnit::clearVisibleTiles()
  * @param item Psi-Amp.
  * @return Attack bonus.
  */
-int BattleUnit::getPsiAccuracy(BattleActionType actionType, BattleItem *item)
+int BattleUnit::getPsiAccuracy(BattleActionType actionType, const BattleItem *item) const
 {
 	int psiAcc = 0;
 	if (actionType == BA_MINDCONTROL)
@@ -5228,6 +5228,9 @@ void battleActionImpl(BindBase& b)
 	b.addCustomConst("battle_action_walk", BA_WALK);
 	b.addCustomConst("battle_action_hit", BA_HIT);
 	b.addCustomConst("battle_action_throw", BA_THROW);
+	b.addCustomConst("battle_action_use", BA_USE);
+	b.addCustomConst("battle_action_mindcontrol", BA_MINDCONTROL);
+	b.addCustomConst("battle_action_panic", BA_PANIC);
 }
 
 void moveTypesImpl(BindBase& b)
@@ -5353,6 +5356,22 @@ ModScript::DamageUnitParser::DamageUnitParser(ScriptGlobal* shared, const std::s
 	battleActionImpl(b);
 
 	setEmptyReturn();
+}
+
+ModScript::TryPsiAttackUnitParser::TryPsiAttackUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"psi_attack_success",
+	"item",
+	"attacker",
+	"victim",
+	"attack_strength",
+	"defense_strength",
+	"battle_action" }
+{
+	BindBase b { this };
+	
+	b.addCustomPtr<const Mod>("rules", mod);
+	
+	battleActionImpl(b);
 }
 
 ModScript::HitUnitParser::HitUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,

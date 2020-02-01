@@ -1454,6 +1454,12 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 	bi.addCustomConst("BA_AIMEDSHOT", BA_AIMEDSHOT);
 	bi.addCustomConst("BA_LAUNCH", BA_LAUNCH);
 	bi.addCustomConst("BA_HIT", BA_HIT);
+	bi.addCustomConst("BA_USE", BA_USE);
+	bi.addCustomConst("BA_THROW", BA_THROW);
+	bi.addCustomConst("BA_MINDCONTROL", BA_MINDCONTROL);
+	bi.addCustomConst("BA_PANIC", BA_PANIC);
+	bi.addCustomConst("BA_PRIME", BA_PRIME);
+	bi.addCustomConst("BA_UNPRIME", BA_UNPRIME);
 	bi.addCustomConst("BA_NONE", BA_NONE);
 }
 

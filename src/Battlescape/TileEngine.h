@@ -195,7 +195,7 @@ public:
 	/// Checks the vertical blockage of a tile.
 	int verticalBlockage(Tile *startTile, Tile *endTile, ItemDamageType type, bool skipObject = false);
 	/// Calculate success rate of psi attack.
-	int psiAttackCalculate(BattleActionType type, BattleUnit *attacker, BattleUnit *victim, BattleItem *weapon);
+	int psiAttackCalculate(BattleActionType type, const BattleUnit *attacker, const BattleUnit *victim, const BattleItem *weapon);
 	/// Attempts a panic or mind control action.
 	bool psiAttack(BattleActionAttack attack, BattleUnit *victim);
 	/// Attempts a melee attack action.

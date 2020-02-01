@@ -336,7 +336,7 @@ public:
 	/// Clear visible tiles.
 	void clearVisibleTiles();
 	/// Calculate psi attack accuracy.
-	int getPsiAccuracy(BattleActionType actionType, BattleItem *item);
+	int getPsiAccuracy(BattleActionType actionType, const BattleItem *item) const;
 	/// Calculate firing accuracy.
 	int getFiringAccuracy(BattleActionType actionType, BattleItem *item, Mod *mod);
 	/// Calculate accuracy modifier.

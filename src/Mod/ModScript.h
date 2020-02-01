@@ -99,10 +99,13 @@ class ModScript
 	{
 		VisibilityUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-
 	struct HitUnitParser : ScriptParserEvents<ScriptOutputArgs<int&, int&, int&>, BattleUnit*, BattleItem*, BattleItem*, BattleUnit*, SavedBattleGame*, int, int, int>
 	{
 		HitUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+	struct TryPsiAttackUnitParser : ScriptParserEvents<ScriptOutputArgs<int&>, const BattleItem*, const BattleUnit*, const BattleUnit*, int, int, int>
+	{
+		TryPsiAttackUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
 	struct DamageUnitParser : ScriptParserEvents<ScriptOutputArgs<int&, int&, int&, int&, int&, int&, int&, int&, int&>, BattleUnit*, BattleItem*, BattleItem*, BattleUnit*, SavedBattleGame*, int, int, int, int, int, int>
 	{
@@ -142,7 +145,6 @@ class ModScript
 	{
 		NewTurnItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-
 	struct RecolorItemParser : ScriptParserEvents<Output, const BattleItem*, int, int, int>
 	{
 		RecolorItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
@@ -237,6 +239,7 @@ public:
 	using ReactionUnitAction = MACRO_NAMED_SCRIPT("reactionUnitAction", ReactionUnitParser);
 	using ReactionUnitReaction = MACRO_NAMED_SCRIPT("reactionUnitReaction", ReactionUnitParser);
 
+	using TryPsiAttackUnit = MACRO_NAMED_SCRIPT("tryPsiAttackUnit", TryPsiAttackUnitParser);
 	using HitUnit = MACRO_NAMED_SCRIPT("hitUnit", HitUnitParser);
 	using DamageUnit = MACRO_NAMED_SCRIPT("damageUnit", DamageUnitParser);
 	using HealUnit = MACRO_NAMED_SCRIPT("healUnit", HealUnitParser);
@@ -313,6 +316,7 @@ public:
 		ReactionUnitAction,
 		ReactionUnitReaction,
 
+		TryPsiAttackUnit,
 		HitUnit,
 		DamageUnit,
 		HealUnit,

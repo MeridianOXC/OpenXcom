@@ -3849,7 +3849,7 @@ void TileEngine::togglePersonalLighting()
  * @param weapon Attack item.
  * @return Value greater than zero mean successful attack.
  */
-int TileEngine::psiAttackCalculate(BattleActionType type, BattleUnit *attacker, BattleUnit *victim, BattleItem *weapon)
+int TileEngine::psiAttackCalculate(BattleActionType type, const BattleUnit *attacker, const BattleUnit *victim, const BattleItem *weapon)
 {
 	if (!victim)
 		return 0;
@@ -3861,7 +3861,16 @@ int TileEngine::psiAttackCalculate(BattleActionType type, BattleUnit *attacker, 
 	attackStrength -= weapon->getRules()->getPsiAccuracyRangeReduction(dis);
 	attackStrength += RNG::generate(0,55);
 
-	return attackStrength - defenseStrength;
+	int psiAttackResult = attackStrength - defenseStrength;
+	
+	ModScript::TryPsiAttackUnit::Output args { psiAttackResult };
+	ModScript::TryPsiAttackUnit::Worker work { weapon, attacker, victim, (int)attackStrength, (int)defenseStrength, type, };
+	
+	work.execute(victim->getArmor()->getScript<ModScript::TryPsiAttackUnit>(), args);
+	
+	psiAttackResult = args.getFirst();
+	
+	return psiAttackResult;
 }
 
 /**
