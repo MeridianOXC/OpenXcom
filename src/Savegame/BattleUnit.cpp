@@ -5136,10 +5136,6 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.add<&getVisibleUnitsCountScript>("getVisibleUnitsCount");
 	bu.add<&getFactionScript>("getFaction");
-
-	bu.addCustomConst("FACTION_PLAYER", FACTION_PLAYER);
-	bu.addCustomConst("FACTION_HOSTILE", FACTION_HOSTILE);
-	bu.addCustomConst("FACTION_NEUTRAL", FACTION_NEUTRAL);
 	
 	bu.add<&BattleUnit::getFatalWounds>("getFatalwoundsTotal");
 	bu.add<&BattleUnit::getFatalWound>("getFatalwounds");
