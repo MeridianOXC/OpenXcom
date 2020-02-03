@@ -2702,7 +2702,7 @@ namespace
 template<typename... Args>
 void flashMessageVariadicScriptImpl(SavedBattleGame* sbg, ScriptText message, Args... args)
 {
-	if (!sbg)
+	if (!sbg || !sbg->getBattleState())
 	{
 		return;
 	}
