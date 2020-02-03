@@ -40,7 +40,7 @@ RuleSoldier::RuleSoldier(const std::string &type) : _type(type), _listOrder(0), 
 	_costSalarySquaddie(0), _costSalarySergeant(0), _costSalaryCaptain(0), _costSalaryColonel(0), _costSalaryCommander(0),
 	_standHeight(0), _kneelHeight(0), _floatHeight(0), _femaleFrequency(50), _value(20), _transferTime(0), _moraleLossWhenKilled(100),
 	_avatarOffsetX(67), _avatarOffsetY(48), _flagOffset(0),
-	_allowPromotion(true), _allowPiloting(true),
+	_allowPromotion(true), _allowPiloting(true), _showTypeInInventory(false),
 	_rankSprite(42), _rankSpriteBattlescape(20), _rankSpriteTiny(0)
 {
 }
@@ -117,7 +117,8 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, int listOrder, const Mo
 	_value = node["value"].as<int>(_value);
 	_transferTime = node["transferTime"].as<int>(_transferTime);
 	_moraleLossWhenKilled = node["moraleLossWhenKilled"].as<int>(_moraleLossWhenKilled);
-
+	_showTypeInInventory = node["showTypeInInventory"].as<bool>(_showTypeInInventory);
+	
 	mod->loadSoundOffset(_type, _deathSoundMale, node["deathMale"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _deathSoundFemale, node["deathFemale"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _panicSoundMale, node["panicMale"], "BATTLE.CAT");
@@ -223,6 +224,11 @@ std::string RuleSoldier::getType() const
 	return _type;
 }
 
+bool RuleSoldier::getShowTypeInInventory() const
+{
+	return _showTypeInInventory;
+}
+	
 /**
  * Gets the list/sort order of the soldier's type.
  * @return The list/sort order.

@@ -1794,6 +1794,18 @@ void InventoryState::txtArmorTooltipIn(Action *action)
 			_currentTooltip = action->getSender()->getTooltip();
 			{
 				std::ostringstream ss;
+				
+				if (unit->getGeoscapeSoldier())
+				{
+					auto soldierRules = unit->getGeoscapeSoldier()->getRules();
+					if (soldierRules->getShowTypeInInventory())
+					{
+						std::string soldierType = soldierRules->getType();
+						ss << tr(soldierType);
+						ss << ": ";
+					}
+				}
+				
 				ss << tr(_currentTooltip);
 				if (unit->getArmor()->getWeight() != 0)
 				{
