@@ -316,7 +316,7 @@ void MapEditorMenuState::btnOkClick(Action *)
 	SavedGame *save = new SavedGame();
     _game->setSavedGame(save);
 
-	SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod());
+	SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
 	_game->getSavedGame()->setBattleGame(savedBattleGame);
 
     MapEditor *editor = new MapEditor(savedBattleGame);
