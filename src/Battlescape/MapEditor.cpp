@@ -18,6 +18,7 @@
  */
 #include "MapEditor.h"
 #include "Position.h"
+#include "../Battlescape/TileEngine.h"
 #include "../Engine/Action.h"
 #include "../Engine/Logger.h"
 #include "../Engine/Options.h"
@@ -197,6 +198,9 @@ void MapEditor::changeTiles(EditType action)
             int partIndex = (int)part;
             (*tile)->setMapData(mapData[partIndex], mapDataID[partIndex], mapDataSetID[partIndex], (TilePart)part);
         }
+
+        // Recalculate lighting
+        _save->getTileEngine()->calculateLighting(LL_AMBIENT, (*tile)->getPosition(), 1, true);
 
         // Save the data on the changed tile for undo/redo later
         if (action == MET_DO)
