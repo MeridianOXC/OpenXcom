@@ -40,6 +40,7 @@
 #include "../Engine/ShaderMove.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/Tile.h"
+#include "../Savegame/Node.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/BattleItem.h"
 #include "../Ufopaedia/Ufopaedia.h"
@@ -1786,6 +1787,69 @@ void Map::drawTerrain(Surface *surface)
 						_isTFTD ? ArrowColorsTFTD[myUnit->getCustomMarker() % 4] : ArrowColorsUFO[myUnit->getCustomMarker() % 4]);
 				}
 			}
+		}
+	}
+
+	// Draw arrows over nodes for the map editor
+	// TODO: toggle for showing nodes/not
+	// TODO: toggle for showing nodes above/below current level
+	// TODO: toggle for drawing connections
+	// TODO: draw lines between connected nodes, color/dash based on connection type
+	// TODO: replace with pathfinding circle colors based on type
+	// TODO: logically order drawing for nodes/lines that are out of plane
+	if (_game->isState(_save->getMapEditorState()) && _save->getMapEditorState()->getRouteMode())
+	{
+		for (auto node : *_save->getNodes())
+		{
+			Position nodePos = node->getPosition();
+			_camera->convertMapToScreen(nodePos, &screenPosition);
+			screenPosition += _camera->getMapOffset();
+
+			int markerFrame = 10;
+			if (nodePos.z < _camera->getViewLevel())
+			{
+				markerFrame += 12;
+			}
+			else if (nodePos.z > _camera->getViewLevel())
+			{
+				continue;
+			}
+
+			tmpSurface = _game->getMod()->getSurfaceSet("Pathfinding")->getFrame(markerFrame);
+			if (tmpSurface)
+			{
+				//int Pathfinding::red = 3;
+				//int Pathfinding::yellow = 10;
+				//int Pathfinding::green = 4;
+				int markerColor = 4;
+				Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0, false, markerColor);
+			}
+
+			Position startLinePos = screenPosition;
+			startLinePos.x += _spriteWidth / 2;
+			startLinePos.y += _spriteHeight * 4 / 5;
+			for (std::vector<int>::iterator otherNodeID = node->getNodeLinks()->begin(); otherNodeID != node->getNodeLinks()->end(); ++otherNodeID)
+			{
+				Position endLinePos = startLinePos;
+				Node *otherNode = 0;
+				if (*otherNodeID < _save->getNodes()->size())
+				{
+					otherNode = _save->getNodes()->at(*otherNodeID);
+				}
+
+				if (otherNode)
+				{
+					_camera->convertMapToScreen(otherNode->getPosition(), &screenPosition);
+					screenPosition += _camera->getMapOffset();
+					endLinePos = screenPosition;
+					endLinePos.x += _spriteWidth / 2;
+					endLinePos.y += _spriteHeight * 4 / 5;
+					surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, 4*16 + 4);
+				}
+			}
+
+			//if (node = _save->getMapEditorState()->getSelectedNode())
+			//_arrow->blitNShade(surface, screenPosition.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2), screenPosition.y + (_spriteWidth * 1 / 5) - _arrow->getHeight() + getArrowBobForFrame(_animFrame), 0);
 		}
 	}
 	delete _numWaypid;

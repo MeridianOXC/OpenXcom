@@ -294,6 +294,7 @@ en-US:
   STR_THINKING: "Thinking..."
 #MapEditorState.cpp
   STR_DEBUG_MAP_EDITOR: "Selected Tile Mode: {0}{NEWLINE}Selected Tile Part: {1}{NEWLINE}Cursor Position: {2}"
+  STR_DEBUG_MAP_EDITOR_NODE: "Selected Node Position: {0}{NEWLINE}Selected Node ID: {1}"
   STR_DEBUG_CLEAR: "CLEAR TILES"
   STR_DEBUG_PLACE: "PLACE TILES"
   STR_DEBUG_O_FLOOR: "FLOOR"

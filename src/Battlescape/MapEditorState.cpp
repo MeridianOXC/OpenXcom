@@ -52,6 +52,7 @@
 #include "../Mod/MapData.h"
 #include "../Mod/MapDataSet.h"
 #include "../Mod/Mod.h"
+#include "../Savegame/Node.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/Tile.h"
@@ -67,7 +68,7 @@ namespace OpenXcom
  * @param editor Pointer to the data structure for the in-game map editor
  */
 MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseScrolling(false), _isMouseScrolled(false), _xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(0), _mouseOverIcons(false), _autosave(false),
-	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0), _selectedTileIndex(0)
+	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0), _selectedTileIndex(0), _selectedNode(0), _routeMode(false)
 {
 	const int screenWidth = Options::baseXResolution;
 	const int screenHeight = Options::baseYResolution;
@@ -728,6 +729,35 @@ void MapEditorState::mapClick(Action *action)
 	if (_editor)
 	{
 		Tile *selectedTile = _save->getTile(pos);
+
+		// Set selected node
+		// TODO: move to the editor for click-handling and only work when node mode is on
+		if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+		{
+			Node *clickedNode = 0;
+
+			for (auto node : *_save->getNodes())
+			{
+				Position nodePos = node->getPosition();
+				if (nodePos == pos)
+				{
+					clickedNode = node;
+					break;
+				}
+			}
+
+			if (clickedNode)
+			{
+				_selectedNode = clickedNode;
+			}
+			else
+			{
+				_selectedNode = 0;
+			}
+
+			updateDebugText();
+		}
+
 		_editor->handleEditorInput(action, selectedTile);
 		return;
 	}
@@ -1011,6 +1041,10 @@ inline void MapEditorState::handle(Action *action)
 					updateDebugText();
 					_txtDebug->setVisible(!_txtDebug->getVisible());
 				}
+				else if (key == SDLK_r && ctrlPressed) // change r to options
+				{
+					toggleRouteMode(action);
+				}
 				else if (key == SDLK_i) // change i to options
 				{
 					_game->pushState(new MapEditorInfoState());
@@ -1042,6 +1076,13 @@ inline void MapEditorState::handle(Action *action)
  */
 void MapEditorState::updateDebugText()
 {
+	// TODO: move info elsewhere or behind toggle
+	if (_selectedNode)
+	{
+		_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR_NODE").arg(_selectedNode->getPosition()).arg(_selectedNode->getID()));
+		return;
+	}
+
 	std::string selectedMode;
 	if (_editor->getSelectedMapDataID() == -1)
 	{
@@ -1081,6 +1122,37 @@ void MapEditorState::updateDebugText()
 	}
 
 	_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR").arg(selectedMode).arg(selectedObject).arg(pos));
+}
+
+/**
+ * Toggles route mode on and off, updating the UI.
+ */
+void MapEditorState::toggleRouteMode(Action *action)
+{
+	setRouteMode(!getRouteMode());
+
+	if (_panelTileSelection->getVisible())
+	{
+		tileSelectionClick(action);
+	}
+
+	// Toggle the UI between modes
+}
+
+/**
+ * Sets the route mode either on or off.
+ */
+void MapEditorState::setRouteMode(bool routeMode)
+{
+	_routeMode = routeMode;
+}
+
+/**
+ * Gets whether route mode is on or off.
+ */
+bool MapEditorState::getRouteMode()
+{
+	return _routeMode;
 }
 
 /**

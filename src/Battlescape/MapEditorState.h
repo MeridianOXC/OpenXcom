@@ -36,6 +36,7 @@ class TextButton;
 class SavedBattleGame;
 class Timer;
 class MapEditor;
+class Node;
 
 /**
  * Interface screen for the Map Editor
@@ -78,6 +79,8 @@ private:
 	Uint8 _indicatorTextColor, _indicatorGreen, _indicatorBlue, _indicatorPurple;
 	int _tileSelectionColumns, _tileSelectionRows, _tileSelectionCurrentPage, _tileSelectionLastPage;
 	int _selectedTileIndex;
+	Node *_selectedNode;
+	bool _routeMode;
 public:
 	static const int DEFAULT_ANIM_SPEED = 100;
 	/// Creates the Map Editor state.
@@ -138,6 +141,12 @@ public:
 	void handle(Action *action) override;
 	/// Updates the debug text.
 	void updateDebugText();
+	/// Toggles route mode on and off, updating the UI.
+	void toggleRouteMode(Action *action);
+	/// Sets the route mode either on or off.
+	void setRouteMode(bool routeMode);
+	/// Gets whether route mode is on or off.
+	bool getRouteMode();
 	/// Clears mouse-scrolling state.
 	void clearMouseScrollingState();
 	/// Returns a pointer to the battlegame, in case we need its functions.
