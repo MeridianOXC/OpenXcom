@@ -30,6 +30,7 @@ class Surface;
 class Map;
 class ImageButton;
 class BattlescapeButton;
+class ComboBox;
 class InteractiveSurface;
 class Text;
 class TextButton;
@@ -80,7 +81,17 @@ private:
 	int _tileSelectionColumns, _tileSelectionRows, _tileSelectionCurrentPage, _tileSelectionLastPage;
 	int _selectedTileIndex;
 	Node *_selectedNode;
+	// Route mode elements
 	bool _routeMode;
+	InteractiveSurface *_iconsUpperLeftNodes;
+	BattlescapeButton *_btnRouteInformation, *_btnRouteConnections, *_nodeButtonClicked;
+	InteractiveSurface *_panelRouteInformation;
+	Text *_txtNodeID, *_txtNodeType, *_txtNodeRank, *_txtNodePriority, *_txtNodeSpawn, *_txtNodeFlag, *_txtNodeLinks;
+	ComboBox *_cbxNodeType, *_cbxNodeRank, *_cbxNodePriority, *_cbxNodeSpawn, *_cbxNodeFlag;
+	ComboBox *_cbxNodeLinks0, *_cbxNodeLinks1, *_cbxNodeLinks2, *_cbxNodeLinks3, *_cbxNodeLinks4;
+	ComboBox *_cbxNodeLinkType0, *_cbxNodeLinkType1, *_cbxNodeLinkType2, *_cbxNodeLinkType3, *_cbxNodeLinkType4;
+	std::vector<std::string> _nodeTypeStrings, _nodeRankStrings;
+	std::vector<int> _nodeTypes;
 public:
 	static const int DEFAULT_ANIM_SPEED = 100;
 	/// Creates the Map Editor state.
@@ -143,10 +154,16 @@ public:
 	void updateDebugText();
 	/// Toggles route mode on and off, updating the UI.
 	void toggleRouteMode(Action *action);
+	/// Toggles the node information panel on or off.
+	void toggleNodeInfoPanel(Action *action, bool hide = false);
 	/// Sets the route mode either on or off.
 	void setRouteMode(bool routeMode);
 	/// Gets whether route mode is on or off.
 	bool getRouteMode();
+	/// Sets the selected node in route mode and updates the info panel for the node.
+	void setSelectedNode(Node *node);
+	/// Gets the selected node.
+	Node *getSelectedNode();
 	/// Clears mouse-scrolling state.
 	void clearMouseScrollingState();
 	/// Returns a pointer to the battlegame, in case we need its functions.

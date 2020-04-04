@@ -74,7 +74,7 @@ extraSprites:
     files:
       0: Resources/Extended/Pedia/PAL_UFOPAEDIA/info-button-ufo.png
   - type: MapEditorIcons
-    width: 160
+    width: 320
     height: 240
     subX: 32
     subY: 40
