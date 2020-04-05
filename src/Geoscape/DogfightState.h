@@ -161,6 +161,8 @@ public:
 	void setWaitForAltitude(bool wait);
 	/// Waits until the UFO reaches the right altitude.
 	bool getWaitForAltitude() const;
+	/// Check if ufo survive crashing on water.
+	bool getSurviveSplash(Ufo* ufo) const;
 	/// Award experience to the pilots.
 	void awardExperienceToPilots();
 };

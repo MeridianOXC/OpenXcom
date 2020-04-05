@@ -74,6 +74,7 @@ private:
 	int _fireSound;
 	int _alertSound;
 	int _huntAlertSound;
+	int _seaCrashSurvivalPercentage;
 	RuleTerrain *_battlescapeTerrainData;
 	RuleUfoStats _stats;
 	std::map<std::string, RuleUfoStats> _statsRaceBonus;
@@ -145,6 +146,8 @@ public:
 	int getHuntBehavior() const;
 	/// Gets the missile power (of a UFO that represents one or more missiles).
 	int getMissilePower() const { return _missilePower; }
+	/// Gets the chance of surviving landing on fakeUnderwater.
+	int getSeaCrashSurvivalPercentage() const { return _seaCrashSurvivalPercentage; }
 	/// Gets script.
 	template<typename Script>
 	const typename Script::Container &getScript() const { return _ufoScripts.get<Script>(); }

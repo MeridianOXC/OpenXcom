@@ -35,7 +35,8 @@ RuleUfo::RuleUfo(const std::string &type) :
 	_hunterKillerPercentage(0), _huntMode(0), _huntSpeed(100), _huntBehavior(2),
 	_missilePower(0),
 	_fireSound(-1), _alertSound(-1), _huntAlertSound(-1),
-	_battlescapeTerrainData(0), _stats(), _statsRaceBonus()
+	_battlescapeTerrainData(0), _stats(), _statsRaceBonus(),
+	_seaCrashSurvivalPercentage(100)
 {
 	_stats.sightRange = 268;
 	_stats.radarRange = 672; // same default as in RuleCraft (used by hunter-killers)
@@ -92,6 +93,7 @@ void RuleUfo::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 	_huntSpeed = node["huntSpeed"].as<int>(_huntSpeed);
 	_huntBehavior = node["huntBehavior"].as<int>(_huntBehavior);
 	_missilePower = node["missilePower"].as<int>(_missilePower);
+	_seaCrashSurvivalPercentage = node["seaCrashSurvivalPercentage"].as<int>(_seaCrashSurvivalPercentage);
 
 	_stats.load(node);
 

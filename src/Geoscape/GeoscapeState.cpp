@@ -2708,6 +2708,7 @@ void GeoscapeState::globeClick(Action *action)
 		ss << "rad: " << lon << ", " << lat << std::endl;
 		ss << "deg: " << lonDeg << ", " << latDeg << std::endl;
 		ss << "texture: " << texture << ", shade: " << shade << std::endl;
+		ss << "fakeUnderwater: " << _globe->insideFakeUnderwater(lon, lat) << std::endl;
 
 		_txtDebug->setText(ss.str());
 	}

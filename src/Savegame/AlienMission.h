@@ -85,6 +85,8 @@ public:
 	void setId(int id);
 	/// Gets the unique ID for this mission.
 	int getId() const;
+	/// Gets valid position to spawn mission.
+	//std::pair<double, double> getSpawnPosition(const Mod& mod);
 	/// Gets the alien base for this mission.
 	const AlienBase *getAlienBase() const;
 	/// Sets the alien base for this mission.
@@ -120,9 +122,9 @@ private:
 	/// Spawn an alien base
 	AlienBase *spawnAlienBase(Country *pactCountry, Game &engine, const MissionArea &area, std::pair<double, double> pos, AlienDeployment *deploymentOverride);
 	/// Select a destination (lon/lat) based on the criteria of our trajectory and desired waypoint.
-	std::pair<double, double> getWaypoint(const MissionWave &wave, const UfoTrajectory &trajectory, const size_t nextWaypoint, const Globe &globe, const RuleRegion &region);
+	std::pair<double, double> getWaypoint(const MissionWave &wave, const UfoTrajectory &trajectory, const size_t nextWaypoint, const Globe &globe, const RuleRegion &region, Ufo* ufo);
 	/// Get a random landing point inside the given region zone.
-	std::pair<double, double> getLandPoint(const Globe &globe, const RuleRegion &region, size_t zone);
+	std::pair<double, double> getLandPoint(const Globe &globe, const RuleRegion &region, Ufo* ufo, size_t zone);
 	/// Spawns a MissionSite at a specific location.
 	MissionSite *spawnMissionSite(SavedGame &game, const Mod &mod, const MissionArea &area, const Ufo *ufo = 0, AlienDeployment *missionOveride = 0);
 	/// Provides some error information for bad mission definitions
