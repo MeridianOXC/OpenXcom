@@ -360,7 +360,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			}
 			else if (trajectory.getAltitude(0) == "STR_GROUND")
 			{
-				pos = getLandPoint(globe, regionRules, trajectory.getZone(0));
+				pos = getLandPoint(globe, regionRules, ufo, trajectory.getZone(0));
 			}
 			else
 			{
@@ -404,7 +404,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 		}
 		else if (trajectory.getAltitude(0) == "STR_GROUND")
 		{
-			pos = getLandPoint(globe, regionRules, trajectory.getZone(0));
+			pos = getLandPoint(globe, regionRules, ufo, trajectory.getZone(0));
 		}
 		else
 		{
@@ -426,7 +426,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			else
 			{
 				// Other ships can land where they want.
-				pos = getLandPoint(globe, regionRules, trajectory.getZone(1));
+				pos = getLandPoint(globe, regionRules, ufo, trajectory.getZone(1));
 			}
 		}
 		else
@@ -466,7 +466,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 	Ufo *ufo = new Ufo(ufoRule, game.getId("STR_UFO_UNIQUE"), hunterKillerPercentage, huntMode, huntBehavior);
 	ufo->setMissionInfo(this, &trajectory);
 	const RuleRegion &regionRules = *mod.getRegion(_region, true);
-	std::pair<double, double> pos = getWaypoint(wave, trajectory, 0, globe, regionRules);
+	std::pair<double, double> pos = getWaypoint(wave, trajectory, 0, globe, regionRules, ufo);
 	ufo->setAltitude(trajectory.getAltitude(0));
 	if (trajectory.getAltitude(0) == "STR_GROUND")
 	{
@@ -482,7 +482,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 		ufo->setLatitude(_base->getLatitude());
 	}
 	Waypoint *wp = new Waypoint();
-	pos = getWaypoint(wave, trajectory, 1, globe, regionRules);
+	pos = getWaypoint(wave, trajectory, 1, globe, regionRules, ufo);
 	wp->setLongitude(pos.first);
 	wp->setLatitude(pos.second);
 	ufo->setDestination(wp);
@@ -652,7 +652,7 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 	ufo.setAltitude(trajectory.getAltitude(nextWaypoint));
 	ufo.setTrajectoryPoint(nextWaypoint);
 	const RuleRegion &regionRules = *mod.getRegion(_region, true);
-	std::pair<double, double> pos = getWaypoint(wave, trajectory, nextWaypoint, globe, regionRules);
+	std::pair<double, double> pos = getWaypoint(wave, trajectory, nextWaypoint, globe, regionRules, &ufo);
 
 	Waypoint *wp = new Waypoint();
 	wp->setLongitude(pos.first);
@@ -708,7 +708,8 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 		}
 		else
 		{
-			if (globe.insideLand(ufo.getLongitude(), ufo.getLatitude()))
+			if ((globe.insideLand(ufo.getLongitude(), ufo.getLatitude()) && !globe.insideFakeUnderwater(ufo.getLongitude(), ufo.getLatitude()))
+				|| (globe.insideFakeUnderwater(ufo.getLongitude(), ufo.getLatitude()) && (ufo.getRules()->getSeaCrashSurvivalPercentage() >= 100)))
 			{
 				// Set timer for UFO on the ground.
 				ufo.setSecondsRemaining(trajectory.groundTimer() * 5);
@@ -940,9 +941,10 @@ void AlienMission::setRegion(const std::string &region, const Mod &mod)
  * @param nextWaypoint the next logical waypoint in sequence (0 for newly spawned UFOs)
  * @param globe The earth globe, required to get access to land checks.
  * @param region the ruleset for the region of our mission.
+ * @param ufo to get the rules of current ufo in case of landing.
  * @return a set of lon and lat coordinates based on the criteria of the trajectory.
  */
-std::pair<double, double> AlienMission::getWaypoint(const MissionWave &wave, const UfoTrajectory &trajectory, const size_t nextWaypoint, const Globe &globe, const RuleRegion &region)
+std::pair<double, double> AlienMission::getWaypoint(const MissionWave& wave, const UfoTrajectory& trajectory, const size_t nextWaypoint, const Globe& globe, const RuleRegion& region, Ufo* ufo)
 {
 	if (trajectory.getZone(nextWaypoint) >= region.getMissionZones().size())
 	{
@@ -970,7 +972,7 @@ std::pair<double, double> AlienMission::getWaypoint(const MissionWave &wave, con
 
 	if (trajectory.getWaypointCount() > nextWaypoint + 1 && trajectory.getAltitude(nextWaypoint + 1) == "STR_GROUND")
 	{
-		return getLandPoint(globe, region, trajectory.getZone(nextWaypoint));
+		return getLandPoint(globe, region, ufo, trajectory.getZone(nextWaypoint));
 	}
 	return region.getRandomPoint(trajectory.getZone(nextWaypoint));
 }
@@ -980,10 +982,11 @@ std::pair<double, double> AlienMission::getWaypoint(const MissionWave &wave, con
  * The point will be used to land a UFO, so it HAS to be on land (UNLESS it's landing on a city).
  * @param globe reference to the globe data.
  * @param region reference to the region we want a land point in.
+ * @param ufo to get the rules of current ufo.
  * @param zone the missionZone set within the region to find a landing zone in.
  * @return a set of longitudinal and latitudinal coordinates.
  */
-std::pair<double, double> AlienMission::getLandPoint(const Globe &globe, const RuleRegion &region, size_t zone)
+std::pair<double, double> AlienMission::getLandPoint(const Globe& globe, const RuleRegion& region, Ufo* ufo, size_t zone)
 {
 	if (zone >= region.getMissionZones().size() || region.getMissionZones().at(zone).areas.size() == 0)
 	{
@@ -999,15 +1002,27 @@ std::pair<double, double> AlienMission::getLandPoint(const Globe &globe, const R
 	else
 	{
 		int tries = 0;
-		do
+		if (ufo->getRules()->getSeaCrashSurvivalPercentage() <= 100)
 		{
-			pos = region.getRandomPoint(zone);
-			++tries;
+			do
+			{
+				pos = region.getRandomPoint(zone);
+				++tries;
+			} while (!(globe.insideLand(pos.first, pos.second)
+				&& region.insideRegion(pos.first, pos.second)
+				&& !globe.insideFakeUnderwater(pos.first, pos.second))
+				&& tries < 100);
 		}
-		while (!(globe.insideLand(pos.first, pos.second)
-			&& region.insideRegion(pos.first, pos.second))
-			&& tries < 100);
-
+		else
+		{
+			do
+			{
+				pos = region.getRandomPoint(zone);
+				++tries;
+			} while (!(globe.insideLand(pos.first, pos.second)
+				&& region.insideRegion(pos.first, pos.second))
+				&& tries < 100);
+		}
 		if (tries == 100)
 		{
 			Log(LOG_DEBUG) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " invalid zone: " << zone << " ufo forced to land on water!";

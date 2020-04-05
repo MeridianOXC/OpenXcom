@@ -52,6 +52,7 @@
 #include "../Mod/RuleBaseFacility.h"
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleGlobe.h"
+#include "../Mod/Texture.h"
 #include "../Interface/Cursor.h"
 #include "../Engine/Screen.h"
 
@@ -716,6 +717,24 @@ void Globe::center(double lon, double lat)
 bool Globe::insideLand(double lon, double lat) const
 {
 	return (getPolygonFromLonLat(lon,lat))!=NULL;
+}
+
+/**
+ * Checks if a polar point is inside the fakeUnderwater texture.
+ * @param lon Longitude of the point.
+ * @param lat Latitude of the point.
+ * @return True if it's inside, False if it's outside.
+ */
+bool Globe::insideFakeUnderwater(double lon, double lat) const
+{
+	Polygon* t = getPolygonFromLonLat(lon, lat);
+	int texture = (t == NULL) ? -1 : t->getTexture();
+	Texture* textureRule = _game->getMod()->getGlobe()->getTexture(texture);
+	if (textureRule && textureRule->isFakeUnderwater())
+	{
+		return true;
+	}
+	return false;
 }
 
 /**

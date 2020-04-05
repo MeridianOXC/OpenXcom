@@ -236,19 +236,7 @@ void BuildNewBaseState::globeClick(Action *action)
 	{
 		if (_globe->insideLand(lon, lat))
 		{
-			// look up polygons texture
-			bool fakeUnderwaterTexture = false;
-			int texture, shade;
-			_globe->getPolygonTextureAndShade(lon, lat, &texture, &shade);
-			if (texture >= 0)
-			{
-				Texture *textureRule = _game->getMod()->getGlobe()->getTexture(texture);
-				if (textureRule && textureRule->isFakeUnderwater())
-				{
-					fakeUnderwaterTexture = true;
-				}
-			}
-
+			bool fakeUnderwaterTexture = _globe->insideFakeUnderwater(lon, lat);
 			if (_first && fakeUnderwaterTexture)
 			{
 				// first (starting) base can't be fake underwater base

@@ -49,6 +49,8 @@
 #include "../Mod/RuleCountry.h"
 #include "../Savegame/Region.h"
 #include "../Mod/RuleRegion.h"
+#include "../Mod/RuleGlobe.h"
+#include "../Mod/Texture.h"
 #include "../Savegame/AlienMission.h"
 #include "../Savegame/Waypoint.h"
 #include "DogfightErrorState.h"
@@ -1501,7 +1503,6 @@ void DogfightState::update()
 			{
 				if (_ufo->getShotDownByCraftId() == _craft->getUniqueId())
 				{
-					setStatus("STR_UFO_CRASH_LANDS");
 					_game->getMod()->getSound("GEO.CAT", Mod::UFO_CRASH)->play(); //10
 					for (std::vector<Country*>::iterator country = _game->getSavedGame()->getCountries()->begin(); country != _game->getSavedGame()->getCountries()->end(); ++country)
 					{
@@ -1520,13 +1521,35 @@ void DogfightState::update()
 						}
 					}
 				}
-				if (!_state->getGlobe()->insideLand(_ufo->getLongitude(), _ufo->getLatitude()))
+				bool surviveSplashLand = false;
+				bool fakeUnderwaterTexture = _state->getGlobe()->insideFakeUnderwater(_ufo->getLongitude(), _ufo->getLatitude());
+				if (fakeUnderwaterTexture)
+				{
+					surviveSplashLand = getSurviveSplash(_ufo);
+				}
+				if (!_state->getGlobe()->insideLand(_ufo->getLongitude(), _ufo->getLatitude()) || !surviveSplashLand)
 				{
 					_ufo->setStatus(Ufo::DESTROYED);
 					_destroyUfo = true;
+					if (!fakeUnderwaterTexture) //special care for vanilla behavior in crash landing above water
+					{
+						setStatus("STR_UFO_CRASH_LANDS");
+					}
+					else
+					{
+						setStatus("STR_UFO_DESTROED_BY_SPLASHDOWN"); //separate case to make more it clear to the player
+					}
 				}
 				else
 				{
+					if (surviveSplashLand)
+					{
+						setStatus("STR_UFO_SURVIVES_SPLASHDOWN");
+					}
+					else
+					{
+						setStatus("STR_UFO_CRASH_LANDS");
+					}
 					_ufo->setSecondsRemaining(RNG::generate(24, 96)*3600);
 					_ufo->setAltitude("STR_GROUND");
 					if (_ufo->getCrashId() == 0)
@@ -1560,7 +1583,9 @@ void DogfightState::update()
 		{
 			_endUfoHandled = true;
 
-			if (!_state->getGlobe()->insideLand(_ufo->getLongitude(), _ufo->getLatitude())) // Brought it down over water
+			//lets check if we are above fakeUnderwater and if we can land on it
+			bool fakeUnderwaterTexture = _state->getGlobe()->insideFakeUnderwater(_ufo->getLongitude(), _ufo->getLatitude());
+			if (!_state->getGlobe()->insideLand(_ufo->getLongitude(), _ufo->getLatitude()) || (fakeUnderwaterTexture && !getSurviveSplash(_ufo))) // Brought it down over water or crash on fakeUnderwater
 			{
 				finalRun = true;
 				_ufo->setDamage(_ufo->getCraftStats().damageMax, _game->getMod());
@@ -1586,7 +1611,7 @@ void DogfightState::update()
 					}
 				}
 			}
-			else // Brought it down over land
+			else // Brought it down over land or fakeUnderwater
 			{
 				finalRun = true;
 				_ufo->setSecondsRemaining(RNG::generate(30, 120)*60);
@@ -2374,6 +2399,15 @@ void DogfightState::setWaitForAltitude(bool wait)
 bool DogfightState::getWaitForAltitude() const
 {
 	return _waitForAltitude;
+}
+/**
+ * Returns if ufo survive splash down.
+ * @param ufo that we are judging
+ * @return true if it survives
+ */
+bool DogfightState::getSurviveSplash(Ufo* ufo) const
+{
+	return RNG::generate(1, 100) <= ufo->getRules()->getSeaCrashSurvivalPercentage();
 }
 
 void DogfightState::awardExperienceToPilots()
