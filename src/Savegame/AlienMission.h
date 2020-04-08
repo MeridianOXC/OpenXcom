@@ -118,7 +118,7 @@ private:
 	/// Spawns a UFO, based on mission rules.
 	Ufo *spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe, const MissionWave &wave, const UfoTrajectory &trajectory);
 	/// Spawn an alien base
-	AlienBase *spawnAlienBase(Country *pactCountry, Game &engine, const MissionArea &area, std::pair<double, double> pos, AlienDeployment *deploymentOverride);
+	AlienBase* spawnAlienBase(Country* pactCountry, Game& engine, std::vector<MissionArea> areas, const Globe& globe, bool error);
 	/// Select a destination (lon/lat) based on the criteria of our trajectory and desired waypoint.
 	std::pair<double, double> getWaypoint(const MissionWave& wave, const UfoTrajectory& trajectory, const size_t nextWaypoint, const Globe& globe, const RuleRegion& region, Ufo* ufo);
 	/// Get a random landing point inside the given region zone.

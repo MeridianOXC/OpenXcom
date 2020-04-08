@@ -79,6 +79,7 @@ private:
 	std::string _nextStage, _race, _script;
 	std::vector<std::string> _randomRaces;
 	bool _finalDestination, _isAlienBase, _isHidden;
+	int _fakeUnderwater;
 	std::string _winCutscene, _loseCutscene, _abortCutscene;
 	std::string _alert, _alertBackground, _alertDescription;
 	int _alertSound;
@@ -197,6 +198,8 @@ public:
 	bool isAlienBase() const;
 	/// Gets whether or not this mission should be hidden (purely for new battle mode)
 	bool isHidden() const { return _isHidden; }
+	/// Checks if deployment can be placed on fakeUnderwater texture
+	bool isAllowedForTexture(bool fakeUnderwaterTexture) const;
 
 	std::string chooseGenMissionType() const;
 

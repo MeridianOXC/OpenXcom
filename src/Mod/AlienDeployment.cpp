@@ -119,7 +119,7 @@ namespace OpenXcom
  */
 AlienDeployment::AlienDeployment(const std::string &type) :
 	_type(type), _bughuntMinTurn(0), _width(0), _length(0), _height(0), _civilians(0), _civilianSpawnNodeRank(0),
-	_shade(-1), _minShade(-1), _maxShade(-1), _finalDestination(false), _isAlienBase(false), _isHidden(false),
+	_shade(-1), _minShade(-1), _maxShade(-1), _finalDestination(false), _isAlienBase(false), _isHidden(false), _fakeUnderwater(-1),
 	_alert("STR_ALIENS_TERRORISE"), _alertBackground("BACK03.SCR"), _alertDescription(""), _alertSound(-1),
 	_markerName("STR_TERROR_SITE"), _markerIcon(-1), _durationMin(0), _durationMax(0), _minDepth(0), _maxDepth(0),
 	_genMissionFrequency(0), _genMissionLimit(1000),
@@ -224,6 +224,7 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	_chronoTrigger = ChronoTrigger(node["chronoTrigger"].as<int>(_chronoTrigger));
 	_isAlienBase = node["alienBase"].as<bool>(_isAlienBase);
 	_isHidden = node["isHidden"].as<bool>(_isHidden);
+	_fakeUnderwater = node["fakeUnderwater"].as<int>(_fakeUnderwater);
 	_keepCraftAfterFailedMission = node["keepCraftAfterFailedMission"].as<bool>(_keepCraftAfterFailedMission);
 	_allowObjectiveRecovery = node["allowObjectiveRecovery"].as<bool>(_allowObjectiveRecovery);
 	_escapeType = EscapeType(node["escapeType"].as<int>(_escapeType));
@@ -666,6 +667,22 @@ int AlienDeployment::getCheatTurn() const
 bool AlienDeployment::isAlienBase() const
 {
 	return _isAlienBase;
+}
+
+/**
+ * Checks if deployment can be placed on texture
+ * @param if texture is fakeUnderwater
+ * @return true if deployment can be placed.
+ */
+bool AlienDeployment::isAllowedForTexture(bool fakeUnderwaterTexture) const
+{
+	if (_fakeUnderwater == -1)
+		return true;
+	else if (_fakeUnderwater == 0 && !fakeUnderwaterTexture)
+		return true;
+	else if (_fakeUnderwater == 1 && fakeUnderwaterTexture)
+		return true;
+	return false;
 }
 
 std::string AlienDeployment::chooseGenMissionType() const

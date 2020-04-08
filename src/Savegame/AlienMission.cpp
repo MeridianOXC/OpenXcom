@@ -220,55 +220,41 @@ void AlienMission::think(Game &engine, const Globe &globe)
 			RuleRegion *region = mod.getRegion(_region, true);
 			if ((*c)->canBeInfiltrated() && region->insideRegion((*c)->getRules()->getLabelLongitude(), (*c)->getRules()->getLabelLatitude()))
 			{
-				(*c)->setNewPact();
-				MissionArea area;
-				std::pair<double, double> pos;
-				int tries = 0;
+				std::vector<MissionArea> areas;
 				if (!mod.getBuildInfiltrationBaseCloseToTheCountry())
 				{
-					std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getSpawnZone()).areas;
-					do
-					{
-						area = areas.at(RNG::generate(0, areas.size() - 1));
-						pos.first = RNG::generate(std::min(area.lonMin, area.lonMax), std::max(area.lonMin, area.lonMax));
-						pos.second = RNG::generate(std::min(area.latMin, area.latMax), std::max(area.latMin, area.latMax));
-						++tries;
-					} while (!(globe.insideLand(pos.first, pos.second)
-						&& region->insideRegion(pos.first, pos.second))
-						&& tries < 100);
+					areas = region->getMissionZones().at(_rule.getSpawnZone()).areas;
 				}
-				else
+				else //special case to convert coutry to a vector of missionAreas
 				{
 					RuleCountry* cRule = (*c)->getRules();
-					int pick = 0;
-					double lonMini, lonMaxi, latMini, latMaxi;
-					do
+					MissionArea area;
+					double lonMini, lonMaxi;
+					for (int i = 0; i < cRule->getLonMin().size() - 1; i++)
 					{
-						pick = RNG::generate(0, cRule->getLonMin().size() - 1);
-						lonMini = cRule->getLonMin()[pick];
-						lonMaxi = cRule->getLonMax()[pick];
+						lonMini = cRule->getLonMin()[i];
+						lonMaxi = cRule->getLonMax()[i];
 						if (lonMini > lonMaxi)
 						{
 							// UK, France, Spain, or anything crossed by the prime meridian
-							if (RNG::percent(50)) { lonMini = Deg2Rad(0.0); } else { lonMaxi = Deg2Rad(359.99); }
+							if (RNG::percent(50)) { lonMini = Deg2Rad(0.0); }
+							else { lonMaxi = Deg2Rad(359.99); }
 						}
-						latMini = cRule->getLatMin()[pick];
-						latMaxi = cRule->getLatMax()[pick];
-						pos.first = RNG::generate(std::min(lonMini, lonMaxi), std::max(lonMini, lonMaxi));
-						pos.second = RNG::generate(std::min(latMini, latMaxi), std::max(latMini, latMaxi));
-						++tries;
-					} while (!(globe.insideLand(pos.first, pos.second)
-						&& cRule->insideCountry(pos.first, pos.second))
-						&& tries < 100);
-					// dummy
-					area.texture = 0;
-					area.lonMin = pos.first;
-					area.lonMax = pos.first;
-					area.latMin = pos.second;
-					area.latMax = pos.second;
+						area.lonMin = lonMini;
+						area.lonMax = lonMaxi;
+						area.latMin = cRule->getLatMin()[i];
+						area.latMax = cRule->getLatMax()[i];
+						area.texture = 0; //will be handled later
+						areas.push_back(area);
+					}
 				}
-				spawnAlienBase((*c), engine, area, pos, 0);
+				AlienBase* newAlienBase = spawnAlienBase((*c), engine, areas, globe, false);
 				break;
+				if (c == game.getCountries()->end() && !newAlienBase)
+				{
+					Log(LOG_DEBUG) << "Fail to spawn alien base with alien infiltration after alienMission:  " << _rule.getType() << " in region: " << region->getType()
+						<< ". No valid texture in missionZones or countries areas to place alien base: " << newAlienBase->getDeployment()->getType();
+				}
 			}
 		}
 		if (_rule.isEndlessInfiltration())
@@ -281,20 +267,7 @@ void AlienMission::think(Game &engine, const Globe &globe)
 	{
 		RuleRegion *region = mod.getRegion(_region, true);
 		std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getSpawnZone()).areas;
-		MissionArea area;
-		std::pair<double, double> pos;
-		int tries = 0;
-		do
-		{
-			area = areas.at(RNG::generate(0, areas.size()-1));
-			pos.first = RNG::generate(std::min(area.lonMin, area.lonMax), std::max(area.lonMin, area.lonMax));
-			pos.second = RNG::generate(std::min(area.latMin, area.latMax), std::max(area.latMin, area.latMax));
-			++tries;
-		}
-		while (!(globe.insideLand(pos.first, pos.second)
-			&& region->insideRegion(pos.first, pos.second, true))
-			&& tries < 100);
-		spawnAlienBase(0, engine, area, pos, 0);
+		bool spawned = spawnAlienBase(0, engine, areas, globe, true);
 	}
 
 	if (_nextWave != _rule.getWaveCount())
@@ -575,27 +548,13 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 				// 3. spawn a new base
 				RuleRegion *region = mod.getRegion(_region, true);
 				std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getOperationSpawnZone()).areas;
-				MissionArea area;
-				std::pair<double, double> pos;
-				int tries = 0;
-				do
-				{
-					area = areas.at(RNG::generate(0, areas.size() - 1));
-					pos.first = RNG::generate(std::min(area.lonMin, area.lonMax), std::max(area.lonMin, area.lonMax));
-					pos.second = RNG::generate(std::min(area.latMin, area.latMax), std::max(area.latMin, area.latMax));
-					++tries;
-				} while (!(globe.insideLand(pos.first, pos.second)
-					&& region->insideRegion(pos.first, pos.second, true))
-					&& tries < 100);
-				auto operationBaseType = mod.getDeployment(_rule.getOperationBaseType(), true);
-				auto newAlienOperationBase = spawnAlienBase(0, engine, area, pos, operationBaseType);
+				AlienBase* newAlienOperationBase = spawnAlienBase(0, engine, areas, globe, true);
 				if (newAlienOperationBase)
 				{
 					_base = newAlienOperationBase;
 				}
 				else
 				{
-					// can't happen, but I'll leave it here just in case alien base spawning gets changed in the future
 					_interrupted = true;
 				}
 			}
@@ -873,44 +832,99 @@ void AlienMission::addScore(double lon, double lat, SavedGame &game) const
  * Spawn an alien base.
  * @param pactCountry A country that has signed a pact with the aliens and allowed them to build this base.
  * @param engine The game engine, required to get access to game data and game rules.
- * @param zone The mission zone, required for determining the base coordinates.
+ * @param areas A vector of mission zones, required for determining the base coordinates.
+ * @param globe The earth globe, required to get texture checks.
+ * @param logError Boolean used to understand if the process needs to log output message with failing to spawn a base in chosen region.
  * @return Pointer to the spawned alien base.
  */
-AlienBase *AlienMission::spawnAlienBase(Country *pactCountry, Game &engine, const MissionArea &area, std::pair<double, double> pos, AlienDeployment *deploymentOverride)
+AlienBase* AlienMission::spawnAlienBase(Country* pactCountry, Game& engine, std::vector<MissionArea> areas, const Globe& globe, bool logError)
 {
 	SavedGame &game = *engine.getSavedGame();
-	const Mod &ruleset = *engine.getMod();
+	const Mod &mod = *engine.getMod();
 	// Once the last UFO is spawned, the aliens build their base.
 	AlienDeployment *deployment;
-	Texture *texture = ruleset.getGlobe()->getTexture(area.texture);
-	if (deploymentOverride)
+	bool decideLater = false;
+	std::string missionSite = _rule.getSiteType();
+	AlienDeployment* operationBaseType = mod.getDeployment(_rule.getOperationBaseType(), true);
+	if (operationBaseType)
 	{
-		deployment = deploymentOverride;
+		deployment = operationBaseType;
 	}
-	else if (ruleset.getDeployment(_rule.getSiteType()))
+	else if (!missionSite.empty())
 	{
-		deployment = ruleset.getDeployment(_rule.getSiteType());
-	}
-	else if (texture && !texture->getDeployments().empty())
-	{
-		deployment = ruleset.getDeployment(texture->getRandomDeployment(), true);
+		deployment = mod.getDeployment(missionSite, true);
 	}
 	else
 	{
-		deployment = ruleset.getDeployment("STR_ALIEN_BASE_ASSAULT", true);
+		deployment = mod.getDeployment("STR_ALIEN_BASE_ASSAULT", true); //lets see default deployment properties for now
+		decideLater = true; //we will try to get deployment from texture terrain later once we choose position
 	}
-	AlienBase *ab = new AlienBase(deployment, game.getMonthsPassed());
-	if (pactCountry)
+	RuleRegion* region = mod.getRegion(_region, true);
+	MissionArea area;
+	std::pair<double, double> pos;
+	bool placed = false;
+	int pick = 0;
+	while (!placed && !areas.empty())
 	{
-		ab->setPactCountry(pactCountry->getRules()->getType());
+		pick = RNG::generate(0, areas.size() - 1);
+		area = areas.at(pick);
+		areas.erase(areas.begin() + pick);
+		for (int i = 0; i < 100; i++)
+		{
+			pos.first = RNG::generate(std::min(area.lonMin, area.lonMax), std::max(area.lonMin, area.lonMax));
+			pos.second = RNG::generate(std::min(area.latMin, area.latMax), std::max(area.latMin, area.latMax));
+
+			if (globe.insideLand(pos.first, pos.second)
+				&& deployment->isAllowedForTexture(globe.insideFakeUnderwater(pos.first, pos.second))
+				&& region->insideRegion(pos.first, pos.second, true))
+			{
+				placed = true;
+				break;
+			}
+		}
 	}
-	ab->setAlienRace(_race);
-	ab->setId(game.getId(deployment->getMarkerName()));
-	ab->setLongitude(pos.first);
-	ab->setLatitude(pos.second);
-	game.getAlienBases()->push_back(ab);
-	addScore(ab->getLongitude(), ab->getLatitude(), game);
-	return ab;
+	if (placed) //we've found right spot!
+	{
+		if (decideLater)
+		{
+			if (area.texture == 0) //case area comes from country
+			{
+				int texture, shade;
+				globe.getPolygonTextureAndShade(pos.first, pos.second, &texture, &shade);
+				if (texture >= 0)
+				{
+					area.texture = texture;
+				}
+			}
+			deployment = mod.getDeployment(mod.getGlobe()->getTexture(area.texture)->getRandomDeployment(), true);
+		}
+		else //ok, let's give that lazy modder default one
+		{
+			deployment = mod.getDeployment("STR_ALIEN_BASE_ASSAULT", true);
+		}
+		AlienBase* ab = new AlienBase(deployment, game.getMonthsPassed());
+		ab->setAlienRace(_race);
+		ab->setId(game.getId(deployment->getMarkerName()));
+		ab->setLongitude(pos.first);
+		ab->setLatitude(pos.second);
+		game.getAlienBases()->push_back(ab);
+		addScore(pos.first, pos.second, game);
+		if (pactCountry)
+		{
+			pactCountry->setNewPact();
+			ab->setPactCountry(pactCountry->getRules()->getType());
+		}
+		return ab;
+	}
+	else //we fail to find the right spot and we assume there is no possible, so aliens fail and its modder fault!
+	{
+		if (logError)
+		{
+			Log(LOG_DEBUG) << "Fail to spawn alien base for alienMission:  " << _rule.getType() << " in region: " << region->getType()
+				<< ". No valid texture in missionZones to place: " << deployment->getType();
+		}
+	}
+	return NULL;
 }
 
 /*
