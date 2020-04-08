@@ -1016,7 +1016,7 @@ std::pair<double, double> AlienMission::getLandPoint(const Globe& globe, const R
 	else
 	{
 		int tries = 0;
-		if (ufo->getRules()->getSeaCrashSurvivalPercentage() <= 100)
+		if (ufo->getRules()->getSeaCrashSurvivalPercentage() < 100)
 		{
 			do
 			{
