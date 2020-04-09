@@ -1521,7 +1521,7 @@ void DogfightState::update()
 						}
 					}
 				}
-				bool surviveSplashLand = false;
+				bool surviveSplashLand = true;
 				bool fakeUnderwaterTexture = _state->getGlobe()->insideFakeUnderwater(_ufo->getLongitude(), _ufo->getLatitude());
 				if (fakeUnderwaterTexture)
 				{
@@ -1542,7 +1542,7 @@ void DogfightState::update()
 				}
 				else
 				{
-					if (surviveSplashLand)
+					if (fakeUnderwaterTexture && surviveSplashLand)
 					{
 						setStatus("STR_UFO_SURVIVES_SPLASHDOWN");
 					}
