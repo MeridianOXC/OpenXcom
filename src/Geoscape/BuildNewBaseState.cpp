@@ -38,6 +38,7 @@
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleGlobe.h"
 #include "../Mod/Texture.h"
+#include "../Savegame/SavedGame.h"
 
 namespace OpenXcom
 {
@@ -237,7 +238,12 @@ void BuildNewBaseState::globeClick(Action *action)
 		if (_globe->insideLand(lon, lat))
 		{
 			bool fakeUnderwaterTexture = _globe->insideFakeUnderwater(lon, lat);
-			if (_first && fakeUnderwaterTexture)
+			bool fakeUnderwaterUnlocked = true;
+			if (!_game->getMod()->getFakeUnderwaterUnlockResearch().empty())
+			{
+				fakeUnderwaterUnlocked = _game->getSavedGame()->isResearched(_game->getMod()->getFakeUnderwaterUnlockResearch(), true);
+			}
+			if ((_first && fakeUnderwaterTexture) || (!fakeUnderwaterUnlocked && fakeUnderwaterTexture))
 			{
 				// first (starting) base can't be fake underwater base
 				_game->pushState(new ErrorMessageState(tr("STR_XCOM_BASE_CANNOT_BE_BUILT"), _palette, _game->getMod()->getInterface("geoscape")->getElement("genericWindow")->color, "BACK01.SCR", _game->getMod()->getInterface("geoscape")->getElement("palette")->color));

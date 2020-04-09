@@ -230,7 +230,7 @@ private:
 	int _shortRadarRange;
 	int _defeatScore, _defeatFunds;
 	std::pair<std::string, int> _alienFuel;
-	std::string _fontName, _finalResearch, _psiUnlockResearch;
+	std::string _fontName, _finalResearch, _psiUnlockResearch, _fakeUnderwaterUnlockResearch;
 
 	std::string _destroyedFacility;
 	YAML::Node _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
@@ -613,6 +613,9 @@ public:
 	const std::string &getLoseRatingCutscene() const { return _loseRating; }
 	/// Gets the cutscene ID that should be played when the player loses the last base.
 	const std::string &getLoseDefeatCutscene() const { return _loseDefeat; }
+
+	/// Gets string of research article, that enable building xcom bases on fakeUnderwater texture.
+	const std::string& getFakeUnderwaterUnlockResearch() const { return _fakeUnderwaterUnlockResearch; }
 
 	/// Gets the threshold for defining a glancing hit on a ufo during interception
 	int getUfoGlancingHitThreshold() const { return _ufoGlancingHitThreshold; }
