@@ -61,7 +61,7 @@ Renderer *Screen::createRenderer()
  */
 void Screen::makeVideoFlags()
 {
-	_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
+    _flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI;
 	if (Options::allowResize)
 	{
 		_flags |= SDL_WINDOW_RESIZABLE;
