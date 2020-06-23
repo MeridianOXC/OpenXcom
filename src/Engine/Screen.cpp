@@ -61,7 +61,7 @@ Renderer *Screen::createRenderer()
  */
 void Screen::makeVideoFlags()
 {
-	_flags = SDL_WINDOW_OPENGL;
+	_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
 	if (Options::allowResize)
 	{
 		_flags |= SDL_WINDOW_RESIZABLE;
@@ -289,7 +289,7 @@ const SDL_Color *Screen::getPalette() const
 int Screen::getWidth() const
 {
 	int w, h;
-	SDL_GetWindowSize(_window, &w, &h);
+	SDL_GL_GetDrawableSize(_window, &w, &h);
 	return w;
 }
 
@@ -300,7 +300,7 @@ int Screen::getWidth() const
 int Screen::getHeight() const
 {
 	int w, h;
-	SDL_GetWindowSize(_window, &w, &h);
+	SDL_GL_GetDrawableSize(_window, &w, &h);
 	return h;
 }
 

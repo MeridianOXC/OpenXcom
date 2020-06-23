@@ -440,7 +440,7 @@ void Game::run()
 							//if (Options::allowResize)
 							{
 								int newWidth, newHeight;
-								SDL_GetWindowSize(_screen->getWindow(), &newWidth, &newHeight);
+								SDL_GL_GetDrawableSize(_screen->getWindow(), &newWidth, &newHeight);
 								Options::newDisplayWidth = Options::displayWidth = std::max(Screen::ORIGINAL_WIDTH, newWidth);
 								Options::newDisplayHeight = Options::displayHeight = std::max(Screen::ORIGINAL_HEIGHT, newHeight);
 								int dX = 0, dY = 0;
