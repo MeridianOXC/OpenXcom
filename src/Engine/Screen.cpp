@@ -47,12 +47,12 @@ const int Screen::ORIGINAL_HEIGHT = 200;
 
 Renderer *Screen::createRenderer()
 {
-	if (Options::renderer == "SDL")
-	{
-		return new SDLRenderer(*this, _window);
-	}
+    if (Options::renderer == "SDL")
+    {
+        return new SDLRenderer(*this, _window);
+    }
     Log(LOG_WARNING) << "No renderer specified, creating SDL renderer";
-	return new SDLRenderer(*this, _window);
+    return new SDLRenderer(*this, _window);
 }
 
 /**
@@ -61,55 +61,33 @@ Renderer *Screen::createRenderer()
  */
 void Screen::makeVideoFlags()
 {
-    _flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI;
-	if (Options::allowResize)
-	{
-		_flags |= SDL_WINDOW_RESIZABLE;
-	}
+    _flags = SDL_WINDOW_ALLOW_HIGHDPI;
+    if (Options::allowResize)
+    {
+        _flags |= SDL_WINDOW_RESIZABLE;
+    }
 
 #if 0
-	if (Options::asyncBlit)
-	{
-		_flags |= SDL_ASYNCBLIT;
-	}
-	if (useOpenGL())
-	{
-		_flags = SDL_OPENGL;
-		SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
-		SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 5 );
-		SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
-		SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
-		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-	}
+    if (Options::asyncBlit)
+    {
+        _flags |= SDL_ASYNCBLIT;
+    }
+
 #endif
 
-	// Handle display mode
-	if (Options::fullscreen)
-	{
-		_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	}
-	if (Options::borderless)
-	{
-		_flags |= SDL_WINDOW_BORDERLESS;
-	}
+    // Handle display mode
+    if (Options::fullscreen)
+    {
+        _flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+    if (Options::borderless)
+    {
+        _flags |= SDL_WINDOW_BORDERLESS;
+    }
 
-	// Try fixing the Samsung devices - see https://bugzilla.libsdl.org/show_bug.cgi?id=2291
-#ifdef __ANDROID__
-	if (Options::forceGLMode)
-	{
-		Log(LOG_INFO) << "Setting GL format to RGB565";
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-		//SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	}
-	CrossPlatform::setSystemUI();
-#endif
-
-	//_bpp = (use32bitScaler() || useOpenGL()) ? 32 : 8;
-	_bpp = 32;
-	_baseWidth = Options::baseXResolution;
-	_baseHeight = Options::baseYResolution;
+    _bpp = 32;
+    _baseWidth = Options::baseXResolution;
+    _baseHeight = Options::baseYResolution;
 }
 
 
@@ -118,13 +96,13 @@ void Screen::makeVideoFlags()
  * The screen is set up based on the current options.
  */
 Screen::Screen() : _window(NULL), _renderer(NULL),
-	_baseWidth(ORIGINAL_WIDTH), _baseHeight(ORIGINAL_HEIGHT), _scaleX(1.0), _scaleY(1.0),
-	_numColors(0), _firstColor(0), _pushPalette(false),
-	_prevWidth(0), _prevHeight(0)
+    _baseWidth(ORIGINAL_WIDTH), _baseHeight(ORIGINAL_HEIGHT), _scaleX(1.0), _scaleY(1.0),
+    _numColors(0), _firstColor(0), _pushPalette(false),
+    _prevWidth(0), _prevHeight(0)
 {
 
     _renderer = new SDLRenderer(*this);
-	auto upscalers = _renderer->getUpscalers();
+    auto upscalers = _renderer->getUpscalers();
     for(const auto& scaler : upscalers)
     {
         registerUpscaler(_renderer->getRendererName(), scaler);
@@ -132,8 +110,8 @@ Screen::Screen() : _window(NULL), _renderer(NULL),
     delete _renderer;
     _renderer = nullptr;
 
-	resetDisplay();
-	memset(deferredPalette, 0, 256*sizeof(SDL_Color));
+    resetDisplay();
+    memset(deferredPalette, 0, 256*sizeof(SDL_Color));
 }
 
 /**
@@ -142,7 +120,7 @@ Screen::Screen() : _window(NULL), _renderer(NULL),
  */
 Screen::~Screen()
 {
-	delete _renderer;
+    delete _renderer;
 }
 
 /**
@@ -152,8 +130,8 @@ Screen::~Screen()
  */
 SDL_Surface *Screen::getSurface()
 {
-	_pushPalette = true;
-	return _surface.get();
+    _pushPalette = true;
+    return _surface.get();
 }
 
 /**
@@ -162,38 +140,38 @@ SDL_Surface *Screen::getSurface()
  */
 void Screen::handle(Action *action)
 {
-	if (Options::debug)
-	{
-		if (action->getDetails()->type == SDL_KEYDOWN && action->getDetails()->key.keysym.sym == SDLK_F8 && (SDL_GetModState() & KMOD_ALT) != 0)
-		{
-			switch(Timer::gameSlowSpeed)
-			{
-				case 1: Timer::gameSlowSpeed = 5; break;
-				case 5: Timer::gameSlowSpeed = 15; break;
-				default: Timer::gameSlowSpeed = 1; break;
-			}
-		}
-	}
+    if (Options::debug)
+    {
+        if (action->getDetails()->type == SDL_KEYDOWN && action->getDetails()->key.keysym.sym == SDLK_F8 && (SDL_GetModState() & KMOD_ALT) != 0)
+        {
+            switch(Timer::gameSlowSpeed)
+            {
+                case 1: Timer::gameSlowSpeed = 5; break;
+                case 5: Timer::gameSlowSpeed = 15; break;
+                default: Timer::gameSlowSpeed = 1; break;
+            }
+        }
+    }
 
-	if (action->getDetails()->type == SDL_KEYDOWN && action->getDetails()->key.keysym.sym == SDLK_RETURN && (SDL_GetModState() & KMOD_ALT) != 0)
-	{
-		Options::fullscreen = !Options::fullscreen;
-		resetDisplay();
-	}
-	else if (action->getDetails()->type == SDL_KEYDOWN && action->getDetails()->key.keysym.sym == Options::keyScreenshot)
-	{
-		std::ostringstream ss;
-		int i = 0;
-		do
-		{
-			ss.str("");
-			ss << Options::getMasterUserFolder() << "screen" << std::setfill('0') << std::setw(3) << i << ".png";
-			i++;
-		}
-		while (CrossPlatform::fileExists(ss.str()));
-		screenshot(ss.str());
-		return;
-	}
+    if (action->getDetails()->type == SDL_KEYDOWN && action->getDetails()->key.keysym.sym == SDLK_RETURN && (SDL_GetModState() & KMOD_ALT) != 0)
+    {
+        Options::fullscreen = !Options::fullscreen;
+        resetDisplay();
+    }
+    else if (action->getDetails()->type == SDL_KEYDOWN && action->getDetails()->key.keysym.sym == Options::keyScreenshot)
+    {
+        std::ostringstream ss;
+        int i = 0;
+        do
+        {
+            ss.str("");
+            ss << Options::getMasterUserFolder() << "screen" << std::setfill('0') << std::setw(3) << i << ".png";
+            i++;
+        }
+        while (CrossPlatform::fileExists(ss.str()));
+        screenshot(ss.str());
+        return;
+    }
 }
 
 
@@ -206,7 +184,7 @@ void Screen::handle(Action *action)
  */
 void Screen::flip()
 {
-	_renderer->flip();
+    _renderer->flip();
 }
 
 /**
@@ -214,10 +192,10 @@ void Screen::flip()
  */
 void Screen::clear()
 {
-	Surface::CleanSdlSurface(_surface.get());
+    Surface::CleanSdlSurface(_surface.get());
 
 #if 0
-	Surface::CleanSdlSurface(_screen);
+    Surface::CleanSdlSurface(_screen);
 #endif
 }
 
@@ -230,47 +208,30 @@ void Screen::clear()
  */
 void Screen::setPalette(const SDL_Color* colors, int firstcolor, int ncolors, bool immediately)
 {
-	if (_numColors && (_numColors != ncolors) && (_firstColor != firstcolor))
-	{
-		// an initial palette setup has not been committed to the screen yet
-		// just update it with whatever colors are being sent now
-		memmove(&(deferredPalette[firstcolor]), colors, sizeof(SDL_Color)*ncolors);
-		_numColors = 256; // all the use cases are just a full palette with 16-color follow-ups
-		_firstColor = 0;
-	}
-	else
-	{
-		memmove(&(deferredPalette[firstcolor]), colors, sizeof(SDL_Color) * ncolors);
-		_numColors = ncolors;
-		_firstColor = firstcolor;
-	}
+    if (_numColors && (_numColors != ncolors) && (_firstColor != firstcolor))
+    {
+        // an initial palette setup has not been committed to the screen yet
+        // just update it with whatever colors are being sent now
+        memmove(&(deferredPalette[firstcolor]), colors, sizeof(SDL_Color)*ncolors);
+        _numColors = 256; // all the use cases are just a full palette with 16-color follow-ups
+        _firstColor = 0;
+    }
+    else
+    {
+        memmove(&(deferredPalette[firstcolor]), colors, sizeof(SDL_Color) * ncolors);
+        _numColors = ncolors;
+        _firstColor = firstcolor;
+    }
 
-	SDL_SetPaletteColors(_surface->format->palette, colors, firstcolor, ncolors);
+    SDL_SetPaletteColors(_surface->format->palette, colors, firstcolor, ncolors);
 
 #if 0
-	// defer actual update of screen until SDL_Flip()
-	if (immediately && _screen->format->BitsPerPixel == 8 && SDL_SetColors(_screen, const_cast<SDL_Color *>(colors), firstcolor, ncolors) == 0)
-	{
-		Log(LOG_DEBUG) << "Display palette doesn't match requested palette";
-	}
+    // defer actual update of screen until SDL_Flip()
+    if (immediately && _screen->format->BitsPerPixel == 8 && SDL_SetColors(_screen, const_cast<SDL_Color *>(colors), firstcolor, ncolors) == 0)
+    {
+        Log(LOG_DEBUG) << "Display palette doesn't match requested palette";
+    }
 #endif
-
-	// Sanity check
-	/*
-	SDL_Color *newcolors = _screen->format->palette->colors;
-	for (int i = firstcolor, j = 0; i < firstcolor + ncolors; i++, j++)
-	{
-		Log(LOG_DEBUG) << (int)newcolors[i].r << " - " << (int)newcolors[i].g << " - " << (int)newcolors[i].b;
-		Log(LOG_DEBUG) << (int)colors[j].r << " + " << (int)colors[j].g << " + " << (int)colors[j].b;
-		if (newcolors[i].r != colors[j].r ||
-			newcolors[i].g != colors[j].g ||
-			newcolors[i].b != colors[j].b)
-		{
-			Log(LOG_ERROR) << "Display palette doesn't match requested palette";
-			break;
-		}
-	}
-	*/
 }
 
 /**
@@ -279,7 +240,7 @@ void Screen::setPalette(const SDL_Color* colors, int firstcolor, int ncolors, bo
  */
 const SDL_Color *Screen::getPalette() const
 {
-	return (SDL_Color*)deferredPalette;
+    return (SDL_Color*)deferredPalette;
 }
 
 /**
@@ -288,20 +249,19 @@ const SDL_Color *Screen::getPalette() const
  */
 int Screen::getWidth() const
 {
-	int w, h;
-	SDL_GL_GetDrawableSize(_window, &w, &h);
-	return w;
+    int w, h;
+    SDL_GetRendererOutputSize(SDL_GetRenderer(_window), &w, &h);
+    return w;
 }
-
 /**
  * Returns the height of the screen.
  * @return Height in pixels
  */
 int Screen::getHeight() const
 {
-	int w, h;
-	SDL_GL_GetDrawableSize(_window, &w, &h);
-	return h;
+    int w, h;
+    SDL_GetRendererOutputSize(SDL_GetRenderer(_window), &w, &h);
+    return h;
 }
 
 /**
@@ -311,214 +271,214 @@ int Screen::getHeight() const
  */
 void Screen::resetDisplay(bool resetVideo, bool noShaders)
 {
-	int width = Options::displayWidth;
-	int height = Options::displayHeight;
-	bool switchRenderer = false;
-	if (!_renderer)
-	{
-		switchRenderer = true;
-	}
-	else
-	{
-		if ( Options::renderer != _renderer->getRendererName() )
-		{
-			switchRenderer = true;
-		}
-	}
+    int width = Options::displayWidth;
+    int height = Options::displayHeight;
+    bool switchRenderer = false;
+    if (!_renderer)
+    {
+        switchRenderer = true;
+    }
+    else
+    {
+        if ( Options::renderer != _renderer->getRendererName() )
+        {
+            switchRenderer = true;
+        }
+    }
 #ifdef __linux__
-	Uint32 oldFlags = _flags;
+    Uint32 oldFlags = _flags;
 #endif
-	makeVideoFlags();
+    makeVideoFlags();
 
-	Log(LOG_INFO) << "Current _baseWidth x _baseHeight: " << _baseWidth << "x" << _baseHeight;
+    Log(LOG_INFO) << "Current _baseWidth x _baseHeight: " << _baseWidth << "x" << _baseHeight;
 
-	if (!_surface || (_surface->format->BitsPerPixel != _bpp ||
-		_surface->w != _baseWidth ||
-		_surface->h != _baseHeight)) // don't reallocate _surface if not necessary, it's a waste of CPU cycles
-	{
-		std::tie(_buffer, _surface) = Surface::NewPair32Bit(_baseWidth, _baseHeight);
-	}
-	SDL_SetColorKey(_surface.get(), 0, 0); // turn off color key!
+    if (!_surface || (_surface->format->BitsPerPixel != _bpp ||
+        _surface->w != _baseWidth ||
+        _surface->h != _baseHeight)) // don't reallocate _surface if not necessary, it's a waste of CPU cycles
+    {
+        std::tie(_buffer, _surface) = Surface::NewPair32Bit(_baseWidth, _baseHeight);
+    }
+    SDL_SetColorKey(_surface.get(), 0, 0); // turn off color key!
 
-	if (resetVideo)
-	{
-		/* FIXME: leak? */
-		Log(LOG_INFO) << "Attempting to set display to " << width << "x" << height << "x" << _bpp << "...";
-		/* Attempt to set scaling */
-		if (_window) SDL_SetWindowResizable(_window, (_flags & SDL_WINDOW_RESIZABLE) ? SDL_TRUE : SDL_FALSE);
-		/* Now, we only need to create a window AND a renderer when we have none*/
-		if (_window == NULL)
-		{
-			Log(LOG_INFO) << "Attempting to create a new window since we have none yet";
-			int winX, winY;
-			if (Options::borderless)
-			{
-				winX = SDL_WINDOWPOS_CENTERED;
-				winY = SDL_WINDOWPOS_CENTERED;
-			}
-			else
-			{
-				// FIXME: Check if this code is correct w.r.t. latest patches
-				//if ((Options::windowedModePositionX != -1) && (Options::windowedModePositionY != -1))
-				if (!Options::fullscreen && Options::rootWindowedMode)
-				{
-					winX = Options::windowedModePositionX;
-					winY = Options::windowedModePositionY;
-				}
-				else
-				{
-					winX = SDL_WINDOWPOS_UNDEFINED;
-					winY = SDL_WINDOWPOS_UNDEFINED;
-				}
-			}
-			_window = SDL_CreateWindow("OpenXcom",
-						   winX,
-						   winY,
-						   width, height, _flags);
-			/* In case something went horribly wrong */
-			if (_window == NULL)
-			{
-				Log(LOG_ERROR) << SDL_GetError();
-				throw Exception(SDL_GetError());
-			}
-			Log(LOG_INFO) << "Created a window, size is: " << width << "x" << height;
-		}
-		else
-		{
+    if (resetVideo)
+    {
+        /* FIXME: leak? */
+        Log(LOG_INFO) << "Attempting to set display to " << width << "x" << height << "x" << _bpp << "...";
+        /* Attempt to set scaling */
+        if (_window) SDL_SetWindowResizable(_window, (_flags & SDL_WINDOW_RESIZABLE) ? SDL_TRUE : SDL_FALSE);
+        /* Now, we only need to create a window AND a renderer when we have none*/
+        if (_window == NULL)
+        {
+            Log(LOG_INFO) << "Attempting to create a new window since we have none yet";
+            int winX, winY;
+            if (Options::borderless)
+            {
+                winX = SDL_WINDOWPOS_CENTERED;
+                winY = SDL_WINDOWPOS_CENTERED;
+            }
+            else
+            {
+                // FIXME: Check if this code is correct w.r.t. latest patches
+                //if ((Options::windowedModePositionX != -1) && (Options::windowedModePositionY != -1))
+                if (!Options::fullscreen && Options::rootWindowedMode)
+                {
+                    winX = Options::windowedModePositionX;
+                    winY = Options::windowedModePositionY;
+                }
+                else
+                {
+                    winX = SDL_WINDOWPOS_UNDEFINED;
+                    winY = SDL_WINDOWPOS_UNDEFINED;
+                }
+            }
+            _window = SDL_CreateWindow("OpenXcom",
+                           winX,
+                           winY,
+                           width, height, _flags);
+            /* In case something went horribly wrong */
+            if (_window == NULL)
+            {
+                Log(LOG_ERROR) << SDL_GetError();
+                throw Exception(SDL_GetError());
+            }
+            Log(LOG_INFO) << "Created a window, size is: " << width << "x" << height;
+        }
+        else
+        {
 #ifndef __ANDROID__
             if (width != getWidth() || height != getHeight())
-			{
-				SDL_SetWindowSize(_window, width, height);
-			}
+            {
+                SDL_SetWindowSize(_window, width, height);
+            }
 #endif
-			SDL_SetWindowBordered(_window, Options::borderless? SDL_FALSE : SDL_TRUE);
-			SDL_SetWindowFullscreen(_window, Options::fullscreen? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-		}
+            SDL_SetWindowBordered(_window, Options::borderless? SDL_FALSE : SDL_TRUE);
+            SDL_SetWindowFullscreen(_window, Options::fullscreen? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+        }
 
-		/* By this point we have a window and no renderer, so it's time to make one! */
-		if (switchRenderer)
-		{
-			delete _renderer;
-			_renderer = NULL;
-		}
+        /* By this point we have a window and no renderer, so it's time to make one! */
+        if (switchRenderer)
+        {
+            delete _renderer;
+            _renderer = NULL;
+        }
 
-		if (!_renderer)
-		{
-			_renderer = createRenderer();
-		}
-		_renderer->setUpscalerByName(Options::scalerName);
-		SDL_Rect baseRect;
-		baseRect.x = baseRect.y = 0;
-		baseRect.w = _baseWidth;
-		baseRect.h = _baseHeight;
-		Log(LOG_INFO) << "Display set to " << getWidth() << "x" << getHeight() << "x32";
+        if (!_renderer)
+        {
+            _renderer = createRenderer();
+        }
+        _renderer->setUpscalerByName(Options::scalerName);
+        SDL_Rect baseRect;
+        baseRect.x = baseRect.y = 0;
+        baseRect.w = _baseWidth;
+        baseRect.h = _baseHeight;
+        Log(LOG_INFO) << "Display set to " << getWidth() << "x" << getHeight() << "x32";
 
-		/* Save new baseWidth and baseHeight */
-		_prevWidth = _baseWidth;
-		_prevHeight = _baseHeight;
-	}
-	else
-	{
-		clear();
-	}
-	assert (_window != 0 && _renderer != 0);
+        /* Save new baseWidth and baseHeight */
+        _prevWidth = _baseWidth;
+        _prevHeight = _baseHeight;
+    }
+    else
+    {
+        clear();
+    }
+    assert (_window != 0 && _renderer != 0);
 
-	Options::displayWidth = getWidth();
-	Options::displayHeight = getHeight();
-	_scaleX = getWidth() / (double)_baseWidth;
-	_scaleY = getHeight() / (double)_baseHeight;
-	Log(LOG_INFO) << "Pre-bar scales: _scaleX = " << _scaleX << ", _scaleY = " << _scaleY;
+    Options::displayWidth = getWidth();
+    Options::displayHeight = getHeight();
+    _scaleX = getWidth() / (double)_baseWidth;
+    _scaleY = getHeight() / (double)_baseHeight;
+    Log(LOG_INFO) << "Pre-bar scales: _scaleX = " << _scaleX << ", _scaleY = " << _scaleY;
 
-	double pixelRatioY = 1.0;
-	if (Options::nonSquarePixelRatio && !Options::allowResize)
-	{
-		pixelRatioY = 1.2;
-	}
-	bool cursorInBlackBands;
-	if (!Options::keepAspectRatio)
-	{
-		cursorInBlackBands = false;
-	}
+    double pixelRatioY = 1.0;
+    if (Options::nonSquarePixelRatio && !Options::allowResize)
+    {
+        pixelRatioY = 1.2;
+    }
+    bool cursorInBlackBands;
+    if (!Options::keepAspectRatio)
+    {
+        cursorInBlackBands = false;
+    }
 #ifndef __ANDROID__
-	else if (Options::fullscreen)
-	{
-		cursorInBlackBands = Options::cursorInBlackBandsInFullscreen;
-	}
-	else if (!Options::borderless)
-	{
-		cursorInBlackBands = Options::cursorInBlackBandsInWindow;
-	}
-	else
-	{
-		cursorInBlackBands = Options::cursorInBlackBandsInBorderlessWindow;
-	}
+    else if (Options::fullscreen)
+    {
+        cursorInBlackBands = Options::cursorInBlackBandsInFullscreen;
+    }
+    else if (!Options::borderless)
+    {
+        cursorInBlackBands = Options::cursorInBlackBandsInWindow;
+    }
+    else
+    {
+        cursorInBlackBands = Options::cursorInBlackBandsInBorderlessWindow;
+    }
 #else
-	else {
-	// Force the scales to be equal?
-		cursorInBlackBands = true;
-	}
+    else {
+    // Force the scales to be equal?
+        cursorInBlackBands = true;
+    }
 #endif
 
-	if (_scaleX > _scaleY && Options::keepAspectRatio)
-	{
-		int targetWidth = (int)floor(_scaleY * (double)_baseWidth);
-		_topBlackBand = _bottomBlackBand = 0;
-		_leftBlackBand = (getWidth() - targetWidth) / 2;
-		if (_leftBlackBand < 0)
-		{
-			_leftBlackBand = 0;
-		}
-		_rightBlackBand = getWidth() - targetWidth - _leftBlackBand;
-		_cursorTopBlackBand = 0;
+    if (_scaleX > _scaleY && Options::keepAspectRatio)
+    {
+        int targetWidth = (int)floor(_scaleY * (double)_baseWidth);
+        _topBlackBand = _bottomBlackBand = 0;
+        _leftBlackBand = (getWidth() - targetWidth) / 2;
+        if (_leftBlackBand < 0)
+        {
+            _leftBlackBand = 0;
+        }
+        _rightBlackBand = getWidth() - targetWidth - _leftBlackBand;
+        _cursorTopBlackBand = 0;
 
-		if (cursorInBlackBands)
-		{
-			_scaleX = _scaleY;
-			_cursorLeftBlackBand = _leftBlackBand;
-		}
-		else
-		{
-			_cursorLeftBlackBand = 0;
-		}
-	}
-	else if (_scaleY > _scaleX && Options::keepAspectRatio)
-	{
-		int targetHeight = (int)floor(_scaleX * (double)_baseHeight * pixelRatioY);
-		_topBlackBand = (getHeight() - targetHeight) / 2;
-		if (_topBlackBand < 0)
-		{
-			_topBlackBand = 0;
-		}
-		_bottomBlackBand = getHeight() - targetHeight - _topBlackBand;
-		if (_bottomBlackBand < 0)
-		{
-			_bottomBlackBand = 0;
-		}
-		_leftBlackBand = _rightBlackBand = 0;
-		_cursorLeftBlackBand = 0;
+        if (cursorInBlackBands)
+        {
+            _scaleX = _scaleY;
+            _cursorLeftBlackBand = _leftBlackBand;
+        }
+        else
+        {
+            _cursorLeftBlackBand = 0;
+        }
+    }
+    else if (_scaleY > _scaleX && Options::keepAspectRatio)
+    {
+        int targetHeight = (int)floor(_scaleX * (double)_baseHeight * pixelRatioY);
+        _topBlackBand = (getHeight() - targetHeight) / 2;
+        if (_topBlackBand < 0)
+        {
+            _topBlackBand = 0;
+        }
+        _bottomBlackBand = getHeight() - targetHeight - _topBlackBand;
+        if (_bottomBlackBand < 0)
+        {
+            _bottomBlackBand = 0;
+        }
+        _leftBlackBand = _rightBlackBand = 0;
+        _cursorLeftBlackBand = 0;
 
-		if (cursorInBlackBands)
-		{
-			_scaleY = _scaleX;
-			_cursorTopBlackBand = _topBlackBand;
-		}
-		else
-		{
-			_cursorTopBlackBand = 0;
-		}
-	}
-	else
-	{
-		_topBlackBand = _bottomBlackBand = _leftBlackBand = _rightBlackBand = _cursorTopBlackBand = _cursorLeftBlackBand = 0;
-	}
-	Log(LOG_INFO) << "Scale (post-bar): scaleX = " << _scaleX << ", scaleY = " << _scaleY;
-	Log(LOG_INFO) << "Black bars: top: " << _topBlackBand << ", left: " << _leftBlackBand;
-	SDL_Rect outRect;
-	outRect.x = _leftBlackBand;
-	outRect.y = _topBlackBand;
-	outRect.w = getWidth() - _leftBlackBand - _rightBlackBand;
-	outRect.h = getHeight() - _topBlackBand - _bottomBlackBand;
-	_renderer->setOutputRect(&outRect);
+        if (cursorInBlackBands)
+        {
+            _scaleY = _scaleX;
+            _cursorTopBlackBand = _topBlackBand;
+        }
+        else
+        {
+            _cursorTopBlackBand = 0;
+        }
+    }
+    else
+    {
+        _topBlackBand = _bottomBlackBand = _leftBlackBand = _rightBlackBand = _cursorTopBlackBand = _cursorLeftBlackBand = 0;
+    }
+    Log(LOG_INFO) << "Scale (post-bar): scaleX = " << _scaleX << ", scaleY = " << _scaleY;
+    Log(LOG_INFO) << "Black bars: top: " << _topBlackBand << ", left: " << _leftBlackBand;
+    SDL_Rect outRect;
+    outRect.x = _leftBlackBand;
+    outRect.y = _topBlackBand;
+    outRect.w = getWidth() - _leftBlackBand - _rightBlackBand;
+    outRect.h = getHeight() - _topBlackBand - _bottomBlackBand;
+    _renderer->setOutputRect(&outRect);
 
 }
 
@@ -528,7 +488,7 @@ void Screen::resetDisplay(bool resetVideo, bool noShaders)
  */
 double Screen::getXScale() const
 {
-	return _scaleX;
+    return _scaleX;
 }
 
 /**
@@ -537,12 +497,12 @@ double Screen::getXScale() const
  */
 double Screen::getYScale() const
 {
-	return _scaleY;
+    return _scaleY;
 }
 
 double Screen::getScale() const
 {
-	return _scale;
+    return _scale;
 }
 
 /**
@@ -551,7 +511,7 @@ double Screen::getScale() const
  */
 int Screen::getCursorTopBlackBand() const
 {
-	return _cursorTopBlackBand;
+    return _cursorTopBlackBand;
 }
 
 /**
@@ -560,7 +520,7 @@ int Screen::getCursorTopBlackBand() const
  */
 int Screen::getCursorLeftBlackBand() const
 {
-	return _cursorLeftBlackBand;
+    return _cursorLeftBlackBand;
 }
 
 /**
@@ -569,62 +529,62 @@ int Screen::getCursorLeftBlackBand() const
  */
 void Screen::screenshot(const std::string &filename) const
 {
-	_renderer->screenshot(filename);
-//	assert (0 && "FIXME: no time for screenshots");
+    _renderer->screenshot(filename);
+//    assert (0 && "FIXME: no time for screenshots");
 #if 0
-	SDL_Surface *screenshot = SDL_CreateRGBSurface(0, getWidth(), getHeight(), 24, 0xff, 0xff00, 0xff0000, 0);
-	SDL_Surface *screenshot = SDL_AllocSurface(0, getWidth() - getWidth()%4, getHeight(), 24, 0xff, 0xff00, 0xff0000, 0);
+    SDL_Surface *screenshot = SDL_CreateRGBSurface(0, getWidth(), getHeight(), 24, 0xff, 0xff00, 0xff0000, 0);
+    SDL_Surface *screenshot = SDL_AllocSurface(0, getWidth() - getWidth()%4, getHeight(), 24, 0xff, 0xff00, 0xff0000, 0);
 
-	if (useOpenGL())
-	{
-#ifndef __NO_OPENGL
-		GLenum format = GL_RGB;
+//    if (useOpenGL())
+//    {
+//#ifndef __NO_OPENGL
+//        GLenum format = GL_RGB;
+//
+//        for (int y = 0; y < getHeight(); ++y)
+//        {
+//            glReadPixels(0, getHeight()-(y+1), getWidth() - getWidth()%4, 1, format, GL_UNSIGNED_BYTE, ((Uint8*)screenshot->pixels) + y*screenshot->pitch);
+//        }
+//        glErrorCheck();
+//#endif
+//    }
+//    else
+//    {
+        SDL_BlitSurface(_screen, 0, screenshot, 0);
+//    }
+    std::vector<unsigned char> out;
+    if (_screen->format->BitsPerPixel == 8 && Options::rawScreenShots)
+    {
+        SDL_Color *palette = getPalette();
+        lodepng::State state;
+        for (size_t i = 0; i < 256; ++i)
+        {
+            SDL_Color color = palette[i];
+            lodepng_palette_add(&state.info_png.color, color.r, color.g, color.b, 255);
+            lodepng_palette_add(&state.info_raw, color.r, color.g, color.b, 255);
+        }
+        state.info_png.color.colortype = LCT_PALETTE; //if you comment this line, and create the above palette in info_raw instead, then you get the same image in a RGBA PNG.
+        state.info_png.color.bitdepth = 8;
+        state.info_raw.colortype = LCT_PALETTE;
+        state.info_raw.bitdepth = 8;
+        state.encoder.auto_convert = 0; //we specify ourselves exactly what output PNG color mode we want
+        unsigned error = lodepng::encode(out, (const unsigned char *)(_surface->pixels), _surface->w, _surface->h, state);
+        if (error)
+        {
+            Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
+        }
+    }
+    else
+    {
+        unsigned error = lodepng::encode(out, (const unsigned char *)(screenshot->pixels), getWidth() - getWidth()%4, getHeight(), LCT_RGB);
+        if (error)
+        {
+            Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
+        }
+    }
 
-		for (int y = 0; y < getHeight(); ++y)
-		{
-			glReadPixels(0, getHeight()-(y+1), getWidth() - getWidth()%4, 1, format, GL_UNSIGNED_BYTE, ((Uint8*)screenshot->pixels) + y*screenshot->pitch);
-		}
-		glErrorCheck();
-#endif
-	}
-	else
-	{
-		SDL_BlitSurface(_screen, 0, screenshot, 0);
-	}
-	std::vector<unsigned char> out;
-	if (_screen->format->BitsPerPixel == 8 && Options::rawScreenShots)
-	{
-		SDL_Color *palette = getPalette();
-		lodepng::State state;
-		for (size_t i = 0; i < 256; ++i)
-		{
-			SDL_Color color = palette[i];
-			lodepng_palette_add(&state.info_png.color, color.r, color.g, color.b, 255);
-			lodepng_palette_add(&state.info_raw, color.r, color.g, color.b, 255);
-		}
-		state.info_png.color.colortype = LCT_PALETTE; //if you comment this line, and create the above palette in info_raw instead, then you get the same image in a RGBA PNG.
-		state.info_png.color.bitdepth = 8;
-		state.info_raw.colortype = LCT_PALETTE;
-		state.info_raw.bitdepth = 8;
-		state.encoder.auto_convert = 0; //we specify ourselves exactly what output PNG color mode we want
-		unsigned error = lodepng::encode(out, (const unsigned char *)(_surface->pixels), _surface->w, _surface->h, state);
-		if (error)
-		{
-			Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
-		}
-	}
-	else
-	{
-		unsigned error = lodepng::encode(out, (const unsigned char *)(screenshot->pixels), getWidth() - getWidth()%4, getHeight(), LCT_RGB);
-		if (error)
-		{
-			Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
-		}
-	}
+    SDL_FreeSurface(screenshot);
 
-	SDL_FreeSurface(screenshot);
-
-	CrossPlatform::writeFile(filename, out);
+    CrossPlatform::writeFile(filename, out);
 #endif
 }
 
@@ -635,7 +595,7 @@ void Screen::screenshot(const std::string &filename) const
  */
 int Screen::getDX() const
 {
-	return (_baseWidth - ORIGINAL_WIDTH) / 2;
+    return (_baseWidth - ORIGINAL_WIDTH) / 2;
 }
 
 /**
@@ -644,7 +604,7 @@ int Screen::getDX() const
  */
 int Screen::getDY() const
 {
-	return (_baseHeight - ORIGINAL_HEIGHT) / 2;
+    return (_baseHeight - ORIGINAL_HEIGHT) / 2;
 }
 
 /**
@@ -656,67 +616,67 @@ int Screen::getDY() const
  */
 void Screen::updateScale(int type, int &width, int &height, bool change)
 {
-	double pixelRatioY = 1.0;
+    double pixelRatioY = 1.0;
 
-	if (Options::nonSquarePixelRatio)
-	{
-		pixelRatioY = 1.2;
-	}
+    if (Options::nonSquarePixelRatio)
+    {
+        pixelRatioY = 1.2;
+    }
 
-	switch (type)
-	{
-	case SCALE_15X:
-		width = Screen::ORIGINAL_WIDTH * 1.5;
-		height = Screen::ORIGINAL_HEIGHT * 1.5;
-		break;
-	case SCALE_2X:
-		width = Screen::ORIGINAL_WIDTH * 2;
-		height = Screen::ORIGINAL_HEIGHT * 2;
-		break;
-	case SCALE_SCREEN_DIV_6:
-		width = Options::displayWidth / 6.0;
-		height = Options::displayHeight / pixelRatioY / 6.0;
-		break;
-	case SCALE_SCREEN_DIV_5:
-		width = Options::displayWidth / 5.0;
-		height = Options::displayHeight / pixelRatioY / 5.0;
-		break;
-	case SCALE_SCREEN_DIV_4:
-		width = Options::displayWidth / 4.0;
-		height = Options::displayHeight / pixelRatioY / 4.0;
-		break;
-	case SCALE_SCREEN_DIV_3:
-		width = Options::displayWidth / 3.0;
-		height = Options::displayHeight / pixelRatioY / 3.0;
-		break;
-	case SCALE_SCREEN_DIV_2:
-		width = Options::displayWidth / 2.0;
-		height = Options::displayHeight / pixelRatioY  / 2.0;
-		break;
-	case SCALE_SCREEN:
-		width = Options::displayWidth;
-		height = Options::displayHeight / pixelRatioY;
-		break;
-	case SCALE_ORIGINAL:
-	default:
-		width = Screen::ORIGINAL_WIDTH;
-		height = Screen::ORIGINAL_HEIGHT;
-		break;
-	}
+    switch (type)
+    {
+    case SCALE_15X:
+        width = Screen::ORIGINAL_WIDTH * 1.5;
+        height = Screen::ORIGINAL_HEIGHT * 1.5;
+        break;
+    case SCALE_2X:
+        width = Screen::ORIGINAL_WIDTH * 2;
+        height = Screen::ORIGINAL_HEIGHT * 2;
+        break;
+    case SCALE_SCREEN_DIV_6:
+        width = Options::displayWidth / 6.0;
+        height = Options::displayHeight / pixelRatioY / 6.0;
+        break;
+    case SCALE_SCREEN_DIV_5:
+        width = Options::displayWidth / 5.0;
+        height = Options::displayHeight / pixelRatioY / 5.0;
+        break;
+    case SCALE_SCREEN_DIV_4:
+        width = Options::displayWidth / 4.0;
+        height = Options::displayHeight / pixelRatioY / 4.0;
+        break;
+    case SCALE_SCREEN_DIV_3:
+        width = Options::displayWidth / 3.0;
+        height = Options::displayHeight / pixelRatioY / 3.0;
+        break;
+    case SCALE_SCREEN_DIV_2:
+        width = Options::displayWidth / 2.0;
+        height = Options::displayHeight / pixelRatioY  / 2.0;
+        break;
+    case SCALE_SCREEN:
+        width = Options::displayWidth;
+        height = Options::displayHeight / pixelRatioY;
+        break;
+    case SCALE_ORIGINAL:
+    default:
+        width = Screen::ORIGINAL_WIDTH;
+        height = Screen::ORIGINAL_HEIGHT;
+        break;
+    }
 
-	// don't go under minimum resolution... it's bad, mmkay?
-	width = std::max(width, Screen::ORIGINAL_WIDTH);
-	height = std::max(height, Screen::ORIGINAL_HEIGHT);
+    // don't go under minimum resolution... it's bad, mmkay?
+    width = std::max(width, Screen::ORIGINAL_WIDTH);
+    height = std::max(height, Screen::ORIGINAL_HEIGHT);
 
-	if (change && (Options::baseXResolution != width || Options::baseYResolution != height))
-	{
-		Options::baseXResolution = width;
-		Options::baseYResolution = height;
-	}
+    if (change && (Options::baseXResolution != width || Options::baseYResolution != height))
+    {
+        Options::baseXResolution = width;
+        Options::baseYResolution = height;
+    }
 }
 
 SDL_Window * Screen::getWindow() const
 {
-	return _window;
+    return _window;
 }
 }
