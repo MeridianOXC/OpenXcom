@@ -1327,30 +1327,32 @@ void MapEditorState::toggleRouteMode(Action *action)
  /// TODO: clicking twice somehow, not swapping between panels
 void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 {
-	BattlescapeButton *clickedButton = 0;
 	// determines if we open the info or links
-	bool openInfo = true; 
+	bool openInfo = true;
 
 	// This can be called without an action, so we need to be careful with calling methods on the action
 	if (action)
 	{
-		if (action->getSender() == _btnRouteInformation)
-		{
-			clickedButton = _btnRouteInformation;
-		}
-		else if (action->getSender() == _btnRouteConnections)
-		{
-			clickedButton = _btnRouteConnections;
-			openInfo = false;
-		}
-
-		if (_nodeButtonClicked == clickedButton)
+		// determine if we are hiding, switching, or opening the node info panel
+		// default is opening/switching to the info window
+		// if the info button was clicked and the node type is visible, that means we're closing the window
+		if (action->getSender() == _btnRouteInformation && _txtNodeType->getVisible())
 		{
 			hide = true;
 		}
-		else
+		// if the connection button was clicked, we're checking the case of needing to switch to it or close it
+		else if (action->getSender() == _btnRouteConnections)
 		{
-			_nodeButtonClicked = clickedButton;
+			// node links is visible -> we're hiding the window
+			if (_txtNodeLinks->getVisible())
+			{
+				hide = true;
+			}
+			// it's not visible -> open or switch to connections/links window
+			else
+			{
+				openInfo = false;
+			}
 		}
 	}
 
@@ -1395,11 +1397,6 @@ void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 	for (auto i : _cbxNodeLinkTypes)
 	{
 		i->setX(cbx3);
-	}
-
-	if (hide)
-	{
-		_nodeButtonClicked = 0;
 	}
 }
 
