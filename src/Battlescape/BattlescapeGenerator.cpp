@@ -2356,6 +2356,10 @@ void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int z
 					connectID -= 256;
 				}
 				node->getNodeLinks()->push_back(connectID);
+
+				// load legacy data that isn't used anywhere, but makes me feel better that I don't leave it out
+				int linkType = value[6 + j * 3];
+				node->getLinkTypes()->push_back(linkType);
 			}
 		}
 		else

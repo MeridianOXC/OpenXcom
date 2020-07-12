@@ -205,24 +205,21 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_cbxNodeType = new ComboBox(this, 144, 16, 8 - 160, 44, false);
 	_txtNodeRank = new Text(144, 10, 4, 62);
 	_cbxNodeRank = new ComboBox(this, 144, 16, 8 - 160, 74, false);
-	_txtNodePriority = new Text(144, 18, 4, 92);
-	_cbxNodePriority = new ComboBox(this, 24, 16, 132 - 160, 92, false);
-	_txtNodeSpawn = new Text(144, 18, 4, 112);
-	_cbxNodeSpawn = new ComboBox(this, 24, 16, 132 - 160, 112, false);
-	_txtNodeFlag = new Text(144, 18, 4, 132);
-	_cbxNodeFlag = new ComboBox(this, 24, 16, 132 - 160, 132, false);
+	_txtNodeFlag = new Text(144, 18, 4, 92);
+	_cbxNodeFlag = new ComboBox(this, 24, 16, 132 - 160, 92, false);
+	_txtNodePriority = new Text(144, 18, 4, 112);
+	_cbxNodePriority = new ComboBox(this, 24, 16, 132 - 160, 112, false);
+	_txtNodeReserved = new Text(144, 18, 4, 132);
+	_cbxNodeReserved = new ComboBox(this, 24, 16, 132 - 160, 132, false);
 	// Node links panel
 	_txtNodeLinks = new Text(144, 10, 4, 34);
-	_cbxNodeLinks0 = new ComboBox(this, 68, 16, 8 - 160, 44, false);
-	_cbxNodeLinks1 = new ComboBox(this, 68, 16, 8 - 160, 62, false);
-	_cbxNodeLinks2 = new ComboBox(this, 68, 16, 8 - 160, 80, false);
-	_cbxNodeLinks3 = new ComboBox(this, 68, 16, 8 - 160, 98, false);
-	_cbxNodeLinks4 = new ComboBox(this, 68, 16, 8 - 160, 116, false);
-	_cbxNodeLinkType0 = new ComboBox(this, 68, 16, 84 - 160, 44, false);
-	_cbxNodeLinkType1 = new ComboBox(this, 68, 16, 84 - 160, 62, false);
-	_cbxNodeLinkType2 = new ComboBox(this, 68, 16, 84 - 160, 80, false);
-	_cbxNodeLinkType3 = new ComboBox(this, 68, 16, 84 - 160, 98, false);
-	_cbxNodeLinkType4 = new ComboBox(this, 68, 16, 84 - 160, 116, false);
+	_cbxNodeLinks.clear();
+	_cbxNodeLinkTypes.clear();
+	for (int i = 0; i < 5; ++i)
+	{
+		_cbxNodeLinks.push_back(new ComboBox(this, 68, 16, 8 - 160, 44 + i * 18, false));
+		_cbxNodeLinkTypes.push_back(new ComboBox(this, 68, 16, 84 - 160, 44 + i * 18, false));
+	}
 
 	// Draw the background for the panel
 	for (int i = 0; i < _tileSelectionRows; ++i)
@@ -293,25 +290,20 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	add(_txtNodeID, "textTooltip", "battlescape");
 	add(_txtNodeType, "textTooltip", "battlescape");
 	add(_txtNodeRank, "textTooltip", "battlescape");
-	add(_txtNodePriority, "textTooltip", "battlescape");
-	add(_txtNodeSpawn, "textTooltip", "battlescape");
 	add(_txtNodeFlag, "textTooltip", "battlescape");
-	add(_cbxNodeFlag, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeSpawn, "infoBoxOKButton", "battlescape");
+	add(_txtNodePriority, "textTooltip", "battlescape");
+	add(_txtNodeReserved, "textTooltip", "battlescape");
+	add(_cbxNodeReserved, "infoBoxOKButton", "battlescape");
 	add(_cbxNodePriority, "infoBoxOKButton", "battlescape");
+	add(_cbxNodeFlag, "infoBoxOKButton", "battlescape");
 	add(_cbxNodeRank, "infoBoxOKButton", "battlescape");
 	add(_cbxNodeType, "infoBoxOKButton", "battlescape");
 	add(_txtNodeLinks, "textTooltip", "battlescape");
-	add(_cbxNodeLinks4, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinks3, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinks2, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinks1, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinks0, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinkType4, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinkType3, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinkType2, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinkType1, "infoBoxOKButton", "battlescape");
-	add(_cbxNodeLinkType0, "infoBoxOKButton", "battlescape");
+	for (int i = 4; i >= 0; --i)
+	{
+		add(_cbxNodeLinks.at(i), "infoBoxOKButton", "battlescape");
+		add(_cbxNodeLinkTypes.at(i), "infoBoxOKButton", "battlescape");
+	}
 
 	// Set up objects
 	_save = _game->getSavedGame()->getSavedBattle();
@@ -549,17 +541,17 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_txtNodeRank->setHighContrast(true);
 	_txtNodeRank->setText(tr("STR_NODE_RANK"));
 
-	_txtNodePriority->setColor(_tooltipDefaultColor);
-	_txtNodePriority->setHighContrast(true);
-	_txtNodePriority->setText(tr("STR_NODE_PRIORITY"));
-
-	_txtNodeSpawn->setColor(_tooltipDefaultColor);
-	_txtNodeSpawn->setHighContrast(true);
-	_txtNodeSpawn->setText(tr("STR_NODE_SPAWN"));
-
 	_txtNodeFlag->setColor(_tooltipDefaultColor);
 	_txtNodeFlag->setHighContrast(true);
-	_txtNodeFlag->setText(tr("STR_NODE_FLAG"));
+	_txtNodeFlag->setText(tr("STR_NODE_FLAG")); // patrol priority is called "flag" in Node
+
+	_txtNodePriority->setColor(_tooltipDefaultColor);
+	_txtNodePriority->setHighContrast(true);
+	_txtNodePriority->setText(tr("STR_NODE_PRIORITY")); // spawn priority is called "priority" in Node
+
+	_txtNodeReserved->setColor(_tooltipDefaultColor);
+	_txtNodeReserved->setHighContrast(true);
+	_txtNodeReserved->setText(tr("STR_NODE_RESERVED")); // whether the node is flagged for aliens attackin in base defense is called "reserved" in Node
 
 	_txtNodeLinks->setColor(_tooltipDefaultColor);
 	_txtNodeLinks->setHighContrast(true);
@@ -568,16 +560,16 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_nodeTypeStrings.clear();
 	_nodeTypeStrings.push_back("STR_NODE_TYPE_ANY");
 	_nodeTypeStrings.push_back("STR_NODE_TYPE_SMALL");
-	_nodeTypeStrings.push_back("STR_NODE_TYPE_LARGE");
 	_nodeTypeStrings.push_back("STR_NODE_TYPE_FLYING");
-	_nodeTypeStrings.push_back("STR_NODE_TYPE_FLYINGLARGE");
+	_nodeTypeStrings.push_back("STR_NODE_TYPE_FLYINGSMALL");
 
 	// Set up node types according to their bit flag values
-	// I got these from how MapView set the bit values, it it's wrong, blame that.
+	// Numbers match bit flags from Node.h:
+	// static const int TYPE_FLYING = 0x01; // non-flying unit can not spawn here when this bit is set
+	// static const int TYPE_SMALL = 0x02; // large unit can not spawn here when this bit is set
 	_nodeTypes.clear();
 	_nodeTypes.push_back(0);
 	_nodeTypes.push_back(2);
-	_nodeTypes.push_back(4);
 	_nodeTypes.push_back(1);
 	_nodeTypes.push_back(3);
 
@@ -603,17 +595,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 
 	_cbxNodeRank->setOptions(_nodeRankStrings, true);
 
-	_cbxNodePriority->setOptions(numberStrings, false);
-
-	_cbxNodeSpawn->setOptions(numberStrings, false);
-
 	_cbxNodeFlag->setOptions(numberStrings, false);
 
-	_cbxNodeLinkType0->setOptions(_nodeRankStrings, true);
-	_cbxNodeLinkType1->setOptions(_nodeRankStrings, true);
-	_cbxNodeLinkType2->setOptions(_nodeRankStrings, true);
-	_cbxNodeLinkType3->setOptions(_nodeRankStrings, true);
-	_cbxNodeLinkType4->setOptions(_nodeRankStrings, true);
+	_cbxNodePriority->setOptions(numberStrings, false);
+
+	_cbxNodeReserved->setOptions(numberStrings, false);
 
 	setSelectedNode(0);
 	toggleNodeInfoPanel(0, true);
@@ -1372,26 +1358,24 @@ void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 	_txtNodeID->setVisible(!hide);
 	_txtNodeType->setVisible(!hide && openInfo);
 	_txtNodeRank->setVisible(!hide && openInfo);
-	_txtNodePriority->setVisible(!hide && openInfo);
-	_txtNodeSpawn->setVisible(!hide && openInfo);
 	_txtNodeFlag->setVisible(!hide && openInfo);
+	_txtNodePriority->setVisible(!hide && openInfo);
+	_txtNodeReserved->setVisible(!hide && openInfo);
 	_cbxNodeType->setVisible(!hide && openInfo);
 	_cbxNodeRank->setVisible(!hide && openInfo);
-	_cbxNodePriority->setVisible(!hide && openInfo);
-	_cbxNodeSpawn->setVisible(!hide && openInfo);
 	_cbxNodeFlag->setVisible(!hide && openInfo);
+	_cbxNodePriority->setVisible(!hide && openInfo);
+	_cbxNodeReserved->setVisible(!hide && openInfo);
 
 	_txtNodeLinks->setVisible(!hide && !openInfo);
-	_cbxNodeLinks0->setVisible(!hide && !openInfo);
-	_cbxNodeLinks1->setVisible(!hide && !openInfo);
-	_cbxNodeLinks2->setVisible(!hide && !openInfo);
-	_cbxNodeLinks3->setVisible(!hide && !openInfo);
-	_cbxNodeLinks4->setVisible(!hide && !openInfo);
-	_cbxNodeLinkType0->setVisible(!hide && !openInfo);
-	_cbxNodeLinkType1->setVisible(!hide && !openInfo);
-	_cbxNodeLinkType2->setVisible(!hide && !openInfo);
-	_cbxNodeLinkType3->setVisible(!hide && !openInfo);
-	_cbxNodeLinkType4->setVisible(!hide && !openInfo);
+	for (auto i : _cbxNodeLinks)
+	{
+		i->setVisible(!hide && !openInfo);
+	}
+	for (auto i : _cbxNodeLinkTypes)
+	{
+		i->setVisible(!hide && !openInfo);
+	}
 
 	int cbx0 = (!hide && openInfo) ? 8 : 8 - 160;
 	int cbx1 = (!hide && openInfo) ? 132 : 132 - 160;
@@ -1400,20 +1384,18 @@ void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 
 	_cbxNodeType->setX(cbx0);
 	_cbxNodeRank->setX(cbx0);
-	_cbxNodePriority->setX(cbx1);
-	_cbxNodeSpawn->setX(cbx1);
 	_cbxNodeFlag->setX(cbx1);
+	_cbxNodePriority->setX(cbx1);
+	_cbxNodeReserved->setX(cbx1);
 
-	_cbxNodeLinks0->setX(cbx2);
-	_cbxNodeLinks1->setX(cbx2);
-	_cbxNodeLinks2->setX(cbx2);
-	_cbxNodeLinks3->setX(cbx2);
-	_cbxNodeLinks4->setX(cbx2);
-	_cbxNodeLinkType0->setX(cbx3);
-	_cbxNodeLinkType1->setX(cbx3);
-	_cbxNodeLinkType2->setX(cbx3);
-	_cbxNodeLinkType3->setX(cbx3);
-	_cbxNodeLinkType4->setX(cbx3);
+	for (auto i : _cbxNodeLinks)
+	{
+		i->setX(cbx2);
+	}
+	for (auto i : _cbxNodeLinkTypes)
+	{
+		i->setX(cbx3);
+	}
 
 	if (hide)
 	{
@@ -1453,7 +1435,7 @@ void MapEditorState::setSelectedNode(Node *node)
 		_txtNodeID->setText(tr("STR_NODE_ID").arg(_selectedNode->getID()).arg(_selectedNode->getPosition()));
 
 		_cbxNodeType->setOptions(_nodeTypeStrings, true);
-		_cbxNodeType->setSelected(node->getType());
+		_cbxNodeType->setSelected(_nodeTypes.at(node->getType()));
 
 		_cbxNodeRank->setOptions(_nodeRankStrings, true);
 		_cbxNodeRank->setSelected(node->getRank());
@@ -1465,28 +1447,44 @@ void MapEditorState::setSelectedNode(Node *node)
 			numberStrings.push_back(std::to_string(i));
 		}
 
-		_cbxNodePriority->setOptions(numberStrings, false);
-		_cbxNodePriority->setSelected(node->getPriority());
-
-		_cbxNodeSpawn->setOptions(numberStrings, false);
-		_cbxNodeSpawn->setSelected(node->getSpawn());
-
 		_cbxNodeFlag->setOptions(numberStrings, false);
 		_cbxNodeFlag->setSelected(node->getFlags());
 
-		//std::vector<int> knownLinks;
-		//knownLinks.clear();
+		_cbxNodePriority->setOptions(numberStrings, false);
+		_cbxNodePriority->setSelected(node->getPriority());
+
+		_cbxNodeReserved->setOptions(numberStrings, false);
+		_cbxNodeReserved->setSelected(node->isTarget() ? 5 : 0);
+
+		
+		std::vector<std::string> knownLinks;
+		knownLinks.clear();
+		knownLinks.push_back("STR_LINK_UNUSED");
+		knownLinks.push_back("STR_LINK_NORTH");
+		knownLinks.push_back("STR_LINK_EAST");
+		knownLinks.push_back("STR_LINK_SOUTH");
+		knownLinks.push_back("STR_LINK_WEST");
+		for (auto otherNode : *_save->getNodes())
+		{
+			knownLinks.push_back(std::to_string(otherNode->getID()));
+		}
+
 		for (auto linkedNode : *node->getNodeLinks())
 		{
 			//knownLinks.push_back(linkedNode);
 			linkChoices.push_back(std::to_string(linkedNode));
 		}
 
-		_cbxNodeLinks0->setOptions(linkChoices, false);
-		_cbxNodeLinks1->setOptions(linkChoices, false);
-		_cbxNodeLinks2->setOptions(linkChoices, false);
-		_cbxNodeLinks3->setOptions(linkChoices, false);
-		_cbxNodeLinks4->setOptions(linkChoices, false);
+		for (int i = 0; i < 5; ++i)
+		{
+			_cbxNodeLinks.at(i)->setOptions(knownLinks, true);
+			int linkID = node->getNodeLinks()->at(i);
+			// -1 = unused, -2 = north, -3 = east, -4 = south, -5 = west (from BattlescapeGenerator::loadRMP)
+			linkID = linkID < 0 ? -linkID - 1 : 5 + linkID;
+			_cbxNodeLinks.at(i)->setSelected(linkID);
+			_cbxNodeLinkTypes.at(i)->setOptions(_nodeTypeStrings, true);
+			_cbxNodeLinkTypes.at(i)->setSelected(node->getLinkTypes()->at(i));			
+		}
 	}
 	else
 	{
@@ -1496,36 +1494,25 @@ void MapEditorState::setSelectedNode(Node *node)
 		linkChoices.push_back(emptyString);
 
 		_cbxNodeType->setOptions(linkChoices, false);
-		_cbxNodeRank->setOptions(linkChoices, false);
-		_cbxNodePriority->setOptions(linkChoices, false);
-		_cbxNodeSpawn->setOptions(linkChoices, false);
-		_cbxNodeFlag->setOptions(linkChoices, false);
-		_cbxNodeLinks0->setOptions(linkChoices, false);
-		_cbxNodeLinks1->setOptions(linkChoices, false);
-		_cbxNodeLinks2->setOptions(linkChoices, false);
-		_cbxNodeLinks3->setOptions(linkChoices, false);
-		_cbxNodeLinks4->setOptions(linkChoices, false);
-		_cbxNodeLinkType0->setOptions(linkChoices, false);
-		_cbxNodeLinkType1->setOptions(linkChoices, false);
-		_cbxNodeLinkType2->setOptions(linkChoices, false);
-		_cbxNodeLinkType3->setOptions(linkChoices, false);
-		_cbxNodeLinkType4->setOptions(linkChoices, false);
-
 		_cbxNodeType->setSelected(0);
+		_cbxNodeRank->setOptions(linkChoices, false);
 		_cbxNodeRank->setSelected(0);
-		_cbxNodePriority->setSelected(0);
-		_cbxNodeSpawn->setSelected(0);
+		_cbxNodeFlag->setOptions(linkChoices, false);
 		_cbxNodeFlag->setSelected(0);
-		_cbxNodeLinks0->setSelected(0);
-		_cbxNodeLinks1->setSelected(0);
-		_cbxNodeLinks2->setSelected(0);
-		_cbxNodeLinks3->setSelected(0);
-		_cbxNodeLinks4->setSelected(0);
-		_cbxNodeLinkType0->setSelected(0);
-		_cbxNodeLinkType1->setSelected(0);
-		_cbxNodeLinkType2->setSelected(0);
-		_cbxNodeLinkType3->setSelected(0);
-		_cbxNodeLinkType4->setSelected(0);
+		_cbxNodePriority->setOptions(linkChoices, false);
+		_cbxNodePriority->setSelected(0);
+		_cbxNodeReserved->setOptions(linkChoices, false);
+		_cbxNodeReserved->setSelected(0);
+		for (auto i : _cbxNodeLinks)
+		{
+			i->setOptions(linkChoices, false);
+			i->setSelected(0);
+		}
+		for (auto i : _cbxNodeLinkTypes)
+		{
+			i->setOptions(linkChoices, false);
+			i->setSelected(0);
+		}
 	}
 }
 

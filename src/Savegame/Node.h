@@ -36,6 +36,7 @@ private:
 	Position _pos;
 	int _segment;
 	std::vector<int> _nodeLinks;
+	std::vector<int> _linkTypes;
 	int _type;      // 19 = Unit type in Mapview 2
 	int _rank;      // 20 = Node rank in Mapview 2
 	int _flags;     // 21 = Patrol priority in Mapview 2
@@ -63,6 +64,8 @@ public:
 	int getID() const;
 	/// get the node's paths
 	std::vector<int> *getNodeLinks();
+	/// get the unit types that can use the links 
+	std::vector<int> *getLinkTypes();
 	/// Gets node's rank.
 	NodeRank getRank() const;
 	/// Gets node's priority.

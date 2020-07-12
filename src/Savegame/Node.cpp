@@ -82,6 +82,7 @@ void Node::load(const YAML::Node &node)
 	_priority = node["priority"].as<int>(_priority);
 	_allocated = node["allocated"].as<bool>(_allocated);
 	_nodeLinks = node["links"].as< std::vector<int> >(_nodeLinks);
+	_linkTypes = node["linkTypes"].as< std::vector<int> >(_linkTypes);
 	_dummy = node["dummy"].as<bool>(_dummy);
 }
 
@@ -104,6 +105,7 @@ YAML::Node Node::save() const
 	if (_allocated)
 		node["allocated"] = _allocated;
 	node["links"] = _nodeLinks;
+	node["linkTypes"] = _linkTypes;
 	if (_dummy)
 		node["dummy"] = _dummy;
 	return node;
@@ -158,6 +160,16 @@ int Node::getSegment() const
 std::vector<int> *Node::getNodeLinks()
 {
 	return &_nodeLinks;
+}
+
+/**
+ * get the unit types that can use the links
+ * note that this is only used to not lose information in RMP files for the OXCE map editor, it's not actually used anywhere in the game
+ * @return the types of units that can use the links
+ */
+std::vector<int> *Node::getLinkTypes()
+{
+	return &_linkTypes;
 }
 
 /**

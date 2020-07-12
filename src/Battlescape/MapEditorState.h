@@ -86,10 +86,9 @@ private:
 	InteractiveSurface *_iconsUpperLeftNodes;
 	BattlescapeButton *_btnRouteInformation, *_btnRouteConnections, *_nodeButtonClicked;
 	InteractiveSurface *_panelRouteInformation;
-	Text *_txtNodeID, *_txtNodeType, *_txtNodeRank, *_txtNodePriority, *_txtNodeSpawn, *_txtNodeFlag, *_txtNodeLinks;
-	ComboBox *_cbxNodeType, *_cbxNodeRank, *_cbxNodePriority, *_cbxNodeSpawn, *_cbxNodeFlag;
-	ComboBox *_cbxNodeLinks0, *_cbxNodeLinks1, *_cbxNodeLinks2, *_cbxNodeLinks3, *_cbxNodeLinks4;
-	ComboBox *_cbxNodeLinkType0, *_cbxNodeLinkType1, *_cbxNodeLinkType2, *_cbxNodeLinkType3, *_cbxNodeLinkType4;
+	Text *_txtNodeID, *_txtNodeType, *_txtNodeRank, *_txtNodeFlag, *_txtNodePriority, *_txtNodeReserved, *_txtNodeLinks;
+	ComboBox *_cbxNodeType, *_cbxNodeRank, *_cbxNodeFlag, *_cbxNodePriority, *_cbxNodeReserved;
+	std::vector<ComboBox*> _cbxNodeLinks, _cbxNodeLinkTypes;
 	std::vector<std::string> _nodeTypeStrings, _nodeRankStrings;
 	std::vector<int> _nodeTypes;
 public:
