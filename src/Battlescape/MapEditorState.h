@@ -137,6 +137,20 @@ public:
 	//void btnPasteClick(Action *action);
 	/// Handler for pressing the tile filter buttons.
 	void btnTileFilterClick(Action *action);
+	/// Handler for changing the node type combo box
+	void cbxNodeTypeChange(Action *action);
+	/// Handler for changing the node rank combo box
+	void cbxNodeRankChange(Action *action);
+	/// Handler for changing the node flag combo box
+	void cbxNodeFlagChange(Action *action);
+	/// Handler for changing the node priority combo box
+	void cbxNodePriorityChange(Action *action);
+	/// Handler for changing the node reserved combo box
+	void cbxNodeReservedChange(Action *action);
+	/// Handler for changing the node links combo boxes
+	void cbxNodeLinksChange(Action *action);
+	/// Handler for changing the node link types combo boxes
+	void cbxNodeLinkTypesChange(Action *action);
 	/// Animates map objects on the map
 	void animate();
 	/// Handles the battle game state.

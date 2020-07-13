@@ -26,6 +26,7 @@ namespace OpenXcom
 {
 
 enum EditType {MET_DO, MET_UNDO, MET_REDO};
+enum NodeChangeType {NCT_NEW, NCT_DELETE, NCT_POS, NCT_TYPE, NCT_RANK, NCT_FLAG, NCT_PRIORITY, NCT_RESERVED, NCT_LINKS, NCT_LINKTYPES, NCT_NONE};
 
 struct TileEdit
 {
@@ -35,6 +36,7 @@ struct TileEdit
     int tileAfterDataIDs[O_MAX];
     int tileAfterDataSetIDs[O_MAX];
 
+    // TODO: change to populate data from save? (do in actual editor, not here)
     TileEdit(Position pos, int beforeDataIDs[], int beforeDataSetIDs[], int afterDataIDs[], int afterDataSetIDs[])
     {
         position = pos;
@@ -61,7 +63,42 @@ struct TileEdit
     }
 };
 
+struct NodeEdit
+{
+    // TODO: change magic number 5 to variable like O_MAX
+    int nodeID;
+    NodeChangeType nodeChangeType;
+    std::vector< int > nodeBeforeData, nodeAfterData;
+
+    // Constructor: get the info from the before node for initialization, let the editor populate the changes
+    NodeEdit(int id, NodeChangeType changeType)
+    {
+        nodeID = id;
+        nodeChangeType = changeType;
+        nodeBeforeData.clear();
+        nodeAfterData.clear();
+    }
+
+    // Test for whether an edit does anything
+    // Used to prevent pushing back useless changes to the edit register
+    bool isEditEmpty()
+    {
+        bool equal = true;
+        if (nodeBeforeData.empty() || nodeAfterData.empty())
+        {
+            return equal;
+        }
+
+        for (int i = 0; i < (int)nodeBeforeData.size(); ++i)
+        {
+            equal &= (nodeBeforeData.at(i) == nodeAfterData.at(i));
+        }
+        return equal;
+    }
+};
+
 class Action;
+class Node;
 class SavedBattleGame;
 class Tile;
 
@@ -69,9 +106,11 @@ class MapEditor
 {
 private :
     SavedBattleGame *_save;
-    std::vector< std::vector< TileEdit > > _editRegister;
-    int _selectedMapDataID, _editRegisterPosition;
+    std::vector< std::vector< TileEdit > > _tileRegister;
+    std::vector< std::vector< NodeEdit > > _nodeRegister;
+    int _selectedMapDataID, _tileRegisterPosition, _nodeRegisterPosition;
     std::vector< Tile* > _selectedTiles;
+    std::vector< Node* > _selectedNodes;
     std::string _mapname;
     TilePart _selectedObject;
 
@@ -82,18 +121,28 @@ public :
     ~MapEditor();
     /// Handles input passed to the Editor from the BattlescapeState
     void handleEditorInput(Action *action, Tile *tile);
+    /// Handles inputs passed to the editor from the node information panels
+    void handleNodeInput(Action *action, Node *node, NodeChangeType changeType, std::vector<int> data);
     /// Changes tile data according to the selected tiles and map data
     void changeTiles(EditType action);
+    /// Changes node data according to the selected nodes and route data
+    void changeNodes(EditType action, NodeChangeType changeType, std::vector<int> data);
+    /// Changes the data of a specific node according to the selected route data
+    NodeEdit changeNodeData(Node *node, NodeChangeType changeType, std::vector<int> data);
     /// Un-does an action pointed to by the current position in the edit register
-    void undo();
+    void undo(bool node = false);
     /// Re-does an action pointed to by the current position in the edit register
-    void redo();
+    void redo(bool node = false);
     /// Helper function for getting MapData, MapDataSetIDs, and MapDataIDs from index of a tile
     MapData *getMapDataFromIndex(int index, int *mapDataSetID, int *mapDataID);
-    /// Gets the current position of the edit register
-    int getEditRegisterPosition();
-    /// Gets the number of edits in the register
-    int getEditRegisterSize();
+    /// Gets the current position of the tile edit register
+    int getTileRegisterPosition();
+    /// Gets the number of edits in the tile register
+    int getTileRegisterSize();
+    /// Gets the current position of the node edit register
+    int getNodeRegisterPosition();
+    /// Gets the number of edits in the node register
+    int getNodeRegisterSize();
     /// Sets the map data ID index selected
     void setSelectedMapDataID(int selectedIndex);
     /// Gets the map data ID index selected

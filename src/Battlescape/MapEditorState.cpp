@@ -198,19 +198,19 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	icons->getFrame(46)->blitNShade(_iconsUpperLeftNodes, 32, 0);
 	_btnRouteInformation = new BattlescapeButton(32, 16, 0, 0);
 	_btnRouteConnections = new BattlescapeButton(32, 16, 32, 0);
-	_panelRouteInformation = new InteractiveSurface(nodePanelWidth, tileSelectionHeight, 0, 16);
+	_panelRouteInformation = new InteractiveSurface(nodePanelWidth, tileSelectionHeight > 132 ? tileSelectionHeight : 132, 0, 16);
 	// General information panel
 	_txtNodeID = new Text(144, 10, 4, 20);
 	_txtNodeType = new Text(144, 10, 4, 34);
 	_cbxNodeType = new ComboBox(this, 144, 16, 8 - 160, 44, false);
 	_txtNodeRank = new Text(144, 10, 4, 62);
 	_cbxNodeRank = new ComboBox(this, 144, 16, 8 - 160, 74, false);
-	_txtNodeFlag = new Text(144, 18, 4, 92);
-	_cbxNodeFlag = new ComboBox(this, 24, 16, 132 - 160, 92, false);
-	_txtNodePriority = new Text(144, 18, 4, 112);
-	_cbxNodePriority = new ComboBox(this, 24, 16, 132 - 160, 112, false);
-	_txtNodeReserved = new Text(144, 18, 4, 132);
-	_cbxNodeReserved = new ComboBox(this, 24, 16, 132 - 160, 132, false);
+	_txtNodeFlag = new Text(144, 18, 4, 98);
+	_cbxNodeFlag = new ComboBox(this, 32, 16, 124 - 160, 94, false);
+	_txtNodePriority = new Text(144, 18, 4, 116);
+	_cbxNodePriority = new ComboBox(this, 32, 16, 124 - 160, 112, false);
+	_txtNodeReserved = new Text(144, 18, 4, 134);
+	_cbxNodeReserved = new ComboBox(this, 32, 16, 124 - 160, 130, false);
 	// Node links panel
 	_txtNodeLinks = new Text(144, 10, 4, 34);
 	_cbxNodeLinks.clear();
@@ -242,6 +242,24 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 
 			// draw the background
 			icons->getFrame(panelSpriteOffset)->blitNShade(_panelRouteInformation, j * 32, i * 40);
+		}
+	}
+	// Make sure the panel covers all the way to the bottom of combo boxes
+	if (tileSelectionHeight < 132)
+	{
+		for (int i = 0; i < nodePanelWidth / 32; ++i) // the node panel width is measured in pixels, covert to width of sprite
+		{
+			// select which of the background panel frames is appropriate for this position on the grid
+			int panelSpriteOffset = 56; // for the bottom row
+
+			if (i % (nodePanelWidth / 32 - 1) != 0) // we're in a middle column
+				panelSpriteOffset += 1;
+			else if (i / (nodePanelWidth / 32 - 1) == 1) // we're on the right edge
+				panelSpriteOffset += 2;
+			// else we're on the left edge
+
+			// draw the background
+			icons->getFrame(panelSpriteOffset)->blitNShade(_panelRouteInformation, i * 32, 132 - 40);
 		}
 	}
 
@@ -591,15 +609,49 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_nodeRankStrings.push_back("STR_NODE_RANK_MEDIC");
 	_nodeRankStrings.push_back("STR_NODE_RANK_TERRORIST1");
 
+	_cbxNodeType->onChange((ActionHandler)&MapEditorState::cbxNodeTypeChange);
+	_cbxNodeType->setTooltip("STR_TOOLTIP_NODE_TYPE");
+	_cbxNodeType->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_cbxNodeType->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_cbxNodeType->setOptions(_nodeTypeStrings, true);
 
+	_cbxNodeRank->onChange((ActionHandler)&MapEditorState::cbxNodeRankChange);
+	_cbxNodeRank->setTooltip("STR_TOOLTIP_NODE_RANK");
+	_cbxNodeRank->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_cbxNodeRank->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_cbxNodeRank->setOptions(_nodeRankStrings, true);
 
+	_cbxNodeFlag->onChange((ActionHandler)&MapEditorState::cbxNodeFlagChange);
+	_cbxNodeFlag->setTooltip("STR_TOOLTIP_NODE_FLAG");
+	_cbxNodeFlag->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_cbxNodeFlag->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_cbxNodeFlag->setOptions(numberStrings, false);
 
+	_cbxNodePriority->onChange((ActionHandler)&MapEditorState::cbxNodePriorityChange);
+	_cbxNodePriority->setTooltip("STR_TOOLTIP_NODE_PRIORITY");
+	_cbxNodePriority->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_cbxNodePriority->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_cbxNodePriority->setOptions(numberStrings, false);
 
+	_cbxNodeReserved->onChange((ActionHandler)&MapEditorState::cbxNodeReservedChange);
+	_cbxNodeReserved->setTooltip("STR_TOOLTIP_NODE_RESERVED");
+	_cbxNodeReserved->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_cbxNodeReserved->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_cbxNodeReserved->setOptions(numberStrings, false);
+
+	// TODO: remove magic number 5
+	for (int i = 0; i < 5; ++i)
+	{
+		_cbxNodeLinks.at(i)->onChange((ActionHandler)&MapEditorState::cbxNodeLinksChange);
+		_cbxNodeLinks.at(i)->setTooltip("STR_TOOLTIP_NODE_LINKS");
+		_cbxNodeLinks.at(i)->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+		_cbxNodeLinks.at(i)->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+		_cbxNodeLinkTypes.at(i)->onChange((ActionHandler)&MapEditorState::cbxNodeLinkTypesChange);
+		_cbxNodeLinkTypes.at(i)->setTooltip("STR_TOOLTIP_NODE_LINKTYPES");
+		_cbxNodeLinkTypes.at(i)->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+		_cbxNodeLinkTypes.at(i)->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+	}
 
 	setSelectedNode(0);
 	toggleNodeInfoPanel(0, true);
@@ -689,23 +741,27 @@ void MapEditorState::think()
         _gameTimer->think(this, 0);
 	}
 
-	if (_editor->getEditRegisterPosition() == 0 && _btnUndo->getColor() != 8)
+	if ((!_routeMode && _editor->getTileRegisterPosition() == 0 && _btnUndo->getColor() != 8) ||
+		(_routeMode && _editor->getNodeRegisterPosition() == 0 && _btnUndo->getColor() != 8))
 	{
 		_btnUndo->offset(8 - 232, 0, 255, 1);
 		_btnUndo->setColor(8); // change to disabled button color
 	}
-	else if (_editor->getEditRegisterPosition() > 0 && _btnUndo->getColor() != 232)
+	else if ((!_routeMode && _editor->getTileRegisterPosition() > 0 && _btnUndo->getColor() != 232) ||
+			(_routeMode && _editor->getNodeRegisterPosition() > 0 && _btnUndo->getColor() != 232))
 	{
 		_btnUndo->offset(232 - 8, 0, 255, 1);
 		_btnUndo->setColor(232); // change to default color
 	}
 
-	if (_editor->getEditRegisterPosition() == _editor->getEditRegisterSize() && _btnRedo->getColor() != 8)
+	if ((!_routeMode &&_editor->getTileRegisterPosition() == _editor->getTileRegisterSize() && _btnRedo->getColor() != 8) ||
+		(_routeMode &&_editor->getNodeRegisterPosition() == _editor->getNodeRegisterSize() && _btnRedo->getColor() != 8))
 	{
 		_btnRedo->offset(8 - 232, 0, 255, 1);
 		_btnRedo->setColor(8);
 	}
-	else if (_editor->getEditRegisterPosition() < _editor->getEditRegisterSize() && _btnRedo->getColor() != 232)
+	else if ((!_routeMode && _editor->getTileRegisterPosition() < _editor->getTileRegisterSize() && _btnRedo->getColor() != 232) ||
+			(_routeMode && _editor->getNodeRegisterPosition() < _editor->getNodeRegisterSize() && _btnRedo->getColor() != 232))
 	{
 		_btnRedo->offset(232 - 8, 0, 255, 1);
 		_btnRedo->setColor(232);
@@ -1008,10 +1064,11 @@ void MapEditorState::btnSaveClick(Action *action)
  */
 void MapEditorState::btnUndoClick(Action *action)
 {
-	_editor->undo();
+	_editor->undo(_routeMode);
 	if (_txtTooltip->getVisible())
 		txtTooltipIn(action);
-	_map->draw();
+	_map->draw(); // update map
+	setSelectedNode(_selectedNode); // update node information
 }
 
 /**
@@ -1020,10 +1077,11 @@ void MapEditorState::btnUndoClick(Action *action)
  */
 void MapEditorState::btnRedoClick(Action *action)
 {
-	_editor->redo();
+	_editor->redo(_routeMode);
 	if (_txtTooltip->getVisible())
 		txtTooltipIn(action);
-	_map->draw();
+	_map->draw(); // update map
+	setSelectedNode(_selectedNode); // update node information
 }
 
 /**
@@ -1121,6 +1179,161 @@ void MapEditorState::btnTileFilterClick(Action *action)
 
 	// consume the event to keep the button held down
 	action->getDetails()->type = SDL_NOEVENT;
+}
+
+/**
+ * Handler for changing the node type combo box
+ * @param action Pointer to an action.
+ */
+void MapEditorState::cbxNodeTypeChange(Action *action)
+{
+	if (_selectedNode == 0)
+	{
+		return;
+	}
+
+	size_t selIdx = _cbxNodeType->getSelected();
+	std::vector<int> data;
+	data.push_back(_nodeTypes.at(selIdx));
+	_editor->handleNodeInput(action, _selectedNode, NCT_TYPE, data);
+}
+
+/**
+ * Handler for changing the node rank combo box
+ * @param action Pointer to an action.
+ */
+void MapEditorState::cbxNodeRankChange(Action *action)
+{
+	if (_selectedNode == 0)
+	{
+		return;
+	}
+	
+	size_t selIdx = _cbxNodeRank->getSelected();
+	std::vector<int> data;
+	data.push_back((int)selIdx);
+	_editor->handleNodeInput(action, _selectedNode, NCT_RANK, data);
+}
+
+/**
+ * Handler for changing the node flag combo box
+ * @param action Pointer to an action.
+ */
+void MapEditorState::cbxNodeFlagChange(Action *action)
+{
+	if (_selectedNode == 0)
+	{
+		return;
+	}
+	
+	size_t selIdx = _cbxNodeFlag->getSelected();
+	std::vector<int> data;
+	data.push_back((int)selIdx);
+	_editor->handleNodeInput(action, _selectedNode, NCT_FLAG, data);
+}
+
+/**
+ * Handler for changing the node priority combo box
+ * @param action Pointer to an action.
+ */
+void MapEditorState::cbxNodePriorityChange(Action *action)
+{
+	if (_selectedNode == 0)
+	{
+		return;
+	}
+	
+	size_t selIdx = _cbxNodePriority->getSelected();
+	std::vector<int> data;
+	data.push_back((int)selIdx);
+	_editor->handleNodeInput(action, _selectedNode, NCT_PRIORITY, data);
+}
+
+/**
+ * Handler for changing the node reserved combo box
+ * @param action Pointer to an action.
+ */
+void MapEditorState::cbxNodeReservedChange(Action *action)
+{
+	if (_selectedNode == 0)
+	{
+		return;
+	}
+	
+	size_t selIdx = _cbxNodeReserved->getSelected();
+	std::vector<int> data;
+	data.push_back((int)selIdx);
+	_editor->handleNodeInput(action, _selectedNode, NCT_RESERVED, data);
+}
+
+/**
+ * Handler for changing the node links combo boxes
+ * @param action Pointer to an action.
+ */
+void MapEditorState::cbxNodeLinksChange(Action *action)
+{
+	if (_selectedNode == 0)
+	{
+		return;
+	}
+	
+	int linkID;
+	for (linkID = 0; linkID < 5; ++linkID)
+	{
+		if (action->getSender() == _cbxNodeLinks.at(linkID))
+		{
+			break;
+		}
+	}
+	size_t selIdx = _cbxNodeLinks.at(linkID)->getSelected();
+
+	std::vector<int> knownLinks;
+	knownLinks.clear();
+	knownLinks.push_back(-1); // unused link
+	knownLinks.push_back(-2); // exit north
+	knownLinks.push_back(-3); // exit east
+	knownLinks.push_back(-4); // exit south
+	knownLinks.push_back(-5); // exit west
+	for (auto otherNode : *_save->getNodes())
+	{
+		if (_selectedNode->getID() == otherNode->getID())
+		{
+			continue;
+		}
+		knownLinks.push_back(otherNode->getID());
+	}
+
+	std::vector<int> data;
+	data.push_back(linkID);
+	data.push_back(knownLinks.at(selIdx));
+	_editor->handleNodeInput(action, _selectedNode, NCT_LINKS, data);
+}
+
+/**
+ * Handler for changing the node link types combo boxes
+ * @param action Pointer to an action.
+ */
+void MapEditorState::cbxNodeLinkTypesChange(Action *action)
+{
+	if (_selectedNode == 0)
+	{
+		return;
+	}
+	
+	int linkID;
+	for (linkID = 0; linkID < 5; ++linkID)
+	{
+		if (action->getSender() == _cbxNodeLinkTypes.at(linkID))
+		{
+			break;
+		}
+	}
+	size_t selIdx = _cbxNodeLinkTypes.at(linkID)->getSelected();
+
+	std::vector<int> data;
+	data.push_back(linkID);
+	data.push_back(_nodeTypes.at(selIdx));
+	_editor->handleNodeInput(action, _selectedNode, NCT_LINKS, data);
 }
 
 /**
@@ -1379,8 +1592,9 @@ void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 		i->setVisible(!hide && !openInfo);
 	}
 
+	// TODO: remove magic numbers
 	int cbx0 = (!hide && openInfo) ? 8 : 8 - 160;
-	int cbx1 = (!hide && openInfo) ? 132 : 132 - 160;
+	int cbx1 = (!hide && openInfo) ? 124 : 124 - 160;
 	int cbx2 = (!hide && !openInfo) ? 8 : 8 - 160;
 	int cbx3 = (!hide && !openInfo) ? 84 : 84 - 160;
 
@@ -1463,6 +1677,10 @@ void MapEditorState::setSelectedNode(Node *node)
 		knownLinks.push_back("STR_LINK_WEST");
 		for (auto otherNode : *_save->getNodes())
 		{
+			if (_selectedNode->getID() == otherNode->getID())
+			{
+				continue;
+			}
 			knownLinks.push_back(std::to_string(otherNode->getID()));
 		}
 
@@ -1477,7 +1695,19 @@ void MapEditorState::setSelectedNode(Node *node)
 			_cbxNodeLinks.at(i)->setOptions(knownLinks, true);
 			int linkID = node->getNodeLinks()->at(i);
 			// -1 = unused, -2 = north, -3 = east, -4 = south, -5 = west (from BattlescapeGenerator::loadRMP)
-			linkID = linkID < 0 ? -linkID - 1 : 5 + linkID;
+			if (linkID < 0)
+			{
+				linkID = -linkID - 1;
+			}
+			// this node's ID is excluded from the links in the list, so we lose that ID number in the list index
+			else if (linkID > node->getID())
+			{
+				linkID += 4;
+			}
+			else
+			{
+				linkID += 5;
+			}
 			_cbxNodeLinks.at(i)->setSelected(linkID);
 			_cbxNodeLinkTypes.at(i)->setOptions(_nodeTypeStrings, true);
 			_cbxNodeLinkTypes.at(i)->setSelected(node->getLinkTypes()->at(i));			
@@ -1579,7 +1809,14 @@ void MapEditorState::txtTooltipIn(Action *action)
 		if (action->getSender() == _btnUndo || action->getSender() == _btnRedo)
 		{
 			std::ostringstream ss;
-			ss << tr(_currentTooltip).arg(std::to_string(_editor->getEditRegisterPosition())).arg(std::to_string(_editor->getEditRegisterSize()));
+			if (!_routeMode)
+			{
+				ss << tr(_currentTooltip).arg(std::to_string(_editor->getTileRegisterPosition())).arg(std::to_string(_editor->getTileRegisterSize()));
+			}
+			else
+			{
+				ss << tr(_currentTooltip).arg(std::to_string(_editor->getNodeRegisterPosition())).arg(std::to_string(_editor->getNodeRegisterSize()));
+			}
 			_txtTooltip->setText(ss.str());
 		}
 		else

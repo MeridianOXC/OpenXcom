@@ -130,6 +130,15 @@ NodeRank Node::getRank() const
 }
 
 /**
+ * Set the rank of units that can spawn on this node.
+ * @param rank the new node rank
+ */
+void Node::setRank(int rank)
+{
+	_rank = rank;
+}
+
+/**
  * Get the priority of this spawnpoint.
  * @return priority
  */
@@ -139,12 +148,30 @@ int Node::getPriority() const
 }
 
 /**
+ * Sets the node's priority
+ * @param priority the priority of the spawn point
+ */
+void Node::setPriority(int priority)
+{
+	_priority = priority;
+}
+
+/**
  * Gets the Node's position.
  * @return position
  */
 Position Node::getPosition() const
 {
 	return _pos;
+}
+
+/**
+ * Sets the Node's position.
+ * @param pos the new position
+ */
+void Node::setPosition(Position pos)
+{
+	_pos = pos;
 }
 
 /**
@@ -201,9 +228,27 @@ bool Node::isTarget() const
 	return _reserved == 5;
 }
 
+/**
+ * Sets the node as a target or not
+ * @param reserved is a target if == 5
+ */
+void Node::setReserved(int reserved)
+{
+	_reserved = reserved;
+}
+
 void Node::setType(int type)
 {
 	_type = type;
+}
+
+/**
+ * Set's the nodes "flags" variable
+ * @param flags the patrol desirability value
+ */
+void Node::setFlags(int flags)
+{
+	_flags = flags;
 }
 
 void Node::setDummy(bool dummy)
