@@ -80,7 +80,6 @@ private:
 	Uint8 _indicatorTextColor, _indicatorGreen, _indicatorBlue, _indicatorPurple;
 	int _tileSelectionColumns, _tileSelectionRows, _tileSelectionCurrentPage, _tileSelectionLastPage;
 	int _selectedTileIndex;
-	Node *_selectedNode;
 	// Route mode elements
 	bool _routeMode;
 	InteractiveSurface *_iconsUpperLeftNodes;
@@ -173,10 +172,8 @@ public:
 	void setRouteMode(bool routeMode);
 	/// Gets whether route mode is on or off.
 	bool getRouteMode();
-	/// Sets the selected node in route mode and updates the info panel for the node.
-	void setSelectedNode(Node *node);
-	/// Gets the selected node.
-	Node *getSelectedNode();
+	/// Updates the info/connection panels for the selected node/nodes.
+	void updateNodePanels();
 	/// Clears mouse-scrolling state.
 	void clearMouseScrollingState();
 	/// Returns a pointer to the battlegame, in case we need its functions.

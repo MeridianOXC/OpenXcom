@@ -122,7 +122,7 @@ public :
     /// Handles input passed to the Editor from the BattlescapeState
     void handleEditorInput(Action *action, Tile *tile);
     /// Handles inputs passed to the editor from the node information panels
-    void handleNodeInput(Action *action, Node *node, NodeChangeType changeType, std::vector<int> data);
+    void handleNodeInput(Action *action, NodeChangeType changeType, std::vector<int> data);
     /// Changes tile data according to the selected tiles and map data
     void changeTiles(EditType action);
     /// Changes node data according to the selected nodes and route data
@@ -143,6 +143,10 @@ public :
     int getNodeRegisterPosition();
     /// Gets the number of edits in the node register
     int getNodeRegisterSize();
+    /// Gets a pointer to the list of selected tiles for editing
+    std::vector< Tile* > *getSelectedTiles();
+    /// Gets a pointer to the list of selected nodes for editing
+    std::vector< Node* > *getSelectedNodes();
     /// Sets the map data ID index selected
     void setSelectedMapDataID(int selectedIndex);
     /// Gets the map data ID index selected

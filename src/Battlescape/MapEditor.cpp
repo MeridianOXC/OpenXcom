@@ -74,13 +74,11 @@ void MapEditor::handleEditorInput(Action *action, Tile *tile)
  * @param changeType What type of change we're doing
  * @param data The new value to change in the node
  */
-void MapEditor::handleNodeInput(Action *action, Node *node, NodeChangeType changeType, std::vector<int> data)
+void MapEditor::handleNodeInput(Action *action, NodeChangeType changeType, std::vector<int> data)
 {
-    if (node != 0)
+    if (!_selectedNodes.empty())
     {
-        _selectedNodes.push_back(node);
         changeNodes(MET_DO, changeType, data);
-        _selectedNodes.clear();
     }
 }
 
@@ -589,6 +587,22 @@ int MapEditor::getNodeRegisterPosition()
 int MapEditor::getNodeRegisterSize()
 {
     return (int)_nodeRegister.size();
+}
+
+/**
+ * Gets a pointer to the list of selected tiles for editing
+ */
+std::vector<Tile*> *MapEditor::getSelectedTiles()
+{
+    return &_selectedTiles;
+}
+
+/**
+ * Gets a pointer to the list of selected nodes for editing
+ */
+std::vector<Node*> *MapEditor::getSelectedNodes()
+{
+    return &_selectedNodes;
 }
 
 /**

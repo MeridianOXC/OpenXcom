@@ -69,7 +69,7 @@ namespace OpenXcom
  * @param editor Pointer to the data structure for the in-game map editor
  */
 MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseScrolling(false), _isMouseScrolled(false), _xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(0), _mouseOverIcons(false), _autosave(false),
-	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0), _selectedTileIndex(0), _selectedNode(0), _routeMode(false)
+	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0), _selectedTileIndex(0), _routeMode(false)
 {
 	const int screenWidth = Options::baseXResolution;
 	const int screenHeight = Options::baseYResolution;
@@ -653,7 +653,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		_cbxNodeLinkTypes.at(i)->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	}
 
-	setSelectedNode(0);
+	updateNodePanels();
 	toggleNodeInfoPanel(0, true);
 
 	_animTimer = new Timer(DEFAULT_ANIM_SPEED, true);
@@ -978,7 +978,12 @@ void MapEditorState::mapClick(Action *action)
 				}
 			}
 
-			setSelectedNode(clickedNode);
+			_editor->getSelectedNodes()->clear();
+			if (clickedNode)
+			{
+				_editor->getSelectedNodes()->push_back(clickedNode);
+			}
+			updateNodePanels();
 			updateDebugText();
 		}
 
@@ -1068,7 +1073,7 @@ void MapEditorState::btnUndoClick(Action *action)
 	if (_txtTooltip->getVisible())
 		txtTooltipIn(action);
 	_map->draw(); // update map
-	setSelectedNode(_selectedNode); // update node information
+	updateNodePanels(); // update node information
 }
 
 /**
@@ -1081,7 +1086,7 @@ void MapEditorState::btnRedoClick(Action *action)
 	if (_txtTooltip->getVisible())
 		txtTooltipIn(action);
 	_map->draw(); // update map
-	setSelectedNode(_selectedNode); // update node information
+	updateNodePanels(); // update node information
 }
 
 /**
@@ -1187,7 +1192,7 @@ void MapEditorState::btnTileFilterClick(Action *action)
  */
 void MapEditorState::cbxNodeTypeChange(Action *action)
 {
-	if (_selectedNode == 0)
+	if (_editor->getSelectedNodes()->empty())
 	{
 		return;
 	}
@@ -1195,7 +1200,7 @@ void MapEditorState::cbxNodeTypeChange(Action *action)
 	size_t selIdx = _cbxNodeType->getSelected();
 	std::vector<int> data;
 	data.push_back(_nodeTypes.at(selIdx));
-	_editor->handleNodeInput(action, _selectedNode, NCT_TYPE, data);
+	_editor->handleNodeInput(action, NCT_TYPE, data);
 }
 
 /**
@@ -1204,7 +1209,7 @@ void MapEditorState::cbxNodeTypeChange(Action *action)
  */
 void MapEditorState::cbxNodeRankChange(Action *action)
 {
-	if (_selectedNode == 0)
+	if (_editor->getSelectedNodes()->empty())
 	{
 		return;
 	}
@@ -1212,7 +1217,7 @@ void MapEditorState::cbxNodeRankChange(Action *action)
 	size_t selIdx = _cbxNodeRank->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, _selectedNode, NCT_RANK, data);
+	_editor->handleNodeInput(action, NCT_RANK, data);
 }
 
 /**
@@ -1221,7 +1226,7 @@ void MapEditorState::cbxNodeRankChange(Action *action)
  */
 void MapEditorState::cbxNodeFlagChange(Action *action)
 {
-	if (_selectedNode == 0)
+	if (_editor->getSelectedNodes()->empty())
 	{
 		return;
 	}
@@ -1229,7 +1234,7 @@ void MapEditorState::cbxNodeFlagChange(Action *action)
 	size_t selIdx = _cbxNodeFlag->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, _selectedNode, NCT_FLAG, data);
+	_editor->handleNodeInput(action, NCT_FLAG, data);
 }
 
 /**
@@ -1238,7 +1243,7 @@ void MapEditorState::cbxNodeFlagChange(Action *action)
  */
 void MapEditorState::cbxNodePriorityChange(Action *action)
 {
-	if (_selectedNode == 0)
+	if (_editor->getSelectedNodes()->empty())
 	{
 		return;
 	}
@@ -1246,7 +1251,7 @@ void MapEditorState::cbxNodePriorityChange(Action *action)
 	size_t selIdx = _cbxNodePriority->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, _selectedNode, NCT_PRIORITY, data);
+	_editor->handleNodeInput(action, NCT_PRIORITY, data);
 }
 
 /**
@@ -1255,7 +1260,7 @@ void MapEditorState::cbxNodePriorityChange(Action *action)
  */
 void MapEditorState::cbxNodeReservedChange(Action *action)
 {
-	if (_selectedNode == 0)
+	if (_editor->getSelectedNodes()->empty())
 	{
 		return;
 	}
@@ -1263,7 +1268,7 @@ void MapEditorState::cbxNodeReservedChange(Action *action)
 	size_t selIdx = _cbxNodeReserved->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, _selectedNode, NCT_RESERVED, data);
+	_editor->handleNodeInput(action, NCT_RESERVED, data);
 }
 
 /**
@@ -1272,7 +1277,7 @@ void MapEditorState::cbxNodeReservedChange(Action *action)
  */
 void MapEditorState::cbxNodeLinksChange(Action *action)
 {
-	if (_selectedNode == 0)
+	if (_editor->getSelectedNodes()->empty())
 	{
 		return;
 	}
@@ -1296,17 +1301,13 @@ void MapEditorState::cbxNodeLinksChange(Action *action)
 	knownLinks.push_back(-5); // exit west
 	for (auto otherNode : *_save->getNodes())
 	{
-		if (_selectedNode->getID() == otherNode->getID())
-		{
-			continue;
-		}
 		knownLinks.push_back(otherNode->getID());
 	}
 
 	std::vector<int> data;
 	data.push_back(linkID);
 	data.push_back(knownLinks.at(selIdx));
-	_editor->handleNodeInput(action, _selectedNode, NCT_LINKS, data);
+	_editor->handleNodeInput(action, NCT_LINKS, data);
 }
 
 /**
@@ -1315,7 +1316,7 @@ void MapEditorState::cbxNodeLinksChange(Action *action)
  */
 void MapEditorState::cbxNodeLinkTypesChange(Action *action)
 {
-	if (_selectedNode == 0)
+	if (_editor->getSelectedNodes()->empty())
 	{
 		return;
 	}
@@ -1333,7 +1334,7 @@ void MapEditorState::cbxNodeLinkTypesChange(Action *action)
 	std::vector<int> data;
 	data.push_back(linkID);
 	data.push_back(_nodeTypes.at(selIdx));
-	_editor->handleNodeInput(action, _selectedNode, NCT_LINKS, data);
+	_editor->handleNodeInput(action, NCT_LINKS, data);
 }
 
 /**
@@ -1458,9 +1459,9 @@ inline void MapEditorState::handle(Action *action)
 void MapEditorState::updateDebugText()
 {
 	// TODO: move info elsewhere or behind toggle
-	if (_selectedNode)
+	if (_editor->getSelectedNodes()->size() == 1)
 	{
-		_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR_NODE").arg(_selectedNode->getPosition()).arg(_selectedNode->getID()));
+		_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR_NODE").arg(_editor->getSelectedNodes()->front()->getPosition()).arg(_editor->getSelectedNodes()->front()->getID()));
 		return;
 	}
 
@@ -1631,92 +1632,18 @@ bool MapEditorState::getRouteMode()
 }
 
 /**
- * Sets the selected node in route mode and updates the info panel for the node.
- * @param node Pointer to the node.
+ * Updates the info/connection panels for the selected node/nodes.
+ * Used the selected nodes from the editor
  */
-void MapEditorState::setSelectedNode(Node *node)
+void MapEditorState::updateNodePanels()
 {
 	std::vector<std::string> linkChoices;
 	linkChoices.clear();
+	std::string emptyString = "--";
 
-	if (node)
+	// no selected nodes: clear the info/connections panels
+	if (_editor->getSelectedNodes()->empty())
 	{
-		_selectedNode = node;
-
-		_txtNodeID->setText(tr("STR_NODE_ID").arg(_selectedNode->getID()).arg(_selectedNode->getPosition()));
-
-		_cbxNodeType->setOptions(_nodeTypeStrings, true);
-		_cbxNodeType->setSelected(_nodeTypes.at(node->getType()));
-
-		_cbxNodeRank->setOptions(_nodeRankStrings, true);
-		_cbxNodeRank->setSelected(node->getRank());
-
-		std::vector<std::string> numberStrings;
-		numberStrings.clear();
-		for (int i = 0; i < 10; ++i)
-		{
-			numberStrings.push_back(std::to_string(i));
-		}
-
-		_cbxNodeFlag->setOptions(numberStrings, false);
-		_cbxNodeFlag->setSelected(node->getFlags());
-
-		_cbxNodePriority->setOptions(numberStrings, false);
-		_cbxNodePriority->setSelected(node->getPriority());
-
-		_cbxNodeReserved->setOptions(numberStrings, false);
-		_cbxNodeReserved->setSelected(node->isTarget() ? 5 : 0);
-
-		
-		std::vector<std::string> knownLinks;
-		knownLinks.clear();
-		knownLinks.push_back("STR_LINK_UNUSED");
-		knownLinks.push_back("STR_LINK_NORTH");
-		knownLinks.push_back("STR_LINK_EAST");
-		knownLinks.push_back("STR_LINK_SOUTH");
-		knownLinks.push_back("STR_LINK_WEST");
-		for (auto otherNode : *_save->getNodes())
-		{
-			if (_selectedNode->getID() == otherNode->getID())
-			{
-				continue;
-			}
-			knownLinks.push_back(std::to_string(otherNode->getID()));
-		}
-
-		for (auto linkedNode : *node->getNodeLinks())
-		{
-			//knownLinks.push_back(linkedNode);
-			linkChoices.push_back(std::to_string(linkedNode));
-		}
-
-		for (int i = 0; i < 5; ++i)
-		{
-			_cbxNodeLinks.at(i)->setOptions(knownLinks, true);
-			int linkID = node->getNodeLinks()->at(i);
-			// -1 = unused, -2 = north, -3 = east, -4 = south, -5 = west (from BattlescapeGenerator::loadRMP)
-			if (linkID < 0)
-			{
-				linkID = -linkID - 1;
-			}
-			// this node's ID is excluded from the links in the list, so we lose that ID number in the list index
-			else if (linkID > node->getID())
-			{
-				linkID += 4;
-			}
-			else
-			{
-				linkID += 5;
-			}
-			_cbxNodeLinks.at(i)->setSelected(linkID);
-			_cbxNodeLinkTypes.at(i)->setOptions(_nodeTypeStrings, true);
-			_cbxNodeLinkTypes.at(i)->setSelected(node->getLinkTypes()->at(i));			
-		}
-	}
-	else
-	{
-		_selectedNode = 0;
-		std::string emptyString = "--";
 		_txtNodeID->setText(tr("STR_NODE_ID").arg(emptyString).arg(Position(-1, -1, -1)));
 		linkChoices.push_back(emptyString);
 
@@ -1739,6 +1666,114 @@ void MapEditorState::setSelectedNode(Node *node)
 		{
 			i->setOptions(linkChoices, false);
 			i->setSelected(0);
+		}
+
+		return;
+	}
+
+	// populate the information and combo boxes
+	if (_editor->getSelectedNodes()->size() == 1)
+	{
+		_txtNodeID->setText(tr("STR_NODE_ID").arg(_editor->getSelectedNodes()->front()->getID()).arg(_editor->getSelectedNodes()->front()->getPosition()));
+	}
+	else
+	{
+		_txtNodeID->setText(tr("STR_NODE_ID").arg(emptyString).arg(Position(-1, -1, -1)));			
+	}
+
+	_cbxNodeType->setOptions(_nodeTypeStrings, true);
+	_cbxNodeRank->setOptions(_nodeRankStrings, true);
+
+	std::vector<std::string> numberStrings;
+	numberStrings.clear();
+	for (int i = 0; i < 10; ++i)
+	{
+		numberStrings.push_back(std::to_string(i));
+	}
+	_cbxNodeFlag->setOptions(numberStrings, false);
+	_cbxNodePriority->setOptions(numberStrings, false);
+	_cbxNodeReserved->setOptions(numberStrings, false);
+
+	linkChoices.push_back("STR_LINK_UNUSED");
+	linkChoices.push_back("STR_LINK_NORTH");
+	linkChoices.push_back("STR_LINK_EAST");
+	linkChoices.push_back("STR_LINK_SOUTH");
+	linkChoices.push_back("STR_LINK_WEST");
+	for (auto node : *_save->getNodes())
+	{
+		linkChoices.push_back(std::to_string(node->getID()));
+	}
+	for (int i = 0; i < 5; ++i)
+	{
+		_cbxNodeLinks.at(i)->setOptions(linkChoices, true);
+		_cbxNodeLinkTypes.at(i)->setOptions(_nodeTypeStrings, true);		
+	}
+
+
+	// set the displayed value for the combo boxes
+	// if there's more than one node, we'll only display the values for those that have all the same value
+	// start by setting the values according to the first node selected, then change the display if the following nodes differ
+	_cbxNodeType->setSelected(_editor->getSelectedNodes()->front()->getType());
+	_cbxNodeRank->setSelected(_editor->getSelectedNodes()->front()->getRank());
+	_cbxNodeFlag->setSelected(_editor->getSelectedNodes()->front()->getFlags());
+	_cbxNodePriority->setSelected(_editor->getSelectedNodes()->front()->getPriority());
+	_cbxNodeReserved->setSelected(_editor->getSelectedNodes()->front()->isTarget() ? 5 : 0);
+	for (int i = 0; i < 5; ++i)
+	{
+		int linkID = _editor->getSelectedNodes()->front()->getNodeLinks()->at(i);
+		// -1 = unused, -2 = north, -3 = east, -4 = south, -5 = west (from BattlescapeGenerator::loadRMP)
+		linkID = linkID < 0 ? -linkID - 1 : linkID + 5;
+		_cbxNodeLinks.at(i)->setSelected(linkID);
+		_cbxNodeLinkTypes.at(i)->setSelected(_editor->getSelectedNodes()->front()->getLinkTypes()->at(i));
+	}
+
+	// if there's just one node, we can stop here
+	if (_editor->getSelectedNodes()->size() == 1)
+	{
+		return;
+	}
+
+	// check through selected nodes and see if we need to mark out fields that have different values across nodes
+	for (auto node : *_editor->getSelectedNodes())
+	{
+		if (_cbxNodeType->getSelected() != (size_t)node->getType())
+		{
+			_cbxNodeType->setText(emptyString);
+		}
+
+		if (_cbxNodeRank->getSelected() != (size_t)node->getRank())
+		{
+			_cbxNodeType->setText(emptyString);
+		}
+
+		if (_cbxNodeFlag->getSelected() != (size_t)node->getFlags())
+		{
+			_cbxNodeFlag->setText(emptyString);
+		}
+
+		if (_cbxNodePriority->getSelected() != (size_t)node->getPriority())
+		{
+			_cbxNodePriority->setText(emptyString);
+		}
+
+		if (_cbxNodeReserved->getSelected() != (node->isTarget() ? 5 : 0))
+		{
+			_cbxNodeReserved->setText(emptyString);
+		}
+
+		for (int i = 0; i < 5; ++i)
+		{
+			int linkID = node->getNodeLinks()->at(i);
+			linkID = linkID < 0 ? -linkID - 1 : linkID + 5;
+			if (_cbxNodeLinks.at(i)->getSelected() != (size_t)linkID)
+			{
+				_cbxNodeLinks.at(i)->setText(emptyString);
+			}
+
+			if (_cbxNodeLinkTypes.at(i)->getSelected() != (size_t)node->getLinkTypes()->at(i))
+			{
+				_cbxNodeLinkTypes.at(i)->setText(emptyString);
+			}
 		}
 	}
 }
