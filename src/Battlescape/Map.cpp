@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <math.h>
 #include "Map.h"
 #include "Camera.h"
 #include "UnitSprite.h"
@@ -897,11 +898,12 @@ void Map::drawTerrain(Surface *surface)
 
 	bool pathfinderTurnedOn = _save->getPathfinding()->isPathPreviewed();
 
-	if (!_waypoints.empty() || (pathfinderTurnedOn && (_previewSettingTu || _previewSettingEnergy)))
+	if (!_waypoints.empty() || (pathfinderTurnedOn && (_previewSettingTu || _previewSettingEnergy)) || 
+		(_game->isState(_save->getMapEditorState()) && _save->getMapEditorState()->getRouteMode()))
 	{
 		_numWaypid = new NumberText(15, 15, 20, 30);
 		_numWaypid->setPalette(getPalette());
-		_numWaypid->setColor(pathfinderTurnedOn ? _messageColor + 1 : Palette::blockOffset(1));
+		_numWaypid->setColor(pathfinderTurnedOn || _save->getMapEditorState()->getRouteMode() ? _messageColor + 1 : Palette::blockOffset(1));
 	}
 
 	if (movingUnit)
@@ -1790,21 +1792,25 @@ void Map::drawTerrain(Surface *surface)
 		}
 	}
 
-	// Draw arrows over nodes for the map editor
+	// Draw markers for nodes in the map editor
 	// TODO: toggle for showing nodes/not
 	// TODO: toggle for showing nodes above/below current level
 	// TODO: toggle for drawing connections
 	// TODO: draw lines between connected nodes, color/dash based on connection type
 	// TODO: replace with pathfinding circle colors based on type
 	// TODO: logically order drawing for nodes/lines that are out of plane
+	// TODO: make new order: outlines for out-of-plane nodes -> lines+arrows -> numbers for ID, spawn, and rank
 	if (_game->isState(_save->getMapEditorState()) && _save->getMapEditorState()->getRouteMode())
 	{
+		// First draw node markers and lines
 		for (auto node : *_save->getNodes())
 		{
 			Position nodePos = node->getPosition();
 			_camera->convertMapToScreen(nodePos, &screenPosition);
 			screenPosition += _camera->getMapOffset();
 
+			// Show nodes below the current level as dashed/"transparent" marker
+			// Don't show nodes above the current level
 			int markerFrame = 10;
 			if (nodePos.z < _camera->getViewLevel())
 			{
@@ -1825,6 +1831,7 @@ void Map::drawTerrain(Surface *surface)
 				Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0, false, markerColor);
 			}
 
+			// Draw lines and arrows for connections between nodes
 			Position startLinePos = screenPosition;
 			startLinePos.x += _spriteWidth / 2;
 			startLinePos.y += _spriteHeight * 4 / 5;
@@ -1839,19 +1846,80 @@ void Map::drawTerrain(Surface *surface)
 
 				if (otherNode)
 				{
+					// draw line to other node
 					_camera->convertMapToScreen(otherNode->getPosition(), &screenPosition);
 					screenPosition += _camera->getMapOffset();
 					endLinePos = screenPosition;
 					endLinePos.x += _spriteWidth / 2;
 					endLinePos.y += _spriteHeight * 4 / 5;
 					surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, 4*16 + 4);
+
+					// draw triangle for arrow showing direction of connection
+					Sint16 offset = 10; // move the arrow slightly off of the center of the node marker to not overlap as much
+					Sint16 length = 10;
+					Sint16 width = 3;
+
+					int x1 = startLinePos.x;
+					int x2 = endLinePos.x;
+					int y1 = startLinePos.y;
+					int y2 = endLinePos.y;
+
+					// start by determining the angle of the line we drew
+					float angle = atan2(y2 - y1, x2 - x1);
+					float cc = cos(angle);
+					float ss = sin(angle);
+
+					// rotate points of a triangle to face the node and shift them to the position of the node
+					Sint16 arrowX[3] = {-offset, -(offset + length), -(offset + length)};
+					Sint16 arrowY[3] = {0, width, -width};
+					Sint16 arrayX[3];
+					Sint16 arrayY[3];
+					for (int i = 0; i < 3; ++i)
+					{
+						arrayX[i] = (float)arrowX[i] * cc - (float)arrowY[i] * ss;
+						arrayY[i] = (float)arrowX[i] * ss + (float)arrowY[i] * cc;
+						arrayX[i] += x2;
+						arrayY[i] += y2;
+					}
+
+					// now actually draw
+					surface->drawPolygon(arrayX, arrayY, 3, 4*16 + 4);
 				}
 			}
-
+			
 			//if (node = _save->getMapEditorState()->getSelectedNode())
 			//_arrow->blitNShade(surface, screenPosition.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2), screenPosition.y + (_spriteWidth * 1 / 5) - _arrow->getHeight() + getArrowBobForFrame(_animFrame), 0);
 		}
+
+		// Next add numbers for node IDs, spawn priority, and spawn rank
+		for (auto node : *_save->getNodes())
+		{
+			Position nodePos = node->getPosition();
+			_camera->convertMapToScreen(nodePos, &screenPosition);
+			screenPosition += _camera->getMapOffset();
+			
+			if (nodePos.z > _camera->getViewLevel())
+			{
+				continue;
+			}
+
+			// Add numbers over each node to indicate their ID
+			int off = node->getID() > 9 ? 5 : 3;
+			_numWaypid->setBordered(true);
+			_numWaypid->setValue(node->getID());
+			_numWaypid->draw();
+			_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + 29, 0, false, 0);
+
+			// Add numbers for spawn priority and rank
+			_numWaypid->setValue(node->getPriority());
+			_numWaypid->draw();
+			_numWaypid->blitNShade(surface, screenPosition.x + 3, screenPosition.y + 16, 0, false, 0);
+			_numWaypid->setValue(node->getRank());
+			_numWaypid->draw();
+			_numWaypid->blitNShade(surface, screenPosition.x + 3, screenPosition.y + 16 + 8, 0, false, 0);
+		}
 	}
+
 	delete _numWaypid;
 
 	// Draw craft deployment preview arrows
