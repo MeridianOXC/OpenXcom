@@ -82,8 +82,10 @@ private:
 	int _selectedTileIndex;
 	// Route mode elements
 	bool _routeMode;
-	InteractiveSurface *_iconsUpperLeftNodes;
-	BattlescapeButton *_btnRouteInformation, *_btnRouteConnections, *_nodeButtonClicked;
+	InteractiveSurface *_iconsUpperRightNodes, *_iconsUpperLeftNodes;
+	BattlescapeButton *_nodeEditMode;
+	BattlescapeButton *_btnSelectedNode, *_btnNodeFilterSelect, *_btnNodeFilterMove, *_btnNodeFilterOneWayConnect, *_btnNodeFilterTwoWayConnect;
+	BattlescapeButton *_btnRouteInformation, *_btnRouteConnections;
 	InteractiveSurface *_panelRouteInformation;
 	Text *_txtNodeID, *_txtNodeType, *_txtNodeRank, *_txtNodeFlag, *_txtNodePriority, *_txtNodeReserved, *_txtNodeLinks;
 	ComboBox *_cbxNodeType, *_cbxNodeRank, *_cbxNodeFlag, *_cbxNodePriority, *_cbxNodeReserved;
@@ -136,6 +138,8 @@ public:
 	//void btnPasteClick(Action *action);
 	/// Handler for pressing the tile filter buttons.
 	void btnTileFilterClick(Action *action);
+	/// Handler for pressing the node filter buttons.
+	void btnNodeFilterClick(Action *action);
 	/// Handler for changing the node type combo box
 	void cbxNodeTypeChange(Action *action);
 	/// Handler for changing the node rank combo box

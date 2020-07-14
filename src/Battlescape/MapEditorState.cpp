@@ -189,15 +189,40 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		}
 	}
 
-	//// TODO: got some overlaps and bad spacings
+
 	// Elements for route editing mode
-	int nodePanelWidth = 5 * 32;
-	//// TODO: switch buttons here to BattlescapeButton for group handling, sprites for them
+	// We keep the lower-left icons the same between modes, no need to make a new set for that
+	//_iconsLowerRightNodes
+
+	_iconsUpperRightNodes = new InteractiveSurface(160, 40, screenWidth - 160, 0);
+	for (int i = 0; i < 5; ++i)
+	{
+		icons->getFrame(i + 40)->blitNShade(_iconsUpperRightNodes, i * 32, 0);
+	}
+	_btnSelectedNode = new BattlescapeButton(32, 40, screenWidth - 160, 0);
+	_btnSelectedNode->setColor(232);
+	_btnNodeFilterSelect = new BattlescapeButton(32, 40, screenWidth - 128, 0);
+	_btnNodeFilterSelect->setColor(232);
+	_btnNodeFilterMove = new BattlescapeButton(32, 40, screenWidth - 96, 0);
+	_btnNodeFilterMove->setColor(232);
+	_btnNodeFilterOneWayConnect = new BattlescapeButton(32, 40, screenWidth - 64, 0);
+	_btnNodeFilterOneWayConnect->setColor(232);
+	_btnNodeFilterTwoWayConnect = new BattlescapeButton(32, 40, screenWidth - 32, 0);
+	_btnNodeFilterTwoWayConnect->setColor(232);
+
+	_nodeEditMode = _btnNodeFilterSelect;
+	//_btnNodeFilterSelect->setGroup(&_nodeEditMode); // this one will have group set when first switching to route mode
+	_btnNodeFilterMove->setGroup(&_nodeEditMode);
+	_btnNodeFilterOneWayConnect->setGroup(&_nodeEditMode);
+	_btnNodeFilterTwoWayConnect->setGroup(&_nodeEditMode);
+
+	//// TODO: sprites for the buttons
 	_iconsUpperLeftNodes = new InteractiveSurface(64, 16, 0, 0);
 	icons->getFrame(45)->blitNShade(_iconsUpperLeftNodes, 0, 0);
 	icons->getFrame(46)->blitNShade(_iconsUpperLeftNodes, 32, 0);
 	_btnRouteInformation = new BattlescapeButton(32, 16, 0, 0);
 	_btnRouteConnections = new BattlescapeButton(32, 16, 32, 0);
+	int nodePanelWidth = 5 * 32;
 	_panelRouteInformation = new InteractiveSurface(nodePanelWidth, tileSelectionHeight > 132 ? tileSelectionHeight : 132, 0, 16);
 	// General information panel
 	_txtNodeID = new Text(144, 10, 4, 20);
@@ -301,7 +326,13 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		i->onMouseClick((ActionHandler)&MapEditorState::tileSelectionGridClick);
 	}
 
+	add(_iconsUpperRightNodes);
 	add(_iconsUpperLeftNodes);
+	add(_btnSelectedNode, "", "battlescape", _iconsUpperRightNodes);
+	add(_btnNodeFilterSelect, "", "battlescape", _iconsUpperRightNodes);
+	add(_btnNodeFilterMove, "", "battlescape", _iconsUpperRightNodes);
+	add(_btnNodeFilterOneWayConnect, "", "battlescape", _iconsUpperRightNodes);
+	add(_btnNodeFilterTwoWayConnect, "", "battlescape", _iconsUpperRightNodes);
 	add(_btnRouteInformation, "", "battlescape", _iconsUpperLeftNodes);
 	add(_btnRouteConnections, "", "battlescape", _iconsUpperLeftNodes);
 	add(_panelRouteInformation);
@@ -525,9 +556,43 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_backgroundTileSelectionNavigation->setVisible(false);
 
 	// Route mode elements
+	_iconsUpperRightNodes->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_iconsUpperRightNodes->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_iconsUpperRightNodes->setVisible(false);
+
 	_iconsUpperLeftNodes->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
 	_iconsUpperLeftNodes->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 	_iconsUpperLeftNodes->setVisible(false);
+
+	_btnSelectedNode->setVisible(false);
+
+	_btnNodeFilterSelect->onMouseClick((ActionHandler)&MapEditorState::btnNodeFilterClick);
+	_btnNodeFilterSelect->onKeyboardPress((ActionHandler)&MapEditorState::btnNodeFilterClick, SDLK_1); // change to options
+	_btnNodeFilterSelect->setTooltip("STR_TOOLTIP_NODE_SELECT");
+	_btnNodeFilterSelect->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnNodeFilterSelect->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+	_btnNodeFilterSelect->setVisible(false);
+
+	_btnNodeFilterMove->onMouseClick((ActionHandler)&MapEditorState::btnNodeFilterClick);
+	_btnNodeFilterMove->onKeyboardPress((ActionHandler)&MapEditorState::btnNodeFilterClick, SDLK_2); // change to options
+	_btnNodeFilterMove->setTooltip("STR_TOOLTIP_NODE_MOVE");
+	_btnNodeFilterMove->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnNodeFilterMove->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+	_btnNodeFilterMove->setVisible(false);
+
+	_btnNodeFilterOneWayConnect->onMouseClick((ActionHandler)&MapEditorState::btnNodeFilterClick);
+	_btnNodeFilterOneWayConnect->onKeyboardPress((ActionHandler)&MapEditorState::btnNodeFilterClick, SDLK_3); // change to options
+	_btnNodeFilterOneWayConnect->setTooltip("STR_TOOLTIP_NODE_ONEWAYCONNECT");
+	_btnNodeFilterOneWayConnect->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnNodeFilterOneWayConnect->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+	_btnNodeFilterOneWayConnect->setVisible(false);
+
+	_btnNodeFilterTwoWayConnect->onMouseClick((ActionHandler)&MapEditorState::btnNodeFilterClick);
+	_btnNodeFilterTwoWayConnect->onKeyboardPress((ActionHandler)&MapEditorState::btnNodeFilterClick, SDLK_4); // change to options
+	_btnNodeFilterTwoWayConnect->setTooltip("STR_TOOLTIP_NODE_TWOWAYCONNECT");
+	_btnNodeFilterTwoWayConnect->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnNodeFilterTwoWayConnect->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+	_btnNodeFilterTwoWayConnect->setVisible(false);
 
 	//_btnRouteInformation->setText(tr("STR_INFO"));
 	_btnRouteInformation->onMouseClick((ActionHandler)&MapEditorState::toggleNodeInfoPanel);
@@ -543,7 +608,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnRouteConnections->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_btnRouteConnections->setVisible(false);
 
-	_nodeButtonClicked = 0;
 	_panelRouteInformation->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
 	_panelRouteInformation->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 
@@ -1187,6 +1251,38 @@ void MapEditorState::btnTileFilterClick(Action *action)
 }
 
 /**
+ * Handler for pressing the node filter buttons.
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnNodeFilterClick(Action *action)
+{
+	SDL_Event ev;
+	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.button.button = SDL_BUTTON_LEFT;
+	Action a = Action(&ev, 0.0, 0.0, 0, 0);
+	action->getSender()->mousePress(&a, this);
+
+	InteractiveSurface *clickedFilter = action->getSender();
+
+	if (clickedFilter == _btnNodeFilterSelect)
+	{
+		_nodeEditMode = _btnNodeFilterSelect;
+	}
+	else if (clickedFilter == _btnNodeFilterMove)
+	{
+		_nodeEditMode = _btnNodeFilterMove;
+	}
+	else if (clickedFilter == _btnNodeFilterOneWayConnect)
+	{
+		_nodeEditMode = _btnNodeFilterOneWayConnect;
+	}
+	else if (clickedFilter == _btnNodeFilterTwoWayConnect)
+	{
+		_nodeEditMode = _btnNodeFilterTwoWayConnect;
+	}
+}
+
+/**
  * Handler for changing the node type combo box
  * @param action Pointer to an action.
  */
@@ -1520,6 +1616,26 @@ void MapEditorState::toggleRouteMode(Action *action)
 
 	_tileSelection->setVisible(!getRouteMode());
 	_backgroundTileSelection->setVisible(!getRouteMode());
+	_iconsUpperRight->setVisible(!getRouteMode());
+	_btnSelectedTile->setVisible(!getRouteMode());
+	_btnTileFilterGround->setVisible(!getRouteMode());
+	_btnTileFilterNorthWall->setVisible(!getRouteMode());
+	_btnTileFilterWestWall->setVisible(!getRouteMode());
+	_btnTileFilterObject->setVisible(!getRouteMode());
+	_iconsUpperRightNodes->setVisible(getRouteMode());
+	_btnSelectedNode->setVisible(getRouteMode());
+	_btnNodeFilterSelect->setVisible(getRouteMode());
+	_btnNodeFilterMove->setVisible(getRouteMode());
+	_btnNodeFilterOneWayConnect->setVisible(getRouteMode());
+	_btnNodeFilterTwoWayConnect->setVisible(getRouteMode());
+	// the held down node filter button will stay visible unless ungrouped
+	_nodeEditMode->setGroup(getRouteMode() ? &_nodeEditMode : 0);
+	if (!getRouteMode())
+	{		
+		action->getDetails()->type = SDL_MOUSEBUTTONUP;
+		_nodeEditMode->mouseRelease(action, this);
+		_nodeEditMode->draw();
+	}
 	_iconsUpperLeftNodes->setVisible(getRouteMode());
 	_btnRouteInformation->setVisible(getRouteMode());
 	_btnRouteConnections->setVisible(getRouteMode());
