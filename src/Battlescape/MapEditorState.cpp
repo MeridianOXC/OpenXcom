@@ -1374,6 +1374,9 @@ void MapEditorState::btnNodeFilterClick(Action *action)
 	{
 		_nodeFilterMode = _btnNodeFilterTwoWayConnect;
 	}
+
+	// update the node links panel in case we selected a connection mode and need to highlight the next available link
+	updateNodePanels();
 }
 
 /**
@@ -1498,6 +1501,9 @@ void MapEditorState::cbxNodeLinksChange(Action *action)
 	data.push_back(linkID);
 	data.push_back(knownLinks.at(selIdx));
 	_editor->handleNodeInput(action, NCT_LINKS, data);
+
+	// update the node links panel in case we're in a connection mode and need to highlight the next available link
+	updateNodePanels();
 }
 
 /**
@@ -1887,11 +1893,13 @@ void MapEditorState::updateNodePanels()
 		_cbxNodeReserved->setSelected(0);
 		for (auto i : _cbxNodeLinks)
 		{
+			i->setColor(_game->getMod()->getInterface("battlescape")->getElement("infoBoxOKButton")->color);
 			i->setOptions(linkChoices, false);
 			i->setSelected(0);
 		}
 		for (auto i : _cbxNodeLinkTypes)
 		{
+			i->setColor(_game->getMod()->getInterface("battlescape")->getElement("infoBoxOKButton")->color);
 			i->setOptions(linkChoices, false);
 			i->setSelected(0);
 		}
@@ -1958,7 +1966,33 @@ void MapEditorState::updateNodePanels()
 	// if there's just one node, we can stop here
 	if (_editor->getSelectedNodes()->size() == 1)
 	{
+		// if we're in one of the node linking modes, grey out all but the link that will be editied next when making a connection
+		Uint8 colorDisabled = 8; // TODO move to elements ruleset
+		Uint8 colorHighlighted = _game->getMod()->getInterface("battlescape")->getElement("infoBoxOKButton")->color;
+		for (int i = 0; i < 5; ++i)
+		{
+			if ((_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect) &&
+				i != _editor->getNextNodeConnectionIndex(_editor->getSelectedNodes()->front()))
+			{
+				_cbxNodeLinks.at(i)->setColor(colorDisabled);
+				_cbxNodeLinkTypes.at(i)->setColor(colorDisabled);
+			}
+			else
+			{
+				_cbxNodeLinks.at(i)->setColor(colorHighlighted);
+				_cbxNodeLinkTypes.at(i)->setColor(colorHighlighted);
+			}
+		}
 		return;
+	}
+	else
+	{
+		Uint8 colorHighlighted = _game->getMod()->getInterface("battlescape")->getElement("infoBoxOKButton")->color;
+		for (int i = 0; i < 5; ++i)
+		{
+			_cbxNodeLinks.at(i)->setColor(colorHighlighted);
+			_cbxNodeLinkTypes.at(i)->setColor(colorHighlighted);
+		}
 	}
 
 	// check through selected nodes and see if we need to mark out fields that have different values across nodes
