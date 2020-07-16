@@ -82,8 +82,9 @@ private:
 	int _selectedTileIndex;
 	// Route mode elements
 	bool _routeMode;
-	InteractiveSurface *_iconsUpperRightNodes, *_iconsUpperLeftNodes;
-	BattlescapeButton *_nodeEditMode;
+	InteractiveSurface *_iconsLowerRightNodes, *_iconsUpperRightNodes, *_iconsUpperLeftNodes;
+	BattlescapeButton *_nodeEditMode, *_nodeFilterMode;
+	BattlescapeButton *_btnNodeNew, *_btnNodeDelete, *_btnNodeCut, *_btnNodeCopy, *_btnNodePaste;
 	BattlescapeButton *_btnSelectedNode, *_btnNodeFilterSelect, *_btnNodeFilterMove, *_btnNodeFilterOneWayConnect, *_btnNodeFilterTwoWayConnect;
 	BattlescapeButton *_btnRouteInformation, *_btnRouteConnections;
 	InteractiveSurface *_panelRouteInformation;
@@ -138,6 +139,16 @@ public:
 	//void btnPasteClick(Action *action);
 	/// Handler for pressing the tile filter buttons.
 	void btnTileFilterClick(Action *action);
+	/// Handler for pressing the node new button.
+	void btnNodeNewClick(Action *action);
+	/// Handler for pressing the node delete button.
+	void btnNodeDeleteClick(Action *action);
+	/// Handler for pressing the node cut button.
+	//void btnNodeCutClick(Action *action);
+	/// Handler for pressing the node copy button.
+	//void btnNodeCopyClick(Action *action);
+	/// Handler for pressing the node paste button.
+	//void btnNodePasteClick(Action *action);
 	/// Handler for pressing the node filter buttons.
 	void btnNodeFilterClick(Action *action);
 	/// Handler for changing the node type combo box
