@@ -113,6 +113,7 @@ private :
     std::vector< Node* > _selectedNodes;
     std::string _mapname;
     TilePart _selectedObject;
+    std::map< int, int > _connectionIndexMap;
 
 public :
     /// Creates the Map Editor
@@ -129,6 +130,8 @@ public :
     void changeNodes(EditType action, NodeChangeType changeType, std::vector<int> data);
     /// Changes the data of a specific node according to the selected route data
     NodeEdit changeNodeData(Node *node, NodeChangeType changeType, std::vector<int> data);
+    /// Helper for getting which index for a connection is next for a specific node
+    int getNextNodeConnectionIndex(Node *node, bool advanceIndex = false);
     /// Un-does an action pointed to by the current position in the edit register
     void undo(bool node = false);
     /// Re-does an action pointed to by the current position in the edit register

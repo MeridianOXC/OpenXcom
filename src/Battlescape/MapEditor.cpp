@@ -442,6 +442,52 @@ NodeEdit MapEditor::changeNodeData(Node *node, NodeChangeType changeType, std::v
 }
 
 /**
+ * Helper for getting which index for a connection is next for a specific node
+ * Handles which index is used to make links when not explicitly given
+ * @param node pointer to the node
+ * @param advanceIndex used when making a connection, advance to the next available index in our data map
+ */
+int MapEditor::getNextNodeConnectionIndex(Node *node, bool advanceIndex)
+{
+    int nextAvailableIndex = -1;
+    int currentIndex = 0;
+
+    // validate that the node we're trying to examine exists
+    if (!node)
+    {
+        return nextAvailableIndex;
+    }
+
+    // check to see if we already have data on the requested node
+    std::map<int, int> it = _connectionIndexMap.find(node->getId());
+    if (it != _connectionIndexMap.end())
+    {
+        currentIndex = it->second();
+    }
+
+    // check to see if there are any unused connections on the node first
+    for (int i = 0; i < 5; ++i)
+    {
+        if (node->getNodeLinks()->at((currentIndex + i) % 5) == -1)
+        {
+            nextAvailableIndex = (currentIndex + i) % 5;
+            break;
+        }
+    }
+
+    // the available index is either the empty one we found or just the next one in line
+    nextAvailableIndex = nextAvailableIndex == -1 ? (currentIndex + 1) % 5 : nextAvailableIndex;
+
+    // if we either don't have data on this node next or advancing the stored data was requested, store that now
+    if (it == _connectionIndexMap.end() || advanceIndex)
+    {
+        _connectionIndexMap[node->getID()] = nextAvailableIndex;
+    }
+
+    return nextAvailableIndex;
+}
+
+/**
  * Un-does an action pointed to by the current position in the edit register
  */
 void MapEditor::undo(bool node)
