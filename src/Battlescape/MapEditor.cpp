@@ -442,7 +442,7 @@ NodeEdit MapEditor::changeNodeData(Node *node, NodeChangeType changeType, std::v
 }
 
 /**
- * Helper for getting which index for a connection is next for a specific node
+ * Helper function for figuring out which link is next open on a node
  * Handles which index is used to make links when not explicitly given
  * @param node pointer to the node
  * @param advanceIndex used when making a connection, advance to the next available index in our data map
@@ -459,10 +459,10 @@ int MapEditor::getNextNodeConnectionIndex(Node *node, bool advanceIndex)
     }
 
     // check to see if we already have data on the requested node
-    std::map<int, int> it = _connectionIndexMap.find(node->getId());
+    std::map<int, int>::iterator it = _connectionIndexMap.find(node->getID());
     if (it != _connectionIndexMap.end())
     {
-        currentIndex = it->second();
+        currentIndex = it->second;
     }
 
     // check to see if there are any unused connections on the node first

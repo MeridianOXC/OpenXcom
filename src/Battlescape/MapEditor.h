@@ -130,7 +130,7 @@ public :
     void changeNodes(EditType action, NodeChangeType changeType, std::vector<int> data);
     /// Changes the data of a specific node according to the selected route data
     NodeEdit changeNodeData(Node *node, NodeChangeType changeType, std::vector<int> data);
-    /// Helper for getting which index for a connection is next for a specific node
+    /// Helper function for figuring out which link is next open on a node
     int getNextNodeConnectionIndex(Node *node, bool advanceIndex = false);
     /// Un-does an action pointed to by the current position in the edit register
     void undo(bool node = false);
