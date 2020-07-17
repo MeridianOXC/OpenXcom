@@ -134,6 +134,8 @@ public :
     void undoRedoNodes(EditType action);
     /// Helper function for figuring out which link is next open on a node
     int getNextNodeConnectionIndex(Node *node, bool advanceIndex = false);
+    /// Helper function for figuring out whether a node is linked to a certain other
+    int getConnectionIndexToNode(Node *nodeToCheck, Node *linkedNode);
     /// Un-does an action pointed to by the current position in the edit register
     void undo(bool node = false);
     /// Re-does an action pointed to by the current position in the edit register

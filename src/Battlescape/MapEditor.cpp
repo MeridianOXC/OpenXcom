@@ -457,6 +457,26 @@ int MapEditor::getNextNodeConnectionIndex(Node *node, bool advanceIndex)
 }
 
 /**
+ * Helper function for figuring out whether a node is linked to a certain other
+ * Returns the index of the link if nodeToCheck is linked to linkedNode
+ * Returns -1 if linkedNode is not connected to nodeToCheck
+ */
+int MapEditor::getConnectionIndexToNode(Node *nodeToCheck, Node *linkedNode)
+{
+    int connectionIndex = -1;
+    for (int i = 0; i < 5; ++i)
+    {
+        if (nodeToCheck->getNodeLinks()->at(i) == linkedNode->getID())
+        {
+            connectionIndex = i;
+            break;
+        }
+    }
+
+    return connectionIndex;
+}
+
+/**
  * Un-does an action pointed to by the current position in the edit register
  */
 void MapEditor::undo(bool node)

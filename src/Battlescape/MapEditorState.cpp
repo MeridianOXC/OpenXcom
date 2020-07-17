@@ -1118,6 +1118,8 @@ void MapEditorState::mapClick(Action *action)
 			// right-click: determine what action we're taking by what modes are selected
 			else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 			{
+				std::vector<int> data;
+				
 				// new node mode: create new node, move, or make links
 				if (_nodeEditMode == _btnNodeNew)
 				{
@@ -1134,19 +1136,96 @@ void MapEditorState::mapClick(Action *action)
 					// make one-way links
 					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
 					{
-						
+						for(auto node : *_editor->getSelectedNodes())
+						{
+							// don't make the link if it's already linked
+							if (_editor->getConnectionIndexToNode(node, clickedNode) == -1)
+							{
+								data.clear();
+								data.push_back(_editor->getNextNodeConnectionIndex(node, true));
+								data.push_back(clickedNode->getID());
+								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+							}
+						}
 					}
 					// make two-way links
 					else if (_nodeFilterMode == _btnNodeFilterTwoWayConnect)
 					{
+						for(auto node : *_editor->getSelectedNodes())
+						{
+							if (_editor->getConnectionIndexToNode(node, clickedNode) == -1)
+							{
+								data.clear();
+								data.push_back(_editor->getNextNodeConnectionIndex(node, true));
+								data.push_back(clickedNode->getID());
+								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+							}
 
+							if (_editor->getConnectionIndexToNode(clickedNode, node) == -1)
+							{
+								data.clear();
+								data.push_back(_editor->getNextNodeConnectionIndex(clickedNode, true));
+								data.push_back(node->getID());
+								_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
+							}
+						}
 					}
 				}
 				// delete node mode: remove node or connections
 				else
 				{
+					// no node clicked: we're not doing anything
+					if (!clickedNode)
+					{
 
+					}
+					// move or select mode: we delete nodes
+					else if (_nodeFilterMode == _btnNodeFilterSelect || _nodeFilterMode == _btnNodeFilterMove)
+					{
+						// TODO: removing node in MapEditor
+					}
+					// remove one-way links
+					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
+					{
+						for(auto node : *_editor->getSelectedNodes())
+						{
+							int linkID = _editor->getConnectionIndexToNode(node, clickedNode);
+							if (linkID != -1)
+							{
+								data.clear();
+								data.push_back(linkID);
+								data.push_back(-1);
+								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+							}
+						}
+					}
+					// remove two-way links
+					else if (_nodeFilterMode == _btnNodeFilterTwoWayConnect)
+					{
+						for(auto node : *_editor->getSelectedNodes())
+						{
+							int linkID = _editor->getConnectionIndexToNode(node, clickedNode);
+							if (linkID != -1)
+							{
+								data.clear();
+								data.push_back(linkID);
+								data.push_back(-1);
+								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+							}
+
+							linkID = _editor->getConnectionIndexToNode(clickedNode, node);
+							if (linkID != -1)
+							{
+								data.clear();
+								data.push_back(linkID);
+								data.push_back(-1);
+								_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
+							}
+						}
+					}
 				}
+
+				_editor->confirmChanges(true);
 			}
 
 			updateNodePanels();
