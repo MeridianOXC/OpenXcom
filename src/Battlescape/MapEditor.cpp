@@ -68,7 +68,7 @@ void MapEditor::changeTileData(EditType action, Tile *tile, int dataIDs[4], int 
     int afterDataIDs[O_MAX];
     int afterDataSetIDs[O_MAX];
 
-    std::vector<TilePart> parts = {O_FLOOR, O_NORTHWALL, O_WESTWALL, O_OBJECT};
+    std::vector<TilePart> parts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
     for (auto part : parts)
     {
         int partIndex = (int)part;

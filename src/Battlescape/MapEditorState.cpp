@@ -1249,7 +1249,7 @@ void MapEditorState::mapClick(Action *action)
 				int dataIDs[O_MAX];
 				int dataSetIDs[O_MAX];
 
-				std::vector<TilePart> parts = {O_FLOOR, O_NORTHWALL, O_WESTWALL, O_OBJECT};
+				std::vector<TilePart> parts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
 				for (auto part : parts)
 				{
 					int partIndex = (int)part;
