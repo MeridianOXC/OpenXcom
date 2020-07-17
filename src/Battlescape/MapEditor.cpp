@@ -39,7 +39,9 @@ MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
     _selectedMapDataID(-1), _tileRegisterPosition(0), _nodeRegisterPosition(0), _mapname(""), _selectedObject(O_MAX)
 {
     _tileRegister.clear();
+    _proposedTileEdits.clear();
     _nodeRegister.clear();
+    _proposedNodeEdits.clear();
     _selectedTiles.clear();
     _selectedNodes.clear();
 }
@@ -64,20 +66,6 @@ void MapEditor::handleEditorInput(Action *action, Tile *tile)
         _selectedTiles.push_back(tile);
         changeTiles(MET_DO);
         _selectedTiles.clear();
-    }
-}
-
-/**
- * Handles inputs passed to the editor from the node information panels
- * @param action Pointer to the action
- * @param changeType What type of change we're doing
- * @param data The new value to change in the node
- */
-void MapEditor::handleNodeInput(Action *action, NodeChangeType changeType, std::vector<int> data)
-{
-    if (!_selectedNodes.empty())
-    {
-        changeNodes(MET_DO, changeType, data);
     }
 }
 
@@ -251,93 +239,13 @@ void MapEditor::changeTiles(EditType action)
 }
 
 /**
- * Changes node data according to the selected nodes and route data
- * @action Type of action we're taking
- */
-void MapEditor::changeNodes(EditType action, NodeChangeType changeType, std::vector<int> data)
-{
-    std::vector<NodeEdit> changes;
-    changes.clear();
-    int nodeIndex = 0;
-
-    // TODO: refactor for adding/removing nodes
-    for (std::vector<Node*>::iterator node = _selectedNodes.begin(); node != _selectedNodes.end(); )
-    {
-        // Make sure we're not working on non-existant nodes
-        if (*node == 0)
-        {
-            node = _selectedNodes.erase(node);
-            ++nodeIndex;
-            if (node == _selectedNodes.end())
-                break;
-        }
-
-        switch (action)
-        {
-            case MET_DO:
-                {
-                    changes.push_back(changeNodeData(*node, changeType, data));
-                }
-
-                break;
-
-            case MET_UNDO:
-                {
-                    data = _nodeRegister.at(_nodeRegisterPosition).at(nodeIndex).nodeBeforeData;
-                    changeType = _nodeRegister.at(_nodeRegisterPosition).at(nodeIndex).nodeChangeType;
-                    changeNodeData(*node, changeType, data);
-                }
-
-                break;
-
-            case MET_REDO:
-                {
-                    data = _nodeRegister.at(_nodeRegisterPosition).at(nodeIndex).nodeAfterData;
-                    changeType = _nodeRegister.at(_nodeRegisterPosition).at(nodeIndex).nodeChangeType;
-                    changeNodeData(*node, changeType, data);
-                }
-
-                break;
-
-            default:
-
-                break;
-        }
-
-        // Save the data on the changed node for undo/redo later
-        if (action == MET_DO)
-        {
-            NodeEdit change = changes.back();
-            if (change.nodeChangeType != NCT_NEW && change.nodeChangeType != NCT_DELETE && change.isEditEmpty())
-            {
-                changes.pop_back();
-            }
-        }
-
-        ++node;
-    }
-
-    if (action == MET_DO && changes.size() != 0)
-    {
-        if (_nodeRegisterPosition < (int)_nodeRegister.size())
-        {
-            _nodeRegister.erase(_nodeRegister.begin() + _nodeRegisterPosition, _nodeRegister.end());
-        }
-        _nodeRegister.push_back(changes);
-        ++_nodeRegisterPosition;
-    }
-}
-
-/**
  * Changes the data of a specific node according to the selected route data
- * Populates a NodeEdit for saving later if necessary
- * @node pointer to the node
- * @changeType which data field we're changing
- * @data the new data being passed to the editor
- * @linkID which link number we're changing (default first one)
- * @return the NodeEdit for the change performed
+ * @param action specifies this as a new edit or undo/redo
+ * @param node pointer to the node
+ * @param changeType which data field we're changing
+ * @param data the new data being passed to the editor
  */
-NodeEdit MapEditor::changeNodeData(Node *node, NodeChangeType changeType, std::vector<int> data)
+void MapEditor::changeNodeData(EditType action, Node *node, NodeChangeType changeType, std::vector<int> data)
 {
     NodeEdit change = NodeEdit(node->getID(), changeType);
 
@@ -437,7 +345,69 @@ NodeEdit MapEditor::changeNodeData(Node *node, NodeChangeType changeType, std::v
             break;
     }
 
-    return change;
+    // if this is a new edit, then save it for the register
+    if (action == MET_DO && !change.isEditEmpty())
+    {
+        _proposedNodeEdits.push_back(change);
+    }
+}
+
+/**
+ * Confirm recent changes and advance the register index
+ * @param nodeChange whether we're confirming tile or node edits
+ */
+void MapEditor::confirmChanges(bool nodeChange)
+{
+    if (!nodeChange)
+    {
+        // tile changes to be refactored once we test node edits
+
+        _proposedTileEdits.clear();
+    }
+    else
+    {
+        // make sure we have changes to commit
+        if (!_proposedNodeEdits.empty())
+        {
+            // if we've un-done some changes recently, then we need to clear from the current position forward in the register
+            if (_nodeRegisterPosition < (int)_nodeRegister.size())
+            {
+                _nodeRegister.erase(_nodeRegister.begin() + _nodeRegisterPosition, _nodeRegister.end());
+            }
+            _nodeRegister.push_back(_proposedNodeEdits);
+            ++_nodeRegisterPosition;
+        }
+
+        _proposedNodeEdits.clear();
+    }
+}
+
+/**
+ * Changes node data for undo or redo actions
+ * @action Type of action we're taking
+ */
+void MapEditor::undoRedoNodes(EditType action)
+{
+    // TODO: refactor for adding/removing nodes - that's where we'll need to know whether we're undoing or redoing
+    // redoing means re-creating or re-deleting nodes, undoing means we swap create/delete actions
+    for (auto edit : _nodeRegister.at(_nodeRegisterPosition))
+    {
+        Node *node = _save->getNodes()->at(edit.nodeID);
+        // Make sure we're not working on non-existant nodes
+        if (node == 0)
+        {
+            continue;
+        }
+
+        if (action == MET_UNDO)
+        {
+            changeNodeData(action, node, edit.nodeChangeType, edit.nodeBeforeData);
+        }
+        else if (action == MET_REDO)
+        {
+            changeNodeData(action, node, edit.nodeChangeType, edit.nodeAfterData);
+        }
+    }
 }
 
 /**
@@ -510,18 +480,12 @@ void MapEditor::undo(bool node)
     else
     {
         if (_nodeRegisterPosition == 0)
-            return;
-
-        _selectedNodes.clear();
-
-        --_nodeRegisterPosition;
-        for (auto edit : _nodeRegister.at(_nodeRegisterPosition))
         {
-            _selectedNodes.push_back(_save->getNodes()->at(edit.nodeID));
+            return;
         }
 
-        changeNodes(MET_UNDO, NCT_NONE, std::vector<int> {});
-        _selectedNodes.clear();
+        --_nodeRegisterPosition;
+        undoRedoNodes(MET_UNDO);
     }
 }
 
@@ -549,18 +513,12 @@ void MapEditor::redo(bool node)
     else
     {
         if (_nodeRegisterPosition >= (int)_nodeRegister.size())
-            return;
-
-        _selectedNodes.clear();
-
-        for (auto edit : _nodeRegister.at(_nodeRegisterPosition))
         {
-            _selectedNodes.push_back(_save->getNodes()->at(edit.nodeID));
+            return;
         }
 
-        changeNodes(MET_REDO, NCT_NONE, std::vector<int> {});
+        undoRedoNodes(MET_REDO);
         ++_nodeRegisterPosition;
-        _selectedNodes.clear();
     }
 }
 

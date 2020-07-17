@@ -1435,7 +1435,11 @@ void MapEditorState::cbxNodeTypeChange(Action *action)
 	size_t selIdx = _cbxNodeType->getSelected();
 	std::vector<int> data;
 	data.push_back(_nodeTypes.at(selIdx));
-	_editor->handleNodeInput(action, NCT_TYPE, data);
+	for(auto node : *_editor->getSelectedNodes())
+	{
+		_editor->changeNodeData(MET_DO, node, NCT_TYPE, data);
+	}
+	_editor->confirmChanges(true);
 }
 
 /**
@@ -1452,7 +1456,11 @@ void MapEditorState::cbxNodeRankChange(Action *action)
 	size_t selIdx = _cbxNodeRank->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, NCT_RANK, data);
+	for(auto node : *_editor->getSelectedNodes())
+	{
+		_editor->changeNodeData(MET_DO, node, NCT_RANK, data);
+	}
+	_editor->confirmChanges(true);
 }
 
 /**
@@ -1469,7 +1477,11 @@ void MapEditorState::cbxNodeFlagChange(Action *action)
 	size_t selIdx = _cbxNodeFlag->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, NCT_FLAG, data);
+	for(auto node : *_editor->getSelectedNodes())
+	{
+		_editor->changeNodeData(MET_DO, node, NCT_FLAG, data);
+	}
+	_editor->confirmChanges(true);
 }
 
 /**
@@ -1486,7 +1498,11 @@ void MapEditorState::cbxNodePriorityChange(Action *action)
 	size_t selIdx = _cbxNodePriority->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, NCT_PRIORITY, data);
+	for(auto node : *_editor->getSelectedNodes())
+	{
+		_editor->changeNodeData(MET_DO, node, NCT_PRIORITY, data);
+	}
+	_editor->confirmChanges(true);
 }
 
 /**
@@ -1503,7 +1519,11 @@ void MapEditorState::cbxNodeReservedChange(Action *action)
 	size_t selIdx = _cbxNodeReserved->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	_editor->handleNodeInput(action, NCT_RESERVED, data);
+	for(auto node : *_editor->getSelectedNodes())
+	{
+		_editor->changeNodeData(MET_DO, node, NCT_RESERVED, data);
+	}
+	_editor->confirmChanges(true);
 }
 
 /**
@@ -1542,7 +1562,11 @@ void MapEditorState::cbxNodeLinksChange(Action *action)
 	std::vector<int> data;
 	data.push_back(linkID);
 	data.push_back(knownLinks.at(selIdx));
-	_editor->handleNodeInput(action, NCT_LINKS, data);
+	for(auto node : *_editor->getSelectedNodes())
+	{
+		_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+	}
+	_editor->confirmChanges(true);
 
 	// update the node links panel in case we're in a connection mode and need to highlight the next available link
 	updateNodePanels();
@@ -1572,7 +1596,11 @@ void MapEditorState::cbxNodeLinkTypesChange(Action *action)
 	std::vector<int> data;
 	data.push_back(linkID);
 	data.push_back(_nodeTypes.at(selIdx));
-	_editor->handleNodeInput(action, NCT_LINKS, data);
+	for(auto node : *_editor->getSelectedNodes())
+	{
+		_editor->changeNodeData(MET_DO, node, NCT_LINKTYPES, data);
+	}
+	_editor->confirmChanges(true);
 }
 
 /**

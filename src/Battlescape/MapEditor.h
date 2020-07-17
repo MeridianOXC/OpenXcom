@@ -106,8 +106,10 @@ class MapEditor
 {
 private :
     SavedBattleGame *_save;
-    std::vector< std::vector< TileEdit > > _tileRegister;
-    std::vector< std::vector< NodeEdit > > _nodeRegister;
+    std::vector<std::vector<TileEdit>> _tileRegister;
+    std::vector<TileEdit> _proposedTileEdits;
+    std::vector<std::vector<NodeEdit>> _nodeRegister;
+    std::vector<NodeEdit> _proposedNodeEdits;
     int _selectedMapDataID, _tileRegisterPosition, _nodeRegisterPosition;
     std::vector< Tile* > _selectedTiles;
     std::vector< Node* > _selectedNodes;
@@ -122,14 +124,14 @@ public :
     ~MapEditor();
     /// Handles input passed to the Editor from the BattlescapeState
     void handleEditorInput(Action *action, Tile *tile);
-    /// Handles inputs passed to the editor from the node information panels
-    void handleNodeInput(Action *action, NodeChangeType changeType, std::vector<int> data);
     /// Changes tile data according to the selected tiles and map data
     void changeTiles(EditType action);
-    /// Changes node data according to the selected nodes and route data
-    void changeNodes(EditType action, NodeChangeType changeType, std::vector<int> data);
     /// Changes the data of a specific node according to the selected route data
-    NodeEdit changeNodeData(Node *node, NodeChangeType changeType, std::vector<int> data);
+    void changeNodeData(EditType action, Node *node, NodeChangeType changeType, std::vector<int> data);
+    /// Confirm recent changes and advance the register index
+    void confirmChanges(bool nodeChange);
+    /// Changes node data for undo or redo actions
+    void undoRedoNodes(EditType action);
     /// Helper function for figuring out which link is next open on a node
     int getNextNodeConnectionIndex(Node *node, bool advanceIndex = false);
     /// Un-does an action pointed to by the current position in the edit register
