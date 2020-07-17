@@ -55,187 +55,49 @@ MapEditor::~MapEditor()
 }
 
 /**
- * Handles inputs passed to the editor from the BattlescapeState
- * @param action Pointer to the action
- * @param tile Pointer to a selected tile
+ * Changes the data of a specific tile according to the given MCD data
+ * @param action specifies this as a new edit or undo/redo
+ * @param tile pointer to the tile
+ * @param dataIDs index of the mapData objects we're changing to, within their map data sets
+ * @param dataSetIDs index of the map data sets
  */
-void MapEditor::handleEditorInput(Action *action, Tile *tile)
+void MapEditor::changeTileData(EditType action, Tile *tile, int dataIDs[4], int dataSetIDs[4])
 {
-    if (tile != 0 && action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+    int beforeDataIDs[O_MAX];
+    int beforeDataSetIDs[O_MAX];
+    int afterDataIDs[O_MAX];
+    int afterDataSetIDs[O_MAX];
+
+    std::vector<TilePart> parts = {O_FLOOR, O_NORTHWALL, O_WESTWALL, O_OBJECT};
+    for (auto part : parts)
     {
-        _selectedTiles.push_back(tile);
-        changeTiles(MET_DO);
-        _selectedTiles.clear();
-    }
-}
+        int partIndex = (int)part;
+        // grab the tile's data from before the change in case we need to save it
+        tile->getMapData(&beforeDataIDs[partIndex], &beforeDataSetIDs[partIndex], part);
 
-/**
- * Changes tile data according to the selected tiles and map data
- * @action Type of action we're taking
- */
-void MapEditor::changeTiles(EditType action)
-{
-    std::vector<TileEdit> changes;
-    changes.clear();
-    int tileIndex = 0;
-
-    for (std::vector<Tile*>::iterator tile = _selectedTiles.begin(); tile != _selectedTiles.end(); )
-    {
-        // Validate to make sure we're not working on non-existant tiles
-        if (*tile == 0)
+        // perform the change on the current part
+        if (dataIDs[partIndex] != beforeDataIDs[partIndex] || dataSetIDs[partIndex] != beforeDataSetIDs[partIndex])
         {
-            tile = _selectedTiles.erase(tile);
-            ++tileIndex;
-            if (tile == _selectedTiles.end())
-                break;
-        }
-
-        MapData *mapData[O_MAX] = {0};
-        MapDataSet *mapDataSet[O_MAX] = {0};
-        int mapDataID[O_MAX] = {-1, -1, -1, -1};
-        int mapDataSetID[O_MAX] = {-1, -1, -1, -1};
-        std::vector<TilePart> parts;
-        parts.clear();
-
-        switch (action)
-        {
-            case MET_DO:
-                {
-                    // TODO change this to actual IDs later
-                    int selectedIndex = _selectedMapDataID;
-
-                    // If no index is selected, we're clearing something from the tile
-                    if (selectedIndex == -1)
-                    {
-                        // No particular object selected, clear the whole tile
-                        if (_selectedObject == O_MAX)
-                        {
-                            for (int part = O_FLOOR; part < O_MAX; part++)
-                            {
-                                parts.push_back((TilePart)part);
-                            }
-                        }
-                        // Clear just the selected part of the tile
-                        else
-                        {
-                            parts.push_back(_selectedObject);
-                        }
-                    }
-                    // Otherwise, we need to find which object the index is pointing to
-                    else
-                    {
-                        int selectedMapDataSetID = 0;
-                        MapData *selectedMapData = getMapDataFromIndex(_selectedMapDataID, &selectedMapDataSetID, &selectedIndex);
-
-                        if (selectedMapData)
-                        {
-                            MapDataSet *selectedMapDataSet = _save->getMapDataSets()->at(selectedMapDataSetID);
-                            if (_selectedObject == O_MAX)
-                            {
-                                parts.push_back(selectedMapData->getObjectType());
-                            }
-                            else
-                            {
-                                parts.push_back(_selectedObject);
-                            }
-
-                            int partIndex = (int)parts.back();
-                            mapData[partIndex] = selectedMapData;
-                            mapDataSet[partIndex] = selectedMapDataSet;
-                            mapDataID[partIndex] = selectedIndex;
-                            mapDataSetID[partIndex] = selectedMapDataSetID;
-                        }
-                    }
-
-                    // Save the data from the previous tile so we can undo/redo changes later
-                    int beforeDataID[O_MAX] = {-1, -1, -1, -1};
-                    int beforeDataSetID[O_MAX] = {-1, -1, -1, -1};
-                    for (int part = O_FLOOR; part < O_MAX; part++)
-                    {
-                        (*tile)->getMapData(&beforeDataID[part], &beforeDataSetID[part], (TilePart)part);
-                    }
-                    changes.push_back(TileEdit((*tile)->getPosition(), beforeDataID, beforeDataSetID, mapDataID, mapDataSetID));
-                }
-
-                break;
-
-            case MET_UNDO:
-                {
-                    for (int part = O_FLOOR; part < O_MAX; part++)
-                    {
-                        mapDataSetID[part] = _tileRegister.at(_tileRegisterPosition).at(tileIndex).tileBeforeDataSetIDs[part];
-                        mapDataID[part] = _tileRegister.at(_tileRegisterPosition).at(tileIndex).tileBeforeDataIDs[part];
-
-                        if (mapDataSetID[part] != -1)
-                            mapDataSet[part] = _save->getMapDataSets()->at(mapDataSetID[part]);
-                        if (mapDataID[part] != -1)
-                        mapData[part] = mapDataSet[part]->getObject(mapDataID[part]);
-
-                        parts.push_back((TilePart)part);
-                    }
-                }
-
-                break;
-
-            case MET_REDO:
-                {
-                    for (int part = O_FLOOR; part < O_MAX; part++)
-                    {
-                        mapDataSetID[part] = _tileRegister.at(_tileRegisterPosition).at(tileIndex).tileAfterDataSetIDs[part];
-                        mapDataID[part] = _tileRegister.at(_tileRegisterPosition).at(tileIndex).tileAfterDataIDs[part];
-
-                        if (mapDataSetID[part] != -1)
-                            mapDataSet[part] = _save->getMapDataSets()->at(mapDataSetID[part]);
-                        if (mapDataID[part] != -1)
-                        mapData[part] = mapDataSet[part]->getObject(mapDataID[part]);
-
-                        parts.push_back((TilePart)part);
-                    }
-                }
-
-                break;
-
-            default:
-
-                break;
-        }
-
-        for (auto part : parts)
-        {
-            int partIndex = (int)part;
-            (*tile)->setMapData(mapData[partIndex], mapDataID[partIndex], mapDataSetID[partIndex], (TilePart)part);
-        }
-
-        // Recalculate lighting
-        _save->getTileEngine()->calculateLighting(LL_AMBIENT, (*tile)->getPosition(), 1, true);
-
-        // Save the data on the changed tile for undo/redo later
-        if (action == MET_DO)
-        {
-            for (int part = O_FLOOR; part < O_MAX; part++)
+            MapData *mapData = 0;
+            if (dataIDs[partIndex] != -1 && dataSetIDs[partIndex] != -1)
             {
-                (*tile)->getMapData(&changes.back().tileAfterDataIDs[part], &changes.back().tileAfterDataSetIDs[part], (TilePart)part);
+                mapData = _save->getMapDataSets()->at(dataSetIDs[partIndex])->getObject((size_t)dataIDs[partIndex]);
             }
-
-            if (changes.back().isEditEmpty())
-            {
-                changes.pop_back();
-            }
+            tile->setMapData(mapData, dataIDs[partIndex], dataSetIDs[partIndex], (TilePart)part);
         }
 
-        ++tile;
-        ++tileIndex;
+        // grab the tile's data from after the change for saving
+        tile->getMapData(&afterDataIDs[partIndex], &afterDataSetIDs[partIndex], part);
     }
 
-    if (action == MET_DO && changes.size() != 0)
+    TileEdit change = TileEdit(tile->getPosition(), beforeDataIDs, beforeDataSetIDs, afterDataIDs, afterDataSetIDs);
+    if (action == MET_DO && !change.isEditEmpty())
     {
-        if (_tileRegisterPosition < (int)_tileRegister.size())
-        {
-            _tileRegister.erase(_tileRegister.begin() + _tileRegisterPosition, _tileRegister.end());
-        }
-        _tileRegister.push_back(changes);
-        ++_tileRegisterPosition;
+        _proposedTileEdits.push_back(change);
     }
+
+    // Recalculate lighting so it updates properly for display
+    _save->getTileEngine()->calculateLighting(LL_AMBIENT, tile->getPosition(), 1, true);
 }
 
 /**
@@ -360,7 +222,17 @@ void MapEditor::confirmChanges(bool nodeChange)
 {
     if (!nodeChange)
     {
-        // tile changes to be refactored once we test node edits
+        // make sure we have changes to commit
+        if (!_proposedTileEdits.empty())
+        {
+            // if we've un-done some changes recently, then we need to clear from the current position forward in the register
+            if (_tileRegisterPosition < (int)_tileRegister.size())
+            {
+                _tileRegister.erase(_tileRegister.begin() + _tileRegisterPosition, _tileRegister.end());
+            }
+            _tileRegister.push_back(_proposedTileEdits);
+            ++_tileRegisterPosition;
+        }
 
         _proposedTileEdits.clear();
     }
@@ -379,6 +251,32 @@ void MapEditor::confirmChanges(bool nodeChange)
         }
 
         _proposedNodeEdits.clear();
+    }
+}
+
+/**
+ * Changes tile data for undo or redo actions
+ * @param action Type of action we're taking
+ */
+void MapEditor::undoRedoTiles(EditType action)
+{
+    for (auto edit : _tileRegister.at(_tileRegisterPosition))
+    {
+        Tile *tile = _save->getTile(edit.position);
+        // Make sure the tile exists
+        if (tile == 0)
+        {
+            continue;
+        }
+
+        if (action == MET_UNDO)
+        {
+            changeTileData(action, tile, edit.tileBeforeDataIDs, edit.tileBeforeDataSetIDs);
+        }
+        else if (action == MET_REDO)
+        {
+            changeTileData(action, tile, edit.tileAfterDataIDs, edit.tileAfterDataSetIDs);
+        }
     }
 }
 
@@ -484,18 +382,12 @@ void MapEditor::undo(bool node)
     if (!node)
     {
         if (_tileRegisterPosition == 0)
-            return;
-
-        _selectedTiles.clear();
-
-        --_tileRegisterPosition;
-        for (auto edit : _tileRegister.at(_tileRegisterPosition))
         {
-            _selectedTiles.push_back(_save->getTile(edit.position));
+            return;
         }
 
-        changeTiles(MET_UNDO);
-        _selectedTiles.clear();
+        --_tileRegisterPosition;
+        undoRedoTiles(MET_UNDO);
     }
     else
     {
@@ -517,18 +409,12 @@ void MapEditor::redo(bool node)
     if (!node)
     {
         if (_tileRegisterPosition >= (int)_tileRegister.size())
-            return;
-
-        _selectedTiles.clear();
-
-        for (auto edit : _tileRegister.at(_tileRegisterPosition))
         {
-            _selectedTiles.push_back(_save->getTile(edit.position));
+            return;
         }
 
-        changeTiles(MET_REDO);
+        undoRedoTiles(MET_REDO);
         ++_tileRegisterPosition;
-        _selectedTiles.clear();
     }
     else
     {

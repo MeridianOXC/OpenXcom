@@ -1239,13 +1239,62 @@ void MapEditorState::mapClick(Action *action)
 			updateNodePanels();
 			updateDebugText();
 		}
-		// Editing tiles (TODO will need refactor either)
-		else
+		// Editing tiles
+		else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT && selectedTile)
 		{
-			_editor->handleEditorInput(action, selectedTile);
-		}
+			_editor->getSelectedTiles()->push_back(selectedTile);
 
-		return;
+			for (auto tile : *_editor->getSelectedTiles())
+			{
+				int dataIDs[O_MAX];
+				int dataSetIDs[O_MAX];
+
+				std::vector<TilePart> parts = {O_FLOOR, O_NORTHWALL, O_WESTWALL, O_OBJECT};
+				for (auto part : parts)
+				{
+					int partIndex = (int)part;
+					tile->getMapData(&dataIDs[partIndex], &dataSetIDs[partIndex], part);
+				}
+
+				// If the editor has a selected MapDataID, we're placing a tile
+				if (_editor->getSelectedMapDataID() != -1)
+				{
+					int dataID;
+					int dataSetID;
+					MapData *mapData = _editor->getMapDataFromIndex(_editor->getSelectedMapDataID(), &dataSetID, &dataID);
+					// If no tile filter is selected, we're checking the part of the MapDataID's object
+					// Otherwise, take it from the filter
+					int partIndex = _editor->getSelectedObject() == O_MAX ? (int)mapData->getObjectType() : (int)_editor->getSelectedObject();
+
+					dataIDs[partIndex] = dataID;
+					dataSetIDs[partIndex] = dataSetID;
+				}
+				// Otherwise we're clearing a tile
+				else
+				{
+					// No tile filter selected means we're clearing the whole tile
+					if (_editor->getSelectedObject() == O_MAX)
+					{
+						for (int i = 0; i < O_MAX; ++i)
+						{
+							dataIDs[i] = -1;
+							dataSetIDs[i] = -1;
+						}
+					}
+					// Selected tile filter means targeted removal of tile part
+					else
+					{
+						dataIDs[(int)_editor->getSelectedObject()] = -1;
+						dataSetIDs[(int)_editor->getSelectedObject()] = -1;
+					}
+				}
+
+				_editor->changeTileData(MET_DO, tile, dataIDs, dataSetIDs);
+			}
+
+			_editor->confirmChanges(false);
+			_editor->getSelectedTiles()->clear();
+		}
 	}
 }
 

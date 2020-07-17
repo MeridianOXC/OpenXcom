@@ -36,7 +36,6 @@ struct TileEdit
     int tileAfterDataIDs[O_MAX];
     int tileAfterDataSetIDs[O_MAX];
 
-    // TODO: change to populate data from save? (do in actual editor, not here)
     TileEdit(Position pos, int beforeDataIDs[], int beforeDataSetIDs[], int afterDataIDs[], int afterDataSetIDs[])
     {
         position = pos;
@@ -122,14 +121,14 @@ public :
     MapEditor(SavedBattleGame *save);
     /// Cleans up the Map Editor
     ~MapEditor();
-    /// Handles input passed to the Editor from the BattlescapeState
-    void handleEditorInput(Action *action, Tile *tile);
-    /// Changes tile data according to the selected tiles and map data
-    void changeTiles(EditType action);
+    /// Changes the data of a specific tile according to the given MCD data
+    void changeTileData(EditType action, Tile *tile, int dataIDs[4], int dataSetIDs[4]);
     /// Changes the data of a specific node according to the selected route data
     void changeNodeData(EditType action, Node *node, NodeChangeType changeType, std::vector<int> data);
     /// Confirm recent changes and advance the register index
     void confirmChanges(bool nodeChange);
+    /// Changes tile data for undo or redo actions
+    void undoRedoTiles(EditType action);
     /// Changes node data for undo or redo actions
     void undoRedoNodes(EditType action);
     /// Helper function for figuring out which link is next open on a node
