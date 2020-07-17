@@ -70,7 +70,6 @@ void MapEditor::handleEditorInput(Action *action, Tile *tile)
 /**
  * Handles inputs passed to the editor from the node information panels
  * @param action Pointer to the action
- * @param node Pointer to a selected node
  * @param changeType What type of change we're doing
  * @param data The new value to change in the node
  */

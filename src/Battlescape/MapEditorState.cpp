@@ -1091,8 +1091,8 @@ void MapEditorState::mapClick(Action *action)
 	{
 		Tile *selectedTile = _save->getTile(pos);
 
-		// Set selected node
-		if (getRouteMode() && action->getDetails()->button.button == SDL_BUTTON_LEFT)
+		// Dealing with nodes
+		if (getRouteMode())
 		{
 			Node *clickedNode = 0;
 
@@ -1106,16 +1106,58 @@ void MapEditorState::mapClick(Action *action)
 				}
 			}
 
-			_editor->getSelectedNodes()->clear();
-			if (clickedNode)
+			// left-click: select node
+			if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 			{
-				_editor->getSelectedNodes()->push_back(clickedNode);
+				_editor->getSelectedNodes()->clear();
+				if (clickedNode)
+				{
+					_editor->getSelectedNodes()->push_back(clickedNode);
+				}
 			}
+			// right-click: determine what action we're taking by what modes are selected
+			else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+			{
+				// new node mode: create new node, move, or make links
+				if (_nodeEditMode == _btnNodeNew)
+				{
+					// creating new: no clicked node and not the move node filter
+					if (!clickedNode && _nodeFilterMode != _btnNodeFilterMove)
+					{
+						// TODO: creating new in MapEditor
+					}
+					// moving: no clicked node and is the move node filter
+					else if (!clickedNode)
+					{
+						// TODO: moving node in MapEditor
+					}
+					// make one-way links
+					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
+					{
+						
+					}
+					// make two-way links
+					else if (_nodeFilterMode == _btnNodeFilterTwoWayConnect)
+					{
+
+					}
+				}
+				// delete node mode: remove node or connections
+				else
+				{
+
+				}
+			}
+
 			updateNodePanels();
 			updateDebugText();
 		}
+		// Editing tiles (TODO will need refactor either)
+		else
+		{
+			_editor->handleEditorInput(action, selectedTile);
+		}
 
-		_editor->handleEditorInput(action, selectedTile);
 		return;
 	}
 }
