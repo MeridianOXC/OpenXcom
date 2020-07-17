@@ -1129,9 +1129,17 @@ void MapEditorState::mapClick(Action *action)
 						// TODO: creating new in MapEditor
 					}
 					// moving: no clicked node and is the move node filter
-					else if (!clickedNode)
+					// we check for selectedTile to make sure we're moving inside the map
+					// TODO: moving more than one node when drag-edits become a thing
+					else if (!clickedNode && selectedTile && _editor->getSelectedNodes()->size() == 1)
 					{
-						// TODO: moving node in MapEditor
+						// maybe handle multiple nodes selected by using a waypoint system:
+						// 1st click sets reference point, 2nd click moves w.r.t. reference point
+						data.clear();
+						data.push_back(pos.x);
+						data.push_back(pos.y);
+						data.push_back(pos.z);
+						_editor->changeNodeData(MET_DO, _editor->getSelectedNodes()->front(), NCT_POS, data);
 					}
 					// make one-way links
 					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
