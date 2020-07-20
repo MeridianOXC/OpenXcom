@@ -36,7 +36,7 @@ namespace OpenXcom
  * Initializes all the Map Editor.
  */
 MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
-    _selectedMapDataID(-1), _tileRegisterPosition(0), _nodeRegisterPosition(0), _mapname(""), _selectedObject(O_MAX)
+    _selectedMapDataID(-1), _tileRegisterPosition(0), _nodeRegisterPosition(0), _mapname(""), _selectedObject(O_MAX), _numberOfActiveNodes(0)
 {
     _tileRegister.clear();
     _proposedTileEdits.clear();
@@ -792,25 +792,35 @@ void MapEditor::saveMapFile(std::string filename)
 
     Log(LOG_INFO) << "Saving edited route file " + filepath + ".RMP";
 
+    // Start by finding how many 24-byte nodes we need to allocate and which nodes are "active" and should be saved
+    std::vector<Node*> nodesToSave;
     // Node IDs aren't saved into RMP files, so the index has to match position of the node in the file
-    // Start by finding how many 24-byte nodes we need to allocate by the max node ID
-    // We don't use size of the nodes vector (for now, will be fixed later, TODO) since adding/deleting nodes could add empty IDs
-    int maxID = 0;
+    // We'll also create a map of current node IDs to where they should be in the RMP file and the proper connections for them
+    std::map<int, int> nodeIDMap;
+    int offset = 0;
     for (auto node : *_save->getNodes())
     {
-        if (node->getID() > maxID)
+
+        int currentID = node->getID();
+        if (isNodeActive(node))
         {
-            maxID = node->getID();
+            nodesToSave.push_back(node);
+            nodeIDMap[currentID] = currentID - offset;
+        }
+        else
+        {
+            nodeIDMap[currentID] = -1;
+            ++offset;
         }
     }
 
     // Assign vector to hold the node data, 24 bytes per node (up to the max ID number we just found)
     data.clear();
-    data.resize(24 * (maxID + 1));
+    data.resize(24 * nodesToSave.size());
 
-    for (auto node : *_save->getNodes())
+    for (auto node : nodesToSave)
     {
-        size_t nodeIDBytePosition = 24 * node->getID();
+        size_t nodeIDBytePosition = 24 * nodeIDMap[node->getID()];
         data.at(nodeIDBytePosition + 0) = (unsigned char)node->getPosition().y;
         data.at(nodeIDBytePosition + 1) = (unsigned char)node->getPosition().x;
         data.at(nodeIDBytePosition + 2) = (unsigned char)(_save->getMapSizeZ() - 1 - node->getPosition().z);
@@ -818,6 +828,11 @@ void MapEditor::saveMapFile(std::string filename)
         for (int i = 0; i < 5; ++i)
         {
             int link = node->getNodeLinks()->at(i);
+            // remap the links to nodes so we match the positions of the nodes in the RMP file
+            if (link >= 0)
+            {
+                link = nodeIDMap[link];
+            }
             // negative values are for special links
 			// 255/-1 = unused, 254/-2 = north, 253/-3 = east, 252/-4 = south, 251/-5 = west
             if (link < 0)

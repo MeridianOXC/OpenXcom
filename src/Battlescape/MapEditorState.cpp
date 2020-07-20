@@ -84,7 +84,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	//_btnMapDown = new BattlescapeButton(32, 16, x + 80, y + 16);
 
 	_txtTooltip = new Text(300, 10, 2, screenHeight - 50);
-	_txtDebug = new Text(158, 30, screenWidth - 160, 40);
+	_txtDebug = new Text(158, 32, screenWidth - 160, 40);
 
 	SurfaceSet *icons = _game->getMod()->getSurfaceSet("MapEditorIcons");
 
@@ -1203,7 +1203,7 @@ void MapEditorState::mapClick(Action *action)
 					{
 						int linkID = -1;
 						// link to a node
-						if (clickedNode && clickedNode != node)
+						if (clickedNode)
 						{
 							linkID = clickedNode->getID();
 						}
@@ -1217,6 +1217,12 @@ void MapEditorState::mapClick(Action *action)
 						{
 							for(auto node : *_editor->getSelectedNodes())
 							{
+								// don't link back to the same node
+								if (clickedNode == node)
+								{
+									continue;
+								}
+
 								// make the one-way links and links to the exit
 								// don't make the link if it's already linked
 								if (_editor->getConnectionIndex(node, linkID) == -1)
@@ -1270,7 +1276,7 @@ void MapEditorState::mapClick(Action *action)
 					{
 						int linkID = -1;
 						// de-link from a node
-						if (clickedNode && clickedNode != node)
+						if (clickedNode)
 						{
 							linkID = clickedNode->getID();
 						}
@@ -1284,6 +1290,12 @@ void MapEditorState::mapClick(Action *action)
 						{
 							for(auto node : *_editor->getSelectedNodes())
 							{
+								// we don't need to de-link from the same node
+								if (clickedNode == node)
+								{
+									continue;
+								}
+
 								// remove one-way links and those to map exits
 								int linkIndex = _editor->getConnectionIndex(node, linkID);
 								if (linkIndex != -1)
@@ -1939,10 +1951,68 @@ inline void MapEditorState::handle(Action *action)
  */
 void MapEditorState::updateDebugText()
 {
-	// TODO: move info elsewhere or behind toggle
-	if (_editor->getSelectedNodes()->size() == 1)
+	Position pos;
+	_map->getSelectorPosition(&pos);
+
+	if (getRouteMode())
 	{
-		_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR_NODE").arg(_editor->getSelectedNodes()->front()->getPosition()).arg(_editor->getSelectedNodes()->front()->getID()));
+		std::string selectedNodeMode;
+		if (_nodeEditMode == _btnNodeNew)
+		{
+			if (_nodeFilterMode == _btnNodeFilterSelect)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_SELECT");
+			}
+			else if (_nodeFilterMode == _btnNodeFilterMove)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_MOVE");
+			}
+			else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_ONEWAYCONNECT");
+			}
+			else if (_nodeFilterMode == _btnNodeFilterTwoWayConnect)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_TWOWAYCONNECT");
+			}
+		}
+		else if (_nodeEditMode == _btnNodeDelete)
+		{
+			if (_nodeFilterMode == _btnNodeFilterSelect)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_DELETE");
+			}
+			else if (_nodeFilterMode == _btnNodeFilterMove)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_DELETE");
+			}
+			else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_ONEWAYDELETE");
+			}
+			else if (_nodeFilterMode == _btnNodeFilterTwoWayConnect)
+			{
+				selectedNodeMode = tr("STR_DEBUG_NODES_TWOWAYDELETE");
+			}
+		}
+
+		int nodeID = -1;
+		int numberOfActiveNodes = _editor->getNumberOfActiveNodes();
+		std::string nodePositionText = tr("STR_DEBUG_NODES_SELECTED_NODES");
+		std::string nodeIDText = tr("STR_DEBUG_NODES_SELECTED_ID");
+		if (_editor->getSelectedNodes()->size() == 1)
+		{
+			nodeID = _editor->getSelectedNodes()->front()->getID();
+			pos = _editor->getSelectedNodes()->front()->getPosition();
+			nodePositionText = tr("STR_DEBUG_NODES_SELECTED_NODE");
+		}
+		else if (_editor->getSelectedNodes()->size() > 1)
+		{
+			nodeID = _editor->getSelectedNodes()->size();
+			nodeIDText = tr("STR_DEBUG_NODES_NUMBER_SELECTED");
+		}
+
+		_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR_NODE").arg(selectedNodeMode).arg(nodePositionText).arg(pos).arg(nodeIDText).arg(nodeID).arg(numberOfActiveNodes));
 		return;
 	}
 
@@ -1976,8 +2046,6 @@ void MapEditorState::updateDebugText()
 			break;
 	}
 
-	Position pos;
-	_map->getSelectorPosition(&pos);
 	//Tile *selectedTile = _save->getTile(pos);
 	//if (!selectedTile)
 	//{
