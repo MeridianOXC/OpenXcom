@@ -109,10 +109,79 @@ void MapEditor::changeTileData(EditType action, Tile *tile, int dataIDs[4], int 
  */
 void MapEditor::changeNodeData(EditType action, Node *node, NodeChangeType changeType, std::vector<int> data)
 {
-    NodeEdit change = NodeEdit(node->getID(), changeType);
+    NodeEdit change = NodeEdit(-1, changeType);
+    // make sure we have a node to get its ID
+    // leaving the ID as -1 means we're probably making a new node, and the ID will be set later
+    if (node)
+    {
+        change.nodeID = node->getID();
+    }
 
     switch(changeType)
     {
+        case NCT_NEW:
+            {
+                // creating a new node: only when doing a new change
+                // undoing/redoing node creation/deletion will just be marking as active or inactive
+                if (action == MET_DO)
+                {
+                    std::vector<int> beforeData(data.size(), -1);
+                    change.nodeBeforeData.insert(change.nodeBeforeData.begin(), beforeData.begin(), beforeData.end());
+                    change.nodeAfterData.insert(change.nodeAfterData.begin(), data.begin(), data.end());
+
+                    int nodeID = _save->getNodes()->size();
+                    Position pos = Position(data.at(0), data.at(1), data.at(2));
+                    int segment = data.at(3);
+                    int type = data.at(4);
+                    int rank = data.at(5);
+                    int flags = data.at(6);
+                    int reserved = data.at(7);
+                    int priority = data.at(8);
+                    node = new Node(nodeID, pos, segment, type, rank, flags, reserved, priority);
+                    for (int i = 0; i < 5; ++i)
+                    {
+                        node->getNodeLinks()->push_back(data.at(9 + i));
+                        node->getLinkTypes()->push_back(data.at(14 + i));
+                    }
+
+                    _save->getNodes()->push_back(node);
+
+                    change.nodeID = nodeID;
+                    ++_numberOfActiveNodes;
+                }
+                // undo or redo - just toggle the active/inactive marker for the node
+                else
+                {
+                    bool active = action == MET_REDO;
+                    setNodeAsActive(node, active);
+
+                    std::vector<Node*>::iterator it = std::find(_selectedNodes.begin(), _selectedNodes.end(), node);
+                    if (it != _selectedNodes.end() && !active)
+                    {
+                        _selectedNodes.erase(it);
+                    }
+                }
+
+            }
+
+            break;
+
+        case NCT_DELETE:
+            {
+                // "deleting" a node in the editor just marks it as inactive
+                // inactive nodes are not drawn, links to/from them are ignored, and they won't be saved to the RMP file
+                bool active = action == MET_UNDO;
+                setNodeAsActive(node, active);
+
+                std::vector<Node*>::iterator it = std::find(_selectedNodes.begin(), _selectedNodes.end(), node);
+                if (it != _selectedNodes.end() && !active && action != MET_DO) // let the MapEditorState clear selected nodes when deleting directly
+                {
+                    _selectedNodes.erase(it);
+                }
+            }
+
+            break;
+
         case NCT_POS:
             {
                 change.nodeBeforeData.push_back(node->getPosition().x);
@@ -356,15 +425,15 @@ int MapEditor::getNextNodeConnectionIndex(Node *node, bool advanceIndex)
 
 /**
  * Helper function for figuring out whether a node is linked to a certain other
- * Returns the index of the link if nodeToCheck is linked to linkedNode
- * Returns -1 if linkedNode is not connected to nodeToCheck
+ * Returns the index of the link if nodeToCheck is linked to the given ID or exit direction
+ * Returns -1 if nodeToCheck is not linked to the given ID or exit direction
  */
-int MapEditor::getConnectionIndexToNode(Node *nodeToCheck, Node *linkedNode)
+int MapEditor::getConnectionIndex(Node *nodeToCheck, int nodeOrExitID)
 {
     int connectionIndex = -1;
     for (int i = 0; i < 5; ++i)
     {
-        if (nodeToCheck->getNodeLinks()->at(i) == linkedNode->getID())
+        if (nodeToCheck->getNodeLinks()->at(i) == nodeOrExitID)
         {
             connectionIndex = i;
             break;
@@ -372,6 +441,39 @@ int MapEditor::getConnectionIndexToNode(Node *nodeToCheck, Node *linkedNode)
     }
 
     return connectionIndex;
+}
+
+/**
+ * Helper to determine which direction outside the map a clicked position is
+ * @param pos the clicked position
+ * @return the direction: -1 = not a cardinal direction, -2 = north, -3 = east, -4 = south, -5 = west
+ * matches direction of node links for exit directions
+ */
+int MapEditor::getExitLinkDirection(Position pos)
+{
+	int linkDirection = -1;
+	// exit north
+	if (pos.y < 0 && pos.x >= 0 && pos.x < _save->getMapSizeX())
+	{
+		linkDirection = -2;
+	}
+	// exit east
+	else if (pos.x > _save->getMapSizeX() - 1 && pos.y >= 0 && pos.y < _save->getMapSizeY())
+	{
+		linkDirection = -3;
+	}
+	// exit south
+	else if (pos.y > _save->getMapSizeY() - 1 && pos.x >= 0 && pos.x < _save->getMapSizeX())
+	{
+		linkDirection = -4;
+	}
+	// exit west
+	else if (pos.x < 0 && pos.y >= 0 && pos.y < _save->getMapSizeY())
+	{
+		linkDirection = -5;
+	}
+
+	return linkDirection;
 }
 
 /**
@@ -546,6 +648,53 @@ void MapEditor::setSelectedObject(TilePart part)
 TilePart MapEditor::getSelectedObject()
 {
     return _selectedObject;
+}
+
+/**
+ * Marks a node as active or inactive
+ * @param active true if the node should be marked as active
+ */
+void MapEditor::setNodeAsActive(Node *node, bool active)
+{
+    if (node)
+    {
+        _activeNodes[node->getID()] = active;
+        _numberOfActiveNodes += active ? 1 : -1;
+    }
+}
+
+/**
+ * Gets whether a node is marked as active or not
+ */
+bool MapEditor::isNodeActive(Node *node)
+{
+    bool active = false;
+
+    if (node)
+    {
+        std::map<int, bool>::iterator it = _activeNodes.find(node->getID());
+        if (it != _activeNodes.end())
+        {
+            active = it->second;
+        }
+        // if we don't have the node in the list, mark it as active
+        else
+        {
+            active = true;
+            _activeNodes[node->getID()] = active;
+            ++_numberOfActiveNodes;
+        }
+    }
+
+    return active;
+}
+
+/**
+ * Gets the number of nodes that are active
+ */
+int MapEditor::getNumberOfActiveNodes()
+{
+    return _numberOfActiveNodes;
 }
 
 /**

@@ -1098,6 +1098,11 @@ void MapEditorState::mapClick(Action *action)
 
 			for (auto node : *_save->getNodes())
 			{
+				if (!_editor->isNodeActive(node))
+				{
+					continue;
+				}
+
 				Position nodePos = node->getPosition();
 				if (nodePos == pos)
 				{
@@ -1123,15 +1128,67 @@ void MapEditorState::mapClick(Action *action)
 				// new node mode: create new node, move, or make links
 				if (_nodeEditMode == _btnNodeNew)
 				{
-					// creating new: no clicked node and not the move node filter
-					if (!clickedNode && _nodeFilterMode != _btnNodeFilterMove)
+					// select node
+					if (clickedNode && _nodeFilterMode == _btnNodeFilterSelect)
 					{
-						// TODO: creating new in MapEditor
+						_editor->getSelectedNodes()->clear();
+						_editor->getSelectedNodes()->push_back(clickedNode);
+					}
+					// creating new: no clicked node and not the move node filter
+					else if (selectedTile && !clickedNode && _nodeFilterMode != _btnNodeFilterMove)
+					{
+						int segment = 0;
+						int type = 0;
+						int rank = 0;
+						int flags = 0;
+						int reserved = 0;
+						int priority = 0;
+
+						data.clear();
+						data.push_back(pos.x);
+						data.push_back(pos.y);
+						data.push_back(pos.z);
+						data.push_back(segment);
+						data.push_back(type);
+						data.push_back(rank);
+						data.push_back(flags);
+						data.push_back(reserved);
+						data.push_back(priority);
+						for (int i = 0; i < 5; ++i)
+						{
+							int linkID = -1;
+							// make links back to the selected nodes if in two-way connection mode
+							// we can only make 5 links, so we connect back to the first 5 selected nodes
+							if (_nodeFilterMode == _btnNodeFilterTwoWayConnect && i < (int)_editor->getSelectedNodes()->size())
+							{
+								linkID = _editor->getSelectedNodes()->at(i)->getID();
+							}
+							data.push_back(linkID);
+						}
+						for (int i = 0; i < 5; ++i)
+						{
+							data.push_back(0);
+						}
+
+						_editor->changeNodeData(MET_DO, 0, NCT_NEW, data);
+
+						// make links from the selected nodes to the new one if we're in one of the connection modes
+						if (_nodeFilterMode != _btnNodeFilterSelect)
+						{
+							for (auto node : *_editor->getSelectedNodes())
+							{
+								data.clear();
+								data.push_back(_editor->getNextNodeConnectionIndex(node, true));
+								data.push_back(_save->getNodes()->size() - 1);
+								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+							}
+						}
+
 					}
 					// moving: no clicked node and is the move node filter
 					// we check for selectedTile to make sure we're moving inside the map
 					// TODO: moving more than one node when drag-edits become a thing
-					else if (!clickedNode && selectedTile && _editor->getSelectedNodes()->size() == 1)
+					else if (selectedTile && !clickedNode && selectedTile && _editor->getSelectedNodes()->size() == 1)
 					{
 						// maybe handle multiple nodes selected by using a waypoint system:
 						// 1st click sets reference point, 2nd click moves w.r.t. reference point
@@ -1141,40 +1198,44 @@ void MapEditorState::mapClick(Action *action)
 						data.push_back(pos.z);
 						_editor->changeNodeData(MET_DO, _editor->getSelectedNodes()->front(), NCT_POS, data);
 					}
-					// make one-way links
-					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
+					// make links
+					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect)
 					{
-						for(auto node : *_editor->getSelectedNodes())
+						int linkID = -1;
+						// link to a node
+						if (clickedNode && clickedNode != node)
 						{
-							// don't make the link if it's already linked
-							if (_editor->getConnectionIndexToNode(node, clickedNode) == -1)
-							{
-								data.clear();
-								data.push_back(_editor->getNextNodeConnectionIndex(node, true));
-								data.push_back(clickedNode->getID());
-								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
-							}
+							linkID = clickedNode->getID();
 						}
-					}
-					// make two-way links
-					else if (_nodeFilterMode == _btnNodeFilterTwoWayConnect)
-					{
-						for(auto node : *_editor->getSelectedNodes())
+						// link to map exit
+						else if (!selectedTile)
 						{
-							if (_editor->getConnectionIndexToNode(node, clickedNode) == -1)
-							{
-								data.clear();
-								data.push_back(_editor->getNextNodeConnectionIndex(node, true));
-								data.push_back(clickedNode->getID());
-								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
-							}
+							linkID = _editor->getExitLinkDirection(pos);
+						}
 
-							if (_editor->getConnectionIndexToNode(clickedNode, node) == -1)
+						if (linkID != -1)
+						{
+							for(auto node : *_editor->getSelectedNodes())
 							{
-								data.clear();
-								data.push_back(_editor->getNextNodeConnectionIndex(clickedNode, true));
-								data.push_back(node->getID());
-								_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
+								// make the one-way links and links to the exit
+								// don't make the link if it's already linked
+								if (_editor->getConnectionIndex(node, linkID) == -1)
+								{
+									data.clear();
+									data.push_back(_editor->getNextNodeConnectionIndex(node, true));
+									data.push_back(linkID);
+									_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+								}
+
+								// make the second part of the two way links
+								if (_nodeFilterMode == _btnNodeFilterTwoWayConnect &&
+									clickedNode &&  _editor->getConnectionIndex(clickedNode, node->getID()) == -1)
+								{
+									data.clear();
+									data.push_back(_editor->getNextNodeConnectionIndex(clickedNode, true));
+									data.push_back(node->getID());
+									_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
+								}
 							}
 						}
 					}
@@ -1182,54 +1243,72 @@ void MapEditorState::mapClick(Action *action)
 				// delete node mode: remove node or connections
 				else
 				{
-					// no node clicked: we're not doing anything
-					if (!clickedNode)
-					{
-
-					}
 					// move or select mode: we delete nodes
-					else if (_nodeFilterMode == _btnNodeFilterSelect || _nodeFilterMode == _btnNodeFilterMove)
+					if (clickedNode && (_nodeFilterMode == _btnNodeFilterSelect || _nodeFilterMode == _btnNodeFilterMove))
 					{
-						// TODO: removing node in MapEditor
-					}
-					// remove one-way links
-					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect)
-					{
-						for(auto node : *_editor->getSelectedNodes())
+						data.clear();
+						// check to see if we're clicking a selected node or a different one
+						std::vector<Node*>::iterator it = std::find(_editor->getSelectedNodes()->begin(), _editor->getSelectedNodes()->end(), clickedNode);
+						// one of the selected nodes: set all of them as inactive
+						if (it != _editor->getSelectedNodes()->end())
 						{
-							int linkID = _editor->getConnectionIndexToNode(node, clickedNode);
-							if (linkID != -1)
+							for (auto node : *_editor->getSelectedNodes())
 							{
-								data.clear();
-								data.push_back(linkID);
-								data.push_back(-1);
-								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
-							}
-						}
-					}
-					// remove two-way links
-					else if (_nodeFilterMode == _btnNodeFilterTwoWayConnect)
-					{
-						for(auto node : *_editor->getSelectedNodes())
-						{
-							int linkID = _editor->getConnectionIndexToNode(node, clickedNode);
-							if (linkID != -1)
-							{
-								data.clear();
-								data.push_back(linkID);
-								data.push_back(-1);
-								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+								_editor->changeNodeData(MET_DO, node, NCT_DELETE, data);
 							}
 
-							linkID = _editor->getConnectionIndexToNode(clickedNode, node);
-							if (linkID != -1)
+							_editor->getSelectedNodes()->clear();
+						}
+						// a different node: just set that one as inactive
+						else
+						{
+							_editor->changeNodeData(MET_DO, clickedNode, NCT_DELETE, data);
+						}
+					}
+					// remove links
+					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect)
+					{
+						int linkID = -1;
+						// de-link from a node
+						if (clickedNode && clickedNode != node)
+						{
+							linkID = clickedNode->getID();
+						}
+						// de-link from map exit
+						else if (!selectedTile)
+						{
+							linkID = _editor->getExitLinkDirection(pos);
+						}
+
+						if (linkID != -1)
+						{
+							for(auto node : *_editor->getSelectedNodes())
 							{
-								data.clear();
-								data.push_back(linkID);
-								data.push_back(-1);
-								_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
+								// remove one-way links and those to map exits
+								int linkIndex = _editor->getConnectionIndex(node, linkID);
+								if (linkIndex != -1)
+								{
+									data.clear();
+									data.push_back(linkIndex);
+									data.push_back(-1);
+									_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+								}
+
+								// remove the second part of two-way links
+								if (clickedNode)
+								{
+									linkIndex = _editor->getConnectionIndex(clickedNode, node->getID());
+								}
+								if (_nodeFilterMode == _btnNodeFilterTwoWayConnect && clickedNode && linkIndex != -1)
+								{
+									data.clear();
+									data.push_back(linkIndex);
+									data.push_back(-1);
+									_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
+								}
 							}
 						}
+
 					}
 				}
 
@@ -1899,11 +1978,11 @@ void MapEditorState::updateDebugText()
 
 	Position pos;
 	_map->getSelectorPosition(&pos);
-	Tile *selectedTile = _save->getTile(pos);
-	if (!selectedTile)
-	{
-		pos = Position(-1, -1, -1);
-	}
+	//Tile *selectedTile = _save->getTile(pos);
+	//if (!selectedTile)
+	//{
+	//	pos = Position(-1, -1, -1);
+	//}
 
 	_txtDebug->setText(tr("STR_DEBUG_MAP_EDITOR").arg(selectedMode).arg(selectedObject).arg(pos));
 }
@@ -2163,10 +2242,17 @@ void MapEditorState::updateNodePanels()
 	for (int i = 0; i < 5; ++i)
 	{
 		int linkID = _editor->getSelectedNodes()->front()->getNodeLinks()->at(i);
+		// make sure the linked node isn't marked as inactive
+		if (linkID >= 0 && linkID < (int)_save->getNodes()->size() && !_editor->isNodeActive(_save->getNodes()->at(linkID)))
+		{
+			linkID = -1;
+		}
 		// -1 = unused, -2 = north, -3 = east, -4 = south, -5 = west (from BattlescapeGenerator::loadRMP)
 		linkID = linkID < 0 ? -linkID - 1 : linkID + 5;
 		_cbxNodeLinks.at(i)->setSelected(linkID);
-		_cbxNodeLinkTypes.at(i)->setSelected(_editor->getSelectedNodes()->front()->getLinkTypes()->at(i));
+
+		int linkType = linkID == -1 ? 0 : _editor->getSelectedNodes()->front()->getLinkTypes()->at(i);
+		_cbxNodeLinkTypes.at(i)->setSelected(linkType);
 	}
 
 	// if there's just one node, we can stop here

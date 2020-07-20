@@ -82,12 +82,18 @@ struct NodeEdit
     // Used to prevent pushing back useless changes to the edit register
     bool isEditEmpty()
     {
+        // assume that the change is empty until proven otherwise
         bool equal = true;
-        if (nodeBeforeData.empty() || nodeAfterData.empty())
+        // deleting (toggling node as inactive) doesn't need data besides the ID, so we can assume that's not an empty change
+        equal &= (nodeChangeType != NCT_DELETE || nodeID == -1);
+
+        // if we have no ID (no node to change!) or no data, then this change shouldn't be kept
+        if (nodeID == -1 || nodeBeforeData.empty() || nodeAfterData.empty())
         {
             return equal;
         }
 
+        // if the before and after data differ, then we have a change that does someting
         for (int i = 0; i < (int)nodeBeforeData.size(); ++i)
         {
             equal &= (nodeBeforeData.at(i) == nodeAfterData.at(i));
@@ -114,6 +120,8 @@ private :
     std::vector< Node* > _selectedNodes;
     std::string _mapname;
     TilePart _selectedObject;
+    std::map<int, bool> _activeNodes;
+    int _numberOfActiveNodes;
     std::map< int, int > _connectionIndexMap;
 
 public :
@@ -133,8 +141,10 @@ public :
     void undoRedoNodes(EditType action);
     /// Helper function for figuring out which link is next open on a node
     int getNextNodeConnectionIndex(Node *node, bool advanceIndex = false);
-    /// Helper function for figuring out whether a node is linked to a certain other
-    int getConnectionIndexToNode(Node *nodeToCheck, Node *linkedNode);
+    /// Helper function for figuring out whether a node is linked to a certain other node or map exit
+    int getConnectionIndex(Node *nodeToCheck, int nodeOrExitID);
+	/// Helper to determine which direction outside the map a clicked position is
+	int getExitLinkDirection(Position pos);
     /// Un-does an action pointed to by the current position in the edit register
     void undo(bool node = false);
     /// Re-does an action pointed to by the current position in the edit register
@@ -161,6 +171,12 @@ public :
     void setSelectedObject(TilePart part);
     /// Gets the object type within a tile (floor, walls, or object) selected
     TilePart getSelectedObject();
+    /// Marks a node as active or inactive
+    void setNodeAsActive(Node *node, bool active);
+    /// Gets whether a node is marked as active or not
+    bool isNodeActive(Node *node);
+    /// Gets the number of nodes that are active
+    int getNumberOfActiveNodes();
     /// Sets the SavedBattleGame
     void setSave(SavedBattleGame *save);
     /// Sets the name of the map we're editing

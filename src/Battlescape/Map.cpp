@@ -1806,6 +1806,11 @@ void Map::drawTerrain(Surface *surface)
 		// First draw node markers and lines
 		for (auto node : *_save->getNodes())
 		{
+			if (!_game->getMapEditor()->isNodeActive(node))
+			{
+				continue;
+			}
+
 			Position nodePos = node->getPosition();
 			_camera->convertMapToScreen(nodePos, &screenPosition);
 			screenPosition += _camera->getMapOffset();
@@ -1836,19 +1841,46 @@ void Map::drawTerrain(Surface *surface)
 			Position startLinePos = screenPosition;
 			startLinePos.x += _spriteWidth / 2;
 			startLinePos.y += _spriteHeight * 4 / 5;
-			for (std::vector<int>::iterator otherNodeID = node->getNodeLinks()->begin(); otherNodeID != node->getNodeLinks()->end(); ++otherNodeID)
+			for (int i = 0; i < 5; ++i)
 			{
+				int linkID = node->getNodeLinks()->at(i);
+				Position linkPosition = Position(-1, -1, -1);
 				Position endLinePos = startLinePos;
-				Node *otherNode = 0;
-				if (*otherNodeID < _save->getNodes()->size())
+				// line to another node
+				if (linkID >= 0)
 				{
-					otherNode = _save->getNodes()->at(*otherNodeID);
+					Node *otherNode = _save->getNodes()->at(linkID);
+					if (!_game->getMapEditor()->isNodeActive(otherNode))
+					{
+						continue;
+					}
+					linkPosition = otherNode->getPosition();
+				}
+				// exit north
+				else if (linkID == -2)
+				{
+					linkPosition = Position(_save->getMapSizeX() / 2, -5, 0);
+				}
+				// exit east
+				else if (linkID == -3)
+				{
+					linkPosition = Position(_save->getMapSizeX() + 5, _save->getMapSizeY() / 2, 0);
+				}
+				// exit south
+				else if (linkID == -4)
+				{
+					linkPosition = Position(_save->getMapSizeX() / 2, _save->getMapSizeY() + 5, 0);
+				}
+				// exit west
+				else if (linkID == -5)
+				{
+					linkPosition = Position(-5, _save->getMapSizeY() / 2, 0);
 				}
 
-				if (otherNode)
+				if (linkPosition != Position(-1, -1, -1))
 				{
 					// draw line to other node
-					_camera->convertMapToScreen(otherNode->getPosition(), &screenPosition);
+					_camera->convertMapToScreen(linkPosition, &screenPosition);
 					screenPosition += _camera->getMapOffset();
 					endLinePos = screenPosition;
 					endLinePos.x += _spriteWidth / 2;
@@ -1875,12 +1907,12 @@ void Map::drawTerrain(Surface *surface)
 					Sint16 arrowY[3] = {0, width, -width};
 					Sint16 arrayX[3];
 					Sint16 arrayY[3];
-					for (int i = 0; i < 3; ++i)
+					for (int j = 0; j < 3; ++j)
 					{
-						arrayX[i] = (float)arrowX[i] * cc - (float)arrowY[i] * ss;
-						arrayY[i] = (float)arrowX[i] * ss + (float)arrowY[i] * cc;
-						arrayX[i] += x2;
-						arrayY[i] += y2;
+						arrayX[j] = (float)arrowX[j] * cc - (float)arrowY[j] * ss;
+						arrayY[j] = (float)arrowX[j] * ss + (float)arrowY[j] * cc;
+						arrayX[j] += x2;
+						arrayY[j] += y2;
 					}
 
 					// now actually draw
@@ -1888,13 +1920,18 @@ void Map::drawTerrain(Surface *surface)
 				}
 			}
 			
-			//if (_editor->getSelectedNodes()->size() > 0)
+			//if (_game->getMapEditor()->getSelectedNodes()->size() > 0)
 			//_arrow->blitNShade(surface, screenPosition.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2), screenPosition.y + (_spriteWidth * 1 / 5) - _arrow->getHeight() + getArrowBobForFrame(_animFrame), 0);
 		}
 
 		// Next add numbers for node IDs, spawn priority, and spawn rank
 		for (auto node : *_save->getNodes())
 		{
+			if (!_game->getMapEditor()->isNodeActive(node))
+			{
+				continue;
+			}
+
 			Position nodePos = node->getPosition();
 			_camera->convertMapToScreen(nodePos, &screenPosition);
 			screenPosition += _camera->getMapOffset();
