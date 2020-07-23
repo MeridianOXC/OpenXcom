@@ -1827,13 +1827,16 @@ void Map::drawTerrain(Surface *surface)
 				continue;
 			}
 
+			//int Pathfinding::red = 3;
+			//int Pathfinding::yellow = 10;
+			//int Pathfinding::green = 4;
+			std::vector<Node*>::iterator it = find(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), node);
+			bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
+			int markerColor = selected ? 2 : 4;
+
 			tmpSurface = _game->getMod()->getSurfaceSet("Pathfinding")->getFrame(markerFrame);
 			if (tmpSurface)
 			{
-				//int Pathfinding::red = 3;
-				//int Pathfinding::yellow = 10;
-				//int Pathfinding::green = 4;
-				int markerColor = 4;
 				Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0, false, markerColor);
 			}
 
@@ -1879,13 +1882,15 @@ void Map::drawTerrain(Surface *surface)
 
 				if (linkPosition != Position(-1, -1, -1))
 				{
+					// (color group * 16) + shade
+					Uint8 lineColor = selected ? 1 * 16 + 2 : 4 * 16 + 4;
 					// draw line to other node
 					_camera->convertMapToScreen(linkPosition, &screenPosition);
 					screenPosition += _camera->getMapOffset();
 					endLinePos = screenPosition;
 					endLinePos.x += _spriteWidth / 2;
 					endLinePos.y += _spriteHeight * 4 / 5;
-					surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, 4*16 + 4);
+					surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, lineColor);
 
 					// draw triangle for arrow showing direction of connection
 					Sint16 offset = 10; // move the arrow slightly off of the center of the node marker to not overlap as much
@@ -1916,7 +1921,7 @@ void Map::drawTerrain(Surface *surface)
 					}
 
 					// now actually draw
-					surface->drawPolygon(arrayX, arrayY, 3, 4*16 + 4);
+					surface->drawPolygon(arrayX, arrayY, 3, lineColor);
 				}
 			}
 			
