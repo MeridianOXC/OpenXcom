@@ -2616,7 +2616,7 @@ std::string debugDisplayScript(const RuleItem* ri)
 	}
 }
 
-void getHaveCategory(const RuleItem* ri, int& val, const std::string& cat)
+void hasCategoryScript(const RuleItem* ri, int& val, const std::string& cat)
 {
 	if (ri)
 	{
@@ -2624,12 +2624,8 @@ void getHaveCategory(const RuleItem* ri, int& val, const std::string& cat)
 		if (it != ri->getCategories().end())
 		{
 			val = 1;
+			return;
 		}
-		else
-		{
-			val = 0;
-		}
-		return;
 	}
 	val = 0;
 }
@@ -2682,7 +2678,7 @@ void RuleItem::ScriptRegister(ScriptParserBase* parser)
 	ri.add<&RuleItem::isTwoHanded>("isTwoHanded");
 	ri.add<&RuleItem::isBlockingBothHands>("isBlockingBothHands");
 	ri.add<&isSingleTargetScript>("isSingleTarget");
-	ri.add<&getHaveCategory>("getHaveCategory");
+	ri.add<&hasCategoryScript>("hasCategory");
 
 	ri.addScriptValue<BindBase::OnlyGet, &RuleItem::_scriptValues>();
 	ri.addDebugDisplay<&debugDisplayScript>();
