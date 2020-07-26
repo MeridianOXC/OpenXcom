@@ -2625,6 +2625,10 @@ void getHaveCategory(const RuleItem* ri, int& val, const std::string& cat)
 		{
 			val = 1;
 		}
+		else
+		{
+			val = 0;
+		}
 		return;
 	}
 	val = 0;
