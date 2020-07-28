@@ -60,20 +60,7 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 	_btnCancel = new TextButton(80, 16, 8, 128);
 
 	_lstOptions = new TextList(200, 116, 94, 28);
-	_txtTooltip = new Text(219, 25, 94, 148);
-
-	//_isTFTD = false;
-	//for (std::vector< std::pair<std::string, bool> >::const_iterator i = Options::mods.begin(); i != Options::mods.end(); ++i)
-	//{
-	//	if (i->second)
-	//	{
-	//		if (i->first == "xcom2")
-	//		{
-	//			_isTFTD = true;
-	//			break;
-	//		}
-	//	}
-	//}
+	_txtTooltip = new Text(219, 40, 94, 148);
 
 	// Set palette
 	setInterface("optionsMenu", false, _game->getSavedGame()->getSavedBattle());
@@ -152,6 +139,8 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 			}
 		}
 	}
+
+	_txtTooltip->setWordWrap(true);
 }
 
 /**

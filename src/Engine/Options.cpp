@@ -408,7 +408,7 @@ void createOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMaxEquipmentLayoutTemplates", &oxceMaxEquipmentLayoutTemplates, 20, "", "HIDDEN"));
 
 	// Map Editor
-	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMapEditorBoundsColor", &oxceMapEditorBoundsColor, 13));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMapEditorBoundsColor", &oxceMapEditorBoundsColor, 13, "", "HIDDEN"));
 
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodes", &mapEditorShowOutOfPlaneNodes, true, "STR_SHOW_OUT_OF_PLANE_NODES", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodeLinks", &mapEditorShowOutOfPlaneNodeLinks, true, "STR_SHOW_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));

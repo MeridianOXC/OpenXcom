@@ -1857,6 +1857,7 @@ void Map::drawTerrain(Surface *surface)
 				int linkID = node->getNodeLinks()->at(i);
 				Position linkPosition = Position(-1, -1, -1);
 				Position endLinePos = startLinePos;
+				bool exit = false;
 				// line to another node
 				if (linkID >= 0)
 				{
@@ -1867,7 +1868,7 @@ void Map::drawTerrain(Surface *surface)
 					}
 
 					linkPosition = otherNode->getPosition();
-					if (linkPosition.z != _camera->getViewLevel() && !Options::mapEditorShowOutOfPlaneNodeLinks)
+					if (linkPosition.z != _camera->getViewLevel() && !Options::mapEditorShowOutOfPlaneNodeLinks && !selected)
 					{
 						continue;
 					}
@@ -1876,21 +1877,25 @@ void Map::drawTerrain(Surface *surface)
 				else if (linkID == -2)
 				{
 					linkPosition = Position(_save->getMapSizeX() / 2, -5, 0);
+					exit = true;
 				}
 				// exit east
 				else if (linkID == -3)
 				{
 					linkPosition = Position(_save->getMapSizeX() + 5, _save->getMapSizeY() / 2, 0);
+					exit = true;
 				}
 				// exit south
 				else if (linkID == -4)
 				{
 					linkPosition = Position(_save->getMapSizeX() / 2, _save->getMapSizeY() + 5, 0);
+					exit = true;
 				}
 				// exit west
 				else if (linkID == -5)
 				{
 					linkPosition = Position(-5, _save->getMapSizeY() / 2, 0);
+					exit = true;
 				}
 
 				if (linkPosition != Position(-1, -1, -1))
@@ -1903,7 +1908,25 @@ void Map::drawTerrain(Surface *surface)
 					endLinePos = screenPosition;
 					endLinePos.x += _spriteWidth / 2;
 					endLinePos.y += _spriteHeight * 4 / 5;
-					surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, lineColor);
+
+					// draw dotted lines to out-of-plane nodes when told by options
+					if (!exit && Options::mapEditorDottedOutOfPlaneNodeLinks && (linkPosition.z != nodePos.z || nodePos.z != _camera->getViewLevel()))
+					{
+						int segmentLength = 4;
+						int numberOfSegments = Position::distance2d(startLinePos, endLinePos) / segmentLength;
+						Position slope = endLinePos - startLinePos;
+						for (int j = 0; j < numberOfSegments; j += 2)
+						{
+							Position segmentStart = startLinePos + slope * j / numberOfSegments;
+							Position segmentEnd = startLinePos + slope * (j + 1) / numberOfSegments;
+							surface->drawLine(segmentStart.x, segmentStart.y, segmentEnd.x, segmentEnd.y, lineColor);
+						}
+					}
+					// draw solid lines to exits, in-plane nodes, and when told by options
+					else
+					{
+						surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, lineColor);
+					}
 
 					// draw triangle for arrow showing direction of connection
 					Sint16 offset = 10; // move the arrow slightly off of the center of the node marker to not overlap as much

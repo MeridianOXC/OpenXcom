@@ -328,6 +328,7 @@ en-GB:
   STR_TOOLTIP_TILE_WESTWALL: "Place Tiles on West Wall"
   STR_TOOLTIP_TILE_NORTHWALL: "Place Tiles on North Wall"
   STR_TOOLTIP_TILE_OBJECT: "Place Tiles as Object"
+  STR_TOOLTIP_SWITCH_MODES: "Toggle Between Tile and Route Mode"
   STR_NODE_ID: "Node ID: {0}, Position: {1}"
   STR_NODE_TYPE: "Node Type:"
   STR_NODE_RANK: "Node Rank:"
@@ -611,6 +612,14 @@ en-GB:
   STR_MAP_INFO: "MAP INFORMATION"
   STR_LOAD_MAP: "LOAD MAP (Not yet implemented)"
   STR_SAVE_MAP: "SAVE MAP"
+  STR_SHOW_OUT_OF_PLANE_NODES: "Show nodes outside current level"
+  STR_SHOW_OUT_OF_PLANE_NODES_DESC: "If enabled, the nodes above and below the current z-level of the map are displayed but with dotted markers."
+  STR_SHOW_OUT_OF_PLANE_NODE_LINKS: "Show links outside current level"
+  STR_SHOW_OUT_OF_PLANE_NODE_LINKS_DESC: "If enabled, links to nodes above and below the current level are displayed."
+  STR_DOTTED_OUT_OF_PLANE_NODE_LINKS: "Dashed out-of-plane links"
+  STR_DOTTED_OUT_OF_PLANE_NODE_LINKS_DESC: "If enabled, links to nodes above and below the current level are drawn as dashed lines if displayed."
+  STR_SHOW_LINKS_ONLY_FOR_SELECTED_NODES: "Show only selected nodes' links"
+  STR_SHOW_LINKS_ONLY_FOR_SELECTED_NODES_DESC: "If enabled, only the outgoing links from the currently selected nodes are displayed instead of all links."
 #MapEditorSaveAsState.cpp
   STR_MAP_EDITOR_SAVEAS: "SAVE MAP AS"
 #MapEditorSetSizeState.cpp
