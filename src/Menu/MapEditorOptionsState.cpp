@@ -17,15 +17,17 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MapEditorOptionsState.h"
+#include "../Battlescape/MapEditor.h"
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
 #include "../Engine/Action.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Screen.h"
 #include "../Interface/TextButton.h"
+#include "../Interface/TextList.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
-#include "../Battlescape/MapEditor.h"
+#include "../Mod/Mod.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "AbandonGameState.h"
@@ -47,15 +49,31 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 {
     _screen = false;
 
-    _window = new Window(this, 216, 160, 52, 20, POPUP_BOTH);
-	_txtTitle = new Text(206, 17, 57, 32);
+    _window = new Window(this, 320, 200, 0, 0, POPUP_BOTH);
+	_txtTitle = new Text(206, 17, 57, 8);
 
-	_btnInfo = new TextButton(180, 18, 70, 52);
-	_btnLoad = new TextButton(180, 18, 70, 72);
-	_btnSave = new TextButton(180, 18, 70, 92);
-	_btnAbandon = new TextButton(180, 18, 70, 112);
-	_btnOptions = new TextButton(180, 18, 70, 132);
-	_btnCancel = new TextButton(180, 18, 70, 150);
+	_btnInfo = new TextButton(80, 16, 8, 28);
+	_btnLoad = new TextButton(80, 16, 8, 48);
+	_btnSave = new TextButton(80, 16, 8, 68);
+	_btnAbandon = new TextButton(80, 16, 8, 88);
+	_btnOptions = new TextButton(80, 16, 8, 108);
+	_btnCancel = new TextButton(80, 16, 8, 128);
+
+	_lstOptions = new TextList(200, 116, 94, 28);
+	_txtTooltip = new Text(219, 25, 94, 148);
+
+	//_isTFTD = false;
+	//for (std::vector< std::pair<std::string, bool> >::const_iterator i = Options::mods.begin(); i != Options::mods.end(); ++i)
+	//{
+	//	if (i->second)
+	//	{
+	//		if (i->first == "xcom2")
+	//		{
+	//			_isTFTD = true;
+	//			break;
+	//		}
+	//	}
+	//}
 
 	// Set palette
 	setInterface("optionsMenu", false, _game->getSavedGame()->getSavedBattle());
@@ -68,6 +86,8 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 	add(_btnAbandon, "button", "optionsMenu");
 	add(_btnOptions, "button", "optionsMenu");
 	add(_btnCancel, "button", "optionsMenu");
+	add(_lstOptions, "optionLists", "battlescape");
+    add(_txtTooltip, "text", "optionsMenu");
 
     centerAllSurfaces();
 
@@ -98,6 +118,40 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 	_btnCancel->onMouseClick((ActionHandler)&MapEditorOptionsState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&MapEditorOptionsState::btnCancelClick, Options::keyCancel);
 	_btnCancel->onKeyboardPress((ActionHandler)&MapEditorOptionsState::btnCancelClick, Options::keyBattleOptions);
+
+	// Set up the list of user options for the editor
+	// how much room do we need for YES/NO
+	Text text = Text(100, 9, 0, 0);
+	text.initText(_game->getMod()->getFont("FONT_BIG"), _game->getMod()->getFont("FONT_SMALL"), _game->getLanguage());
+	text.setText(tr("STR_YES"));
+	int yes = text.getTextWidth();
+	text.setText(tr("STR_NO"));
+	int no = text.getTextWidth();
+
+	int rightcol = std::max(yes, no) + 2;
+	int leftcol = _lstOptions->getWidth() - rightcol;
+
+	// Set up objects
+	_lstOptions->setAlign(ALIGN_RIGHT, 1);
+	_lstOptions->setColumns(2, leftcol, rightcol);
+	_lstOptions->setWordWrap(true);
+	_lstOptions->setSelectable(true);
+	_lstOptions->setBackground(_window);
+	_lstOptions->onMouseClick((ActionHandler)&MapEditorOptionsState::lstOptionsClick, 0);
+	_lstOptions->onMouseOver((ActionHandler)&MapEditorOptionsState::lstOptionsMouseOver);
+	_lstOptions->onMouseOut((ActionHandler)&MapEditorOptionsState::lstOptionsMouseOut);
+
+	const std::vector<OptionInfo> &options = Options::getOptionInfo();
+	for (std::vector<OptionInfo>::const_iterator i = options.begin(); i != options.end(); ++i)
+	{
+		if (i->type() != OPTION_KEY && !i->description().empty())
+		{
+			if (i->category() == "STR_MAPEDITOR")
+			{
+				_settings.push_back(*i);
+			}
+		}
+	}
 }
 
 /**
@@ -106,6 +160,30 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
 MapEditorOptionsState::~MapEditorOptionsState()
 {
 
+}
+
+/**
+ * Fills the settings list.
+ */
+void MapEditorOptionsState::init()
+{
+	_lstOptions->clearList();
+	for (std::vector<OptionInfo>::const_iterator i = _settings.begin(); i != _settings.end(); ++i)
+	{
+		std::string name = tr(i->description());
+		std::string value;
+		if (i->type() == OPTION_BOOL)
+		{
+			value = *i->asBool() ? tr("STR_YES") : tr("STR_NO");
+		}
+		else if (i->type() == OPTION_INT)
+		{
+			std::ostringstream ss;
+			ss << *i->asInt();
+			value = ss.str();
+		}
+		_lstOptions->addRow(2, name.c_str(), value.c_str());
+	}
 }
 
 /**
@@ -168,6 +246,88 @@ void MapEditorOptionsState::btnAbandonClick(Action *)
 void MapEditorOptionsState::btnCancelClick(Action *)
 {
     _game->popState();
+}
+
+/**
+ * Changes the clicked setting.
+ * @param action Pointer to an action.
+ */
+void MapEditorOptionsState::lstOptionsClick(Action *action)
+{
+	Uint8 button = action->getDetails()->button.button;
+	if (button != SDL_BUTTON_LEFT && button != SDL_BUTTON_RIGHT)
+	{
+		return;
+	}
+	size_t sel = _lstOptions->getSelectedRow();
+	OptionInfo *setting;
+	if (sel < _settings.size())
+	{
+		setting = &_settings.at(sel);
+	}
+	else
+	{
+		return;
+	}
+
+	std::string settingText;
+	if (setting->type() == OPTION_BOOL)
+	{
+		bool *b = setting->asBool();
+		*b = !*b;
+		settingText = *b ? tr("STR_YES") : tr("STR_NO");
+	}
+	else if (setting->type() == OPTION_INT) // integer variables will need special handling
+	{
+		int *i = setting->asInt();
+
+		int increment = (button == SDL_BUTTON_LEFT) ? 1 : -1; // left-click increases, right-click decreases
+		//if (i == &Options::changeValueByMouseWheel || i == &Options::FPS || i == &Options::FPSInactive || i == &Options::oxceWoundedDefendBaseIf)
+		//{
+		//	increment *= 10;
+		//}
+		*i += increment;
+
+		int min = 0, max = 0;
+		// set specific values for options if we need them, e.g.
+		// if (i == &Options::something)
+		// {min = x; max = y;}
+
+		if (*i < min)
+		{
+			*i = max;
+		}
+		else if (*i > max)
+		{
+			*i = min;
+		}
+
+		std::ostringstream ss;
+		ss << *i;
+		settingText = ss.str();
+	}
+	_lstOptions->setCellText(sel, 1, settingText);
+}
+
+void MapEditorOptionsState::lstOptionsMouseOver(Action *)
+{
+	size_t sel = _lstOptions->getSelectedRow();
+	OptionInfo *setting = 0;
+	if (sel < _settings.size())
+	{
+		setting = &_settings.at(sel);
+	}
+	std::string desc;
+	if (setting)
+	{
+		desc = tr(setting->description() + "_DESC");
+	}
+	_txtTooltip->setText(desc);
+}
+
+void MapEditorOptionsState::lstOptionsMouseOut(Action *)
+{
+	_txtTooltip->setText("");
 }
 
 }

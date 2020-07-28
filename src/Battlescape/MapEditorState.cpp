@@ -189,6 +189,10 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		}
 	}
 
+	_iconModeSwitch = new InteractiveSurface(32, 40, 128, 0);
+	icons->getFrame(19)->blitNShade(_iconModeSwitch, 0, 0);
+	_btnModeSwitch = new BattlescapeButton(32, 40, 128, 0);
+	_btnModeSwitch->setColor(232);
 
 	// Elements for route editing mode
 	// We keep the lower-left icons the same between modes, no need to make a new set for that
@@ -344,6 +348,8 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		add(i);
 		i->onMouseClick((ActionHandler)&MapEditorState::tileSelectionGridClick);
 	}
+	add(_iconModeSwitch);
+	add(_btnModeSwitch, "", "battlescape", _iconModeSwitch);
 
 	add(_iconsLowerRightNodes);
 	add(_iconsUpperRightNodes);
@@ -434,6 +440,8 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_backgroundTileSelectionNavigation->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 	_panelTileSelection->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
 	_panelTileSelection->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
+	_iconModeSwitch->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
+	_iconModeSwitch->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 	_iconsMousedOver.clear();
 
 	_btnOptions->onMouseClick((ActionHandler)&MapEditorState::btnOptionsClick);
@@ -579,6 +587,12 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_panelTileSelection->setVisible(false);
 
 	_backgroundTileSelectionNavigation->setVisible(false);
+
+	_btnModeSwitch->onMouseClick((ActionHandler)&MapEditorState::btnModeSwitchClick);
+	//_btnOptions->onKeyboardPress((ActionHandler)&MapEditorState::btnOptionsClick, Options::keyBattleOptions);
+	_btnModeSwitch->setTooltip("STR_TOOLTIP_SWITCH_MODES");
+	_btnModeSwitch->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnModeSwitch->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
 	// Route mode elements
 	_iconsLowerRightNodes->onMouseIn((ActionHandler)&MapEditorState::mouseInIcons);
@@ -1581,6 +1595,15 @@ void MapEditorState::btnTileFilterClick(Action *action)
 
 	// consume the event to keep the button held down
 	action->getDetails()->type = SDL_NOEVENT;
+}
+
+/**
+ * Switches between tile and route mode
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnModeSwitchClick(Action *action)
+{
+	toggleRouteMode(action);
 }
 
 /*

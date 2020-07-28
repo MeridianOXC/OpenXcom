@@ -409,6 +409,11 @@ void createOptionsOXCE()
 
 	// Map Editor
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMapEditorBoundsColor", &oxceMapEditorBoundsColor, 13));
+
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodes", &mapEditorShowOutOfPlaneNodes, true, "STR_SHOW_OUT_OF_PLANE_NODES", "STR_MAPEDITOR"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodeLinks", &mapEditorShowOutOfPlaneNodeLinks, true, "STR_SHOW_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorDottedOutOfPlaneNodeLinks", &mapEditorDottedOutOfPlaneNodeLinks, true, "STR_DOTTED_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowLinksOnlyForSelectedNodes", &mapEditorShowLinksOnlyForSelectedNodes, false, "STR_SHOW_LINKS_ONLY_FOR_SELECTED_NODES", "STR_MAPEDITOR"));
 }
 
 void createAdvancedOptionsOXCE()

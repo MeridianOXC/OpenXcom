@@ -64,6 +64,8 @@ private:
 	BattlescapeButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow, *_tileSelectionPageCount;
 	Text *_txtSelectionPageCount;
 	std::vector<InteractiveSurface*> _tileSelectionGrid;
+	InteractiveSurface *_iconModeSwitch;
+	BattlescapeButton *_btnModeSwitch;
 	Text *_txtTooltip, *_txtDebug;
     int _tooltipDefaultColor;
 	bool _firstInit;
@@ -111,7 +113,7 @@ public:
 	void mapClick(Action *action);
 	/// Handler for entering with mouse to the map surface.
 	void mapIn(Action *action);
-    /// Handler for clicking the options button
+    /// Handler for clicking the options button.
     void btnOptionsClick(Action *action);
 	/// Handler for clicking the Map Up button.
 	//void btnMapUpClick(Action *action);
@@ -139,6 +141,8 @@ public:
 	//void btnPasteClick(Action *action);
 	/// Handler for pressing the tile filter buttons.
 	void btnTileFilterClick(Action *action);
+	/// Handler for clicking the mode switch button.
+	void btnModeSwitchClick(Action *action);
 	/// Handler for pressing the node new button.
 	void btnNodeNewClick(Action *action);
 	/// Handler for pressing the node delete button.

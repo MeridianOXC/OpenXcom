@@ -154,6 +154,12 @@ OPT int oxceMaxEquipmentLayoutTemplates;
 
 OPT int oxceMapEditorBoundsColor;
 
+// Map Editor options, mostly for visual preferences
+OPT bool mapEditorShowOutOfPlaneNodes;
+OPT bool mapEditorShowOutOfPlaneNodeLinks;
+OPT bool mapEditorDottedOutOfPlaneNodeLinks;
+OPT bool mapEditorShowLinksOnlyForSelectedNodes;
+
 // Flags and other stuff that don't need OptionInfo's.
 OPT bool mute, reload, newOpenGL, newScaleFilter, newHQXFilter, newXBRZFilter, newRootWindowedMode, newFullscreen, newAllowResize, newBorderless;
 OPT int newDisplayWidth, newDisplayHeight, newBattlescapeScale, newGeoscapeScale, newWindowedModePositionX, newWindowedModePositionY;

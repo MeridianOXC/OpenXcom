@@ -328,6 +328,7 @@ en-US:
   STR_TOOLTIP_TILE_WESTWALL: "Place Tiles on West Wall"
   STR_TOOLTIP_TILE_NORTHWALL: "Place Tiles on North Wall"
   STR_TOOLTIP_TILE_OBJECT: "Place Tiles as Object"
+  STR_TOOLTIP_SWITCH_MODES: "Toggle Between Tile and Route Mode"
   STR_NODE_ID: "Node ID: {0}, Position: {1}"
   STR_NODE_TYPE: "Node Type:"
   STR_NODE_RANK: "Node Rank:"

@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "../Engine/OptionInfo.h"
 #include "../Engine/State.h"
 #include "OptionsBaseState.h"
 
@@ -24,6 +25,7 @@ namespace OpenXcom
 {
 
 class TextButton;
+class TextList;
 class Window;
 class Text;
 
@@ -32,14 +34,19 @@ class MapEditorOptionsState : public State
 private :
 	OptionsOrigin _origin;
 	TextButton *_btnInfo, *_btnLoad, *_btnSave, *_btnAbandon, *_btnOptions, *_btnCancel;
+    TextList *_lstOptions;
+	std::vector<OptionInfo> _settings;
+	//bool _isTFTD;
 	Window *_window;
-	Text *_txtTitle;
+	Text *_txtTitle, *_txtTooltip;
 
 public :
     /// Creates the options menu window for the map editor
     MapEditorOptionsState(OptionsOrigin origin);
     /// Cleans up the map editor options menu
     ~MapEditorOptionsState();
+	/// Fills settings list.
+	void init() override;
     /// Shows the info for the map being edited
     void btnInfoClick(Action *action);
     /// Opens the menu for loading a different map in the editor
@@ -52,6 +59,12 @@ public :
     void btnAbandonClick(Action *action);
     /// Returns to the map editor
     void btnCancelClick(Action *action);
+	/// Handler for clicking a setting on the list.
+	void lstOptionsClick(Action *action);
+	/// Handler for moving the mouse over a setting.
+	void lstOptionsMouseOver(Action *action);
+	/// Handler for moving the mouse outside the settings.
+	void lstOptionsMouseOut(Action *action);
 
 };
 
