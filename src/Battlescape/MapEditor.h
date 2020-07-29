@@ -177,6 +177,8 @@ public :
     bool isNodeActive(Node *node);
     /// Gets the number of nodes that are active
     int getNumberOfActiveNodes();
+    /// Gets whether a node won't be saved due to being over the ID 250 limit
+    bool isNodeOverIDLimit(Node *node);
     /// Sets the SavedBattleGame
     void setSave(SavedBattleGame *save);
     /// Sets the name of the map we're editing

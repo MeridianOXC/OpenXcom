@@ -1807,12 +1807,23 @@ void Map::drawTerrain(Surface *surface)
 			_camera->convertMapToScreen(nodePos, &screenPosition);
 			screenPosition += _camera->getMapOffset();
 
+			std::vector<Node*>::iterator it = find(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), node);
+			bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
 			//int Pathfinding::red = 3;
 			//int Pathfinding::yellow = 10;
 			//int Pathfinding::green = 4;
-			std::vector<Node*>::iterator it = find(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), node);
-			bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
-			int markerColor = selected ? 2 : 4;
+			// pick green as 'normal' color
+			int markerColor = 4;
+			if (_game->getMapEditor()->isNodeOverIDLimit(node))
+			{
+				// color node red if it won't be saved due to being over the ID limit
+				markerColor = 3;
+			}
+			else if (selected)
+			{
+				// color node orange if selected and not over ID limit
+				markerColor = 2;
+			}
 
 			// Node is above the current camera level: draw blue cursor up to its height if enabled
 			Surface *cursorBack = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(2);
@@ -1887,6 +1898,7 @@ void Map::drawTerrain(Surface *surface)
 				Position linkPosition = Position(-1, -1, -1);
 				Position endLinePos = startLinePos;
 				bool exit = false;
+				bool overIDLimit = _game->getMapEditor()->isNodeOverIDLimit(node);
 				// line to another node
 				if (linkID >= 0)
 				{
@@ -1901,6 +1913,8 @@ void Map::drawTerrain(Surface *surface)
 					{
 						continue;
 					}
+
+					overIDLimit |= _game->getMapEditor()->isNodeOverIDLimit(otherNode);
 				}
 				// exit north
 				else if (linkID == -2)
@@ -1930,7 +1944,21 @@ void Map::drawTerrain(Surface *surface)
 				if (linkPosition != Position(-1, -1, -1))
 				{
 					// (color group * 16) + shade
-					Uint8 lineColor = selected ? 1 * 16 + 2 : 4 * 16 + 4;
+					// green for 'normal' links
+					Uint8 green = 3 * 16 + 4;
+					Uint8 red = 2 * 16 + 4;
+					Uint8 orange = 1 * 16 + 4;
+					Uint8 lineColor = green;
+					if (overIDLimit)
+					{
+						// won't be saved due to ID limit: red
+						lineColor = red;
+					}
+					else if (selected)
+					{
+						// node is selected: orange
+						lineColor = orange;
+					}
 					// draw line to other node
 					_camera->convertMapToScreen(linkPosition, &screenPosition);
 					screenPosition += _camera->getMapOffset();

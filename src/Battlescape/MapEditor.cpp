@@ -147,7 +147,7 @@ void MapEditor::changeNodeData(EditType action, Node *node, NodeChangeType chang
                     _save->getNodes()->push_back(node);
 
                     change.nodeID = nodeID;
-                    ++_numberOfActiveNodes;
+                    setNodeAsActive(node, true);
                 }
                 // undo or redo - just toggle the active/inactive marker for the node
                 else
@@ -690,6 +690,38 @@ bool MapEditor::isNodeActive(Node *node)
 }
 
 /**
+ * Gets whether a node won't be saved due to being over the ID 250 limit
+ * Links can only go up to ID 250 since they're saved as 8-bit numbers, and 251-255 are reserved values
+ */
+bool MapEditor::isNodeOverIDLimit(Node *node)
+{
+    if (_numberOfActiveNodes < 252) // ID is 0-indexed, so the 252nd node would be ID 251
+    {
+        return false;
+    }
+    else
+    {
+        int activeCount = 0;
+        int lastIDToBeSaved = 0;
+        for (size_t i = 0; i < _activeNodes.size(); i++) // we can iterate like this because node IDs are consecutive in the SavedBattleGame
+        {
+            if (_activeNodes[i])
+            {
+                ++activeCount;
+                lastIDToBeSaved = i;
+            }
+
+            if (activeCount == 251)
+            {
+                return node->getID() > lastIDToBeSaved;
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
  * Gets the number of nodes that are active
  */
 int MapEditor::getNumberOfActiveNodes()
@@ -802,7 +834,11 @@ void MapEditor::saveMapFile(std::string filename)
     {
 
         int currentID = node->getID();
-        if (isNodeActive(node))
+        if (isNodeOverIDLimit(node))
+        {
+            nodeIDMap[currentID] = -1;
+        }
+        else if (isNodeActive(node))
         {
             nodesToSave.push_back(node);
             nodeIDMap[currentID] = currentID - offset;
