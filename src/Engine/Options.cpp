@@ -414,6 +414,7 @@ void createOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodeLinks", &mapEditorShowOutOfPlaneNodeLinks, true, "STR_SHOW_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorDottedOutOfPlaneNodeLinks", &mapEditorDottedOutOfPlaneNodeLinks, true, "STR_DOTTED_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowLinksOnlyForSelectedNodes", &mapEditorShowLinksOnlyForSelectedNodes, false, "STR_SHOW_LINKS_ONLY_FOR_SELECTED_NODES", "STR_MAPEDITOR"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneOffsetCursor", &mapEditorShowOutOfPlaneOffsetCursor, false, "STR_SHOW_OUT_OF_PLANE_OFFSET_CURSOR", "STR_MAPEDITOR"));
 }
 
 void createAdvancedOptionsOXCE()

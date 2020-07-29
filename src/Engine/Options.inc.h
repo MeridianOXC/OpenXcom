@@ -159,6 +159,7 @@ OPT bool mapEditorShowOutOfPlaneNodes;
 OPT bool mapEditorShowOutOfPlaneNodeLinks;
 OPT bool mapEditorDottedOutOfPlaneNodeLinks;
 OPT bool mapEditorShowLinksOnlyForSelectedNodes;
+OPT bool mapEditorShowOutOfPlaneOffsetCursor;
 
 // Flags and other stuff that don't need OptionInfo's.
 OPT bool mute, reload, newOpenGL, newScaleFilter, newHQXFilter, newXBRZFilter, newRootWindowedMode, newFullscreen, newAllowResize, newBorderless;

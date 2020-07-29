@@ -620,7 +620,9 @@ en-US:
   STR_DOTTED_OUT_OF_PLANE_NODE_LINKS_DESC: "If enabled, links to nodes above and below the current level are drawn as dashed lines if displayed."
   STR_SHOW_LINKS_ONLY_FOR_SELECTED_NODES: "Show only selected nodes' links"
   STR_SHOW_LINKS_ONLY_FOR_SELECTED_NODES_DESC: "If enabled, only the outgoing links from the currently selected nodes are displayed instead of all links."
-#MapEditorSaveAsState.cpp
+  STR_SHOW_OUT_OF_PLANE_OFFSET_CURSOR: "Show offset to out-of-plane nodes"
+  STR_SHOW_OUT_OF_PLANE_OFFSET_CURSOR_DESC: "If enabled, draw a marker from the current z-level up or down to nodes above or below the current z-level to show where they are in the XY plane and how far from the current level they are. Not recommended with 'Show nodes outside current level' enabled."
+  #MapEditorSaveAsState.cpp
   STR_MAP_EDITOR_SAVEAS: "SAVE MAP AS"
 #MapEditorSetSizeState.cpp
   STR_SET_MAP_SIZES: "SET MAP SIZE"

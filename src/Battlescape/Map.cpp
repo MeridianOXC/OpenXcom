@@ -1793,13 +1793,6 @@ void Map::drawTerrain(Surface *surface)
 	}
 
 	// Draw markers for nodes in the map editor
-	// TODO: toggle for showing nodes/not
-	// TODO: toggle for drawing connections
-	// TODO: draw lines between connected nodes, color/dash based on connection type
-	// TODO: replace with pathfinding circle colors based on type
-	// TODO: logically order drawing for nodes/lines that are out of plane
-	// TODO: make new order: outlines for out-of-plane nodes -> lines+arrows -> numbers for ID, spawn, and rank
-	// TODO?: arrows overtop selected nodes
 	if (_game->isState(_save->getMapEditorState()) && _save->getMapEditorState()->getRouteMode())
 	{
 		// First draw node markers and lines
@@ -1821,6 +1814,25 @@ void Map::drawTerrain(Surface *surface)
 			bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
 			int markerColor = selected ? 2 : 4;
 
+			// Node is above the current camera level: draw blue cursor up to its height if enabled
+			Surface *cursorBack = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(2);
+			Surface *cursorFront = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(5);
+			if (nodePos.z > _camera->getViewLevel() && Options::mapEditorShowOutOfPlaneOffsetCursor && (selected || Options::mapEditorShowOutOfPlaneNodes))
+			{
+				Position cursorPosition;
+
+				if (cursorBack && cursorFront)
+				{
+					for (int zz = _camera->getViewLevel(); zz < nodePos.z; ++zz)
+					{
+						_camera->convertMapToScreen(Position(nodePos.x, nodePos.y, zz), &cursorPosition);
+						cursorPosition += _camera->getMapOffset();
+						Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
+						Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
+					}
+				}
+			}
+
 			// Show nodes outside the current level as dashed/"transparent" marker
 			// Or if the option is turned off, don't show them at all
 			int markerFrame = 10;
@@ -1840,6 +1852,23 @@ void Map::drawTerrain(Surface *surface)
 			if (tmpSurface)
 			{
 				Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0, false, markerColor);
+			}
+
+			// Node is below the current camera level: draw blue cursor up to its height if enabled
+			if (nodePos.z < _camera->getViewLevel() && Options::mapEditorShowOutOfPlaneOffsetCursor && (selected || Options::mapEditorShowOutOfPlaneNodes))
+			{
+				Position cursorPosition;
+
+				if (cursorBack && cursorFront)
+				{
+					for (int zz = nodePos.z; zz < _camera->getViewLevel(); ++zz)
+					{
+						_camera->convertMapToScreen(Position(nodePos.x, nodePos.y, zz), &cursorPosition);
+						cursorPosition += _camera->getMapOffset();
+						Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
+						Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
+					}
+				}
 			}
 
 			// Only draw links if the options allow us to
