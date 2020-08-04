@@ -18,7 +18,7 @@
  */
 #include <algorithm>
 #include <sstream>
-#include <string> // TODO remove later
+#include <string>
 #include <iomanip>
 #include <SDL_gfxPrimitives.h>
 #include "Map.h"
@@ -26,6 +26,7 @@
 #include "TileEngine.h"
 #include "MapEditor.h"
 #include "MapEditorState.h"
+#include "WarningMessage.h"
 #include "../lodepng.h"
 #include "../fmath.h"
 #include "../Geoscape/SelectMusicTrackState.h"
@@ -311,6 +312,8 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		}
 	}
 
+	_message = new WarningMessage(screenWidth, 10, 0, screenHeight - 50);
+
 	// Set palette
 	_game->getSavedGame()->getSavedBattle()->setPaletteByDepth(this);
 
@@ -384,6 +387,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		add(_cbxNodeLinks.at(i), "infoBoxOKButton", "battlescape");
 		add(_cbxNodeLinkTypes.at(i), "infoBoxOKButton", "battlescape");
 	}
+	add(_message, "warning", "battlescape");
 
 	// Set up objects
 	_save = _game->getSavedGame()->getSavedBattle();
@@ -795,6 +799,8 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		_cbxNodeLinkTypes.at(i)->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	}
 
+	_message->setTextColor(_tooltipDefaultColor);
+
 	updateNodePanels();
 	toggleNodeInfoPanel(0, true);
 
@@ -881,6 +887,16 @@ void MapEditorState::think()
         State::think();
         _animTimer->think(this, 0);
         _gameTimer->think(this, 0);
+
+		// Check to see if there's any other messages we need to read from the editor
+		if (!_message->getVisible())
+		{
+			std::string message = _editor->getMessage();
+			if (!message.empty())
+			{
+				_message->showMessage(tr(message));
+			}
+		}
 	}
 
 	if ((!_routeMode && _editor->getTileRegisterPosition() == 0 && _btnUndo->getColor() != 8) ||

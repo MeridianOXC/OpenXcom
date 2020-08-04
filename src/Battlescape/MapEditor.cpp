@@ -758,10 +758,12 @@ std::string MapEditor::getMapName()
 
 /**
  * Saves the map file
+ * Sets a message for the editor state to read whether the map saved successfully
  * @param filename String for the name of the file to save
  */
 void MapEditor::saveMapFile(std::string filename)
 {
+    std::string message = "STR_MAP_EDITOR_SAVED_SUCCESSFULLY";
     std::string filepath = Options::getMasterUserFolder() + filename;
     std::string logInfo = "    mapDataSets:\n";
     for (auto i : *_save->getMapDataSets())
@@ -837,6 +839,7 @@ void MapEditor::saveMapFile(std::string filename)
         if (isNodeOverIDLimit(node))
         {
             nodeIDMap[currentID] = -1;
+            message = "STR_MAP_EDITOR_SAVED_NODES_OVER_LIMIT";
         }
         else if (isNodeActive(node))
         {
@@ -894,6 +897,24 @@ void MapEditor::saveMapFile(std::string filename)
 		throw Exception("Failed to save " + filepath + ".RMP");
 	}
 
+    _messages.push_back(message);
+}
+
+/**
+ * Gets any error messages set by the editor
+ * Clears the message read
+ * @return the message
+ */
+std::string MapEditor::getMessage()
+{
+    std::string message = "";
+    if (_messages.size() != 0)
+    {
+        message = _messages.front();
+        _messages.erase(_messages.begin());
+    }
+
+    return message;
 }
 
 }

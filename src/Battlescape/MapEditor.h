@@ -123,6 +123,7 @@ private :
     std::map<int, bool> _activeNodes;
     int _numberOfActiveNodes;
     std::map< int, int > _connectionIndexMap;
+    std::vector<std::string> _messages;
 
 public :
     /// Creates the Map Editor
@@ -187,6 +188,8 @@ public :
     std::string getMapName();
     /// Saves the map file
     void saveMapFile(std::string filename);
+    /// Gets any error messages set by the editor
+    std::string getMessage();
 
 };
 

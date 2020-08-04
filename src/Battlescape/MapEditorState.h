@@ -38,6 +38,7 @@ class SavedBattleGame;
 class Timer;
 class MapEditor;
 class Node;
+class WarningMessage;
 
 /**
  * Interface screen for the Map Editor
@@ -95,6 +96,7 @@ private:
 	std::vector<ComboBox*> _cbxNodeLinks, _cbxNodeLinkTypes;
 	std::vector<std::string> _nodeTypeStrings, _nodeRankStrings;
 	std::vector<int> _nodeTypes;
+	WarningMessage *_message;
 public:
 	static const int DEFAULT_ANIM_SPEED = 100;
 	/// Creates the Map Editor state.
@@ -207,6 +209,8 @@ public:
 	void txtTooltipIn(Action *action);
 	/// Handler for hiding tooltip.
 	void txtTooltipOut(Action *action);
+	/// Sets a temporary tooltip message.
+	void txtTooltipMessage(std::string message);
 	/// Update the resolution settings, we just resized the window.
 	void resize(int &dX, int &dY) override;
 	/// Move the mouse back to where it started after we finish drag scrolling.
