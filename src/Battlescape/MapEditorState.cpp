@@ -241,33 +241,33 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnNodeFilterTwoWayConnect->setGroup(&_nodeFilterMode);
 
 	//// TODO: sprites for the buttons
-	_iconsUpperLeftNodes = new InteractiveSurface(64, 16, 0, 0);
+	_iconsUpperLeftNodes = new InteractiveSurface(64, 40, 0, 0);
 	icons->getFrame(45)->blitNShade(_iconsUpperLeftNodes, 0, 0);
 	icons->getFrame(46)->blitNShade(_iconsUpperLeftNodes, 32, 0);
-	_btnRouteInformation = new BattlescapeButton(32, 16, 0, 0);
-	_btnRouteConnections = new BattlescapeButton(32, 16, 32, 0);
+	_btnRouteInformation = new BattlescapeButton(32, 40, 0, 0);
+	_btnRouteConnections = new BattlescapeButton(32, 40, 32, 0);
 	int nodePanelWidth = 5 * 32;
-	_panelRouteInformation = new InteractiveSurface(nodePanelWidth, tileSelectionHeight > 132 ? tileSelectionHeight : 132, 0, 16);
+	_panelRouteInformation = new InteractiveSurface(nodePanelWidth, tileSelectionHeight, 0, 40);
 	// General information panel
-	_txtNodeID = new Text(144, 10, 4, 20);
-	_txtNodeType = new Text(144, 10, 4, 34);
-	_cbxNodeType = new ComboBox(this, 144, 16, 8 - 160, 44, false);
-	_txtNodeRank = new Text(144, 10, 4, 62);
-	_cbxNodeRank = new ComboBox(this, 144, 16, 8 - 160, 74, false);
-	_txtNodeFlag = new Text(144, 18, 4, 98);
-	_cbxNodeFlag = new ComboBox(this, 32, 16, 124 - 160, 94, false);
-	_txtNodePriority = new Text(144, 18, 4, 116);
-	_cbxNodePriority = new ComboBox(this, 32, 16, 124 - 160, 112, false);
-	_txtNodeReserved = new Text(144, 18, 4, 134);
-	_cbxNodeReserved = new ComboBox(this, 32, 16, 124 - 160, 130, false);
+	_txtNodeID = new Text(144, 10, 4, 44);
+	_txtNodeType = new Text(144, 10, 4, 54);
+	_cbxNodeType = new ComboBox(this, 144, 16, 8 - 160, 63, false);
+	_txtNodeRank = new Text(144, 10, 4, 80);
+	_cbxNodeRank = new ComboBox(this, 144, 16, 8 - 160, 89, false);
+	_txtNodeFlag = new Text(144, 10, 4, 110);
+	_cbxNodeFlag = new ComboBox(this, 32, 16, 124 - 160, 106, false);
+	_txtNodePriority = new Text(144, 10, 4, 127);
+	_cbxNodePriority = new ComboBox(this, 32, 16, 124 - 160, 123, false);
+	_txtNodeReserved = new Text(144, 10, 4, 144);
+	_cbxNodeReserved = new ComboBox(this, 32, 16, 124 - 160, 140, false);
 	// Node links panel
-	_txtNodeLinks = new Text(144, 10, 4, 34);
+	_txtNodeLinks = new Text(144, 10, 4, 54);
 	_cbxNodeLinks.clear();
 	_cbxNodeLinkTypes.clear();
 	for (int i = 0; i < 5; ++i)
 	{
-		_cbxNodeLinks.push_back(new ComboBox(this, 68, 16, 8 - 160, 44 + i * 18, false));
-		_cbxNodeLinkTypes.push_back(new ComboBox(this, 68, 16, 84 - 160, 44 + i * 18, false));
+		_cbxNodeLinks.push_back(new ComboBox(this, 68, 16, 8 - 160, 64 + i * 18, false));
+		_cbxNodeLinkTypes.push_back(new ComboBox(this, 68, 16, 84 - 160, 64 + i * 18, false));
 	}
 
 	// Draw the background for the panel
@@ -291,24 +291,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 
 			// draw the background
 			icons->getFrame(panelSpriteOffset)->blitNShade(_panelRouteInformation, j * 32, i * 40);
-		}
-	}
-	// Make sure the panel covers all the way to the bottom of combo boxes
-	if (tileSelectionHeight < 132)
-	{
-		for (int i = 0; i < nodePanelWidth / 32; ++i) // the node panel width is measured in pixels, covert to width of sprite
-		{
-			// select which of the background panel frames is appropriate for this position on the grid
-			int panelSpriteOffset = 56; // for the bottom row
-
-			if (i % (nodePanelWidth / 32 - 1) != 0) // we're in a middle column
-				panelSpriteOffset += 1;
-			else if (i / (nodePanelWidth / 32 - 1) == 1) // we're on the right edge
-				panelSpriteOffset += 2;
-			// else we're on the left edge
-
-			// draw the background
-			icons->getFrame(panelSpriteOffset)->blitNShade(_panelRouteInformation, i * 32, 132 - 40);
 		}
 	}
 
@@ -2208,6 +2190,11 @@ void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 	_cbxNodeFlag->setVisible(!hide && openInfo);
 	_cbxNodePriority->setVisible(!hide && openInfo);
 	_cbxNodeReserved->setVisible(!hide && openInfo);
+
+	if (_panelRouteInformation->getVisible())
+		_txtTooltip->setX(_panelRouteInformation->getWidth() + 2);
+	else
+		_txtTooltip->setX(2);
 
 	_txtNodeLinks->setVisible(!hide && !openInfo);
 	for (auto i : _cbxNodeLinks)
