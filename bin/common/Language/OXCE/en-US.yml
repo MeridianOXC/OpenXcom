@@ -293,6 +293,7 @@ en-US:
 #Map.cpp
   STR_THINKING: "Thinking..."
 #MapEditor.cpp
+  STR_MAP_EDITOR_NODES_OVER_LIMIT: "Highlighted nodes are over the ID limit and won't be saved."
   STR_MAP_EDITOR_SAVED_SUCCESSFULLY: "Map file saved successfully."
   STR_MAP_EDITOR_SAVED_NODES_OVER_LIMIT: "Map file saved, highlighted nodes over the ID limit not saved."
 #MapEditorState.cpp

@@ -162,6 +162,10 @@ void MapEditor::changeNodeData(EditType action, Node *node, NodeChangeType chang
                     }
                 }
 
+                if (_numberOfActiveNodes > 251) // replace with constant? put in header?
+                {
+                    _messages.push_back("STR_MAP_EDITOR_NODES_OVER_LIMIT");
+                }
             }
 
             break;
@@ -177,6 +181,11 @@ void MapEditor::changeNodeData(EditType action, Node *node, NodeChangeType chang
                 if (it != _selectedNodes.end() && !active && action != MET_DO) // let the MapEditorState clear selected nodes when deleting directly
                 {
                     _selectedNodes.erase(it);
+                }
+
+                if (_numberOfActiveNodes > 251)
+                {
+                    _messages.push_back("STR_MAP_EDITOR_NODES_OVER_LIMIT");
                 }
             }
 
