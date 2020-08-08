@@ -2139,7 +2139,19 @@ void MapEditorState::toggleRouteMode(Action *action)
 		toggleNodeInfoPanel(0, true);
 	}
 
-	// Toggle the UI between modes
+	// If we used the keyboard shortcut to call the toggle, then we need to update tooltips
+	if (action->getDetails()->key.keysym.sym == SDLK_r) // change to options
+	{
+		if (_mouseOverIcons && _iconsMousedOver.back() != _iconsLowerLeft) // lower left icons don't switch
+		{
+			_iconsMousedOver.clear();
+			// we're not going to guess which icons are still under the mouse, just hide the tile cursor
+			_mouseOverIcons = true;
+			// same with buttons for the tooltip
+			_currentTooltip = "";
+			_txtTooltip->setText(_currentTooltip);
+		}
+	}
 }
 
 /**
