@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <tuple>
 #include <yaml-cpp/yaml.h>
 
 namespace OpenXcom
@@ -59,8 +60,8 @@ public:
 	void load(const YAML::Node& node);
 	/// save the ResearchProject to YAML
 	YAML::Node save() const;
-	/// Get a string describing current progress.
-	std::string getResearchProgress() const;
+	/// Get a tuple with string describing current progress and progress in percents
+	std::tuple<std::string, int> getResearchProgress() const;
 };
 
 }

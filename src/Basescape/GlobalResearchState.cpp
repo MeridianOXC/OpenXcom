@@ -187,14 +187,25 @@ void GlobalResearchState::fillProjectList()
 			_bases.push_back(0);
 			_topics.push_back(0);
 		}
-		for (std::vector<ResearchProject *>::const_iterator iter = baseProjects.begin(); iter != baseProjects.end(); ++iter)
+		for (const auto& project: baseProjects)
 		{
 			std::ostringstream sstr;
-			sstr << (*iter)->getAssigned();
-			const RuleResearch *r = (*iter)->getRules();
+			sstr << project->getAssigned();
+			const RuleResearch *r = project->getRules();
 
 			std::string wstr = tr(r->getName());
-			_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), tr((*iter)->getResearchProgress()).c_str());
+
+			std::ostringstream progress;
+			auto [progressTag, percents] = project->getResearchProgress();
+			progress << tr(progressTag);
+			if (Options::showResearchPertcents)
+			{
+				progress << " (" << percents << "%)";
+			}
+
+			auto progressString = progress.str();
+
+			_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), progressString.c_str());
 
 			_bases.push_back(base);
 			_topics.push_back(_game->getMod()->getResearch(r->getName()));

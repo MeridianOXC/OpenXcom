@@ -133,19 +133,21 @@ YAML::Node ResearchProject::save() const
 }
 
 /**
- * Return a string describing Research progress.
- * @return a string describing Research progress.
+ * Return a tuple with string describing current progress and progress in percents.
+ * @return tuple of a string describing research progress and progress in percents.
  */
-std::string ResearchProject::getResearchProgress() const
+std::tuple<std::string, int> ResearchProject::getResearchProgress() const
 {
-	float progress = (float)getSpent() / getRules()->getCost();
+	float progress = static_cast<float>(getSpent()) / static_cast<float>(getCost());
+	int progressInPercents = static_cast<int>(progress * 100.f);
+
 	if (getAssigned() == 0)
 	{
-		return "STR_NONE";
+		return std::make_tuple("STR_NONE", progressInPercents);
 	}
 	else if (progress <= PROGRESS_LIMIT_UNKNOWN)
 	{
-		return "STR_UNKNOWN";
+		return std::make_tuple("STR_UNKNOWN", progressInPercents);
 	}
 	else
 	{
@@ -153,17 +155,17 @@ std::string ResearchProject::getResearchProgress() const
 		rating /= getRules()->getCost();
 		if (rating <= PROGRESS_LIMIT_POOR)
 		{
-			return "STR_POOR";
+			return std::make_tuple("STR_POOR", progressInPercents);
 		}
 		else if (rating <= PROGRESS_LIMIT_AVERAGE)
 		{
-			return "STR_AVERAGE";
+			return std::make_tuple("STR_AVERAGE", progressInPercents);
 		}
 		else if (rating <= PROGRESS_LIMIT_GOOD)
 		{
-			return "STR_GOOD";
+			return std::make_tuple("STR_GOOD", progressInPercents);
 		}
-		return "STR_EXCELLENT";
+		return std::make_tuple("STR_EXCELLENT", progressInPercents);
 	}
 }
 
