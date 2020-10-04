@@ -50,15 +50,15 @@ MapEditorSetSizeState::MapEditorSetSizeState(MapEditorMenuState *parent) : _pare
     _btnOk = new TextButton(90 , 16, 68, 126);
     _btnCancel = new TextButton(90 , 16, 160, 126);
 
-    _txtX = new Text(100, 8, 68, 80);
-    _txtY = new Text(100, 8, 68, 90);
-    _txtZ = new Text(100, 8, 68, 100);
-    _txtMapName = new Text(100, 8, 68, 110);
+    _txtX = new Text(100, 10, 68, 80);
+    _txtY = new Text(100, 10, 68, 90);
+    _txtZ = new Text(100, 10, 68, 100);
+    _txtMapName = new Text(100, 10, 68, 110);
 
-    _edtX = new TextEdit(this, 30, 8, 160, 80);
-    _edtY = new TextEdit(this, 30, 8, 160, 90);
-    _edtZ = new TextEdit(this, 30, 8, 160, 100);
-    _edtMapName = new TextEdit(this, 80, 8, 160, 110);
+    _edtX = new TextEdit(this, 30, 10, 160, 80);
+    _edtY = new TextEdit(this, 30, 10, 160, 90);
+    _edtZ = new TextEdit(this, 30, 10, 160, 100);
+    _edtMapName = new TextEdit(this, 80, 10, 160, 110);
 
 	// Set palette
 	setInterface("mainMenu");
@@ -117,6 +117,12 @@ MapEditorSetSizeState::MapEditorSetSizeState(MapEditorMenuState *parent) : _pare
     _editMap[_edtX] = &_x;
     _editMap[_edtY] = &_y;
     _editMap[_edtZ] = &_z;
+
+    _editFields.clear();
+    _editFields.push_back(_edtX);
+    _editFields.push_back(_edtY);
+    _editFields.push_back(_edtZ);
+    _editFields.push_back(_edtMapName);
 }
 
 /**
@@ -125,6 +131,102 @@ MapEditorSetSizeState::MapEditorSetSizeState(MapEditorMenuState *parent) : _pare
 MapEditorSetSizeState::~MapEditorSetSizeState()
 {
 
+}
+
+/**
+ * Handles switching focus between text edit fields
+ * This includes clicking out of one or using a keypress to switch between them
+ * @param action Pointer to an action.
+ */
+inline void MapEditorSetSizeState::handle(Action *action)
+{
+    TextEdit *previousField = 0;
+    TextEdit *nextField = 0;
+
+    // Let's figure out which field is losing focus and which is gaining focus
+    // Mouse clicks: when losing focus, an edit field should retain its value
+    if (action->getDetails()->type == SDL_MOUSEBUTTONDOWN && (action->getDetails()->button.button == SDL_BUTTON_LEFT || action->getDetails()->button.button == SDL_BUTTON_RIGHT))
+    {
+        for (auto editField : _editFields)
+        {
+            if (editField->isFocused())
+            {
+                previousField = editField;
+            }
+
+            if (editField == action->getSender())
+            {
+                nextField = editField;
+            }
+        }
+    }
+    // Pressing hotkeys to switch: the next one down
+    else if (action->getDetails()->type == SDL_KEYDOWN && action->getDetails()->key.keysym.sym == Options::keyBattleNextUnit)
+    {
+        std::vector<TextEdit*>::iterator editField = _editFields.begin();
+        for ( ; editField != _editFields.end(); ++editField)
+        {
+            if ((*editField)->isFocused())
+            {
+                previousField = *editField;
+                break;
+            }
+        }
+
+        if (!previousField)
+        {
+            nextField = _edtX;
+        }
+        else
+        {
+            ++editField;
+            if (editField == _editFields.end())
+            {
+                editField = _editFields.begin();
+            }
+            
+            nextField = *editField;
+        }
+    }
+
+    // Save the value from the field losing focus
+    // But don't do anything if we're clicking on the same field again
+    if (previousField && previousField != nextField)
+    {
+        SDL_Event ev;
+        Action a = Action(&ev, 0.0, 0.0, 0, 0);
+        a.getDetails()->key.keysym.sym = Options::keyOk;
+        a.setSender(previousField);
+        
+        if (previousField == _edtMapName)
+        {
+            edtMapNameOnChange(&a);
+        }
+        else
+        {
+            edtSizeOnChange(&a);
+        }
+
+        previousField->setFocus(false);
+    }
+
+    // Put the focus on the next field
+    if (nextField && previousField != nextField)
+    {
+        if (nextField == _edtMapName)
+        {
+            SDL_Event ev;
+            ev.type = SDL_MOUSEBUTTONDOWN;
+            ev.button.button = SDL_BUTTON_LEFT;
+            Action a = Action(&ev, 0.0, 0.0, 0, 0);
+            a.setSender(nextField);
+            edtMapNameOnClick(&a);
+        }
+        
+        nextField->setFocus(true);
+    }
+
+	State::handle(action);
 }
 
 /**
@@ -250,7 +352,6 @@ void MapEditorSetSizeState::edtMapNameOnClick(Action *)
     if (_edtMapName->getText().compare(std::string(tr("STR_EMPTY_MAP_NAME"))) == 0)
     {
         _edtMapName->setText("");
-        _edtMapName->setFocus(true);
     }
 }
 

@@ -40,6 +40,7 @@ private :
     TextEdit *_edtX, *_edtY, *_edtZ, *_edtMapName;
     int _x, _y, _z;
     std::map<TextEdit*, int*> _editMap;
+    std::vector<TextEdit*> _editFields;
     std::string _mapName;
 
 public :
@@ -47,6 +48,8 @@ public :
     MapEditorSetSizeState(MapEditorMenuState *parent);
     /// Cleans up the New Map size window
     ~MapEditorSetSizeState();
+	/// Handles switching focus between text edit fields
+	void handle(Action *action) override;
     /// Handles editing the text windows for the sizes
     void edtSizeOnChange(Action *action);
     /// Handles entering a name for the map
