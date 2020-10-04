@@ -882,7 +882,7 @@ void MapEditor::saveMapFile(std::string filename)
                 link = nodeIDMap[link];
             }
             // negative values are for special links
-			// 255/-1 = unused, 254/-2 = north, 253/-3 = east, 252/-4 = south, 251/-5 = west
+            // 255/-1 = unused, 254/-2 = north, 253/-3 = east, 252/-4 = south, 251/-5 = west
             if (link < 0)
             {
                 link = 256 + link;
@@ -901,7 +901,9 @@ void MapEditor::saveMapFile(std::string filename)
         data.at(nodeIDBytePosition + 23) = (unsigned char)node->getPriority();
     }
 
-	if (!CrossPlatform::writeFile(filepath + ".RMP", data))
+    // It is still valid to write an empty RMP file - that just means we have no nodes
+    // But if there are nodes and we fail to save, then something is wrong
+	if (!CrossPlatform::writeFile(filepath + ".RMP", data) && nodesToSave.size() > 0)
 	{
 		throw Exception("Failed to save " + filepath + ".RMP");
 	}
