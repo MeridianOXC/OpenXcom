@@ -1450,6 +1450,11 @@ void MapEditorState::btnOptionsClick(Action *action)
 		tileSelectionClick(action);
 		return;
 	}
+	else if (_panelRouteInformation->getVisible() && action->getDetails()->type == SDL_KEYDOWN)
+	{
+		toggleNodeInfoPanel(0, true);
+		return;
+	}
 
 	_game->pushState(new MapEditorOptionsState(OPT_MAPEDITOR));
 }
