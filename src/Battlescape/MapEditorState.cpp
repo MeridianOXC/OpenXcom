@@ -84,7 +84,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	//_btnMapUp = new BattlescapeButton(32, 16, x + 80, y);
 	//_btnMapDown = new BattlescapeButton(32, 16, x + 80, y + 16);
 
-	_txtTooltip = new Text(300, 10, 2, screenHeight - 50);
+	_txtTooltip = new Text(300, 20, 2, screenHeight - 60);
 	_txtDebug = new Text(158, 32, screenWidth - 160, 40);
 
 	SurfaceSet *icons = _game->getMod()->getSurfaceSet("MapEditorIcons");
@@ -395,6 +395,8 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	//_btnMapDown->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
 	_txtTooltip->setHighContrast(true);
+	_txtTooltip->setWordWrap(true);
+	_txtTooltip->setVerticalAlign(ALIGN_BOTTOM);
 
 	updateDebugText();
 	_txtDebug->setColor(_tooltipDefaultColor);
@@ -2209,9 +2211,15 @@ void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 	_cbxNodeReserved->setVisible(!hide && openInfo);
 
 	if (_panelRouteInformation->getVisible())
+	{
 		_txtTooltip->setX(_panelRouteInformation->getWidth() + 2);
+		_txtTooltip->setWidth(150);
+	}
 	else
+	{
 		_txtTooltip->setX(2);
+		_txtTooltip->setWidth(300);
+	}
 
 	_txtNodeLinks->setVisible(!hide && !openInfo);
 	for (auto i : _cbxNodeLinks)
@@ -2666,9 +2674,15 @@ void MapEditorState::tileSelectionClick(Action *action)
 	_panelTileSelection->setVisible(!_panelTileSelection->getVisible());
 
 	if (_panelTileSelection->getVisible())
+	{
 		_txtTooltip->setX(_panelTileSelection->getWidth() + 2);
+		_txtTooltip->setWidth(150);
+	}
 	else
+	{
 		_txtTooltip->setX(2);
+		_txtTooltip->setWidth(300);
+	}
 
 	drawTileSpriteOnSurface(_tileSelection, _selectedTileIndex);
 
