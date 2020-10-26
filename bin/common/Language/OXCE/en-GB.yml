@@ -318,7 +318,7 @@ en-GB:
   STR_DEBUG_NODES_SELECTED_ID: "Selected Node ID"
   STR_DEBUG_NODES_NUMBER_SELECTED: "Number of Selected Nodes"
   STR_TOOLTIP_SAVE_MAP: "Save Map"
-  STR_TOOLTIP_LOAD_MAP: "Load Map (Not yet implemented)"
+  STR_TOOLTIP_LOAD_MAP: "Load Map"
   STR_TOOLTIP_UNDO: "Undo {0}/{1}"
   STR_TOOLTIP_REDO: "Redo {0}/{1}"
   STR_TOOLTIP_FILL: "Fill Tile/Place Object Mode"
@@ -614,7 +614,7 @@ en-GB:
   STR_NEW_MAP: "Create New Map"
 #MapEditorOptionsState.cpp
   STR_MAP_INFO: "MAP INFORMATION"
-  STR_LOAD_MAP: "LOAD MAP (Not yet implemented)"
+  STR_LOAD_MAP: "LOAD MAP"
   STR_SAVE_MAP: "SAVE MAP"
   STR_SHOW_OUT_OF_PLANE_NODES: "Show nodes outside current level"
   STR_SHOW_OUT_OF_PLANE_NODES_DESC: "If enabled, the nodes above and below the current z-level of the map are displayed but with dotted markers."

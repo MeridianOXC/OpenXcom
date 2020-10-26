@@ -48,6 +48,7 @@
 #include "../Interface/Cursor.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
+#include "../Menu/MapEditorMenuState.h"
 #include "../Menu/MapEditorOptionsState.h"
 #include "../Menu/MapEditorInfoState.h"
 #include "../Menu/MapEditorSaveAsState.h"
@@ -444,7 +445,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnSave->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnSave->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	//_btnLoad->onMouseClick((ActionHandler)&MapEditorState::btnLoadClick);
+	_btnLoad->onMouseClick((ActionHandler)&MapEditorState::btnLoadClick);
 	//_btnLoad->onKeyboardPress((ActionHandler)&MapEditorState::btnLoadClick, SDLK_o); // change to options
 	_btnLoad->setTooltip("STR_TOOLTIP_LOAD_MAP");
 	_btnLoad->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
@@ -1480,6 +1481,15 @@ void MapEditorState::btnSaveClick(Action *action)
 }
 
 /**
+ * Brings up the menu to open a different map in the editor
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnLoadClick(Action *action)
+{
+	_game->pushState(new MapEditorMenuState());
+}
+
+/**
  * Un-does the action on the top of the editor's register
  * @param action Pointer to an action.
  */
@@ -1938,6 +1948,10 @@ inline void MapEditorState::handle(Action *action)
 						_game->pushState(new MapEditorSaveAsState());
 					else
 						btnSaveClick(action);
+				}
+				else if (key == SDLK_o && ctrlPressed) // change o to options
+				{
+					btnLoadClick(action);
 				}
 				else if (key == SDLK_d && ctrlPressed) // change d to options
 				{

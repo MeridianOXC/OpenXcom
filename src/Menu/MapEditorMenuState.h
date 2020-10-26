@@ -29,6 +29,7 @@ class TextList;
 class Window;
 class Text;
 class Frame;
+class Position;
 
 class MapEditorMenuState : public State
 {
@@ -42,6 +43,8 @@ private :
     std::vector< std::pair<std::string, std::string> > _mapsList;
     int _selectedMap;
     bool _newMapMode;
+    std::string _newMapName;
+    int _newMapX, _newMapY, _newMapZ;
 
 public :
     /// Creates the Map Editor Menu State
@@ -66,6 +69,8 @@ public :
     void btnCancelClick(Action *action);
     /// Handles toggling the new map mode
     void btnNewMapClick(Action *action);
+    /// Sets the information necessary for a new map
+    void setNewMapInformation(std::string newMapName, int newMapX, int newMapY, int newMapZ);
 
 };
 

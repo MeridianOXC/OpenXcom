@@ -361,9 +361,8 @@ void MapEditorSetSizeState::edtMapNameOnClick(Action *)
  */
 void MapEditorSetSizeState::btnOkClick(Action *)
 {
-    _game->getSavedGame()->getSavedBattle()->initMap(_x, _y, _z, true);
-    _game->getMapEditor()->setMapName(_mapName);
     _game->popState();
+    _parent->setNewMapInformation(_mapName, _x, _y, _z);
     _parent->startEditor();
 }
 
@@ -373,9 +372,6 @@ void MapEditorSetSizeState::btnOkClick(Action *)
  */
 void MapEditorSetSizeState::btnCancelClick(Action *)
 {
-    // Clean up the save and map editor created by clicking OK on the Map Editor menu
-    _game->setSavedGame(0);
-    _game->setMapEditor(0);
     _game->popState();
 }
 

@@ -126,7 +126,7 @@ public:
 	/// Handler for pressing the save button.
 	void btnSaveClick(Action *action);
 	/// Handler for pressing the load button.
-	//void btnLoadClick(Action *action);
+	void btnLoadClick(Action *action);
 	/// Handler for pressing the undo button.
 	void btnUndoClick(Action *action);
 	/// Handler for pressing the redo button.

@@ -27,6 +27,7 @@
 #include "../Interface/TextList.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
+#include "../Menu/MapEditorMenuState.h"
 #include "../Mod/Mod.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
@@ -190,7 +191,8 @@ void MapEditorOptionsState::btnInfoClick(Action *)
  */
 void MapEditorOptionsState::btnLoadClick(Action *)
 {
-
+	_game->popState();
+	_game->pushState(new MapEditorMenuState());
 }
 
 /**

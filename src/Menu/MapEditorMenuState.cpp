@@ -22,6 +22,7 @@
 #include "../version.h"
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
+#include "../Engine/Screen.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleTerrain.h"
 #include "../Mod/MapBlock.h"
@@ -50,12 +51,23 @@ namespace OpenXcom
  * Initializes all the elements in the Map Editor Menu window.
  * @param game Pointer to the core game.
  */
-MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false)
+MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false), _newMapName(""), _newMapX(10), _newMapY(10), _newMapZ(10)
 {
+	if (_game->getSavedGame() && _game->getSavedGame()->getSavedBattle() && Options::maximizeInfoScreens)
+	{
+		Options::baseXResolution = Screen::ORIGINAL_WIDTH;
+		Options::baseYResolution = Screen::ORIGINAL_HEIGHT;
+		_game->getScreen()->resetDisplay(false);
+        _window = new Window(this, 320, 200, 0, 0, POPUP_NONE);
+	}
+    else
+    {
+	    _window = new Window(this, 320, 200, 0, 0, POPUP_BOTH);
+    }
+
 	// Create objects
     // TODO: make right pane for info on selection, single Text*
     // TODO: interfaces ruleset for colors
-	_window = new Window(this, 320, 200, 0, 0, POPUP_BOTH);
 	_txtTitle = new Text(320, 17, 0, 9);
 
 	_btnOk = new TextButton(100, 16, 8, 176);
@@ -135,7 +147,11 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false)
 
 MapEditorMenuState::~MapEditorMenuState()
 {
-
+	if (_game->getSavedGame() && _game->getSavedGame()->getSavedBattle() && Options::maximizeInfoScreens)
+	{
+        Screen::updateScale(Options::battlescapeScale, Options::baseXBattlescape, Options::baseYBattlescape, true);
+        _game->getScreen()->resetDisplay(false);
+	}
 }
 
 void MapEditorMenuState::init()
@@ -313,15 +329,6 @@ void MapEditorMenuState::lstMapsClick(Action *)
  */
 void MapEditorMenuState::btnOkClick(Action *)
 {
-	SavedGame *save = new SavedGame();
-    _game->setSavedGame(save);
-
-	SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
-	_game->getSavedGame()->setBattleGame(savedBattleGame);
-
-    MapEditor *editor = new MapEditor(savedBattleGame);
-    _game->setMapEditor(editor);
-
     if (_newMapMode)
     {
         MapEditorSetSizeState *mapEditorSetSizeState = new MapEditorSetSizeState(this);
@@ -338,6 +345,15 @@ void MapEditorMenuState::btnOkClick(Action *)
  */
 void MapEditorMenuState::startEditor()
 {
+    SavedGame *save = new SavedGame();
+    _game->setSavedGame(save);
+
+    SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
+    _game->getSavedGame()->setBattleGame(savedBattleGame);
+
+    MapEditor *editor = new MapEditor(savedBattleGame);
+    _game->setMapEditor(editor);
+
     // TODO: Move handling of any battlescape objects to the MapEditor class, this menu should only be for initializing that class
 	BattlescapeGenerator battlescapeGenerator = BattlescapeGenerator(_game);
 
@@ -362,24 +378,27 @@ void MapEditorMenuState::startEditor()
     {
         block = terrain->getMapBlock(_mapsList.at(_selectedMap).first);
     }
+    else
+    {
+        _game->getSavedGame()->getSavedBattle()->initMap(_newMapX, _newMapY, _newMapZ, true);
+    }
 	battlescapeGenerator.loadMapForEditing(block);
-    // TODO: not loading terrain selected for new maps correctly
-
-	_game->popState();
-	_game->popState();
 
 	Options::baseXResolution = Options::baseXBattlescape;
 	Options::baseYResolution = Options::baseYBattlescape;
 	_game->getScreen()->resetDisplay(false);
 
-	MapEditor *editor = _game->getMapEditor();
     if (block)
     {
 	    editor->setMapName(block->getName());
     }
+    else
+    {
+        editor->setMapName(_newMapName);
+    }
 
 	MapEditorState *mapEditorState = new MapEditorState(editor);
-	_game->pushState(mapEditorState);
+	_game->setState(mapEditorState);
 	_game->getSavedGame()->getSavedBattle()->setMapEditorState(mapEditorState);
 }
 
@@ -389,7 +408,6 @@ void MapEditorMenuState::startEditor()
  */
 void MapEditorMenuState::btnCancelClick(Action *)
 {
-	//_game->setSavedGame(0);
 	_game->popState();
 }
 
@@ -421,6 +439,21 @@ void MapEditorMenuState::btnNewMapClick(Action *action)
     // We have populateMapsList() call populateTerrainsList() instead if necessary
     // This is so it can also handle changing the terrain/crafts/ufos filter
     populateMapsList();
+}
+
+/**
+ * Sets the information necessary for a new map
+ * @param newMapName String name for the map
+ * @param newMapX Width for the map
+ * @param newMapY Length for the map
+ * @param newMapZ Height for the map
+ */
+void MapEditorMenuState::setNewMapInformation(std::string newMapName, int newMapX, int newMapY, int newMapZ)
+{
+    _newMapName = newMapName;
+    _newMapX = newMapX;
+    _newMapY = newMapY;
+    _newMapZ = newMapZ;
 }
 
 }
