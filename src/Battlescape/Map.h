@@ -114,7 +114,7 @@ private:
 	bool _showObstacles;
 public:
 	/// Creates a new map at the specified position and size.
-	Map(Game* game, int width, int height, int x, int y, int visibleMapHeight);
+	Map(Game* game, int width, int height, int x, int y, int visibleMapHeight, bool keepObstacleTimerRunning = false);
 	/// Cleans up the map.
 	~Map();
 	/// Initializes the map.

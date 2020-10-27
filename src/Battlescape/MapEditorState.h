@@ -77,6 +77,9 @@ private:
 	int _totalMouseMoveX, _totalMouseMoveY;
 	bool _mouseMovedOverThreshold;
 	bool _mouseOverIcons;
+	bool _mouseScrollSelect, _mouseScrollPainting, _mouseScrollPan;
+	Position _scrollStartPosition, _scrollPreviousPosition, _scrollCurrentPosition;
+	std::vector<Position> _proposedSelection;
 	std::string _currentTooltip;
 	Position _cursorPosition;
 	bool _autosave;
@@ -197,6 +200,12 @@ public:
 	void updateNodePanels();
 	/// Clears mouse-scrolling state.
 	void clearMouseScrollingState();
+	/// Gets whether or not we're mouse-scrolling to select something
+	bool isMouseScrollSelecting();
+	/// Gets whether or not the mouse-scroll to select is in box or painting mode
+	bool isMouseScrollSelectionPainting();
+	/// Gets where the mouse started scrolling for a selection
+	Position getScrollStartPosition();
 	/// Returns a pointer to the battlegame, in case we need its functions.
 	//BattlescapeGame *getBattleGame();
 	/// Handler for the mouse moving over the icons, disables the tile selection cube.

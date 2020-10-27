@@ -70,7 +70,8 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param editor Pointer to the data structure for the in-game map editor
  */
-MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseScrolling(false), _isMouseScrolled(false), _xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(0), _mouseOverIcons(false), _autosave(false),
+MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseScrolling(false), _isMouseScrolled(false), _xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(0),
+	_mouseScrollSelect(false), _mouseScrollPainting(false), _mouseScrollPan(false), _mouseOverIcons(false), _autosave(false),
 	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0), _selectedTileIndex(0), _routeMode(false)
 {
 	const int screenWidth = Options::baseXResolution;
@@ -79,7 +80,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_tooltipDefaultColor = _game->getMod()->getInterface("battlescape")->getElement("textTooltip")->color;
 
 	// Create the battlemap view
-	_map = new Map(_game, screenWidth, screenHeight, 0, 0, screenHeight);
+	_map = new Map(_game, screenWidth, screenHeight, 0, 0, screenHeight, true);
 
 	// Create buttons
 	//_btnMapUp = new BattlescapeButton(32, 16, x + 80, y);
@@ -794,6 +795,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 
 	_gameTimer = new Timer(DEFAULT_ANIM_SPEED, true);
 	_gameTimer->onTimer((StateHandler)&MapEditorState::handleState);
+
+	_map->enableObstacles();
+
+	_scrollStartPosition = _scrollPreviousPosition = _scrollCurrentPosition = Position(-1, -1, -1);
+	_proposedSelection.clear();
 }
 
 
@@ -925,21 +931,23 @@ void MapEditorState::mapOver(Action *action)
 		// the mouse-release event is missed for any reason.
 		// (checking: is the dragScroll-mouse-button still pressed?)
 		// However if the SDL is also missed the release event, then it is to no avail :(
-		if ((SDL_GetMouseState(0,0)&SDL_BUTTON(Options::battleDragScrollButton)) == 0)
+		if (((SDL_GetMouseState(0,0)&SDL_BUTTON(Options::battleDragScrollButton)) == 0) &&
+			((SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_LEFT)) == 0) &&
+			((SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_RIGHT)) == 0))
 		{ // so we missed again the mouse-release :(
 			// Check if we have to revoke the scrolling, because it was too short in time, so it was a click
 			if ((!_mouseMovedOverThreshold) && ((int)(SDL_GetTicks() - _mouseScrollingStartTime) <= (Options::dragScrollTimeTolerance)))
 			{
 				_map->getCamera()->setMapOffset(_mapOffsetBeforeMouseScrolling);
 			}
-			_isMouseScrolled = _isMouseScrolling = false;
+			_isMouseScrolled = _isMouseScrolling = _mouseScrollSelect = _mouseScrollPainting = _mouseScrollPan = false;
 			stopScrolling(action);
 			return;
 		}
 
 		_isMouseScrolled = true;
 
-		if (Options::touchEnabled == false)
+		if (Options::touchEnabled == false && _mouseScrollPan)
 		{
 			// Set the mouse cursor back
 			SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
@@ -955,64 +963,167 @@ void MapEditorState::mapOver(Action *action)
 			_mouseMovedOverThreshold = ((std::abs(_totalMouseMoveX) > Options::dragScrollPixelTolerance) || (std::abs(_totalMouseMoveY) > Options::dragScrollPixelTolerance));
 		}
 
-		// Scrolling
-		if (Options::battleDragScrollInvert)
+		_map->getSelectorPosition(&_scrollCurrentPosition);
+		bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+		bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
+
+		// Scrolling...
+		// ... to select an area of the map
+		// TODO: replace looping over all tile parts for filtered tile part
+		if (_mouseScrollSelect && ((int)(SDL_GetTicks() - _mouseScrollingStartTime) > (Options::dragScrollTimeTolerance)))
 		{
-			_map->getCamera()->setMapOffset(_mapOffsetBeforeMouseScrolling);
-			int scrollX = -(int)((double)_totalMouseMoveX / action->getXScale());
-			int scrollY = -(int)((double)_totalMouseMoveY / action->getYScale());
-			Position delta2 = _map->getCamera()->getMapOffset();
-			_map->getCamera()->scrollXY(scrollX, scrollY, true);
-			delta2 = _map->getCamera()->getMapOffset() - delta2;
-
-			// Keep the limits...
-			if (scrollX != delta2.x || scrollY != delta2.y)
+			if (_scrollCurrentPosition != _scrollPreviousPosition)
 			{
-				_totalMouseMoveX = -(int) (delta2.x * action->getXScale());
-				_totalMouseMoveY = -(int) (delta2.y * action->getYScale());
-			}
+				if (!_mouseScrollPainting)
+				{
+					_proposedSelection.clear();
+					// loop over the positions in the rectangular box between where we started scrolling and where the cursor is right now
+					for (int z = std::min(_scrollStartPosition.z, _scrollCurrentPosition.z); z <= std::max(_scrollStartPosition.z, _scrollCurrentPosition.z); ++z)
+					{
+						for (int y = std::min(_scrollStartPosition.y, _scrollCurrentPosition.y); y <= std::max(_scrollStartPosition.y, _scrollCurrentPosition.y); ++y)
+						{
+							for (int x = std::min(_scrollStartPosition.x, _scrollCurrentPosition.x); x <= std::max(_scrollStartPosition.x, _scrollCurrentPosition.x); ++x)
+							{
+								_proposedSelection.push_back(Position(x, y, z));
+							}
+						}
+					}
+				}
+				// checking just the position under the cursor
+				else
+				{
+					if (std::find_if(_proposedSelection.begin(), _proposedSelection.end(),
+									[&](const Position p){ return p == _scrollCurrentPosition; }) == _proposedSelection.end())
+					{
+						_proposedSelection.push_back(_scrollCurrentPosition);
+					}
+				}
 
-			if (Options::touchEnabled == false)
-			{
-				action->getDetails()->motion.x = _xBeforeMouseScrolling;
-				action->getDetails()->motion.y = _yBeforeMouseScrolling;
+				// Determine which tiles/nodes we need to highlight for previewing the selection
+				// holding SHIFT means tiles/nodes get highlighted no matter what
+				// holding only CTRL means they should *not* be highlighted if they're in the box
+				// holding both means the tile/node needs to both be within our rectangular box and the already-selected area
+				// holding neither means we only highlight in the box
+				_map->resetObstacles();
+				_map->enableObstacles();
+
+				if (shiftPressed || !ctrlPressed)
+				{
+					// loop over the positions in our proposed selection
+					for (auto pos : _proposedSelection)
+					{
+						// holding CTRL means we're either removing from selection or getting the intersection of two selections
+						bool highlight = !ctrlPressed;
+						if (!getRouteMode())
+						{
+							Tile *selectedTile = _save->getTile(pos);
+							if (selectedTile)
+							{
+								// check if we're intersecting with some already-selected tiles
+								// highlight if CTRL isn't held or the tile isn't in the already-selected set
+								highlight = highlight || std::find_if(_editor->getSelectedTiles()->begin(), _editor->getSelectedTiles()->end(),
+															[&](const Tile* tile){ return tile == selectedTile; }) != _editor->getSelectedTiles()->end();
+								if (highlight)
+								{
+									for (int i = 0; i < O_MAX; ++i)
+									{
+										selectedTile->setObstacle(i);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				if (shiftPressed != ctrlPressed)
+				{
+					if (!getRouteMode())
+					{
+						// loop over the tiles we have already selected
+						for (auto tile : *_editor->getSelectedTiles())
+						{
+							Position pos = tile->getPosition();
+							// highlight if we're holding SHIFT or the tile is outside the proposed selection
+							bool highlight = shiftPressed || std::find_if(_proposedSelection.begin(), _proposedSelection.end(),
+																[&](const Position p){ return p == pos; }) == _proposedSelection.end();
+
+							if (highlight)
+							{
+								for (int i = 0; i < O_MAX; ++i)
+								{
+									tile->setObstacle(i);
+								}
+							}
+						}
+					}
+				}
+
+
 			}
-			_map->setCursorType(CT_NONE);
 		}
-		else
+		// ... to pan the camera
+		else if (_mouseScrollPan)
 		{
-			Position delta = _map->getCamera()->getMapOffset();
-			_map->getCamera()->setMapOffset(_mapOffsetBeforeMouseScrolling);
-			int scrollX = (int)((double)_totalMouseMoveX / action->getXScale());
-			int scrollY = (int)((double)_totalMouseMoveY / action->getYScale());
-			Position delta2 = _map->getCamera()->getMapOffset();
-			_map->getCamera()->scrollXY(scrollX, scrollY, true);
-			delta2 = _map->getCamera()->getMapOffset() - delta2;
-			delta = _map->getCamera()->getMapOffset() - delta;
-
-			// Keep the limits...
-			if (scrollX != delta2.x || scrollY != delta2.y)
+			if (Options::battleDragScrollInvert)
 			{
-				_totalMouseMoveX = (int) (delta2.x * action->getXScale());
-				_totalMouseMoveY = (int) (delta2.y * action->getYScale());
+				_map->getCamera()->setMapOffset(_mapOffsetBeforeMouseScrolling);
+				int scrollX = -(int)((double)_totalMouseMoveX / action->getXScale());
+				int scrollY = -(int)((double)_totalMouseMoveY / action->getYScale());
+				Position delta2 = _map->getCamera()->getMapOffset();
+				_map->getCamera()->scrollXY(scrollX, scrollY, true);
+				delta2 = _map->getCamera()->getMapOffset() - delta2;
+
+				// Keep the limits...
+				if (scrollX != delta2.x || scrollY != delta2.y)
+				{
+					_totalMouseMoveX = -(int) (delta2.x * action->getXScale());
+					_totalMouseMoveY = -(int) (delta2.y * action->getYScale());
+				}
+
+				if (Options::touchEnabled == false)
+				{
+					action->getDetails()->motion.x = _xBeforeMouseScrolling;
+					action->getDetails()->motion.y = _yBeforeMouseScrolling;
+				}
+				_map->setCursorType(CT_NONE);
 			}
-
-			int barWidth = _game->getScreen()->getCursorLeftBlackBand();
-			int barHeight = _game->getScreen()->getCursorTopBlackBand();
-			int cursorX = _cursorPosition.x + Round(delta.x * action->getXScale());
-			int cursorY = _cursorPosition.y + Round(delta.y * action->getYScale());
-			_cursorPosition.x = Clamp(cursorX, barWidth, _game->getScreen()->getWidth() - barWidth - (int)(Round(action->getXScale())));
-			_cursorPosition.y = Clamp(cursorY, barHeight, _game->getScreen()->getHeight() - barHeight - (int)(Round(action->getYScale())));
-
-			if (Options::touchEnabled == false)
+			else
 			{
-				action->getDetails()->motion.x = _cursorPosition.x;
-				action->getDetails()->motion.y = _cursorPosition.y;
+				Position delta = _map->getCamera()->getMapOffset();
+				_map->getCamera()->setMapOffset(_mapOffsetBeforeMouseScrolling);
+				int scrollX = (int)((double)_totalMouseMoveX / action->getXScale());
+				int scrollY = (int)((double)_totalMouseMoveY / action->getYScale());
+				Position delta2 = _map->getCamera()->getMapOffset();
+				_map->getCamera()->scrollXY(scrollX, scrollY, true);
+				delta2 = _map->getCamera()->getMapOffset() - delta2;
+				delta = _map->getCamera()->getMapOffset() - delta;
+
+				// Keep the limits...
+				if (scrollX != delta2.x || scrollY != delta2.y)
+				{
+					_totalMouseMoveX = (int) (delta2.x * action->getXScale());
+					_totalMouseMoveY = (int) (delta2.y * action->getYScale());
+				}
+
+				int barWidth = _game->getScreen()->getCursorLeftBlackBand();
+				int barHeight = _game->getScreen()->getCursorTopBlackBand();
+				int cursorX = _cursorPosition.x + Round(delta.x * action->getXScale());
+				int cursorY = _cursorPosition.y + Round(delta.y * action->getYScale());
+				_cursorPosition.x = Clamp(cursorX, barWidth, _game->getScreen()->getWidth() - barWidth - (int)(Round(action->getXScale())));
+				_cursorPosition.y = Clamp(cursorY, barHeight, _game->getScreen()->getHeight() - barHeight - (int)(Round(action->getYScale())));
+
+				if (Options::touchEnabled == false)
+				{
+					action->getDetails()->motion.x = _cursorPosition.x;
+					action->getDetails()->motion.y = _cursorPosition.y;
+				}
+
+				// We don't want to look the mouse-cursor jumping :)
+				_game->getCursor()->handle(action);
 			}
 		}
 
-		// We don't want to look the mouse-cursor jumping :)
-		_game->getCursor()->handle(action);
+		_scrollPreviousPosition = _scrollCurrentPosition;
 	}
 }
 
@@ -1025,12 +1136,23 @@ void MapEditorState::mapPress(Action *action)
 	// don't handle mouseclicks over the buttons (it overlaps with map surface)
 	if (_mouseOverIcons) return;
 
-	if (action->getDetails()->button.button == Options::battleDragScrollButton)
+	_isMouseScrolling = true;
+	_isMouseScrolled = false;
+	SDL_GetMouseState(&_xBeforeMouseScrolling, &_yBeforeMouseScrolling);
+	_mapOffsetBeforeMouseScrolling = _map->getCamera()->getMapOffset();
+
+	if (action->getDetails()->button.button == SDL_BUTTON_LEFT || action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 	{
-		_isMouseScrolling = true;
-		_isMouseScrolled = false;
-		SDL_GetMouseState(&_xBeforeMouseScrolling, &_yBeforeMouseScrolling);
-		_mapOffsetBeforeMouseScrolling = _map->getCamera()->getMapOffset();
+		_mouseScrollSelect = true;
+		if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+		{
+			_mouseScrollPainting = true;
+		}
+	}
+	else if (action->getDetails()->button.button == Options::battleDragScrollButton)
+	{
+		_mouseScrollPan = true;
+
 		if (!Options::battleDragScrollInvert && _cursorPosition.z == 0)
 		{
 			_cursorPosition.x = action->getDetails()->motion.x;
@@ -1038,10 +1160,24 @@ void MapEditorState::mapPress(Action *action)
 			// the Z is irrelevant to our mouse position, but we can use it as a boolean to check if the position is set or not
 			_cursorPosition.z = 1;
 		}
-		_totalMouseMoveX = 0; _totalMouseMoveY = 0;
-		_mouseMovedOverThreshold = false;
-		_mouseScrollingStartTime = SDL_GetTicks();
 	}
+
+	// set position on map where we started dragging the mouse
+	// but don't reset it when we use the mousewheel to move up and down!
+	if (action->getDetails()->button.button != SDL_BUTTON_WHEELUP && action->getDetails()->button.button != SDL_BUTTON_WHEELDOWN)
+	{
+		_map->getSelectorPosition(&_scrollStartPosition);
+		_scrollPreviousPosition = _scrollStartPosition;
+
+		if (_mouseScrollPainting)
+		{
+			_proposedSelection.push_back(_scrollStartPosition);
+		}
+	}
+
+	_totalMouseMoveX = 0; _totalMouseMoveY = 0;
+	_mouseMovedOverThreshold = false;
+	_mouseScrollingStartTime = SDL_GetTicks();
 }
 
 /**
@@ -1056,14 +1192,29 @@ void MapEditorState::mapClick(Action *action)
 	// (this part handles the release if it is missed and now an other button is used)
 	if (_isMouseScrolling)
 	{
-		if (action->getDetails()->button.button != Options::battleDragScrollButton
-		&& (SDL_GetMouseState(0,0)&SDL_BUTTON(Options::battleDragScrollButton)) == 0)
+		bool stop = false;
+
+		if (_mouseScrollSelect && action->getDetails()->button.button != SDL_BUTTON_LEFT
+			&& action->getDetails()->button.button != SDL_BUTTON_RIGHT
+			&& (SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_LEFT)) == 0
+			&& (SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_RIGHT)) == 0)
+		{
+			stop = true;
+		}
+		else if (_mouseScrollPan && action->getDetails()->button.button != Options::battleDragScrollButton
+			&& (SDL_GetMouseState(0,0)&SDL_BUTTON(Options::battleDragScrollButton)) == 0)
 		{   // so we missed again the mouse-release :(
 			// Check if we have to revoke the scrolling, because it was too short in time, so it was a click
 			if ((!_mouseMovedOverThreshold) && ((int)(SDL_GetTicks() - _mouseScrollingStartTime) <= (Options::dragScrollTimeTolerance)))
 			{
 				_map->getCamera()->setMapOffset(_mapOffsetBeforeMouseScrolling);
 			}
+
+			stop = true;
+		}
+
+		if (stop == true)
+		{
 			_isMouseScrolled = _isMouseScrolling = false;
 			stopScrolling(action);
 		}
@@ -1073,7 +1224,8 @@ void MapEditorState::mapClick(Action *action)
 	if (_isMouseScrolling)
 	{
 		// While scrolling, other buttons are ineffective
-		if (action->getDetails()->button.button == Options::battleDragScrollButton)
+		if ((_mouseScrollSelect && (action->getDetails()->button.button == SDL_BUTTON_LEFT || action->getDetails()->button.button == SDL_BUTTON_RIGHT)) ||
+			(_mouseScrollPan && action->getDetails()->button.button == Options::battleDragScrollButton))
 		{
 			_isMouseScrolling = false;
 			stopScrolling(action);
@@ -1082,18 +1234,19 @@ void MapEditorState::mapClick(Action *action)
 		{
 			return;
 		}
+
 		// Check if we have to revoke the scrolling, because it was too short in time, so it was a click
 		if ((!_mouseMovedOverThreshold) && ((int)(SDL_GetTicks() - _mouseScrollingStartTime) <= (Options::dragScrollTimeTolerance)))
 		{
 			_isMouseScrolled = false;
 			stopScrolling(action);
 		}
+
 		if (_isMouseScrolled) return;
 	}
 
 	// don't handle mouseclicks over the buttons (it overlaps with map surface)
 	if (_mouseOverIcons) return;
-
 
 	// don't accept leftclicks if there is no cursor or there is an action busy
 	if (_map->getCursorType() == CT_NONE) return;
@@ -1105,6 +1258,8 @@ void MapEditorState::mapClick(Action *action)
 	if (_editor)
 	{
 		Tile *selectedTile = _save->getTile(pos);
+		bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+		bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
 
 		// Dealing with nodes
 		if (getRouteMode())
@@ -1346,9 +1501,20 @@ void MapEditorState::mapClick(Action *action)
 			updateDebugText();
 		}
 		// Editing tiles
+		// TODO: figure out why drag-left or -right are still performing these actions
 		else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT && selectedTile)
 		{
-			_editor->getSelectedTiles()->push_back(selectedTile);
+			bool singleTile = _editor->getSelectedTiles()->empty();
+			if (singleTile)
+			{
+				_editor->getSelectedTiles()->push_back(selectedTile);
+			}
+			// if we didn't right-click inside our selection, do nothing
+			else if (std::find_if(_editor->getSelectedTiles()->begin(), _editor->getSelectedTiles()->end(),
+						[&](const Tile* tile){ return tile == selectedTile; }) == _editor->getSelectedTiles()->end())
+			{
+				return;
+			}
 
 			for (auto tile : *_editor->getSelectedTiles())
 			{
@@ -1399,7 +1565,30 @@ void MapEditorState::mapClick(Action *action)
 			}
 
 			_editor->confirmChanges(false);
-			_editor->getSelectedTiles()->clear();
+			if (singleTile)
+			{
+				_editor->getSelectedTiles()->clear();
+				_map->resetObstacles();
+				_map->enableObstacles();
+			}
+		}
+		else if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+		{
+			if (!shiftPressed)
+			{
+				_editor->getSelectedTiles()->clear();
+				_map->resetObstacles();
+				_map->enableObstacles();
+			}
+			
+			if (selectedTile)
+			{
+				_editor->getSelectedTiles()->push_back(selectedTile);
+				for (int i = 0; i < O_MAX; ++i)
+				{
+					selectedTile->setObstacle(i);
+				}
+			}
 		}
 	}
 }
@@ -1924,7 +2113,7 @@ inline void MapEditorState::handle(Action *action)
 		{
 			State::handle(action);
 
-			if (Options::touchEnabled == false && _isMouseScrolling && !Options::battleDragScrollInvert)
+			if (Options::touchEnabled == false && _isMouseScrolling && _mouseScrollPan && !Options::battleDragScrollInvert)
 			{
 				_map->setSelectorPosition((_cursorPosition.x - _game->getScreen()->getCursorLeftBlackBand()) / action->getXScale(), (_cursorPosition.y - _game->getScreen()->getCursorTopBlackBand()) / action->getYScale());
 			}
@@ -2474,6 +2663,30 @@ void MapEditorState::clearMouseScrollingState()
 }
 
 /**
+ * Gets whether or not we're mouse-scrolling to select something
+ */
+bool MapEditorState::isMouseScrollSelecting()
+{
+	return _isMouseScrolling && _mouseScrollSelect;
+}
+
+/**
+ * Gets whether or not the mouse-scroll to select is in box or painting mode
+ */
+bool MapEditorState::isMouseScrollSelectionPainting()
+{
+	return _mouseScrollPainting; // change to options stuff later
+}
+
+/**
+ * Gets where the mouse started scrolling for a selection
+ */
+Position MapEditorState::getScrollStartPosition()
+{
+	return _scrollStartPosition;
+}
+
+/**
  * Handler for the mouse moving over the icons, disabling the tile selection cube.
  * @param action Pointer to an action.
  */
@@ -2634,22 +2847,51 @@ void MapEditorState::resize(int &dX, int &dY)
 
 /**
  * Move the mouse back to where it started after we finish drag scrolling.
+ * Or handle any after-scrolling actions for selecting/editing multiple tiles.
  * @param action Pointer to an action.
  */
 void MapEditorState::stopScrolling(Action *action)
 {
-	if (Options::battleDragScrollInvert)
+	if (_mouseScrollPan)
 	{
-		SDL_WarpMouse(_xBeforeMouseScrolling, _yBeforeMouseScrolling);
-		action->setMouseAction(_xBeforeMouseScrolling, _yBeforeMouseScrolling, _map->getX(), _map->getY());
-		_map->setCursorType(CT_NORMAL);
+		if (Options::battleDragScrollInvert)
+		{
+			SDL_WarpMouse(_xBeforeMouseScrolling, _yBeforeMouseScrolling);
+			action->setMouseAction(_xBeforeMouseScrolling, _yBeforeMouseScrolling, _map->getX(), _map->getY());
+			_map->setCursorType(CT_NORMAL);
+		}
+		else
+		{
+			SDL_WarpMouse(_cursorPosition.x, _cursorPosition.y);
+			action->setMouseAction(_cursorPosition.x/action->getXScale(), _cursorPosition.y/action->getYScale(), 0, 0);
+			_map->setSelectorPosition(_cursorPosition.x / action->getXScale(), _cursorPosition.y / action->getYScale());
+		}
 	}
-	else
+	else if (_mouseScrollSelect)
 	{
-		SDL_WarpMouse(_cursorPosition.x, _cursorPosition.y);
-		action->setMouseAction(_cursorPosition.x/action->getXScale(), _cursorPosition.y/action->getYScale(), 0, 0);
-		_map->setSelectorPosition(_cursorPosition.x / action->getXScale(), _cursorPosition.y / action->getYScale());
+		// Anything in our previewed highlight gets put in the editor's selected tiles
+		_editor->getSelectedTiles()->clear();
+		for (int z = 0; z < _save->getMapSizeZ(); z++)
+		{
+			for (int y = 0; y < _save->getMapSizeY(); y++)
+			{
+				for (int x = 0; x < _save->getMapSizeX(); x++)
+				{
+					Tile *tile = _save->getTile(Position(x, y, z));
+					if (tile->isObstacle())
+					{
+						_editor->getSelectedTiles()->push_back(tile);
+					}
+				}
+			}
+		}
+
+		_proposedSelection.clear();
 	}
+
+	_mouseScrollSelect = _mouseScrollPainting = _mouseScrollPan = false;
+	_scrollStartPosition = _scrollPreviousPosition = _scrollCurrentPosition = Position(-1, -1, -1);
+
 	// reset our "mouse position stored" flag
 	_cursorPosition.z = 0;
 }
