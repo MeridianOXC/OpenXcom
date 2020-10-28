@@ -1014,21 +1014,18 @@ void MapEditorState::mapOver(Action *action)
 					{
 						// holding CTRL means we're either removing from selection or getting the intersection of two selections
 						bool highlight = !ctrlPressed;
-						if (!getRouteMode())
+						Tile *selectedTile = _save->getTile(pos);
+						if (selectedTile)
 						{
-							Tile *selectedTile = _save->getTile(pos);
-							if (selectedTile)
+							// check if we're intersecting with some already-selected tiles
+							// highlight if CTRL isn't held or the tile isn't in the already-selected set
+							highlight = highlight || std::find_if(_editor->getSelectedTiles()->begin(), _editor->getSelectedTiles()->end(),
+														[&](const Tile* tile){ return tile == selectedTile; }) != _editor->getSelectedTiles()->end();
+							if (highlight)
 							{
-								// check if we're intersecting with some already-selected tiles
-								// highlight if CTRL isn't held or the tile isn't in the already-selected set
-								highlight = highlight || std::find_if(_editor->getSelectedTiles()->begin(), _editor->getSelectedTiles()->end(),
-															[&](const Tile* tile){ return tile == selectedTile; }) != _editor->getSelectedTiles()->end();
-								if (highlight)
+								for (int i = 0; i < O_MAX; ++i)
 								{
-									for (int i = 0; i < O_MAX; ++i)
-									{
-										selectedTile->setObstacle(i);
-									}
+									selectedTile->setObstacle(i);
 								}
 							}
 						}
@@ -1037,22 +1034,19 @@ void MapEditorState::mapOver(Action *action)
 
 				if (shiftPressed != ctrlPressed)
 				{
-					if (!getRouteMode())
+					// loop over the tiles we have already selected
+					for (auto tile : *_editor->getSelectedTiles())
 					{
-						// loop over the tiles we have already selected
-						for (auto tile : *_editor->getSelectedTiles())
-						{
-							Position pos = tile->getPosition();
-							// highlight if we're holding SHIFT or the tile is outside the proposed selection
-							bool highlight = shiftPressed || std::find_if(_proposedSelection.begin(), _proposedSelection.end(),
-																[&](const Position p){ return p == pos; }) == _proposedSelection.end();
+						Position pos = tile->getPosition();
+						// highlight if we're holding SHIFT or the tile is outside the proposed selection
+						bool highlight = shiftPressed || std::find_if(_proposedSelection.begin(), _proposedSelection.end(),
+															[&](const Position p){ return p == pos; }) == _proposedSelection.end();
 
-							if (highlight)
+						if (highlight)
+						{
+							for (int i = 0; i < O_MAX; ++i)
 							{
-								for (int i = 0; i < O_MAX; ++i)
-								{
-									tile->setObstacle(i);
-								}
+								tile->setObstacle(i);
 							}
 						}
 					}
@@ -1173,6 +1167,14 @@ void MapEditorState::mapPress(Action *action)
 		{
 			_proposedSelection.push_back(_scrollStartPosition);
 		}
+
+		if (getRouteMode())
+		{
+			for (auto node : *_editor->getSelectedNodes())
+			{
+				_editor->getSelectedTiles()->push_back(_save->getTile(node->getPosition()));
+			}
+		}
 	}
 
 	_totalMouseMoveX = 0; _totalMouseMoveY = 0;
@@ -1236,7 +1238,7 @@ void MapEditorState::mapClick(Action *action)
 		}
 
 		// Check if we have to revoke the scrolling, because it was too short in time, so it was a click
-		if ((!_mouseMovedOverThreshold) && ((int)(SDL_GetTicks() - _mouseScrollingStartTime) <= (Options::dragScrollTimeTolerance)))
+		if ((!_mouseMovedOverThreshold || action->getDetails()->button.button == SDL_BUTTON_RIGHT) && ((int)(SDL_GetTicks() - _mouseScrollingStartTime) <= (Options::dragScrollTimeTolerance)))
 		{
 			_isMouseScrolled = false;
 			stopScrolling(action);
@@ -1385,7 +1387,7 @@ void MapEditorState::mapClick(Action *action)
 
 						if (linkID != -1)
 						{
-							for(auto node : *_editor->getSelectedNodes())
+							for (auto node : *_editor->getSelectedNodes())
 							{
 								// don't link back to the same node
 								if (clickedNode == node)
@@ -1458,7 +1460,7 @@ void MapEditorState::mapClick(Action *action)
 
 						if (linkID != -1)
 						{
-							for(auto node : *_editor->getSelectedNodes())
+							for (auto node : *_editor->getSelectedNodes())
 							{
 								// we don't need to de-link from the same node
 								if (clickedNode == node)
@@ -1889,7 +1891,7 @@ void MapEditorState::cbxNodeTypeChange(Action *action)
 	size_t selIdx = _cbxNodeType->getSelected();
 	std::vector<int> data;
 	data.push_back(_nodeTypes.at(selIdx));
-	for(auto node : *_editor->getSelectedNodes())
+	for (auto node : *_editor->getSelectedNodes())
 	{
 		_editor->changeNodeData(MET_DO, node, NCT_TYPE, data);
 	}
@@ -1910,7 +1912,7 @@ void MapEditorState::cbxNodeRankChange(Action *action)
 	size_t selIdx = _cbxNodeRank->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	for(auto node : *_editor->getSelectedNodes())
+	for (auto node : *_editor->getSelectedNodes())
 	{
 		_editor->changeNodeData(MET_DO, node, NCT_RANK, data);
 	}
@@ -1931,7 +1933,7 @@ void MapEditorState::cbxNodeFlagChange(Action *action)
 	size_t selIdx = _cbxNodeFlag->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	for(auto node : *_editor->getSelectedNodes())
+	for (auto node : *_editor->getSelectedNodes())
 	{
 		_editor->changeNodeData(MET_DO, node, NCT_FLAG, data);
 	}
@@ -1952,7 +1954,7 @@ void MapEditorState::cbxNodePriorityChange(Action *action)
 	size_t selIdx = _cbxNodePriority->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	for(auto node : *_editor->getSelectedNodes())
+	for (auto node : *_editor->getSelectedNodes())
 	{
 		_editor->changeNodeData(MET_DO, node, NCT_PRIORITY, data);
 	}
@@ -1973,7 +1975,7 @@ void MapEditorState::cbxNodeReservedChange(Action *action)
 	size_t selIdx = _cbxNodeReserved->getSelected();
 	std::vector<int> data;
 	data.push_back((int)selIdx);
-	for(auto node : *_editor->getSelectedNodes())
+	for (auto node : *_editor->getSelectedNodes())
 	{
 		_editor->changeNodeData(MET_DO, node, NCT_RESERVED, data);
 	}
@@ -2016,7 +2018,7 @@ void MapEditorState::cbxNodeLinksChange(Action *action)
 	std::vector<int> data;
 	data.push_back(linkID);
 	data.push_back(knownLinks.at(selIdx));
-	for(auto node : *_editor->getSelectedNodes())
+	for (auto node : *_editor->getSelectedNodes())
 	{
 		_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
 	}
@@ -2050,7 +2052,7 @@ void MapEditorState::cbxNodeLinkTypesChange(Action *action)
 	std::vector<int> data;
 	data.push_back(linkID);
 	data.push_back(_nodeTypes.at(selIdx));
-	for(auto node : *_editor->getSelectedNodes())
+	for (auto node : *_editor->getSelectedNodes())
 	{
 		_editor->changeNodeData(MET_DO, node, NCT_LINKTYPES, data);
 	}
@@ -2871,6 +2873,11 @@ void MapEditorState::stopScrolling(Action *action)
 	{
 		// Anything in our previewed highlight gets put in the editor's selected tiles
 		_editor->getSelectedTiles()->clear();
+		if (getRouteMode())
+		{
+			_editor->getSelectedNodes()->clear();
+		}
+
 		for (int z = 0; z < _save->getMapSizeZ(); z++)
 		{
 			for (int y = 0; y < _save->getMapSizeY(); y++)
@@ -2881,9 +2888,42 @@ void MapEditorState::stopScrolling(Action *action)
 					if (tile->isObstacle())
 					{
 						_editor->getSelectedTiles()->push_back(tile);
+
+						if (getRouteMode())
+						{
+							Node *selectedNode = 0;
+
+							for (auto node : *_save->getNodes())
+							{
+								if (!_editor->isNodeActive(node))
+								{
+									continue;
+								}
+
+								Position nodePos = node->getPosition();
+								if (nodePos == Position(x, y, z))
+								{
+									selectedNode = node;
+									break;
+								}
+							}
+
+							if (selectedNode)
+							{
+								_editor->getSelectedNodes()->push_back(selectedNode);
+							}
+						}
 					}
 				}
 			}
+		}
+
+		if (getRouteMode())
+		{
+			_editor->getSelectedTiles()->clear();
+			_map->resetObstacles();
+			_map->enableObstacles();
+			updateNodePanels();
 		}
 
 		_proposedSelection.clear();
