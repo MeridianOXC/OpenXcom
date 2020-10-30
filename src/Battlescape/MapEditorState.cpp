@@ -1203,17 +1203,8 @@ void MapEditorState::mapClick(Action *action)
 				}
 			}
 
-			// left-click: select node
-			if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
-			{
-				//_editor->getSelectedNodes()->clear();
-				//if (clickedNode)
-				//{
-				//	_editor->getSelectedNodes()->push_back(clickedNode);
-				//}
-			}
-			// right-click: determine what action we're taking by what modes are selected
-			else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+			// determine what action we're taking by what modes are selected
+			if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 			{
 				std::vector<int> data;
 				
@@ -1279,16 +1270,62 @@ void MapEditorState::mapClick(Action *action)
 					}
 					// moving: no clicked node and is the move node filter
 					// we check for selectedTile to make sure we're moving inside the map
-					// TODO: moving more than one node when drag-edits become a thing
-					else if (selectedTile && !clickedNode && selectedTile && _editor->getSelectedNodes()->size() == 1)
+					// TODO: moving more than one node when drag-edits become a thing (?)
+					else if (selectedTile && !clickedNode && selectedTile)
 					{
+						if (_editor->getSelectedNodes()->size() == 1)
+						{
+							data.clear();
+							data.push_back(pos.x);
+							data.push_back(pos.y);
+							data.push_back(pos.z);
+							_editor->changeNodeData(MET_DO, _editor->getSelectedNodes()->front(), NCT_POS, data);
+						}
 						// maybe handle multiple nodes selected by using a waypoint system:
 						// 1st click sets reference point, 2nd click moves w.r.t. reference point
-						data.clear();
-						data.push_back(pos.x);
-						data.push_back(pos.y);
-						data.push_back(pos.z);
-						_editor->changeNodeData(MET_DO, _editor->getSelectedNodes()->front(), NCT_POS, data);
+						else if (_editor->getSelectedNodes()->size() > 1)
+						{
+							if (_map->getWaypoints()->size() < 2)
+							{
+								_map->getWaypoints()->push_back(pos);
+							}
+							else
+							{
+								Position delta = _map->getWaypoints()->back() - _map->getWaypoints()->front();
+								for (auto node : *_editor->getSelectedNodes())
+								{
+									// get the new position of the node as the difference between the two waypoints we placed added to its current position
+									// but make sure it stays within the map!
+									Position newPosition = node->getPosition() + delta;
+									newPosition.x = std::max(0, std::min(_save->getMapSizeX() - 1, (int)newPosition.x));
+									newPosition.y = std::max(0, std::min(_save->getMapSizeY() - 1, (int)newPosition.y));
+									newPosition.z = std::max(0, std::min(_save->getMapSizeZ() - 1, (int)newPosition.z));
+
+									// make sure this new position doesn't overlap with any other nodes we're moving
+									bool overlap = false;
+									for (auto otherNode : *_save->getNodes())
+									{
+										if (newPosition == otherNode->getPosition())
+										{
+											overlap = true;
+											break;
+										}
+									}
+									if (overlap)
+									{
+										continue;
+									}
+
+									data.clear();
+									data.push_back(newPosition.x);
+									data.push_back(newPosition.y);
+									data.push_back(newPosition.z);
+									_editor->changeNodeData(MET_DO, node, NCT_POS, data);
+								}
+
+								_map->getWaypoints()->clear();
+							}
+						}
 					}
 					// make links
 					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect)
@@ -1792,6 +1829,9 @@ void MapEditorState::btnNodeFilterClick(Action *action)
 		_nodeFilterMode = _btnNodeFilterTwoWayConnect;
 	}
 
+	// clear any waypoints we made for moving muliple nodes
+	_map->getWaypoints()->clear();
+
 	// update the node links panel in case we selected a connection mode and need to highlight the next available link
 	updateNodePanels();
 }
@@ -2283,6 +2323,9 @@ void MapEditorState::toggleRouteMode(Action *action)
 			_txtTooltip->setText(_currentTooltip);
 		}
 	}
+
+	// clear any waypoints we made for moving multiple nodes
+	_map->getWaypoints()->clear();
 }
 
 /**
@@ -2944,6 +2987,11 @@ void MapEditorState::stopSelections(Action *action)
 		_map->resetObstacles();
 		_map->enableObstacles();
 		updateNodePanels();
+
+		if (_editor->getSelectedNodes()->size() < 2)
+		{
+			_map->getWaypoints()->clear();
+		}
 	}
 
 	_proposedSelection.clear();
