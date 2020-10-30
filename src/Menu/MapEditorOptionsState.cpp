@@ -18,6 +18,7 @@
  */
 #include "MapEditorOptionsState.h"
 #include "../Battlescape/MapEditor.h"
+#include "../Battlescape/MapEditorState.h"
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
 #include "../Engine/Action.h"
@@ -46,7 +47,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param parent Pointer to the map editor menu
  */
-MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(origin)
+MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(origin), _resetEditorState(false)
 {
     _screen = false;
 
@@ -236,7 +237,16 @@ void MapEditorOptionsState::btnAbandonClick(Action *)
  */
 void MapEditorOptionsState::btnCancelClick(Action *)
 {
-    _game->popState();
+	if (_resetEditorState)
+	{
+		MapEditorState *mapEditorState = new MapEditorState(_game->getMapEditor());
+		_game->setState(mapEditorState);
+		_game->getSavedGame()->getSavedBattle()->setMapEditorState(mapEditorState);
+	}
+	else
+	{
+    	_game->popState();
+	}
 }
 
 /**
@@ -267,6 +277,11 @@ void MapEditorOptionsState::lstOptionsClick(Action *action)
 		bool *b = setting->asBool();
 		*b = !*b;
 		settingText = *b ? tr("STR_YES") : tr("STR_NO");
+
+		//if (b = &Options::)
+		//{
+		//	_resetEditorState = true;
+		//}
 	}
 	else if (setting->type() == OPTION_INT) // integer variables will need special handling
 	{
@@ -300,6 +315,12 @@ void MapEditorOptionsState::lstOptionsClick(Action *action)
 		std::ostringstream ss;
 		ss << *i;
 		settingText = ss.str();
+
+		if (i == &Options::mapEditorMaxTileSelectionColumns
+			|| i == &Options::mapEditorMaxTileSelectionRows)
+		{
+			_resetEditorState = true;
+		}
 	}
 	_lstOptions->setCellText(sel, 1, settingText);
 }

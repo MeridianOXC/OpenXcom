@@ -33,6 +33,7 @@ class MapEditorOptionsState : public State
 {
 private :
 	OptionsOrigin _origin;
+    bool _resetEditorState;
 	TextButton *_btnInfo, *_btnLoad, *_btnSave, *_btnAbandon, *_btnOptions, *_btnCancel;
     TextList *_lstOptions;
 	std::vector<OptionInfo> _settings;
