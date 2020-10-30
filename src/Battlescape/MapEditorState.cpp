@@ -2975,6 +2975,12 @@ void MapEditorState::stopSelections(Action *action)
 		}
 	}
 
+	if (!Options::mapEditorSelectedTilesKeepFlashing)
+	{
+		_map->resetObstacles();
+		_map->enableObstacles();
+	}
+
 	_proposedSelection.clear();
 	_mouseScrollSelect = _mouseScrollPainting = false;
 	_scrollStartPosition = _scrollPreviousPosition = _scrollCurrentPosition = Position(-1, -1, -1);
