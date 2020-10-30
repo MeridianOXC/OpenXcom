@@ -84,6 +84,12 @@ void MapEditor::changeTileData(EditType action, Tile *tile, int dataIDs[4], int 
                 mapData = _save->getMapDataSets()->at(dataSetIDs[partIndex])->getObject((size_t)dataIDs[partIndex]);
             }
             tile->setMapData(mapData, dataIDs[partIndex], dataSetIDs[partIndex], (TilePart)part);
+            
+            // make sure doors don't animate
+            if (tile->isUfoDoor(part))
+            {
+                tile->closeUfoDoor();
+            }
         }
 
         // grab the tile's data from after the change for saving
