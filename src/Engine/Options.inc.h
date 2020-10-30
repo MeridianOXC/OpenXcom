@@ -159,6 +159,8 @@ OPT bool mapEditorDragSelectPainting;
 OPT bool mapEditorRightClickDragSelect;
 OPT bool mapEditorSelectedTilesKeepFlashing;
 OPT bool mapEditorCloseTileSelectionUIAfterClick;
+OPT int mapEditorMaxTileSelectionColumns;
+OPT int mapEditorMaxTileSelectionRows;
 OPT bool mapEditorShowOutOfPlaneNodes;
 OPT bool mapEditorShowOutOfPlaneNodeLinks;
 OPT bool mapEditorDottedOutOfPlaneNodeLinks;

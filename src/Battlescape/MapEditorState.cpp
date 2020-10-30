@@ -157,7 +157,9 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 		icons->getFrame(i + 16)->blitNShade(_backgroundTileSelectionNavigation, i * 32, 0);
 	}
 	_tileSelectionColumns = screenWidth / 2 / 32;
+	_tileSelectionColumns = std::max(2, std::min(_tileSelectionColumns, Options::mapEditorMaxTileSelectionColumns));
 	_tileSelectionRows = (screenHeight - 2 * 40) / 40;
+	_tileSelectionRows = std::max(2, std::min(_tileSelectionRows, Options::mapEditorMaxTileSelectionRows));
 	int tileSelectionWidth = _tileSelectionColumns * 32;
 	int tileSelectionHeight = _tileSelectionRows * 40;
 	_tileSelection = new InteractiveSurface(32, 40, 0, 0);

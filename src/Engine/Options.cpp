@@ -414,6 +414,8 @@ void createOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorRightClickDragSelect", &mapEditorRightClickDragSelect, false, "STR_RIGHT_CLICK_DRAG_SELECT", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorSelectedTilesKeepFlashing", &mapEditorSelectedTilesKeepFlashing, true, "STR_SELECTED_TILES_KEEP_FLASHING", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorCloseTileSelectionUIAfterClick", &mapEditorCloseTileSelectionUIAfterClick, false, "STR_CLOSE_TILE_SELECTION_UI_AFTER_CLICK", "STR_MAPEDITOR"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorMaxTileSelectionColumns", &mapEditorMaxTileSelectionColumns, 16, "STR_MAX_NUMBER_OF_TILE_SELECTION_COLUMNS", "STR_MAPEDITOR"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorMaxTileSelectionRows", &mapEditorMaxTileSelectionRows, 12, "STR_MAX_NUMBER_OF_TILE_SELECTION_ROWS", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodes", &mapEditorShowOutOfPlaneNodes, true, "STR_SHOW_OUT_OF_PLANE_NODES", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodeLinks", &mapEditorShowOutOfPlaneNodeLinks, true, "STR_SHOW_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorDottedOutOfPlaneNodeLinks", &mapEditorDottedOutOfPlaneNodeLinks, true, "STR_DOTTED_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
