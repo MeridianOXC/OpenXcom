@@ -622,6 +622,8 @@ en-GB:
   STR_RIGHT_CLICK_DRAG_SELECT_DESC: "If enabled, allows the right mouse button to select multiple tiles/nodes as long as the mouse press is longer than the drag-scroll threshold. Uses the opposite drag-selection style chosen by the 'Drag-selection only along cursor path' option."
   STR_SELECTED_TILES_KEEP_FLASHING: "Selected tiles continue flashing"
   STR_SELECTED_TILES_KEEP_FLASHING_DESC: "If enabled, tiles that are selected will keep flashing after any drag-selections are completed. Does not affect flashing while a drag-selection is in progress."
+  STR_CLOSE_TILE_SELECTION_UI_AFTER_CLICK: "Close tile selection panel after click"
+  STR_CLOSE_TILE_SELECTION_UI_AFTER_CLICK_DESC: "If enabled, the tile selection panel will automatically close after clicking to select a tile."
   STR_SHOW_OUT_OF_PLANE_NODES: "Show nodes outside current level"
   STR_SHOW_OUT_OF_PLANE_NODES_DESC: "If enabled, the nodes above and below the current z-level of the map are displayed but with dotted markers."
   STR_SHOW_OUT_OF_PLANE_NODE_LINKS: "Show links outside current level"

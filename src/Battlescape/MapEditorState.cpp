@@ -3159,6 +3159,11 @@ void MapEditorState::tileSelectionGridClick(Action *action)
 		if (_editor->getSelectedMapDataID() != -1)
 			_editor->setSelectedMapDataID(index);
 	}
+
+	if (Options::mapEditorCloseTileSelectionUIAfterClick)
+	{
+		tileSelectionClick(action);
+	}
 }
 
 /**
