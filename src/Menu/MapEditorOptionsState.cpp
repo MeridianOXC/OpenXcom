@@ -283,6 +283,10 @@ void MapEditorOptionsState::lstOptionsClick(Action *action)
 		// set specific values for options if we need them, e.g.
 		// if (i == &Options::something)
 		// {min = x; max = y;}
+		if (i == &Options::mapEditorMaxTileSelectionColumns)
+		{min = 2; max = 32;}
+		else if (i == &Options::mapEditorMaxTileSelectionRows)
+		{min = 2; max = 24;}
 
 		if (*i < min)
 		{

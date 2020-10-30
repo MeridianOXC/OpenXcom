@@ -86,7 +86,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	//_btnMapUp = new BattlescapeButton(32, 16, x + 80, y);
 	//_btnMapDown = new BattlescapeButton(32, 16, x + 80, y + 16);
 
-	_txtTooltip = new Text(300, 20, 2, screenHeight - 60);
+	_txtTooltip = new Text(screenWidth - 4, 20, 2, screenHeight - 60);
 	_txtDebug = new Text(158, 32, screenWidth - 160, 40);
 
 	SurfaceSet *icons = _game->getMod()->getSurfaceSet("MapEditorIcons");
@@ -250,8 +250,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	icons->getFrame(46)->blitNShade(_iconsUpperLeftNodes, 32, 0);
 	_btnRouteInformation = new BattlescapeButton(32, 40, 0, 0);
 	_btnRouteConnections = new BattlescapeButton(32, 40, 32, 0);
-	int nodePanelWidth = 5 * 32;
-	_panelRouteInformation = new InteractiveSurface(nodePanelWidth, tileSelectionHeight, 0, 40);
+	int nodePanelColumns = 5;
+	int nodePanelWidth = nodePanelColumns * 32;
+	int nodePanelRows = (screenHeight - 2 * 40) / 40;
+	int nodePanelHeight = nodePanelRows * 40;
+	_panelRouteInformation = new InteractiveSurface(nodePanelWidth, nodePanelHeight, 0, 40);
 	// General information panel
 	_txtNodeID = new Text(144, 10, 4, 44);
 	_txtNodeType = new Text(144, 10, 4, 54);
@@ -275,15 +278,15 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	}
 
 	// Draw the background for the panel
-	for (int i = 0; i < _tileSelectionRows; ++i)
+	for (int i = 0; i < nodePanelRows; ++i)
 	{
 		for (int j = 0; j < nodePanelWidth / 32; ++j) // the node panel width is measured in pixels, covert to width of sprite
 		{
 			// select which of the background panel frames is appropriate for this position on the grid
 			int panelSpriteOffset = 50;
-			if (i % (_tileSelectionRows - 1) != 0) // we're in a middle row
+			if (i % (nodePanelRows - 1) != 0) // we're in a middle row
 				panelSpriteOffset += 3;
-			else if (i / (_tileSelectionRows - 1) == 1) // we're on the bottom row
+			else if (i / (nodePanelRows - 1) == 1) // we're on the bottom row
 				panelSpriteOffset += 6;
 			// else we're on the top row
 
@@ -2360,15 +2363,15 @@ void MapEditorState::toggleNodeInfoPanel(Action *action, bool hide)
 	_cbxNodePriority->setVisible(!hide && openInfo);
 	_cbxNodeReserved->setVisible(!hide && openInfo);
 
-	if (_panelRouteInformation->getVisible())
+	if (_panelRouteInformation->getVisible() && _panelRouteInformation->getHeight() + 40 > _txtTooltip->getY())
 	{
 		_txtTooltip->setX(_panelRouteInformation->getWidth() + 2);
-		_txtTooltip->setWidth(150);
+		_txtTooltip->setWidth(Options::baseXResolution - 4 - _panelRouteInformation->getWidth());
 	}
 	else
 	{
 		_txtTooltip->setX(2);
-		_txtTooltip->setWidth(300);
+		_txtTooltip->setWidth(Options::baseXResolution - 4);
 	}
 
 	_txtNodeLinks->setVisible(!hide && !openInfo);
@@ -3078,15 +3081,15 @@ void MapEditorState::tileSelectionClick(Action *action)
 	}
 	_panelTileSelection->setVisible(!_panelTileSelection->getVisible());
 
-	if (_panelTileSelection->getVisible())
+	if (_panelTileSelection->getVisible() && _panelTileSelection->getHeight() + 40 > _txtTooltip->getY())
 	{
 		_txtTooltip->setX(_panelTileSelection->getWidth() + 2);
-		_txtTooltip->setWidth(150);
+		_txtTooltip->setWidth(Options::baseXResolution - 4 - _panelTileSelection->getWidth());
 	}
 	else
 	{
 		_txtTooltip->setX(2);
-		_txtTooltip->setWidth(300);
+		_txtTooltip->setWidth(Options::baseXResolution - 4);
 	}
 
 	drawTileSpriteOnSurface(_tileSelection, _selectedTileIndex);
