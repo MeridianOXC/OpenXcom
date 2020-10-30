@@ -228,6 +228,8 @@ public:
 	void handleSelections(Action *action);
 	/// Handle finishing making mouse-drag selections or actions
 	void stopSelections(Action *action);
+	/// Checks whether a chosen position is valid for moving a node
+	Position validateNodePosition(Node *node, Position newPosition);
 	/// Autosave next turn.
 	//void autosave();
 	/// Gets the pointer to the map editor

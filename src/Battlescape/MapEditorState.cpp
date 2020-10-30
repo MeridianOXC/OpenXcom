@@ -1275,10 +1275,12 @@ void MapEditorState::mapClick(Action *action)
 					{
 						if (_editor->getSelectedNodes()->size() == 1)
 						{
+							Position newPosition = validateNodePosition(_editor->getSelectedNodes()->front(), pos);
+
 							data.clear();
-							data.push_back(pos.x);
-							data.push_back(pos.y);
-							data.push_back(pos.z);
+							data.push_back(newPosition.x);
+							data.push_back(newPosition.y);
+							data.push_back(newPosition.z);
 							_editor->changeNodeData(MET_DO, _editor->getSelectedNodes()->front(), NCT_POS, data);
 						}
 						// maybe handle multiple nodes selected by using a waypoint system:
@@ -1297,24 +1299,7 @@ void MapEditorState::mapClick(Action *action)
 									// get the new position of the node as the difference between the two waypoints we placed added to its current position
 									// but make sure it stays within the map!
 									Position newPosition = node->getPosition() + delta;
-									newPosition.x = std::max(0, std::min(_save->getMapSizeX() - 1, (int)newPosition.x));
-									newPosition.y = std::max(0, std::min(_save->getMapSizeY() - 1, (int)newPosition.y));
-									newPosition.z = std::max(0, std::min(_save->getMapSizeZ() - 1, (int)newPosition.z));
-
-									// make sure this new position doesn't overlap with any other nodes we're moving
-									bool overlap = false;
-									for (auto otherNode : *_save->getNodes())
-									{
-										if (newPosition == otherNode->getPosition())
-										{
-											overlap = true;
-											break;
-										}
-									}
-									if (overlap)
-									{
-										continue;
-									}
+									newPosition = validateNodePosition(node, newPosition);
 
 									data.clear();
 									data.push_back(newPosition.x);
@@ -2997,6 +2982,63 @@ void MapEditorState::stopSelections(Action *action)
 	_proposedSelection.clear();
 	_mouseScrollSelect = _mouseScrollPainting = false;
 	_scrollStartPosition = _scrollPreviousPosition = _scrollCurrentPosition = Position(-1, -1, -1);
+}
+
+/**
+ * Checks whether a chosen position is valid for moving a node
+ * @param node Pointer to a node
+ * @param newPosition Proposed new position for the node
+ * @return A validated position
+ */
+Position MapEditorState::validateNodePosition(Node *node, Position newPosition)
+{
+	Position validatedPosition = newPosition;
+
+	// make sure the position is within the boundaries of the map
+	validatedPosition.x = std::max(0, std::min(_save->getMapSizeX() - 1, (int)validatedPosition.x));
+	validatedPosition.y = std::max(0, std::min(_save->getMapSizeY() - 1, (int)validatedPosition.y));
+	validatedPosition.z = std::max(0, std::min(_save->getMapSizeZ() - 1, (int)validatedPosition.z));
+
+	// make sure this new position doesn't overlap with any other nodes
+	bool overlap = true;
+	int maxAttempts = 5;
+	int attempts = 0;
+	while (overlap && attempts < maxAttempts)
+	{
+		overlap = false;
+
+		for (auto otherNode : *_save->getNodes())
+		{
+			if (!_editor->isNodeActive(otherNode))
+			{
+				continue;
+			}
+
+			if (validatedPosition == otherNode->getPosition())
+			{
+				overlap = true;
+				break;
+			}
+		}
+
+		// try a position closer to the node's current one
+		if (overlap && validatedPosition != node->getPosition())
+		{
+			// move one tile in the approximate direction of the original tile
+			Position delta = (node->getPosition() - validatedPosition);
+			delta = delta / std::max({std::abs(delta.x), std::abs(delta.y), std::abs(delta.z)});
+			validatedPosition += delta;
+		}
+
+		++attempts;
+	}
+
+	if (overlap)
+	{
+		validatedPosition = node->getPosition();
+	}
+
+	return validatedPosition;
 }
 
 /**
