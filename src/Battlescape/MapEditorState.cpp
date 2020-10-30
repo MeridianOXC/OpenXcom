@@ -1072,10 +1072,7 @@ void MapEditorState::mapPress(Action *action)
 	else if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
 		_mouseScrollSelect = true;
-		//if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
-		//{
-		//	_mouseScrollPainting = true;
-		//}
+		_mouseScrollPainting = Options::mapEditorDragSelectPainting;
 	}
 
 	_mouseScrollingStartTime = SDL_GetTicks();

@@ -616,6 +616,8 @@ en-US:
   STR_MAP_INFO: "MAP INFORMATION"
   STR_LOAD_MAP: "LOAD MAP"
   STR_SAVE_MAP: "SAVE MAP"
+  STR_DRAG_SELECT_PAINTING: "Drag-selection only along cursor path"
+  STR_DRAG_SELECT_PAINTING_DESC: "If enabled, selecting multiple tiles/nodes by holding the left mouse button will only consider the position immediately under the cursor instead of drawing a box between the starting point and the cursor."
   STR_SHOW_OUT_OF_PLANE_NODES: "Show nodes outside current level"
   STR_SHOW_OUT_OF_PLANE_NODES_DESC: "If enabled, the nodes above and below the current z-level of the map are displayed but with dotted markers."
   STR_SHOW_OUT_OF_PLANE_NODE_LINKS: "Show links outside current level"
