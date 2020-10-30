@@ -77,7 +77,7 @@ private:
 	int _totalMouseMoveX, _totalMouseMoveY;
 	bool _mouseMovedOverThreshold;
 	bool _mouseOverIcons;
-	bool _mouseScrollSelect, _mouseScrollPainting, _mouseScrollPan;
+	bool _mouseScrollSelect, _mouseScrollPainting;
 	Position _scrollStartPosition, _scrollPreviousPosition, _scrollCurrentPosition;
 	std::vector<Position> _proposedSelection;
 	std::string _currentTooltip;
@@ -224,6 +224,10 @@ public:
 	void resize(int &dX, int &dY) override;
 	/// Move the mouse back to where it started after we finish drag scrolling.
 	void stopScrolling(Action *action);
+	/// Handle making selections of multiple tiles or nodes
+	void handleSelections(Action *action);
+	/// Handle finishing making mouse-drag selections or actions
+	void stopSelections(Action *action);
 	/// Autosave next turn.
 	//void autosave();
 	/// Gets the pointer to the map editor
