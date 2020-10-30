@@ -889,13 +889,12 @@ void MapEditorState::think()
 			}
 		}
 
-		// switch right-click from performing an action to drag-selecting if we held it down long enough (TODO: and the option is turned on)
-		if (!_isMouseScrolling && !_mouseScrollSelect && SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_RIGHT)
+		// switch right-click from performing an action to drag-selecting if we held it down long enough and the option is turned on
+		if (Options::mapEditorRightClickDragSelect && !_isMouseScrolling && !_mouseScrollSelect && SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_RIGHT)
 			&& ((int)(SDL_GetTicks() - _mouseScrollingStartTime) > (Options::dragScrollTimeTolerance)))
 		{
-			// TODO: change painting to option for swapping between modes
-			_mouseScrollSelect = _mouseScrollPainting = true;
-			//handleSelections(action);
+			_mouseScrollSelect = true;
+			_mouseScrollPainting = !Options::mapEditorDragSelectPainting;
 		}
 	}
 
@@ -1153,8 +1152,8 @@ void MapEditorState::mapClick(Action *action)
 		&& (SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_LEFT)) == 0
 		&& (SDL_GetMouseState(0,0)&SDL_BUTTON(SDL_BUTTON_RIGHT)) == 0)
 		|| action->getDetails()->button.button == SDL_BUTTON_LEFT // left-clicks are always handled like selections
-		|| (action->getDetails()->button.button == SDL_BUTTON_RIGHT 
-		&& ((int)(SDL_GetTicks() - _mouseScrollingStartTime) > (Options::dragScrollTimeTolerance))) // right-clicks need to be over a certain duration (TODO: and have the option turned on)
+		|| (action->getDetails()->button.button == SDL_BUTTON_RIGHT && Options::mapEditorRightClickDragSelect // right-clicks need to be over a certain duration and have the option turned on
+		&& ((int)(SDL_GetTicks() - _mouseScrollingStartTime) > (Options::dragScrollTimeTolerance)))
 		)
 		{
 			stopSelections(action);

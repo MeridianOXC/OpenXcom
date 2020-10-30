@@ -411,6 +411,7 @@ void createOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceMapEditorBoundsColor", &oxceMapEditorBoundsColor, 13, "", "HIDDEN"));
 
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorDragSelectPainting", &mapEditorDragSelectPainting, false, "STR_DRAG_SELECT_PAINTING", "STR_MAPEDITOR"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorRightClickDragSelect", &mapEditorRightClickDragSelect, false, "STR_RIGHT_CLICK_DRAG_SELECT", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodes", &mapEditorShowOutOfPlaneNodes, true, "STR_SHOW_OUT_OF_PLANE_NODES", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorShowOutOfPlaneNodeLinks", &mapEditorShowOutOfPlaneNodeLinks, true, "STR_SHOW_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "mapEditorDottedOutOfPlaneNodeLinks", &mapEditorDottedOutOfPlaneNodeLinks, true, "STR_DOTTED_OUT_OF_PLANE_NODE_LINKS", "STR_MAPEDITOR"));
