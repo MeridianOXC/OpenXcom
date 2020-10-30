@@ -158,6 +158,7 @@ OPT int oxceMapEditorBoundsColor;
 OPT bool mapEditorDragSelectPainting;
 OPT bool mapEditorRightClickDragSelect;
 OPT bool mapEditorSelectedTilesKeepFlashing;
+OPT bool mapEditorHoldAltToToggleModeSwitch;
 OPT bool mapEditorCloseTileSelectionUIAfterClick;
 OPT int mapEditorMaxTileSelectionColumns;
 OPT int mapEditorMaxTileSelectionRows;

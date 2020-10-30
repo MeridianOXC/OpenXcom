@@ -622,6 +622,8 @@ en-US:
   STR_RIGHT_CLICK_DRAG_SELECT_DESC: "If enabled, allows the right mouse button to select multiple tiles/nodes as long as the mouse press is longer than the drag-scroll threshold. Uses the opposite drag-selection style chosen by the 'Drag-selection only along cursor path' option."
   STR_SELECTED_TILES_KEEP_FLASHING: "Selected tiles continue flashing"
   STR_SELECTED_TILES_KEEP_FLASHING_DESC: "If enabled, tiles that are selected will keep flashing after any drag-selections are completed. Does not affect flashing while a drag-selection is in progress."
+  STR_HOLD_ALT_TO_TOGGLE_MODE_SWITCH: "Hold ALT to toggle delete mode"
+  STR_HOLD_ALT_TO_TOGGLE_MODE_SWITCH_DESC: "If enabled, holding the ALT button while performing a right click action will temporarily toggle the opposite of whichever mode you have selected between create/select and delete/remove."
   STR_CLOSE_TILE_SELECTION_UI_AFTER_CLICK: "Close tile selection panel after click"
   STR_CLOSE_TILE_SELECTION_UI_AFTER_CLICK_DESC: "If enabled, the tile selection panel will automatically close after clicking to select a tile."
   STR_MAX_NUMBER_OF_TILE_SELECTION_COLUMNS: "Maximum tile selection columns"

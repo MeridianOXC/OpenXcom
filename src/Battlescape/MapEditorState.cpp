@@ -1181,8 +1181,7 @@ void MapEditorState::mapClick(Action *action)
 	if (_editor)
 	{
 		Tile *selectedTile = _save->getTile(pos);
-		bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
-		bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
+		bool altPressed = (SDL_GetModState() & KMOD_ALT) != 0;
 
 		// Dealing with nodes
 		if (getRouteMode())
@@ -1208,9 +1207,12 @@ void MapEditorState::mapClick(Action *action)
 			if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 			{
 				std::vector<int> data;
+				bool newMode = _nodeEditMode == _btnNodeNew;
+				// switch between new/delete mode if the ALT button is held and that option is turned on
+				newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
 				
 				// new node mode: create new node, move, or make links
-				if (_nodeEditMode == _btnNodeNew)
+				if (newMode)
 				{
 					// select node
 					if (clickedNode && _nodeFilterMode == _btnNodeFilterSelect)
@@ -1473,11 +1475,16 @@ void MapEditorState::mapClick(Action *action)
 				}
 
 				// If the editor has a selected MapDataID, we're placing a tile
-				if (_editor->getSelectedMapDataID() != -1)
+				// Otherwise we're clearing a tile
+				bool newMode = _editor->getSelectedMapDataID() != -1;
+				// but switch modes if we're holding ALT and that option is toggled on
+				newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
+
+				if (newMode && _selectedTileIndex > -1)
 				{
 					int dataID;
 					int dataSetID;
-					MapData *mapData = _editor->getMapDataFromIndex(_editor->getSelectedMapDataID(), &dataSetID, &dataID);
+					MapData *mapData = _editor->getMapDataFromIndex(_selectedTileIndex, &dataSetID, &dataID);
 					// If no tile filter is selected, we're checking the part of the MapDataID's object
 					// Otherwise, take it from the filter
 					int partIndex = _editor->getSelectedObject() == O_MAX ? (int)mapData->getObjectType() : (int)_editor->getSelectedObject();
@@ -1485,8 +1492,7 @@ void MapEditorState::mapClick(Action *action)
 					dataIDs[partIndex] = dataID;
 					dataSetIDs[partIndex] = dataSetID;
 				}
-				// Otherwise we're clearing a tile
-				else
+				else if (_selectedTileIndex > -1)
 				{
 					// No tile filter selected means we're clearing the whole tile
 					if (_editor->getSelectedObject() == O_MAX)
@@ -1515,24 +1521,6 @@ void MapEditorState::mapClick(Action *action)
 				_map->resetObstacles();
 				_map->enableObstacles();
 			}
-		}
-		else if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
-		{
-			//if (!shiftPressed)
-			//{
-			//	_editor->getSelectedTiles()->clear();
-			//	_map->resetObstacles();
-			//	_map->enableObstacles();
-			//}
-			//
-			//if (selectedTile)
-			//{
-			//	_editor->getSelectedTiles()->push_back(selectedTile);
-			//	for (int i = 0; i < O_MAX; ++i)
-			//	{
-			//		selectedTile->setObstacle(i);
-			//	}
-			//}
 		}
 	}
 }
@@ -2132,10 +2120,14 @@ void MapEditorState::updateDebugText()
 	Position pos;
 	_map->getSelectorPosition(&pos);
 
+	bool altPressed = (SDL_GetModState() & KMOD_ALT) != 0;
+
 	if (getRouteMode())
 	{
 		std::string selectedNodeMode;
-		if (_nodeEditMode == _btnNodeNew)
+		bool newMode = _nodeEditMode == _btnNodeNew;
+		newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
+		if (newMode)
 		{
 			if (_nodeFilterMode == _btnNodeFilterSelect)
 			{
@@ -2154,7 +2146,7 @@ void MapEditorState::updateDebugText()
 				selectedNodeMode = tr("STR_DEBUG_NODES_TWOWAYCONNECT");
 			}
 		}
-		else if (_nodeEditMode == _btnNodeDelete)
+		else
 		{
 			if (_nodeFilterMode == _btnNodeFilterSelect)
 			{
@@ -2195,7 +2187,9 @@ void MapEditorState::updateDebugText()
 	}
 
 	std::string selectedMode;
-	if (_editor->getSelectedMapDataID() == -1)
+	bool newMode = _editor->getSelectedMapDataID() == -1;
+	newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
+	if (newMode)
 	{
 		selectedMode = tr("STR_DEBUG_CLEAR");
 	}
