@@ -363,7 +363,15 @@ void Map::draw()
 
 	if ((_save->getSelectedUnit() && _save->getSelectedUnit()->getVisible()) || _unitDying || _save->getSide() == FACTION_PLAYER || _save->getDebugMode() || _projectileInFOV || _explosionInFOV)
 	{
+		if (_game->isState(_save->getMapEditorState()))
+		{
+			drawForMapEditor(this, true);
+		}
 		drawTerrain(this);
+		if (_game->isState(_save->getMapEditorState()))
+		{
+			drawForMapEditor(this, false);
+		}
 	}
 	else
 	{
@@ -762,29 +770,6 @@ void Map::drawTerrain(Surface *surface)
 
 	NumberText *_numWaypid = 0;
 
-	// Highlight the boundaries of the map when editing
-	if (_game->isState(_save->getMapEditorState()))
-	{
-		// Paints the ground floor of a map a different color to highlight it
-		Uint8 color = Options::oxceMapEditorBoundsColor;
-		Position topLeft, topRight, bottomLeft, bottomRight;
-		// The extra offset of (2, 1, 0) was determined by testing
-		// Why it's necessary in the first place? Some offset convention elsewhere in the code or something.
-		_camera->convertMapToScreen(Position(2, 1, 0), &topLeft);
-		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, 1, 0), &topRight);
-		_camera->convertMapToScreen(Position(2, _camera->getMapSizeY() + 1, 0), &bottomLeft);
-		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, _camera->getMapSizeY() + 1, 0), &bottomRight);
-
-		topLeft += _camera->getMapOffset();
-		topRight += _camera->getMapOffset();
-		bottomLeft += _camera->getMapOffset();
-		bottomRight += _camera->getMapOffset();
-
-		Sint16 x[4] = {topLeft.x, topRight.x, bottomRight.x, bottomLeft.x};
-		Sint16 y[4] = {topLeft.y, topRight.y, bottomRight.y, bottomLeft.y};
-		surface->drawPolygon(x, y, 4, color);
-	}
-
 	// if we got bullet, get the highest x and y tiles to draw it on
 	if (_projectile && _explosions.empty())
 	{
@@ -905,12 +890,11 @@ void Map::drawTerrain(Surface *surface)
 
 	bool pathfinderTurnedOn = _save->getPathfinding()->isPathPreviewed();
 
-	if (!_waypoints.empty() || (pathfinderTurnedOn && (_previewSettingTu || _previewSettingEnergy)) || 
-		(_game->isState(_save->getMapEditorState()) && _save->getMapEditorState()->getRouteMode()))
+	if (!_waypoints.empty() || (pathfinderTurnedOn && (_previewSettingTu || _previewSettingEnergy)))
 	{
 		_numWaypid = new NumberText(15, 15, 20, 30);
 		_numWaypid->setPalette(getPalette());
-		_numWaypid->setColor(pathfinderTurnedOn || _save->getMapEditorState()->getRouteMode() ? _messageColor + 1 : Palette::blockOffset(1));
+		_numWaypid->setColor(pathfinderTurnedOn ? _messageColor + 1 : Palette::blockOffset(1));
 	}
 
 	if (movingUnit)
@@ -1594,6 +1578,12 @@ void Map::drawTerrain(Surface *surface)
 						}
 					}
 
+					// We can move on if we're in the map editor - waypoints are handled separately there
+					if (_game->isState(_save->getMapEditorState()))
+					{
+						continue;
+					}
+
 					// Draw waypoints if any on this tile
 					int waypid = 1;
 					int waypXOff = 2;
@@ -1608,7 +1598,7 @@ void Map::drawTerrain(Surface *surface)
 								tmpSurface = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(7);
 								Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
 							}
-							if (_game->isState(_save->getMapEditorState()) || _save->getBattleGame()->getCurrentAction()->type == BA_LAUNCH || _save->getBattleGame()->getCurrentAction()->sprayTargeting)
+							if (_save->getBattleGame()->getCurrentAction()->type == BA_LAUNCH || _save->getBattleGame()->getCurrentAction()->sprayTargeting)
 							{
 								_numWaypid->setValue(waypid);
 								_numWaypid->draw();
@@ -1799,352 +1789,6 @@ void Map::drawTerrain(Surface *surface)
 		}
 	}
 
-	// Draw markers for nodes in the map editor
-	if (_game->isState(_save->getMapEditorState()))
-	{
-		int markerFrame;
-
-		if (_save->getMapEditorState()->getRouteMode())
-		{
-			// First draw node markers and lines
-			for (auto node : *_save->getNodes())
-			{
-				if (!_game->getMapEditor()->isNodeActive(node))
-				{
-					continue;
-				}
-
-				Position nodePos = node->getPosition();
-				_camera->convertMapToScreen(nodePos, &screenPosition);
-				screenPosition += _camera->getMapOffset();
-
-				std::vector<Node*>::iterator it = find(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), node);
-				bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
-				//int Pathfinding::red = 3;
-				//int Pathfinding::yellow = 10;
-				//int Pathfinding::green = 4;
-				// pick green as 'normal' color
-				int markerColor = 4;
-				if (_game->getMapEditor()->isNodeOverIDLimit(node))
-				{
-					// color node red if it won't be saved due to being over the ID limit
-					markerColor = 3;
-				}
-				else if (selected)
-				{
-					// color node orange if selected and not over ID limit
-					markerColor = 2;
-				}
-
-				// Node is above the current camera level: draw blue cursor up to its height if enabled
-				Surface *cursorBack = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(2);
-				Surface *cursorFront = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(5);
-				if (nodePos.z > _camera->getViewLevel() && Options::mapEditorShowOutOfPlaneOffsetCursor && (selected || Options::mapEditorShowOutOfPlaneNodes))
-				{
-					Position cursorPosition;
-
-					if (cursorBack && cursorFront)
-					{
-						for (int zz = _camera->getViewLevel(); zz < nodePos.z; ++zz)
-						{
-							_camera->convertMapToScreen(Position(nodePos.x, nodePos.y, zz), &cursorPosition);
-							cursorPosition += _camera->getMapOffset();
-							Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
-							Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
-						}
-					}
-				}
-
-				// Show nodes outside the current level as dashed/"transparent" marker
-				// Or if the option is turned off, don't show them at all
-				markerFrame = 10;
-				if (nodePos.z != _camera->getViewLevel())
-				{
-					if (Options::mapEditorShowOutOfPlaneNodes || selected)
-					{
-						markerFrame += 12;
-					}
-					else if (!selected)
-					{
-						continue;
-					}
-				}
-
-				tmpSurface = _game->getMod()->getSurfaceSet("Pathfinding")->getFrame(markerFrame);
-				if (tmpSurface)
-				{
-					Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0, false, markerColor);
-				}
-
-				// Node is below the current camera level: draw blue cursor up to its height if enabled
-				if (nodePos.z < _camera->getViewLevel() && Options::mapEditorShowOutOfPlaneOffsetCursor && (selected || Options::mapEditorShowOutOfPlaneNodes))
-				{
-					Position cursorPosition;
-
-					if (cursorBack && cursorFront)
-					{
-						for (int zz = nodePos.z; zz < _camera->getViewLevel(); ++zz)
-						{
-							_camera->convertMapToScreen(Position(nodePos.x, nodePos.y, zz), &cursorPosition);
-							cursorPosition += _camera->getMapOffset();
-							Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
-							Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
-						}
-					}
-				}
-
-				// Only draw links if the options allow us to
-				if (!selected && Options::mapEditorShowLinksOnlyForSelectedNodes)
-				{
-					continue;
-				}
-				
-				// Draw lines and arrows for connections between nodes
-				Position startLinePos = screenPosition;
-				startLinePos.x += _spriteWidth / 2;
-				startLinePos.y += _spriteHeight * 4 / 5;
-				for (int i = 0; i < 5; ++i)
-				{
-					int linkID = node->getNodeLinks()->at(i);
-					Position linkPosition = Position(-1, -1, -1);
-					Position endLinePos = startLinePos;
-					bool exit = false;
-					bool overIDLimit = _game->getMapEditor()->isNodeOverIDLimit(node);
-					// line to another node
-					if (linkID >= 0)
-					{
-						Node *otherNode = _save->getNodes()->at(linkID);
-						if (!_game->getMapEditor()->isNodeActive(otherNode))
-						{
-							continue;
-						}
-
-						linkPosition = otherNode->getPosition();
-						if (linkPosition.z != _camera->getViewLevel() && !Options::mapEditorShowOutOfPlaneNodeLinks && !selected)
-						{
-							continue;
-						}
-
-						overIDLimit |= _game->getMapEditor()->isNodeOverIDLimit(otherNode);
-					}
-					// exit north
-					else if (linkID == -2)
-					{
-						linkPosition = Position(_save->getMapSizeX() / 2, -5, 0);
-						exit = true;
-					}
-					// exit east
-					else if (linkID == -3)
-					{
-						linkPosition = Position(_save->getMapSizeX() + 5, _save->getMapSizeY() / 2, 0);
-						exit = true;
-					}
-					// exit south
-					else if (linkID == -4)
-					{
-						linkPosition = Position(_save->getMapSizeX() / 2, _save->getMapSizeY() + 5, 0);
-						exit = true;
-					}
-					// exit west
-					else if (linkID == -5)
-					{
-						linkPosition = Position(-5, _save->getMapSizeY() / 2, 0);
-						exit = true;
-					}
-
-					if (linkPosition != Position(-1, -1, -1))
-					{
-						// (color group * 16) + shade
-						// green for 'normal' links
-						Uint8 green = 3 * 16 + 4;
-						Uint8 red = 2 * 16 + 4;
-						Uint8 orange = 1 * 16 + 4;
-						Uint8 lineColor = green;
-						if (overIDLimit)
-						{
-							// won't be saved due to ID limit: red
-							lineColor = red;
-						}
-						else if (selected)
-						{
-							// node is selected: orange
-							lineColor = orange;
-						}
-						// draw line to other node
-						_camera->convertMapToScreen(linkPosition, &screenPosition);
-						screenPosition += _camera->getMapOffset();
-						endLinePos = screenPosition;
-						endLinePos.x += _spriteWidth / 2;
-						endLinePos.y += _spriteHeight * 4 / 5;
-
-						// draw dotted lines to out-of-plane nodes when told by options
-						if (!exit && Options::mapEditorDottedOutOfPlaneNodeLinks && (linkPosition.z != nodePos.z || nodePos.z != _camera->getViewLevel()))
-						{
-							int segmentLength = 4;
-							int numberOfSegments = Position::distance2d(startLinePos, endLinePos) / segmentLength;
-							Position slope = endLinePos - startLinePos;
-							for (int j = 0; j < numberOfSegments; j += 2)
-							{
-								Position segmentStart = startLinePos + slope * j / numberOfSegments;
-								Position segmentEnd = startLinePos + slope * (j + 1) / numberOfSegments;
-								surface->drawLine(segmentStart.x, segmentStart.y, segmentEnd.x, segmentEnd.y, lineColor);
-							}
-						}
-						// draw solid lines to exits, in-plane nodes, and when told by options
-						else
-						{
-							surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, lineColor);
-						}
-
-						// draw triangle for arrow showing direction of connection
-						Sint16 offset = 10; // move the arrow slightly off of the center of the node marker to not overlap as much
-						Sint16 length = 10;
-						Sint16 width = 3;
-
-						int x1 = startLinePos.x;
-						int x2 = endLinePos.x;
-						int y1 = startLinePos.y;
-						int y2 = endLinePos.y;
-
-						// start by determining the angle of the line we drew
-						float angle = atan2(y2 - y1, x2 - x1);
-						float cc = cos(angle);
-						float ss = sin(angle);
-
-						// rotate points of a triangle to face the node and shift them to the position of the node
-						Sint16 arrowX[3] = {-offset, -(offset + length), -(offset + length)};
-						Sint16 arrowY[3] = {0, width, -width};
-						Sint16 arrayX[3];
-						Sint16 arrayY[3];
-						for (int j = 0; j < 3; ++j)
-						{
-							arrayX[j] = (float)arrowX[j] * cc - (float)arrowY[j] * ss;
-							arrayY[j] = (float)arrowX[j] * ss + (float)arrowY[j] * cc;
-							arrayX[j] += x2;
-							arrayY[j] += y2;
-						}
-
-						// now actually draw
-						surface->drawPolygon(arrayX, arrayY, 3, lineColor);
-					}
-				}
-				
-				//if (_game->getMapEditor()->getSelectedNodes()->size() > 0)
-				//_arrow->blitNShade(surface, screenPosition.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2), screenPosition.y + (_spriteWidth * 1 / 5) - _arrow->getHeight() + getArrowBobForFrame(_animFrame), 0);
-			}
-
-			// Next add numbers for node IDs, spawn priority, and spawn rank
-			for (auto node : *_save->getNodes())
-			{
-				if (!_game->getMapEditor()->isNodeActive(node))
-				{
-					continue;
-				}
-
-				Position nodePos = node->getPosition();
-				_camera->convertMapToScreen(nodePos, &screenPosition);
-				screenPosition += _camera->getMapOffset();
-
-				std::vector<Node*>::iterator it = find(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), node);
-				bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
-
-				if (nodePos.z != _camera->getViewLevel() && !Options::mapEditorShowOutOfPlaneNodes && !selected)
-				{
-					continue;
-				}
-
-				// Add numbers over each node to indicate their ID
-				int off = node->getID() > 9 ? 5 : 3;
-				_numWaypid->setBordered(true);
-				_numWaypid->setValue(node->getID());
-				_numWaypid->draw();
-				_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + 29, 0, false, 0);
-
-				// Add numbers for spawn priority and rank
-				_numWaypid->setValue(node->getPriority());
-				_numWaypid->draw();
-				_numWaypid->blitNShade(surface, screenPosition.x + 3, screenPosition.y + 16, 0, false, 0);
-				_numWaypid->setValue(node->getRank());
-				_numWaypid->draw();
-				_numWaypid->blitNShade(surface, screenPosition.x + 3, screenPosition.y + 16 + 8, 0, false, 0);
-			}
-		}
-		else
-		{
-			// draw tile selections
-			for(auto selectedTile : *_game->getMapEditor()->getSelectedTiles())
-			{
-				Position tilePos = selectedTile->getPosition();
-				_camera->convertMapToScreen(tilePos, &screenPosition);
-				screenPosition += _camera->getMapOffset();
-
-				markerFrame = 29;
-				tmpSurface = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
-				if (tmpSurface)
-				{
-					Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
-				}
-			}
-		}
-
-		// draw cursor modes
-		if (_save->getMapEditorState()->isMouseScrollSelecting())
-		{
-			Position tilePos = _save->getMapEditorState()->getScrollStartPosition();
-			_camera->convertMapToScreen(tilePos, &screenPosition);
-			screenPosition += _camera->getMapOffset();
-
-			markerFrame = 30;
-			tmpSurface = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
-			if (tmpSurface)
-			{
-				Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
-			}
-
-			getSelectorPosition(&tilePos);
-			_camera->convertMapToScreen(tilePos, &screenPosition);
-			screenPosition += _camera->getMapOffset();
-
-			if (tmpSurface)
-			{
-				Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
-			}
-		}
-
-		Position cursorPosition;
-		getSelectorPosition(&cursorPosition);
-		_camera->convertMapToScreen(cursorPosition, &screenPosition);
-		screenPosition += _camera->getMapOffset();
-
-		markerFrame = 31;
-		tmpSurface = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
-		if (tmpSurface && _save->getMapEditorState()->isMouseScrollSelectionPainting())
-		{
-			Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
-		}
-
-		bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
-		bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
-		if (ctrlPressed || shiftPressed)
-		{
-			if (ctrlPressed)
-			{
-				markerFrame += 2;
-			}
-
-			if (shiftPressed)
-			{
-				markerFrame += 1;
-			}
-
-			tmpSurface = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
-			if (tmpSurface)
-			{
-				Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, 0);
-			}
-		}
-	}
-
 	delete _numWaypid;
 
 	// Draw craft deployment preview arrows
@@ -2214,6 +1858,507 @@ void Map::drawTerrain(Surface *surface)
 	}
 
 	surface->unlock();
+}
+
+/**
+ * Draws everything necessary for the MapEditor
+ * @param surface Pointer to the map's surface
+ * @param beforeTerrain Whether we're running this before or after drawTerrain
+ */
+void Map::drawForMapEditor(Surface *surface, bool beforeTerrain)
+{
+	if (beforeTerrain)
+	{
+		// Highlight the boundaries of the map when editing
+		// Paints the ground floor of a map a different color to highlight it
+		Uint8 color = Options::oxceMapEditorBoundsColor;
+		Position topLeft, topRight, bottomLeft, bottomRight;
+		// The extra offset of (2, 1, 0) was determined by testing
+		// Why it's necessary in the first place? Some offset convention elsewhere in the code or something.
+		_camera->convertMapToScreen(Position(2, 1, 0), &topLeft);
+		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, 1, 0), &topRight);
+		_camera->convertMapToScreen(Position(2, _camera->getMapSizeY() + 1, 0), &bottomLeft);
+		_camera->convertMapToScreen(Position(_camera->getMapSizeX() + 2, _camera->getMapSizeY() + 1, 0), &bottomRight);
+
+		topLeft += _camera->getMapOffset();
+		topRight += _camera->getMapOffset();
+		bottomLeft += _camera->getMapOffset();
+		bottomRight += _camera->getMapOffset();
+
+		Sint16 x[4] = {topLeft.x, topRight.x, bottomRight.x, bottomLeft.x};
+		Sint16 y[4] = {topLeft.y, topRight.y, bottomRight.y, bottomLeft.y};
+		surface->drawPolygon(x, y, 4, color);
+		
+		return;
+	}
+
+	Position screenPosition;
+	const auto cameraPos = _camera->getMapOffset();
+	SurfaceRaw<const Uint8> nodeMarker, tileMarker;
+	NumberText *_numWaypid = new NumberText(15, 15, 20, 30);
+	_numWaypid->setPalette(getPalette());
+	_numWaypid->setColor(_save->getMapEditorState()->getRouteMode() ? _messageColor + 1 : Palette::blockOffset(1));
+	int markerFrame;
+
+	// Draw markers for nodes in the map editor
+	if (_save->getMapEditorState()->getRouteMode())
+	{
+		// First draw node markers and lines
+		for (auto node : *_save->getNodes())
+		{
+			if (!_game->getMapEditor()->isNodeActive(node))
+			{
+				continue;
+			}
+
+			Position nodePos = node->getPosition();
+			_camera->convertMapToScreen(nodePos, &screenPosition);
+			screenPosition += _camera->getMapOffset();
+
+			std::vector<Node*>::iterator it = find(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), node);
+			bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
+			//int Pathfinding::red = 3;
+			//int Pathfinding::yellow = 10;
+			//int Pathfinding::green = 4;
+			// pick green as 'normal' color
+			int markerColor = 4;
+			if (_game->getMapEditor()->isNodeOverIDLimit(node))
+			{
+				// color node red if it won't be saved due to being over the ID limit
+				markerColor = 3;
+			}
+			else if (selected)
+			{
+				// color node orange if selected and not over ID limit
+				markerColor = 2;
+			}
+
+			// Node is above the current camera level: draw blue cursor up to its height if enabled
+			Surface *cursorBack = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(2);
+			Surface *cursorFront = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(5);
+			if (nodePos.z > _camera->getViewLevel() && Options::mapEditorShowOutOfPlaneOffsetCursor && (selected || Options::mapEditorShowOutOfPlaneNodes))
+			{
+				Position cursorPosition;
+
+				if (cursorBack && cursorFront)
+				{
+					for (int zz = _camera->getViewLevel(); zz < nodePos.z; ++zz)
+					{
+						_camera->convertMapToScreen(Position(nodePos.x, nodePos.y, zz), &cursorPosition);
+						cursorPosition += _camera->getMapOffset();
+						Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
+						Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
+					}
+				}
+			}
+
+			// Show nodes outside the current level as dashed/"transparent" marker
+			// Or if the option is turned off, don't show them at all
+			markerFrame = 10;
+			if (nodePos.z != _camera->getViewLevel())
+			{
+				if (Options::mapEditorShowOutOfPlaneNodes || selected)
+				{
+					markerFrame += 12;
+				}
+				else if (!selected)
+				{
+					continue;
+				}
+			}
+
+			nodeMarker = _game->getMod()->getSurfaceSet("Pathfinding")->getFrame(markerFrame);
+			if (nodeMarker)
+			{
+				Surface::blitRaw(surface, nodeMarker, screenPosition.x, screenPosition.y, 0, false, markerColor);
+			}
+
+			// Node is below the current camera level: draw blue cursor up to its height if enabled
+			if (nodePos.z < _camera->getViewLevel() && Options::mapEditorShowOutOfPlaneOffsetCursor && (selected || Options::mapEditorShowOutOfPlaneNodes))
+			{
+				Position cursorPosition;
+
+				if (cursorBack && cursorFront)
+				{
+					for (int zz = nodePos.z; zz < _camera->getViewLevel(); ++zz)
+					{
+						_camera->convertMapToScreen(Position(nodePos.x, nodePos.y, zz), &cursorPosition);
+						cursorPosition += _camera->getMapOffset();
+						Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
+						Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
+					}
+				}
+			}
+
+			// Only draw links if the options allow us to
+			if (!selected && Options::mapEditorShowLinksOnlyForSelectedNodes)
+			{
+				continue;
+			}
+			
+			// Draw lines and arrows for connections between nodes
+			Position startLinePos = screenPosition;
+			startLinePos.x += _spriteWidth / 2;
+			startLinePos.y += _spriteHeight * 4 / 5;
+			for (int i = 0; i < 5; ++i)
+			{
+				int linkID = node->getNodeLinks()->at(i);
+				Position linkPosition = Position(-1, -1, -1);
+				Position endLinePos = startLinePos;
+				bool exit = false;
+				bool overIDLimit = _game->getMapEditor()->isNodeOverIDLimit(node);
+				// line to another node
+				if (linkID >= 0)
+				{
+					Node *otherNode = _save->getNodes()->at(linkID);
+					if (!_game->getMapEditor()->isNodeActive(otherNode))
+					{
+						continue;
+					}
+
+					linkPosition = otherNode->getPosition();
+					if (linkPosition.z != _camera->getViewLevel() && !Options::mapEditorShowOutOfPlaneNodeLinks && !selected)
+					{
+						continue;
+					}
+
+					overIDLimit |= _game->getMapEditor()->isNodeOverIDLimit(otherNode);
+				}
+				// exit north
+				else if (linkID == -2)
+				{
+					linkPosition = Position(_save->getMapSizeX() / 2, -5, 0);
+					exit = true;
+				}
+				// exit east
+				else if (linkID == -3)
+				{
+					linkPosition = Position(_save->getMapSizeX() + 5, _save->getMapSizeY() / 2, 0);
+					exit = true;
+				}
+				// exit south
+				else if (linkID == -4)
+				{
+					linkPosition = Position(_save->getMapSizeX() / 2, _save->getMapSizeY() + 5, 0);
+					exit = true;
+				}
+				// exit west
+				else if (linkID == -5)
+				{
+					linkPosition = Position(-5, _save->getMapSizeY() / 2, 0);
+					exit = true;
+				}
+
+				if (linkPosition != Position(-1, -1, -1))
+				{
+					// (color group * 16) + shade
+					// green for 'normal' links
+					Uint8 green = 3 * 16 + 4;
+					Uint8 red = 2 * 16 + 4;
+					Uint8 orange = 1 * 16 + 4;
+					Uint8 lineColor = green;
+					if (overIDLimit)
+					{
+						// won't be saved due to ID limit: red
+						lineColor = red;
+					}
+					else if (selected)
+					{
+						// node is selected: orange
+						lineColor = orange;
+					}
+					// draw line to other node
+					_camera->convertMapToScreen(linkPosition, &screenPosition);
+					screenPosition += _camera->getMapOffset();
+					endLinePos = screenPosition;
+					endLinePos.x += _spriteWidth / 2;
+					endLinePos.y += _spriteHeight * 4 / 5;
+
+					// draw dotted lines to out-of-plane nodes when told by options
+					if (!exit && Options::mapEditorDottedOutOfPlaneNodeLinks && (linkPosition.z != nodePos.z || nodePos.z != _camera->getViewLevel()))
+					{
+						int segmentLength = 4;
+						int numberOfSegments = Position::distance2d(startLinePos, endLinePos) / segmentLength;
+						Position slope = endLinePos - startLinePos;
+						for (int j = 0; j < numberOfSegments; j += 2)
+						{
+							Position segmentStart = startLinePos;
+							segmentStart.x += (int32_t)slope.x * j / numberOfSegments; // yes, 32 bit int is necessary since we run the risk of 16 bit signed overflowing
+							segmentStart.y += (int32_t)slope.y * j / numberOfSegments;
+							Position segmentEnd = startLinePos;
+							segmentEnd.x += (int32_t)slope.x * (j + 1) / numberOfSegments;
+							segmentEnd.y += (int32_t)slope.y * (j + 1) / numberOfSegments;
+							surface->drawLine(segmentStart.x, segmentStart.y, segmentEnd.x, segmentEnd.y, lineColor);
+						}
+					}
+					// draw solid lines to exits, in-plane nodes, and when told by options
+					else
+					{
+						surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, lineColor);
+					}
+
+					// draw triangle for arrow showing direction of connection
+					Sint16 offset = 10; // move the arrow slightly off of the center of the node marker to not overlap as much
+					Sint16 length = 10;
+					Sint16 width = 3;
+
+					int x1 = startLinePos.x;
+					int x2 = endLinePos.x;
+					int y1 = startLinePos.y;
+					int y2 = endLinePos.y;
+
+					// start by determining the angle of the line we drew
+					float angle = atan2(y2 - y1, x2 - x1);
+					float cc = cos(angle);
+					float ss = sin(angle);
+
+					// rotate points of a triangle to face the node and shift them to the position of the node
+					Sint16 arrowX[3] = {-offset, -(offset + length), -(offset + length)};
+					Sint16 arrowY[3] = {0, width, -width};
+					Sint16 arrayX[3];
+					Sint16 arrayY[3];
+					for (int j = 0; j < 3; ++j)
+					{
+						arrayX[j] = (float)arrowX[j] * cc - (float)arrowY[j] * ss;
+						arrayY[j] = (float)arrowX[j] * ss + (float)arrowY[j] * cc;
+						arrayX[j] += x2;
+						arrayY[j] += y2;
+					}
+
+					// now actually draw
+					surface->drawPolygon(arrayX, arrayY, 3, lineColor);
+				}
+			}
+		}
+
+		// Next add numbers for node IDs, spawn priority, and spawn rank
+		for (auto node : *_save->getNodes())
+		{
+			if (!_game->getMapEditor()->isNodeActive(node))
+			{
+				continue;
+			}
+
+			Position nodePos = node->getPosition();
+			_camera->convertMapToScreen(nodePos, &screenPosition);
+			screenPosition += _camera->getMapOffset();
+
+			std::vector<Node*>::iterator it = find(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), node);
+			bool selected = it != _game->getMapEditor()->getSelectedNodes()->end();
+
+			if (nodePos.z != _camera->getViewLevel() && !Options::mapEditorShowOutOfPlaneNodes && !selected)
+			{
+				continue;
+			}
+
+			// Add numbers over each node to indicate their ID
+			int off = node->getID() > 9 ? 5 : 3;
+			_numWaypid->setBordered(true);
+			_numWaypid->setValue(node->getID());
+			_numWaypid->draw();
+			_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + 29, 0, false, 0);
+
+			// Add numbers for spawn priority and rank
+			_numWaypid->setValue(node->getPriority());
+			_numWaypid->draw();
+			_numWaypid->blitNShade(surface, screenPosition.x + 3, screenPosition.y + 16, 0, false, 0);
+			_numWaypid->setValue(node->getRank());
+			_numWaypid->draw();
+			_numWaypid->blitNShade(surface, screenPosition.x + 3, screenPosition.y + 16 + 8, 0, false, 0);
+		}
+	}
+	else
+	{
+		// draw tile selections
+		for(auto selectedTile : *_game->getMapEditor()->getSelectedTiles())
+		{
+			Position tilePos = selectedTile->getPosition();
+			_camera->convertMapToScreen(tilePos, &screenPosition);
+			screenPosition += _camera->getMapOffset();
+
+			markerFrame = 29;
+			tileMarker = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
+			if (tileMarker)
+			{
+				Surface::blitRaw(surface, tileMarker, screenPosition.x, screenPosition.y, 0);
+			}
+		}
+	}
+
+	// draw cursor modes
+	if (_save->getMapEditorState()->isMouseScrollSelecting())
+	{
+		Position tilePos = _save->getMapEditorState()->getScrollStartPosition();
+		_camera->convertMapToScreen(tilePos, &screenPosition);
+		screenPosition += _camera->getMapOffset();
+
+		markerFrame = 30;
+		tileMarker = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
+		if (tileMarker)
+		{
+			Surface::blitRaw(surface, tileMarker, screenPosition.x, screenPosition.y, 0);
+		}
+
+		getSelectorPosition(&tilePos);
+		_camera->convertMapToScreen(tilePos, &screenPosition);
+		screenPosition += _camera->getMapOffset();
+
+		if (tileMarker)
+		{
+			Surface::blitRaw(surface, tileMarker, screenPosition.x, screenPosition.y, 0);
+		}
+	}
+
+	Position cursorPosition;
+	getSelectorPosition(&cursorPosition);
+	_camera->convertMapToScreen(cursorPosition, &screenPosition);
+	screenPosition += _camera->getMapOffset();
+
+	// draw waypoints for actions such as moving multiple nodes at a time
+	int waypid = 1;
+	int waypXOff = 2;
+	int waypYOff = 2;
+
+	for (auto waypoint : _waypoints)
+	{
+		_camera->convertMapToScreen(waypoint, &screenPosition);
+		screenPosition += cameraPos;
+
+		// waypoint is above the current camera level: draw blue cursor up to its height
+		Surface *cursorBack = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(2);
+		Surface *cursorFront = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(5);
+		if (waypoint.z > _camera->getViewLevel())
+		{
+			Position cursorPosition;
+
+			if (cursorBack && cursorFront)
+			{
+				for (int zz = _camera->getViewLevel(); zz < waypoint.z; ++zz)
+				{
+					_camera->convertMapToScreen(Position(waypoint.x, waypoint.y, zz), &cursorPosition);
+					cursorPosition += _camera->getMapOffset();
+					Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
+					Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
+				}
+			}
+		}
+
+		tileMarker = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(1);
+		Surface::blitRaw(surface, tileMarker, screenPosition.x, screenPosition.y, 0);
+		tileMarker = _game->getMod()->getSurfaceSet("CURSOR.PCK")->getFrame(4);
+		Surface::blitRaw(surface, tileMarker, screenPosition.x, screenPosition.y, 0);
+
+		// waypoint is below the current camera level: draw blue cursor up to its height
+		if (waypoint.z < _camera->getViewLevel())
+		{
+			Position cursorPosition;
+
+			if (cursorBack && cursorFront)
+			{
+				for (int zz = waypoint.z + 1; zz < _camera->getViewLevel(); ++zz)
+				{
+					_camera->convertMapToScreen(Position(waypoint.x, waypoint.y, zz), &cursorPosition);
+					cursorPosition += _camera->getMapOffset();
+					Surface::blitRaw(surface, cursorBack, cursorPosition.x, cursorPosition.y, 0);
+					Surface::blitRaw(surface, cursorFront, cursorPosition.x, cursorPosition.y, 0);
+				}
+			}
+		}
+
+		_numWaypid->setValue(waypid);
+		_numWaypid->draw();
+		_numWaypid->blitNShade(surface, screenPosition.x + waypXOff, screenPosition.y + waypYOff, 0);
+
+		waypXOff += waypid > 9 ? 8 : 0;
+		waypid++;
+	}
+
+	// draw a line for indicating moving nodes
+	if (_waypoints.size() > 0 && _save->getMapEditorState()->getRouteMode())
+	{
+		_camera->convertMapToScreen(_waypoints.front(), &screenPosition);
+		screenPosition += _camera->getMapOffset();
+		Position startLinePos = screenPosition;
+
+		_camera->convertMapToScreen(_waypoints.size() == 1 ? cursorPosition : _waypoints.at(1), &screenPosition);
+		screenPosition += _camera->getMapOffset();
+		Position endLinePos = screenPosition;
+
+		startLinePos.x += _spriteWidth / 2;
+		startLinePos.y += _spriteHeight * 4 / 5;
+		endLinePos.x += _spriteWidth / 2;
+		endLinePos.y += _spriteHeight * 4 / 5;
+
+		// (color group * 16) + shade
+		// green for 'normal' links
+		Uint8 green = 3 * 16 + 4;
+		Uint8 red = 2 * 16 + 4;
+		Uint8 orange = 1 * 16 + 4;
+		Uint8 lineColor = red;
+
+		surface->drawLine(startLinePos.x, startLinePos.y, endLinePos.x, endLinePos.y, lineColor);
+
+		// draw triangle for arrow showing direction
+		Sint16 offset = 0;
+		Sint16 length = 10;
+		Sint16 width = 3;
+
+		int x1 = startLinePos.x;
+		int x2 = endLinePos.x;
+		int y1 = startLinePos.y;
+		int y2 = endLinePos.y;
+
+		// start by determining the angle of the line we drew
+		float angle = atan2(y2 - y1, x2 - x1);
+		float cc = cos(angle);
+		float ss = sin(angle);
+
+		// rotate points of a triangle to face the node and shift them to the position of the node
+		Sint16 arrowX[3] = {-offset, -(offset + length), -(offset + length)};
+		Sint16 arrowY[3] = {0, width, -width};
+		Sint16 arrayX[3];
+		Sint16 arrayY[3];
+		for (int j = 0; j < 3; ++j)
+		{
+			arrayX[j] = (float)arrowX[j] * cc - (float)arrowY[j] * ss;
+			arrayY[j] = (float)arrowX[j] * ss + (float)arrowY[j] * cc;
+			arrayX[j] += x2;
+			arrayY[j] += y2;
+		}
+
+		// now actually draw
+		surface->drawPolygon(arrayX, arrayY, 3, lineColor);
+	}
+
+	markerFrame = 31;
+	tileMarker = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
+	if (tileMarker && _save->getMapEditorState()->isMouseScrollSelectionPainting())
+	{
+		Surface::blitRaw(surface, tileMarker, screenPosition.x, screenPosition.y, 0);
+	}
+
+	bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+	bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
+	if (ctrlPressed || shiftPressed)
+	{
+		if (ctrlPressed)
+		{
+			markerFrame += 2;
+		}
+
+		if (shiftPressed)
+		{
+			markerFrame += 1;
+		}
+
+		tileMarker = _game->getMod()->getSurfaceSet("MapEditorIcons")->getFrame(markerFrame);
+		if (tileMarker)
+		{
+			Surface::blitRaw(surface, tileMarker, screenPosition.x, screenPosition.y, 0);
+		}
+	}
+
+	delete _numWaypid;
 }
 
 /**
