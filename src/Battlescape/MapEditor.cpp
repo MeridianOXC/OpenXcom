@@ -40,8 +40,10 @@ MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
 {
     _tileRegister.clear();
     _proposedTileEdits.clear();
+    _clipboardTileEdits.clear();
     _nodeRegister.clear();
     _proposedNodeEdits.clear();
+    _clipboardNodeEdits.clear();
     _selectedTiles.clear();
     _selectedNodes.clear();
 }
@@ -629,6 +631,22 @@ std::vector<Tile*> *MapEditor::getSelectedTiles()
 std::vector<Node*> *MapEditor::getSelectedNodes()
 {
     return &_selectedNodes;
+}
+
+/**
+ * Gets a pointer to the clipboard for copying tiles
+ */
+std::vector<TileEdit> *MapEditor::getClipboardTileEdits()
+{
+    return &_clipboardTileEdits;
+}
+
+/**
+ * Gets a pointer to the clipboard for copying nodes
+ */
+std::vector<NodeEdit> *MapEditor::getClipboardNodeEdits()
+{
+    return &_clipboardNodeEdits;
 }
 
 /**

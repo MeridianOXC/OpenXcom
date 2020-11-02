@@ -112,9 +112,9 @@ class MapEditor
 private :
     SavedBattleGame *_save;
     std::vector<std::vector<TileEdit>> _tileRegister;
-    std::vector<TileEdit> _proposedTileEdits;
+    std::vector<TileEdit> _proposedTileEdits, _clipboardTileEdits;
     std::vector<std::vector<NodeEdit>> _nodeRegister;
-    std::vector<NodeEdit> _proposedNodeEdits;
+    std::vector<NodeEdit> _proposedNodeEdits, _clipboardNodeEdits;
     int _selectedMapDataID, _tileRegisterPosition, _nodeRegisterPosition;
     std::vector< Tile* > _selectedTiles;
     std::vector< Node* > _selectedNodes;
@@ -164,6 +164,10 @@ public :
     std::vector< Tile* > *getSelectedTiles();
     /// Gets a pointer to the list of selected nodes for editing
     std::vector< Node* > *getSelectedNodes();
+    /// Gets a pointer to the clipboard for copying tiles
+    std::vector<TileEdit> *getClipboardTileEdits();
+    /// Gets a pointer to the clipboard for copying nodes
+    std::vector<NodeEdit> *getClipboardNodeEdits();
     /// Sets the map data ID index selected
     void setSelectedMapDataID(int selectedIndex);
     /// Gets the map data ID index selected

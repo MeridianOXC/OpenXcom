@@ -2077,6 +2077,10 @@ inline void MapEditorState::handle(Action *action)
 				{
 					btnLoadClick(action);
 				}
+				else if (key == SDLK_DELETE) // change delete to options
+				{
+					clearSelectionContents();
+				}
 				else if (key == SDLK_d && ctrlPressed) // change d to options
 				{
 					updateDebugText();
@@ -3040,6 +3044,153 @@ Position MapEditorState::validateNodePosition(Node *node, Position newPosition)
 	}
 
 	return validatedPosition;
+}
+
+/**
+ * Handles copying from a selection to the editor's clipboard
+ */
+void MapEditorState::copyFromSelection()
+{
+	// copying selected nodes
+	if (getRouteMode())
+	{
+		// clear any previous clipboard
+		if (!_editor->getSelectedNodes()->empty())
+		{
+			_editor->getClipboardNodeEdits()->clear();
+		}
+
+		// populate the clipboard with NodeEdits so we can use that data later
+		std::vector<int> data;
+		for (auto node : *_editor->getSelectedNodes())
+		{
+			Position pos = node->getPosition();
+			int segment = node->getSegment();
+			int type = node->getType();
+			int rank = node->getRank();
+			int flags = node->getFlags();
+			int reserved = node->isTarget() ? 5 : 0;
+			int priority = node->getPriority();
+
+			data.clear();
+			data.push_back(pos.x);
+			data.push_back(pos.y);
+			data.push_back(pos.z);
+			data.push_back(segment);
+			data.push_back(type);
+			data.push_back(rank);
+			data.push_back(flags);
+			data.push_back(reserved);
+			data.push_back(priority);
+			for (int i = 0; i < 5; ++i)
+			{
+				// only copy connections to map exits or nodes within the selection
+				int linkID = node->getNodeLinks()->at(i);
+				if (linkID > -1 && std::find_if(_editor->getSelectedNodes()->begin(), _editor->getSelectedNodes()->end(),
+										[&](const Node* otherNode){ return otherNode->getID() == linkID; }) == _editor->getSelectedNodes()->end())
+				{
+					linkID = -1;
+				}
+				data.push_back(linkID);
+			}
+			for (int i = 0; i < 5; ++i)
+			{
+				data.push_back(node->getLinkTypes()->at(i));
+			}
+
+			std::vector<int> beforeData(data.size(), -1);
+			NodeEdit change = NodeEdit(node->getID(), NCT_NEW);
+			change.nodeBeforeData.insert(change.nodeBeforeData.begin(), beforeData.begin(), beforeData.end());
+			change.nodeAfterData.insert(change.nodeAfterData.begin(), data.begin(), data.end());
+			_editor->getClipboardNodeEdits()->push_back(change);
+		}
+	}
+	// copying selected tiles
+	else
+	{
+		if (!_editor->getSelectedTiles()->empty())
+		{
+			_editor->getClipboardTileEdits()->clear();
+		}
+
+		for (auto tile : *_editor->getSelectedTiles())
+		{
+			int dataIDs[O_MAX];
+			int dataSetIDs[O_MAX];
+
+			std::vector<TilePart> parts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
+			for (auto part : parts)
+			{
+				int partIndex = (int)part;
+				tile->getMapData(&dataIDs[partIndex], &dataSetIDs[partIndex], part);
+			}
+
+			TileEdit change = TileEdit(tile->getPosition(), dataIDs, dataSetIDs, dataIDs, dataSetIDs);
+			_editor->getClipboardTileEdits()->push_back(change);
+		}
+	}
+}
+
+/**
+ * Clears the current selection
+ */
+void MapEditorState::clearSelectionContents()
+{
+	if (getRouteMode())
+	{
+		std::vector<int> data;
+		data.clear();
+
+		for (auto node : *_editor->getSelectedNodes())
+		{
+			_editor->changeNodeData(MET_DO, node, NCT_DELETE, data);
+		}
+
+		_editor->confirmChanges(true);
+	}
+	else
+	{
+		for (auto tile : *_editor->getSelectedTiles())
+		{
+			int dataIDs[O_MAX];
+			int dataSetIDs[O_MAX];
+
+			std::vector<TilePart> parts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
+			for (auto part : parts)
+			{
+				int partIndex = (int)part;
+				tile->getMapData(&dataIDs[partIndex], &dataSetIDs[partIndex], part);
+			}
+
+			// No tile filter selected means we're clearing the whole tile
+			if (_editor->getSelectedObject() == O_MAX)
+			{
+				for (int i = 0; i < O_MAX; ++i)
+				{
+					dataIDs[i] = -1;
+					dataSetIDs[i] = -1;
+				}
+			}
+			// Selected tile filter means targeted removal of tile part
+			else
+			{
+				dataIDs[(int)_editor->getSelectedObject()] = -1;
+				dataSetIDs[(int)_editor->getSelectedObject()] = -1;
+			}
+
+			_editor->changeTileData(MET_DO, tile, dataIDs, dataSetIDs);
+		}
+
+		_editor->confirmChanges(false);	
+	}
+}
+
+/**
+ * Handles placing the contents from the editor's clipboard
+ */
+void MapEditorState::pasteFromClipboard()
+{
+
 }
 
 /**

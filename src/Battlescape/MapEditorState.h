@@ -230,6 +230,12 @@ public:
 	void stopSelections(Action *action);
 	/// Checks whether a chosen position is valid for moving a node
 	Position validateNodePosition(Node *node, Position newPosition);
+	/// Handles copying from a selection to the editor's clipboard
+	void copyFromSelection();
+	/// Clears the current selection
+	void clearSelectionContents();
+	/// Handles placing the contents from the editor's clipboard
+	void pasteFromClipboard();
 	/// Autosave next turn.
 	//void autosave();
 	/// Gets the pointer to the map editor
