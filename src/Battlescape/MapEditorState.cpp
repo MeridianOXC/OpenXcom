@@ -3259,6 +3259,7 @@ void MapEditorState::pasteFromClipboard()
 		_map->getSelectorPosition(&pasteOffset);
 		pasteOffset -= clipboardBasePosition;
 	
+		// place the nodes according to our offset
 		for (auto change : *_editor->getClipboardNodeEdits())
 		{
 			// since we've already populated a NodeEdit, we just need to update its position and IDs
@@ -3288,6 +3289,95 @@ void MapEditorState::pasteFromClipboard()
 		}
 
 		_editor->confirmChanges(true);
+	}
+	else
+	{
+		// start by figuring out where the pasted tiles should go with respect to the clicked position or selected tiles
+		Position pasteOffset;
+		Position clipboardBasePosition = Position(_save->getMapSizeX(), _save->getMapSizeY(), _save->getMapSizeZ());
+
+		// treat the reference position for the clipboard's tiles as the corner of a theoretical box around their original position
+		for (auto change : *_editor->getClipboardTileEdits())
+		{
+			clipboardBasePosition.x = std::min(clipboardBasePosition.x, change.position.x);
+			clipboardBasePosition.y = std::min(clipboardBasePosition.y, change.position.y);
+			clipboardBasePosition.z = std::min(clipboardBasePosition.z, change.position.z);	
+		}
+
+		// now figure out our reference position for either our cursor or any tiles we currently have selected
+		_map->getSelectorPosition(&pasteOffset);
+		if (!_editor->getSelectedTiles()->empty())
+		{
+			// perform the same box treatement on our selected tiles
+			pasteOffset = Position(_save->getMapSizeX(), _save->getMapSizeY(), _save->getMapSizeZ());
+			for (auto tile : *_editor->getSelectedTiles())
+			{
+				pasteOffset.x = std::min(pasteOffset.x, tile->getPosition().x);
+				pasteOffset.y = std::min(pasteOffset.y, tile->getPosition().y);
+				pasteOffset.z = std::min(pasteOffset.z, tile->getPosition().z);				
+			}
+		}
+		pasteOffset -= clipboardBasePosition;
+
+		// time to place the tiles
+		for (auto change : *_editor->getClipboardTileEdits())
+		{
+			Tile *tile = _save->getTile(change.position + pasteOffset);
+
+			// if we have a selection of tiles already made, then we can only work within that selection
+			if (!_editor->getSelectedTiles()->empty() && std::find_if(_editor->getSelectedTiles()->begin(), _editor->getSelectedTiles()->end(),
+															[&](const Tile *selectedTile){ return tile == selectedTile; }) == _editor->getSelectedTiles()->end())
+			{
+				continue;
+			}
+			int dataIDs[O_MAX];
+			int dataSetIDs[O_MAX];
+
+			std::vector<TilePart> parts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
+			for (auto part : parts)
+			{
+				int partIndex = (int)part;
+				tile->getMapData(&dataIDs[partIndex], &dataSetIDs[partIndex], part);
+			}
+
+			// If the editor has a selected MapDataID, we're in place mode, so we shouldn't clear the full tile, just the parts we want to change
+			// Otherwise we clear the tile completely and replace it with what we have in the clipboard
+			bool clearTile = _editor->getSelectedMapDataID() == -1;
+			for (auto part : parts)
+			{
+				// if one of the part filters is turned on, only change that part of the tile
+				if (_editor->getSelectedObject() != O_MAX && _editor->getSelectedObject() != part)
+				{
+					continue;
+				}
+
+				// clear the tile part if we've been asked to
+				int partIndex = (int)part;
+				if (clearTile)
+				{
+					dataIDs[partIndex] = -1;
+					dataSetIDs[partIndex] = -1;
+				}
+
+				// put in the clipboard data if it's not empty
+				if (change.tileAfterDataIDs[partIndex] != -1 && change.tileAfterDataSetIDs[partIndex] != -1)
+				{
+					// validate to make sure the data set ID and data ID are loaded in the current terrain
+					// not necessary if we're copying from the same map, but if we're copying across maps validation is necessary
+					int dataID = change.tileAfterDataIDs[partIndex];
+					int dataSetID = change.tileAfterDataSetIDs[partIndex];
+					if ((size_t)dataSetID < _save->getMapDataSets()->size() && (size_t)dataID < _save->getMapDataSets()->at(dataSetID)->getSize())
+					{
+						dataIDs[partIndex] = dataID;
+						dataSetIDs[partIndex] = dataSetID;
+					}
+				}
+			}
+
+			_editor->changeTileData(MET_DO, tile, dataIDs, dataSetIDs);
+		}
+
+		_editor->confirmChanges(false);
 	}
 }
 
