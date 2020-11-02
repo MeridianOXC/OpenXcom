@@ -1269,7 +1269,6 @@ void MapEditorState::mapClick(Action *action)
 								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
 							}
 						}
-
 					}
 					// moving: no clicked node and is the move node filter
 					// we check for selectedTile to make sure we're moving inside the map
@@ -2076,6 +2075,19 @@ inline void MapEditorState::handle(Action *action)
 				else if (key == SDLK_o && ctrlPressed) // change o to options
 				{
 					btnLoadClick(action);
+				}
+				else if (key == SDLK_x && ctrlPressed) // change x to options, cut button click
+				{
+					copyFromSelection();
+					clearSelectionContents();
+				}
+				else if (key == SDLK_c && ctrlPressed) // change c to options, copy button click
+				{
+					copyFromSelection();
+				}
+				else if (key == SDLK_v && ctrlPressed) // change v to options, paste button click
+				{
+					pasteFromClipboard();
 				}
 				else if (key == SDLK_DELETE) // change delete to options
 				{
@@ -3004,6 +3016,10 @@ Position MapEditorState::validateNodePosition(Node *node, Position newPosition)
 	validatedPosition.y = std::max(0, std::min(_save->getMapSizeY() - 1, (int)validatedPosition.y));
 	validatedPosition.z = std::max(0, std::min(_save->getMapSizeZ() - 1, (int)validatedPosition.z));
 
+	// if we weren't passed a node, we're trying to find a position for a new pasted node
+	// we're going to treat the center of the map as the 'original position' for the node
+	Position originalPosition = node ? node->getPosition() : Position(_save->getMapSizeX() / 2, _save->getMapSizeY() / 2, _save->getMapSizeZ() / 2);
+
 	// make sure this new position doesn't overlap with any other nodes
 	bool overlap = true;
 	int maxAttempts = 5;
@@ -3027,10 +3043,10 @@ Position MapEditorState::validateNodePosition(Node *node, Position newPosition)
 		}
 
 		// try a position closer to the node's current one
-		if (overlap && validatedPosition != node->getPosition())
+		if (overlap && validatedPosition != originalPosition)
 		{
 			// move one tile in the approximate direction of the original tile
-			Position delta = (node->getPosition() - validatedPosition);
+			Position delta = (originalPosition - validatedPosition);
 			delta = delta / std::max({std::abs(delta.x), std::abs(delta.y), std::abs(delta.z)});
 			validatedPosition += delta;
 		}
@@ -3040,7 +3056,35 @@ Position MapEditorState::validateNodePosition(Node *node, Position newPosition)
 
 	if (overlap)
 	{
-		validatedPosition = node->getPosition();
+		if (node)
+		{
+			validatedPosition = originalPosition;
+		}
+		else
+		{
+			// let's just find any other position on the map
+			for (int z = 0; z < _save->getMapSizeZ(); z++)
+			{
+				for (int y = 0; y < _save->getMapSizeY(); y++)
+				{
+					for (int x = 0; x < _save->getMapSizeX(); z++)
+					{
+						Position pos = Position(x, y, z);
+						if (std::find_if(_save->getNodes()->begin(), _save->getNodes()->end(),
+										[&](Node* otherNode){ return _editor->isNodeActive(otherNode) && otherNode->getPosition() == pos; }) == _save->getNodes()->end())
+						{
+							validatedPosition = pos;
+							overlap = false;
+						}
+					}				
+				}				
+			}
+
+			if (overlap) // why did you fill up the entire map with nodes then try to paste more?!?
+			{
+				validatedPosition = Position(-1, -1, -1);
+			}
+		}
 	}
 
 	return validatedPosition;
@@ -3190,7 +3234,61 @@ void MapEditorState::clearSelectionContents()
  */
 void MapEditorState::pasteFromClipboard()
 {
+	if (getRouteMode())
+	{
+		// start by figuring out where our new nodes should go with respect to the clicked position
+		Position pasteOffset;
+		Position clipboardBasePosition = Position(_save->getMapSizeX(), _save->getMapSizeY(), _save->getMapSizeZ());
 
+		// also figure out what ID numbers we should give each new node and their links
+		int nextNodeID = _save->getNodes()->size();
+		std::map<int, int> nodeIDRemap;
+
+		// find the corner of a the theoretical box around all the copied nodes closest to (0, 0, 0)
+		for (auto change : *_editor->getClipboardNodeEdits())
+		{
+			clipboardBasePosition.x = std::min((int)clipboardBasePosition.x, change.nodeAfterData.at(0));
+			clipboardBasePosition.y = std::min((int)clipboardBasePosition.y, change.nodeAfterData.at(1));
+			clipboardBasePosition.z = std::min((int)clipboardBasePosition.z, change.nodeAfterData.at(2));
+
+			nodeIDRemap[change.nodeID] = nextNodeID;
+			++nextNodeID;
+		}
+
+		// now get the offset between where the nodes originally were when copied and where the should go by the click position
+		_map->getSelectorPosition(&pasteOffset);
+		pasteOffset -= clipboardBasePosition;
+	
+		for (auto change : *_editor->getClipboardNodeEdits())
+		{
+			// since we've already populated a NodeEdit, we just need to update its position and IDs
+			std::vector<int> data = change.nodeAfterData;
+			Position nodePosition = Position(data.at(0), data.at(1), data.at(2)) + pasteOffset;
+			nodePosition = validateNodePosition(0, nodePosition);
+
+			if (nodePosition == Position(-1, -1, -1)) // you filled up the map with nodes. good job, but no more nodes for you
+			{
+				continue;
+			}
+
+			data.at(0) = nodePosition.x;
+			data.at(1) = nodePosition.y;
+			data.at(2) = nodePosition.z;
+			// links start at(9)
+			for (int i = 0; i < 5; ++i)
+			{
+				// links should only be to exits or other nodes we're pasting, so we can assume the link ID is in the ID map we made earlier
+				if (data.at(9 + i) > -1)
+				{
+					data.at(9 + i) = nodeIDRemap[data.at(9 + i)];
+				}
+			}
+
+			_editor->changeNodeData(MET_DO, 0, NCT_NEW, data);
+		}
+
+		_editor->confirmChanges(true);
+	}
 }
 
 /**
