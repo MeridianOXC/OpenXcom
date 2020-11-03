@@ -2224,6 +2224,10 @@ inline void MapEditorState::handle(Action *action)
 				{
 					btnLoadClick(action);
 				}
+				else if (key == SDLK_a && ctrlPressed) // change a to options
+				{
+					stopSelections(action, true); // select everything on the map
+				}
 				else if (key == SDLK_x && ctrlPressed) // change x to options
 				{
 					btnCutClick(action);
@@ -2235,6 +2239,10 @@ inline void MapEditorState::handle(Action *action)
 				else if (key == SDLK_v && ctrlPressed) // change v to options
 				{
 					btnPasteClick(action);
+				}
+				else if (key == SDLK_x) // change x to options
+				{
+					stopSelections(action, false, true); // remove everything from the current selection
 				}
 				else if (key == SDLK_DELETE) // change delete to options
 				{
@@ -3086,8 +3094,13 @@ void MapEditorState::handleSelections(Action *action)
 	_scrollPreviousPosition = _scrollCurrentPosition;
 }
 
-/// Handle finishing making mouse-drag selections or actions
-void MapEditorState::stopSelections(Action *action)
+/**
+ * Handle finishing making mouse-drag selections or actions
+ * @param action Pointer to an action.
+ * @param selectAll Should we select all tiles/nodes? (only available by hotkey)
+ * @param deselectAll Should we clear the entire selection? (only available by hotkey)
+ */
+void MapEditorState::stopSelections(Action *action, bool selectAll, bool deselectAll)
 {
 	handleSelections(action);
 
@@ -3098,63 +3111,71 @@ void MapEditorState::stopSelections(Action *action)
 		_editor->getSelectedNodes()->clear();
 	}
 
-	for (int z = 0; z < _save->getMapSizeZ(); z++)
+	if (!deselectAll)
 	{
-		for (int y = 0; y < _save->getMapSizeY(); y++)
+		for (int z = 0; z < _save->getMapSizeZ(); z++)
 		{
-			for (int x = 0; x < _save->getMapSizeX(); x++)
+			for (int y = 0; y < _save->getMapSizeY(); y++)
 			{
-				Tile *tile = _save->getTile(Position(x, y, z));
-				if (tile->isObstacle())
+				for (int x = 0; x < _save->getMapSizeX(); x++)
 				{
-					_editor->getSelectedTiles()->push_back(tile);
-
-					if (getRouteMode())
+					Tile *tile = _save->getTile(Position(x, y, z));
+					if (tile->isObstacle() || selectAll)
 					{
-						Node *selectedNode = 0;
+						_editor->getSelectedTiles()->push_back(tile);
 
-						for (auto node : *_save->getNodes())
+						if (getRouteMode())
 						{
-							if (!_editor->isNodeActive(node))
+							Node *selectedNode = 0;
+
+							for (auto node : *_save->getNodes())
 							{
-								continue;
+								if (!_editor->isNodeActive(node))
+								{
+									continue;
+								}
+
+								Position nodePos = node->getPosition();
+								if (nodePos == Position(x, y, z))
+								{
+									selectedNode = node;
+									break;
+								}
 							}
 
-							Position nodePos = node->getPosition();
-							if (nodePos == Position(x, y, z))
+							if (selectedNode)
 							{
-								selectedNode = node;
-								break;
+								_editor->getSelectedNodes()->push_back(selectedNode);
 							}
 						}
-
-						if (selectedNode)
+						else if (selectAll && Options::mapEditorSelectedTilesKeepFlashing)
 						{
-							_editor->getSelectedNodes()->push_back(selectedNode);
+							for (int i = 0; i < O_MAX; ++i)
+							{
+								tile->setObstacle(i);
+							}							
 						}
 					}
 				}
 			}
-		}
+		}		
+	}
+
+	if (getRouteMode() || !Options::mapEditorSelectedTilesKeepFlashing || deselectAll)
+	{
+		_map->resetObstacles();
+		_map->enableObstacles();
 	}
 
 	if (getRouteMode())
 	{
 		_editor->getSelectedTiles()->clear();
-		_map->resetObstacles();
-		_map->enableObstacles();
 		updateNodePanels();
 
 		if (_editor->getSelectedNodes()->size() < 2)
 		{
 			_map->getWaypoints()->clear();
 		}
-	}
-
-	if (!Options::mapEditorSelectedTilesKeepFlashing)
-	{
-		_map->resetObstacles();
-		_map->enableObstacles();
 	}
 
 	_proposedSelection.clear();

@@ -222,7 +222,7 @@ public:
 	/// Handle making selections of multiple tiles or nodes
 	void handleSelections(Action *action);
 	/// Handle finishing making mouse-drag selections or actions
-	void stopSelections(Action *action);
+	void stopSelections(Action *action, bool selectAll = false, bool deselectAll = false);
 	/// Checks whether a chosen position is valid for moving a node
 	Position validateNodePosition(Node *node, Position newPosition);
 	/// Handles copying from a selection to the editor's clipboard
