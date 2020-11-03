@@ -602,6 +602,15 @@ int MapEditor::getTileRegisterSize()
 }
 
 /**
+ * Clears the tile register and resets the position
+ */
+void MapEditor::clearTileRegister()
+{
+    _tileRegister.clear();
+    _tileRegisterPosition = 0;
+}
+
+/**
  * Gets the current position of the node edit register
  */
 int MapEditor::getNodeRegisterPosition()
@@ -615,6 +624,15 @@ int MapEditor::getNodeRegisterPosition()
 int MapEditor::getNodeRegisterSize()
 {
     return (int)_nodeRegister.size();
+}
+
+/**
+ * Clears the node register and resets the position
+ */
+void MapEditor::clearNodeRegister()
+{
+    _nodeRegister.clear();
+    _nodeRegisterPosition = 0;
 }
 
 /**

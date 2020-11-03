@@ -351,8 +351,18 @@ void MapEditorMenuState::startEditor()
     SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
     _game->getSavedGame()->setBattleGame(savedBattleGame);
 
-    MapEditor *editor = new MapEditor(savedBattleGame);
-    _game->setMapEditor(editor);
+    MapEditor *editor = _game->getMapEditor();
+    if (!editor)
+    {
+        editor = new MapEditor(savedBattleGame);
+        _game->setMapEditor(editor);
+    }
+    else
+    {
+        editor->setSave(savedBattleGame);
+        editor->clearTileRegister();
+        editor->clearNodeRegister();
+    }
 
     // TODO: Move handling of any battlescape objects to the MapEditor class, this menu should only be for initializing that class
 	BattlescapeGenerator battlescapeGenerator = BattlescapeGenerator(_game);

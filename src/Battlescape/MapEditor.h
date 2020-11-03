@@ -156,10 +156,14 @@ public :
     int getTileRegisterPosition();
     /// Gets the number of edits in the tile register
     int getTileRegisterSize();
+    /// Clears the tile register and resets the position
+    void clearTileRegister();
     /// Gets the current position of the node edit register
     int getNodeRegisterPosition();
     /// Gets the number of edits in the node register
     int getNodeRegisterSize();
+    /// Clears the node register and resets the position
+    void clearNodeRegister();
     /// Gets a pointer to the list of selected tiles for editing
     std::vector< Tile* > *getSelectedTiles();
     /// Gets a pointer to the list of selected nodes for editing
