@@ -3416,6 +3416,12 @@ void MapEditorState::clearSelectionContents()
  */
 void MapEditorState::pasteFromClipboard()
 {
+	if (Options::mapEditorPastedBecomesSelection)
+	{
+		_map->resetObstacles();
+		_map->enableObstacles();
+	}
+
 	if (getRouteMode())
 	{
 		// start by figuring out where our new nodes should go with respect to the clicked position
@@ -3442,6 +3448,9 @@ void MapEditorState::pasteFromClipboard()
 		pasteOffset -= clipboardBasePosition;
 	
 		// place the nodes according to our offset
+		std::vector<Node*> pastedNodes;
+		pastedNodes.clear();
+
 		for (auto change : *_editor->getClipboardNodeEdits())
 		{
 			// since we've already populated a NodeEdit, we just need to update its position and IDs
@@ -3468,6 +3477,17 @@ void MapEditorState::pasteFromClipboard()
 			}
 
 			_editor->changeNodeData(MET_DO, 0, NCT_NEW, data);
+
+			if (Options::mapEditorPastedBecomesSelection)
+			{
+				pastedNodes.push_back(_save->getNodes()->back());
+			}
+		}
+
+		if (Options::mapEditorPastedBecomesSelection)
+		{
+			_editor->getSelectedNodes()->clear();
+			_editor->getSelectedNodes()->insert(_editor->getSelectedNodes()->begin(), pastedNodes.begin(), pastedNodes.end());
 		}
 
 		_editor->confirmChanges(true);
@@ -3502,13 +3522,17 @@ void MapEditorState::pasteFromClipboard()
 		pasteOffset -= clipboardBasePosition;
 
 		// time to place the tiles
+		std::vector<Tile*> pastedTiles;
+		pastedTiles.clear();
+
 		for (auto change : *_editor->getClipboardTileEdits())
 		{
 			Tile *tile = _save->getTile(change.position + pasteOffset);
 
-			// if we have a selection of tiles already made, then we can only work within that selection
-			if (!_editor->getSelectedTiles()->empty() && std::find_if(_editor->getSelectedTiles()->begin(), _editor->getSelectedTiles()->end(),
-															[&](const Tile *selectedTile){ return tile == selectedTile; }) == _editor->getSelectedTiles()->end())
+			// if there's no tile here (it's outside the map!), then we can't paste anything
+			// also, if we have a selection of tiles already made, then we can only work within that selection
+			if (!tile || (!_editor->getSelectedTiles()->empty() && std::find_if(_editor->getSelectedTiles()->begin(), _editor->getSelectedTiles()->end(),
+																		[&](const Tile *selectedTile){ return tile == selectedTile; }) == _editor->getSelectedTiles()->end()))
 			{
 				continue;
 			}
@@ -3553,10 +3577,27 @@ void MapEditorState::pasteFromClipboard()
 						dataIDs[partIndex] = dataID;
 						dataSetIDs[partIndex] = dataSetID;
 					}
+
+					if (Options::mapEditorPastedBecomesSelection && Options::mapEditorSelectedTilesKeepFlashing)
+					{
+						tile->setObstacle(partIndex);
+					}
 				}
 			}
 
+			if (Options::mapEditorPastedBecomesSelection)
+			{
+				pastedTiles.push_back(tile);
+			}
+
 			_editor->changeTileData(MET_DO, tile, dataIDs, dataSetIDs);
+		}
+
+		// if the option is turned on, make everything we just changed the new selection
+		if (Options::mapEditorPastedBecomesSelection)
+		{
+			_editor->getSelectedTiles()->clear();
+			_editor->getSelectedTiles()->insert(_editor->getSelectedTiles()->begin(), pastedTiles.begin(), pastedTiles.end());
 		}
 
 		_editor->confirmChanges(false);
