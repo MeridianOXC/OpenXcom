@@ -346,6 +346,11 @@ void MapEditor::confirmChanges(bool nodeChange)
  */
 void MapEditor::undoRedoTiles(EditType action)
 {
+    if (Options::mapEditorUndoRedoBecomesSelection)
+    {
+        _selectedTiles.clear();
+    }
+
     for (auto edit : _tileRegister.at(_tileRegisterPosition))
     {
         Tile *tile = _save->getTile(edit.position);
@@ -363,6 +368,11 @@ void MapEditor::undoRedoTiles(EditType action)
         {
             changeTileData(action, tile, edit.tileAfterDataIDs, edit.tileAfterDataSetIDs);
         }
+
+        if (Options::mapEditorUndoRedoBecomesSelection)
+        {
+            _selectedTiles.push_back(tile);
+        }
     }
 }
 
@@ -372,8 +382,11 @@ void MapEditor::undoRedoTiles(EditType action)
  */
 void MapEditor::undoRedoNodes(EditType action)
 {
-    // TODO: refactor for adding/removing nodes - that's where we'll need to know whether we're undoing or redoing
-    // redoing means re-creating or re-deleting nodes, undoing means we swap create/delete actions
+    if (Options::mapEditorUndoRedoBecomesSelection)
+    {
+        _selectedNodes.clear();
+    }
+
     for (auto edit : _nodeRegister.at(_nodeRegisterPosition))
     {
         Node *node = _save->getNodes()->at(edit.nodeID);
@@ -390,6 +403,11 @@ void MapEditor::undoRedoNodes(EditType action)
         else if (action == MET_REDO)
         {
             changeNodeData(action, node, edit.nodeChangeType, edit.nodeAfterData);
+        }
+
+        if (Options::mapEditorUndoRedoBecomesSelection)
+        {
+            _selectedNodes.push_back(node);
         }
     }
 }

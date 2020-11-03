@@ -1702,6 +1702,20 @@ void MapEditorState::btnUndoClick(Action *action)
 		txtTooltipIn(action);
 	_map->draw(); // update map
 	updateNodePanels(); // update node information
+
+	if (!getRouteMode() && Options::mapEditorUndoRedoBecomesSelection && Options::mapEditorSelectedTilesKeepFlashing)
+	{
+		_map->resetObstacles();
+		_map->enableObstacles();
+
+		for (auto tile : *_editor->getSelectedTiles())
+		{
+			for (int i = 0; i < O_MAX; ++i)
+			{
+				tile->setObstacle(i);
+			}
+		}
+	}
 }
 
 /**
@@ -1715,6 +1729,20 @@ void MapEditorState::btnRedoClick(Action *action)
 		txtTooltipIn(action);
 	_map->draw(); // update map
 	updateNodePanels(); // update node information
+
+	if (!getRouteMode() && Options::mapEditorUndoRedoBecomesSelection && Options::mapEditorSelectedTilesKeepFlashing)
+	{
+		_map->resetObstacles();
+		_map->enableObstacles();
+
+		for (auto tile : *_editor->getSelectedTiles())
+		{
+			for (int i = 0; i < O_MAX; ++i)
+			{
+				tile->setObstacle(i);
+			}
+		}
+	}
 }
 
 /**

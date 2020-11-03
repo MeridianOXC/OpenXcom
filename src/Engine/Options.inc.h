@@ -159,6 +159,7 @@ OPT bool mapEditorDragSelectPainting;
 OPT bool mapEditorRightClickDragSelect;
 OPT bool mapEditorSelectedTilesKeepFlashing;
 OPT bool mapEditorHoldAltToToggleModeSwitch;
+OPT bool mapEditorUndoRedoBecomesSelection;
 OPT bool mapEditorPastedBecomesSelection;
 OPT bool mapEditorCloseTileSelectionUIAfterClick;
 OPT int mapEditorMaxTileSelectionColumns;
