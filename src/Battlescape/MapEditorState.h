@@ -78,6 +78,7 @@ private:
 	bool _mouseMovedOverThreshold;
 	bool _mouseOverIcons;
 	bool _mouseScrollSelect, _mouseScrollPainting;
+	bool _pasteMode;
 	Position _scrollStartPosition, _scrollPreviousPosition, _scrollCurrentPosition;
 	std::vector<Position> _proposedSelection;
 	std::string _currentTooltip;
@@ -139,11 +140,11 @@ public:
 	/// Handler for pressing the clear button.
 	void btnClearClick(Action *action);
 	/// Handler for pressing the cut button.
-	//void btnCutClick(Action *action);
+	void btnCutClick(Action *action);
 	/// Handler for pressing the copy button.
-	//void btnCopyClick(Action *action);
+	void btnCopyClick(Action *action);
 	/// Handler for pressing the paste button.
-	//void btnPasteClick(Action *action);
+	void btnPasteClick(Action *action);
 	/// Handler for pressing the tile filter buttons.
 	void btnTileFilterClick(Action *action);
 	/// Handler for clicking the mode switch button.
@@ -152,12 +153,6 @@ public:
 	void btnNodeNewClick(Action *action);
 	/// Handler for pressing the node delete button.
 	void btnNodeDeleteClick(Action *action);
-	/// Handler for pressing the node cut button.
-	//void btnNodeCutClick(Action *action);
-	/// Handler for pressing the node copy button.
-	//void btnNodeCopyClick(Action *action);
-	/// Handler for pressing the node paste button.
-	//void btnNodePasteClick(Action *action);
 	/// Handler for pressing the node filter buttons.
 	void btnNodeFilterClick(Action *action);
 	/// Handler for changing the node type combo box

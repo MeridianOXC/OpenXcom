@@ -71,7 +71,7 @@ namespace OpenXcom
  * @param editor Pointer to the data structure for the in-game map editor
  */
 MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseScrolling(false), _isMouseScrolled(false), _xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(0),
-	_mouseScrollSelect(false), _mouseScrollPainting(false), _mouseOverIcons(false), _autosave(false),
+	 _mouseOverIcons(false), _mouseScrollSelect(false), _mouseScrollPainting(false), _pasteMode(false), _autosave(false),
 	_editor(editor), _tileSelectionColumns(5), _tileSelectionRows(3), _tileSelectionCurrentPage(0), _tileSelectionLastPage(0), _selectedTileIndex(0), _routeMode(false)
 {
 	const int screenWidth = Options::baseXResolution;
@@ -481,20 +481,18 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnClear->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnClear->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	//_btnCut->onMouseClick((ActionHandler)&MapEditorState::btnCutClick);
-	//_btnCut->onKeyboardPress((ActionHandler)&MapEditorState::btnCutClick, SDLK_x); // change to options
+	_btnCut->onMouseClick((ActionHandler)&MapEditorState::btnCutClick);
+	// keyboard shortcuts are placed in handle() since copy/cut/paste require CTRL held down to work
 	_btnCut->setTooltip("STR_TOOLTIP_CUT");
 	_btnCut->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnCut->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	//_btnCopy->onMouseClick((ActionHandler)&MapEditorState::btnCopyClick);
-	//_btnCopy->onKeyboardPress((ActionHandler)&MapEditorState::btnCopyClick, SDLK_c); // change to options
+	_btnCopy->onMouseClick((ActionHandler)&MapEditorState::btnCopyClick);
 	_btnCopy->setTooltip("STR_TOOLTIP_COPY");
 	_btnCopy->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnCopy->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	//_btnPaste->onMouseClick((ActionHandler)&MapEditorState::btnPasteClick);
-	//_btnPaste->onKeyboardPress((ActionHandler)&MapEditorState::btnPasteClick, SDLK_v); // change to options
+	_btnPaste->onMouseClick((ActionHandler)&MapEditorState::btnPasteClick);
 	_btnPaste->setTooltip("STR_TOOLTIP_PASTE");
 	_btnPaste->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnPaste->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
@@ -618,22 +616,19 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnNodeDelete->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_btnNodeDelete->setVisible(false);
 
-	//_btnNodeCut->onMouseClick((ActionHandler)&MapEditorState::btnNodeCutClick);
-	//_btnNodeCut->onKeyboardPress((ActionHandler)&MapEditorState::btnNodeCutClick, SDLK_1); // change to options
+	_btnNodeCut->onMouseClick((ActionHandler)&MapEditorState::btnCutClick);
 	_btnNodeCut->setTooltip("STR_TOOLTIP_NODE_CUT");
 	_btnNodeCut->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnNodeCut->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_btnNodeCut->setVisible(false);
 
-	//_btnNodeCopy->onMouseClick((ActionHandler)&MapEditorState::btnNodeCopyClick);
-	//_btnNodeCopy->onKeyboardPress((ActionHandler)&MapEditorState::btnNodeCopyClick, SDLK_1); // change to options
+	_btnNodeCopy->onMouseClick((ActionHandler)&MapEditorState::btnCopyClick);
 	_btnNodeCopy->setTooltip("STR_TOOLTIP_NODE_COPY");
 	_btnNodeCopy->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnNodeCopy->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_btnNodeCopy->setVisible(false);
 
-	//_btnNodePaste->onMouseClick((ActionHandler)&MapEditorState::btnNodePasteClick);
-	//_btnNodePaste->onKeyboardPress((ActionHandler)&MapEditorState::btnNodePasteClick, SDLK_1); // change to options
+	_btnNodePaste->onMouseClick((ActionHandler)&MapEditorState::btnPasteClick);
 	_btnNodePaste->setTooltip("STR_TOOLTIP_NODE_PASTE");
 	_btnNodePaste->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnNodePaste->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
@@ -929,6 +924,91 @@ void MapEditorState::think()
 		_btnRedo->setColor(232);
 	}
 
+	if (!_routeMode)
+	{
+		if (_editor->getSelectedTiles()->empty())
+		{
+			if (_btnCut->getColor() != 8) // 8-)
+			{
+				_btnCut->offset(8 - 232, 0, 255, 1);
+				_btnCut->setColor(8); // change to disabled button color
+			}
+
+			if (_btnCopy->getColor() != 8)
+			{
+				_btnCopy->offset(8 - 232, 0, 255, 1);
+				_btnCopy->setColor(8); // change to disabled button color
+			}
+		}
+		else
+		{
+			if (_btnCut->getColor() != 232)
+			{
+				_btnCut->offset(232 - 8, 0, 255, 1);
+				_btnCut->setColor(232); // change to default color
+			}
+
+			if (_btnCopy->getColor() != 232)
+			{
+				_btnCopy->offset(232 - 8, 0, 255, 1);
+				_btnCopy->setColor(232); // change to default color
+			}	
+		}
+
+		if (_editor->getClipboardTileEdits()->empty() && _btnPaste->getColor() != 8)
+		{
+			_btnPaste->offset(8 - 232, 0, 255, 1);
+			_btnPaste->setColor(8); // change to disabled button color
+		}
+		else if (!_editor->getClipboardTileEdits()->empty() && _btnPaste->getColor() != 232)
+		{
+			_btnPaste->offset(232 - 8, 0, 255, 1);
+			_btnPaste->setColor(232); // change to default color
+		}
+	}
+	else
+	{
+		if (_editor->getSelectedNodes()->empty())
+		{
+			if (_btnNodeCut->getColor() != 8)
+			{
+				_btnNodeCut->offset(8 - 232, 0, 255, 1);
+				_btnNodeCut->setColor(8); // change to disabled button color
+			}
+
+			if (_btnNodeCopy->getColor() != 8)
+			{
+				_btnNodeCopy->offset(8 - 232, 0, 255, 1);
+				_btnNodeCopy->setColor(8); // change to disabled button color
+			}
+		}
+		else
+		{
+			if (_btnNodeCut->getColor() != 232)
+			{
+				_btnNodeCut->offset(232 - 8, 0, 255, 1);
+				_btnNodeCut->setColor(232); // change to default color
+			}
+
+			if (_btnNodeCopy->getColor() != 232)
+			{
+				_btnNodeCopy->offset(232 - 8, 0, 255, 1);
+				_btnNodeCopy->setColor(232); // change to default color
+			}	
+		}
+
+		if (_editor->getClipboardNodeEdits()->empty() && _btnNodePaste->getColor() != 8)
+		{
+			_btnNodePaste->offset(8 - 232, 0, 255, 1);
+			_btnNodePaste->setColor(8); // change to disabled button color
+		}
+		else if (!_editor->getClipboardNodeEdits()->empty() && _btnNodePaste->getColor() != 232)
+		{
+			_btnNodePaste->offset(232 - 8, 0, 255, 1);
+			_btnNodePaste->setColor(232); // change to default color
+		}
+	}
+
 	updateDebugText();
 }
 
@@ -1177,14 +1257,19 @@ void MapEditorState::mapClick(Action *action)
 	Position pos;
 	_map->getSelectorPosition(&pos);
 
-	// Have the map editor capture the mouse input here for editing tiles
-	if (_editor)
+	// Have the map editor capture the mouse input here for editing tiles when right-clicking
+	if (_editor && action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 	{
 		Tile *selectedTile = _save->getTile(pos);
 		bool altPressed = (SDL_GetModState() & KMOD_ALT) != 0;
 
+		// Handle pasting from clipboard
+		if (_pasteMode)
+		{
+			pasteFromClipboard();
+		}
 		// Dealing with nodes
-		if (getRouteMode())
+		else if (getRouteMode())
 		{
 			Node *clickedNode = 0;
 
@@ -1204,250 +1289,247 @@ void MapEditorState::mapClick(Action *action)
 			}
 
 			// determine what action we're taking by what modes are selected
-			if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+			std::vector<int> data;
+			bool newMode = _nodeEditMode == _btnNodeNew;
+			// switch between new/delete mode if the ALT button is held and that option is turned on
+			newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
+			
+			// new node mode: create new node, move, or make links
+			if (newMode)
 			{
-				std::vector<int> data;
-				bool newMode = _nodeEditMode == _btnNodeNew;
-				// switch between new/delete mode if the ALT button is held and that option is turned on
-				newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
-				
-				// new node mode: create new node, move, or make links
-				if (newMode)
+				// select node
+				if (clickedNode && _nodeFilterMode == _btnNodeFilterSelect)
 				{
-					// select node
-					if (clickedNode && _nodeFilterMode == _btnNodeFilterSelect)
+					_editor->getSelectedNodes()->clear();
+					_editor->getSelectedNodes()->push_back(clickedNode);
+				}
+				// creating new: no clicked node and not the move node filter
+				else if (selectedTile && !clickedNode && _nodeFilterMode != _btnNodeFilterMove)
+				{
+					int segment = 0;
+					int type = 0;
+					int rank = 0;
+					int flags = 0;
+					int reserved = 0;
+					int priority = 0;
+
+					data.clear();
+					data.push_back(pos.x);
+					data.push_back(pos.y);
+					data.push_back(pos.z);
+					data.push_back(segment);
+					data.push_back(type);
+					data.push_back(rank);
+					data.push_back(flags);
+					data.push_back(reserved);
+					data.push_back(priority);
+					for (int i = 0; i < 5; ++i)
 					{
-						_editor->getSelectedNodes()->clear();
-						_editor->getSelectedNodes()->push_back(clickedNode);
+						int linkID = -1;
+						// make links back to the selected nodes if in two-way connection mode
+						// we can only make 5 links, so we connect back to the first 5 selected nodes
+						if (_nodeFilterMode == _btnNodeFilterTwoWayConnect && i < (int)_editor->getSelectedNodes()->size())
+						{
+							linkID = _editor->getSelectedNodes()->at(i)->getID();
+						}
+						data.push_back(linkID);
 					}
-					// creating new: no clicked node and not the move node filter
-					else if (selectedTile && !clickedNode && _nodeFilterMode != _btnNodeFilterMove)
+					for (int i = 0; i < 5; ++i)
 					{
-						int segment = 0;
-						int type = 0;
-						int rank = 0;
-						int flags = 0;
-						int reserved = 0;
-						int priority = 0;
+						data.push_back(0);
+					}
+
+					_editor->changeNodeData(MET_DO, 0, NCT_NEW, data);
+
+					// make links from the selected nodes to the new one if we're in one of the connection modes
+					if (_nodeFilterMode != _btnNodeFilterSelect)
+					{
+						for (auto node : *_editor->getSelectedNodes())
+						{
+							data.clear();
+							data.push_back(_editor->getNextNodeConnectionIndex(node, true));
+							data.push_back(_save->getNodes()->size() - 1);
+							_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+						}
+					}
+				}
+				// moving: no clicked node and is the move node filter
+				// we check for selectedTile to make sure we're moving inside the map
+				// TODO: moving more than one node when drag-edits become a thing (?)
+				else if (selectedTile && !clickedNode && selectedTile)
+				{
+					if (_editor->getSelectedNodes()->size() == 1)
+					{
+						Position newPosition = validateNodePosition(_editor->getSelectedNodes()->front(), pos);
 
 						data.clear();
-						data.push_back(pos.x);
-						data.push_back(pos.y);
-						data.push_back(pos.z);
-						data.push_back(segment);
-						data.push_back(type);
-						data.push_back(rank);
-						data.push_back(flags);
-						data.push_back(reserved);
-						data.push_back(priority);
-						for (int i = 0; i < 5; ++i)
+						data.push_back(newPosition.x);
+						data.push_back(newPosition.y);
+						data.push_back(newPosition.z);
+						_editor->changeNodeData(MET_DO, _editor->getSelectedNodes()->front(), NCT_POS, data);
+					}
+					// maybe handle multiple nodes selected by using a waypoint system:
+					// 1st click sets reference point, 2nd click moves w.r.t. reference point
+					else if (_editor->getSelectedNodes()->size() > 1)
+					{
+						if (_map->getWaypoints()->size() < 2)
 						{
-							int linkID = -1;
-							// make links back to the selected nodes if in two-way connection mode
-							// we can only make 5 links, so we connect back to the first 5 selected nodes
-							if (_nodeFilterMode == _btnNodeFilterTwoWayConnect && i < (int)_editor->getSelectedNodes()->size())
-							{
-								linkID = _editor->getSelectedNodes()->at(i)->getID();
-							}
-							data.push_back(linkID);
+							_map->getWaypoints()->push_back(pos);
 						}
-						for (int i = 0; i < 5; ++i)
+						else
 						{
-							data.push_back(0);
-						}
-
-						_editor->changeNodeData(MET_DO, 0, NCT_NEW, data);
-
-						// make links from the selected nodes to the new one if we're in one of the connection modes
-						if (_nodeFilterMode != _btnNodeFilterSelect)
-						{
+							Position delta = _map->getWaypoints()->back() - _map->getWaypoints()->front();
 							for (auto node : *_editor->getSelectedNodes())
+							{
+								// get the new position of the node as the difference between the two waypoints we placed added to its current position
+								// but make sure it stays within the map!
+								Position newPosition = node->getPosition() + delta;
+								newPosition = validateNodePosition(node, newPosition);
+
+								data.clear();
+								data.push_back(newPosition.x);
+								data.push_back(newPosition.y);
+								data.push_back(newPosition.z);
+								_editor->changeNodeData(MET_DO, node, NCT_POS, data);
+							}
+
+							_map->getWaypoints()->clear();
+						}
+					}
+				}
+				// make links
+				else if (_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect)
+				{
+					int linkID = -1;
+					// link to a node
+					if (clickedNode)
+					{
+						linkID = clickedNode->getID();
+					}
+					// link to map exit
+					else if (!selectedTile)
+					{
+						linkID = _editor->getExitLinkDirection(pos);
+					}
+
+					if (linkID != -1)
+					{
+						for (auto node : *_editor->getSelectedNodes())
+						{
+							// don't link back to the same node
+							if (clickedNode == node)
+							{
+								continue;
+							}
+
+							// make the one-way links and links to the exit
+							// don't make the link if it's already linked
+							if (_editor->getConnectionIndex(node, linkID) == -1)
 							{
 								data.clear();
 								data.push_back(_editor->getNextNodeConnectionIndex(node, true));
-								data.push_back(_save->getNodes()->size() - 1);
+								data.push_back(linkID);
 								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
 							}
-						}
-					}
-					// moving: no clicked node and is the move node filter
-					// we check for selectedTile to make sure we're moving inside the map
-					// TODO: moving more than one node when drag-edits become a thing (?)
-					else if (selectedTile && !clickedNode && selectedTile)
-					{
-						if (_editor->getSelectedNodes()->size() == 1)
-						{
-							Position newPosition = validateNodePosition(_editor->getSelectedNodes()->front(), pos);
 
-							data.clear();
-							data.push_back(newPosition.x);
-							data.push_back(newPosition.y);
-							data.push_back(newPosition.z);
-							_editor->changeNodeData(MET_DO, _editor->getSelectedNodes()->front(), NCT_POS, data);
-						}
-						// maybe handle multiple nodes selected by using a waypoint system:
-						// 1st click sets reference point, 2nd click moves w.r.t. reference point
-						else if (_editor->getSelectedNodes()->size() > 1)
-						{
-							if (_map->getWaypoints()->size() < 2)
+							// make the second part of the two way links
+							if (_nodeFilterMode == _btnNodeFilterTwoWayConnect &&
+								clickedNode &&  _editor->getConnectionIndex(clickedNode, node->getID()) == -1)
 							{
-								_map->getWaypoints()->push_back(pos);
-							}
-							else
-							{
-								Position delta = _map->getWaypoints()->back() - _map->getWaypoints()->front();
-								for (auto node : *_editor->getSelectedNodes())
-								{
-									// get the new position of the node as the difference between the two waypoints we placed added to its current position
-									// but make sure it stays within the map!
-									Position newPosition = node->getPosition() + delta;
-									newPosition = validateNodePosition(node, newPosition);
-
-									data.clear();
-									data.push_back(newPosition.x);
-									data.push_back(newPosition.y);
-									data.push_back(newPosition.z);
-									_editor->changeNodeData(MET_DO, node, NCT_POS, data);
-								}
-
-								_map->getWaypoints()->clear();
-							}
-						}
-					}
-					// make links
-					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect)
-					{
-						int linkID = -1;
-						// link to a node
-						if (clickedNode)
-						{
-							linkID = clickedNode->getID();
-						}
-						// link to map exit
-						else if (!selectedTile)
-						{
-							linkID = _editor->getExitLinkDirection(pos);
-						}
-
-						if (linkID != -1)
-						{
-							for (auto node : *_editor->getSelectedNodes())
-							{
-								// don't link back to the same node
-								if (clickedNode == node)
-								{
-									continue;
-								}
-
-								// make the one-way links and links to the exit
-								// don't make the link if it's already linked
-								if (_editor->getConnectionIndex(node, linkID) == -1)
-								{
-									data.clear();
-									data.push_back(_editor->getNextNodeConnectionIndex(node, true));
-									data.push_back(linkID);
-									_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
-								}
-
-								// make the second part of the two way links
-								if (_nodeFilterMode == _btnNodeFilterTwoWayConnect &&
-									clickedNode &&  _editor->getConnectionIndex(clickedNode, node->getID()) == -1)
-								{
-									data.clear();
-									data.push_back(_editor->getNextNodeConnectionIndex(clickedNode, true));
-									data.push_back(node->getID());
-									_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
-								}
+								data.clear();
+								data.push_back(_editor->getNextNodeConnectionIndex(clickedNode, true));
+								data.push_back(node->getID());
+								_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
 							}
 						}
 					}
 				}
-				// delete node mode: remove node or connections
-				else
-				{
-					// move or select mode: we delete nodes
-					if (clickedNode && (_nodeFilterMode == _btnNodeFilterSelect || _nodeFilterMode == _btnNodeFilterMove))
-					{
-						data.clear();
-						// check to see if we're clicking a selected node or a different one
-						std::vector<Node*>::iterator it = std::find(_editor->getSelectedNodes()->begin(), _editor->getSelectedNodes()->end(), clickedNode);
-						// one of the selected nodes: set all of them as inactive
-						if (it != _editor->getSelectedNodes()->end())
-						{
-							for (auto node : *_editor->getSelectedNodes())
-							{
-								_editor->changeNodeData(MET_DO, node, NCT_DELETE, data);
-							}
-
-							_editor->getSelectedNodes()->clear();
-						}
-						// a different node: just set that one as inactive
-						else
-						{
-							_editor->changeNodeData(MET_DO, clickedNode, NCT_DELETE, data);
-						}
-					}
-					// remove links
-					else if (_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect)
-					{
-						int linkID = -1;
-						// de-link from a node
-						if (clickedNode)
-						{
-							linkID = clickedNode->getID();
-						}
-						// de-link from map exit
-						else if (!selectedTile)
-						{
-							linkID = _editor->getExitLinkDirection(pos);
-						}
-
-						if (linkID != -1)
-						{
-							for (auto node : *_editor->getSelectedNodes())
-							{
-								// we don't need to de-link from the same node
-								if (clickedNode == node)
-								{
-									continue;
-								}
-
-								// remove one-way links and those to map exits
-								int linkIndex = _editor->getConnectionIndex(node, linkID);
-								if (linkIndex != -1)
-								{
-									data.clear();
-									data.push_back(linkIndex);
-									data.push_back(-1);
-									_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
-								}
-
-								// remove the second part of two-way links
-								if (clickedNode)
-								{
-									linkIndex = _editor->getConnectionIndex(clickedNode, node->getID());
-								}
-								if (_nodeFilterMode == _btnNodeFilterTwoWayConnect && clickedNode && linkIndex != -1)
-								{
-									data.clear();
-									data.push_back(linkIndex);
-									data.push_back(-1);
-									_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
-								}
-							}
-						}
-
-					}
-				}
-
-				_editor->confirmChanges(true);
 			}
+			// delete node mode: remove node or connections
+			else
+			{
+				// move or select mode: we delete nodes
+				if (clickedNode && (_nodeFilterMode == _btnNodeFilterSelect || _nodeFilterMode == _btnNodeFilterMove))
+				{
+					data.clear();
+					// check to see if we're clicking a selected node or a different one
+					std::vector<Node*>::iterator it = std::find(_editor->getSelectedNodes()->begin(), _editor->getSelectedNodes()->end(), clickedNode);
+					// one of the selected nodes: set all of them as inactive
+					if (it != _editor->getSelectedNodes()->end())
+					{
+						for (auto node : *_editor->getSelectedNodes())
+						{
+							_editor->changeNodeData(MET_DO, node, NCT_DELETE, data);
+						}
+
+						_editor->getSelectedNodes()->clear();
+					}
+					// a different node: just set that one as inactive
+					else
+					{
+						_editor->changeNodeData(MET_DO, clickedNode, NCT_DELETE, data);
+					}
+				}
+				// remove links
+				else if (_nodeFilterMode == _btnNodeFilterOneWayConnect || _nodeFilterMode == _btnNodeFilterTwoWayConnect)
+				{
+					int linkID = -1;
+					// de-link from a node
+					if (clickedNode)
+					{
+						linkID = clickedNode->getID();
+					}
+					// de-link from map exit
+					else if (!selectedTile)
+					{
+						linkID = _editor->getExitLinkDirection(pos);
+					}
+
+					if (linkID != -1)
+					{
+						for (auto node : *_editor->getSelectedNodes())
+						{
+							// we don't need to de-link from the same node
+							if (clickedNode == node)
+							{
+								continue;
+							}
+
+							// remove one-way links and those to map exits
+							int linkIndex = _editor->getConnectionIndex(node, linkID);
+							if (linkIndex != -1)
+							{
+								data.clear();
+								data.push_back(linkIndex);
+								data.push_back(-1);
+								_editor->changeNodeData(MET_DO, node, NCT_LINKS, data);
+							}
+
+							// remove the second part of two-way links
+							if (clickedNode)
+							{
+								linkIndex = _editor->getConnectionIndex(clickedNode, node->getID());
+							}
+							if (_nodeFilterMode == _btnNodeFilterTwoWayConnect && clickedNode && linkIndex != -1)
+							{
+								data.clear();
+								data.push_back(linkIndex);
+								data.push_back(-1);
+								_editor->changeNodeData(MET_DO, clickedNode, NCT_LINKS, data);
+							}
+						}
+					}
+
+				}
+			}
+
+			_editor->confirmChanges(true);
 
 			updateNodePanels();
 			updateDebugText();
 		}
 		// Editing tiles
-		else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT && selectedTile)
+		else if (selectedTile)
 		{
 			bool singleTile = _editor->getSelectedTiles()->empty();
 			if (singleTile)
@@ -1665,6 +1747,72 @@ void MapEditorState::btnClearClick(Action *action)
 
 	_editor->setSelectedMapDataID(-1);
 	_tileEditMode = _btnClear;
+}
+
+/**
+ * Handles pressing the cut button.
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnCutClick(Action *action)
+{
+	copyFromSelection();
+	clearSelectionContents();
+}
+
+/**
+ * Handles pressing the copy button.
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnCopyClick(Action *action)
+{
+	copyFromSelection();
+}
+
+/**
+ * Handles pressing the paste button
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnPasteClick(Action *action)
+{
+	// don't accept paste actions if we have nothing in the clipboard
+	if ((!_routeMode && _editor->getClipboardTileEdits()->empty()) ||
+		(_routeMode && _editor->getClipboardNodeEdits()->empty()))
+	{
+		return;
+	}
+
+	// hotkey pressed: go ahead and perform the action at the cursor position or in the selected area
+	if (action->getDetails()->type == SDL_KEYDOWN)
+	{
+		pasteFromClipboard();
+	}
+	// UI button clicked: switch to paste mode for next right-click
+	else
+	{
+		_pasteMode = !_pasteMode;
+		action->getDetails()->type = SDL_MOUSEBUTTONUP;
+
+		if (!_routeMode)
+		{
+			_btnPaste->setGroup(_pasteMode ? &_btnPaste : 0);
+			// make sure the button gets released
+			if (!_pasteMode)
+			{
+				_btnPaste->mouseRelease(action, this);
+				_btnPaste->draw();
+			}
+		}
+		else
+		{
+			_btnNodePaste->setGroup(_pasteMode ? &_btnNodePaste : 0);
+			// make sure the button gets released
+			if (!_pasteMode)
+			{
+				_btnNodePaste->mouseRelease(action, this);
+				_btnNodePaste->draw();
+			}
+		}
+	}
 }
 
 /**
@@ -2076,18 +2224,17 @@ inline void MapEditorState::handle(Action *action)
 				{
 					btnLoadClick(action);
 				}
-				else if (key == SDLK_x && ctrlPressed) // change x to options, cut button click
+				else if (key == SDLK_x && ctrlPressed) // change x to options
 				{
-					copyFromSelection();
-					clearSelectionContents();
+					btnCutClick(action);
 				}
-				else if (key == SDLK_c && ctrlPressed) // change c to options, copy button click
+				else if (key == SDLK_c && ctrlPressed) // change c to options
 				{
-					copyFromSelection();
+					btnCopyClick(action);
 				}
-				else if (key == SDLK_v && ctrlPressed) // change v to options, paste button click
+				else if (key == SDLK_v && ctrlPressed) // change v to options
 				{
-					pasteFromClipboard();
+					btnPasteClick(action);
 				}
 				else if (key == SDLK_DELETE) // change delete to options
 				{
@@ -2143,7 +2290,11 @@ void MapEditorState::updateDebugText()
 		std::string selectedNodeMode;
 		bool newMode = _nodeEditMode == _btnNodeNew;
 		newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
-		if (newMode)
+		if (_pasteMode)
+		{
+			selectedNodeMode = tr("STR_DEBUG_NODES_PASTE");
+		}
+		else if (newMode)
 		{
 			if (_nodeFilterMode == _btnNodeFilterSelect)
 			{
@@ -2205,7 +2356,11 @@ void MapEditorState::updateDebugText()
 	std::string selectedMode;
 	bool newMode = _editor->getSelectedMapDataID() == -1;
 	newMode = (altPressed && Options::mapEditorHoldAltToToggleModeSwitch) ? !newMode : newMode;
-	if (newMode)
+	if (_pasteMode)
+	{
+		selectedMode = tr("STR_DEBUG_PASTE");
+	}
+	else if (newMode)
 	{
 		selectedMode = tr("STR_DEBUG_CLEAR");
 	}
@@ -2248,6 +2403,12 @@ void MapEditorState::updateDebugText()
  */
 void MapEditorState::toggleRouteMode(Action *action)
 {
+	if (_pasteMode)
+	{
+		action->getDetails()->type = SDL_NOEVENT; // just needs not to be KEYDOWN to un-press the paste button
+		btnPasteClick(action);
+	}
+
 	setRouteMode(!getRouteMode());
 
 	if (_panelTileSelection->getVisible())
