@@ -361,7 +361,9 @@ void MapEditorMenuState::startEditor()
     {
         editor->setSave(savedBattleGame);
         editor->clearTileRegister();
+        editor->getSelectedTiles()->clear();
         editor->clearNodeRegister();
+        editor->getSelectedNodes()->clear();
     }
 
     // TODO: Move handling of any battlescape objects to the MapEditor class, this menu should only be for initializing that class
