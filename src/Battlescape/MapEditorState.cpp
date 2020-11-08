@@ -49,8 +49,9 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Menu/MapEditorMenuState.h"
-#include "../Menu/MapEditorOptionsState.h"
+#include "../Menu/MapEditorFindTileState.h"
 #include "../Menu/MapEditorInfoState.h"
+#include "../Menu/MapEditorOptionsState.h"
 #include "../Menu/MapEditorSaveAsState.h"
 #include "../Mod/MapData.h"
 #include "../Mod/MapDataSet.h"
@@ -2292,6 +2293,10 @@ inline void MapEditorState::handle(Action *action)
 				else if (key == Options::keySelectMusicTrack)
 				{
 					_game->pushState(new SelectMusicTrackState(SMT_BATTLESCAPE));
+				}
+				else if (key == SDLK_f && ctrlPressed) // change f to options, pushstate to button click
+				{
+					_game->pushState(new MapEditorFindTileState(O_MAX, -1));
 				}
 
 				// quick save and quick load
