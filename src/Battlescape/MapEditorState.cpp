@@ -3406,6 +3406,7 @@ void MapEditorState::clearSelectionContents()
 		}
 
 		_editor->confirmChanges(true);
+		_editor->getSelectedNodes()->clear();
 	}
 	else
 	{
