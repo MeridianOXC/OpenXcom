@@ -36,16 +36,13 @@ namespace OpenXcom
  * Initializes all the Map Editor.
  */
 MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
-    _selectedMapDataID(-1), _tileRegisterPosition(0), _nodeRegisterPosition(0), _mapname(""), _selectedObject(O_MAX), _numberOfActiveNodes(0)
+    _selectedMapDataID(-1), _mapname(""), _selectedObject(O_MAX)
 {
-    _tileRegister.clear();
-    _proposedTileEdits.clear();
+    init();
+
+    // clear the clipboards only on first startup so they're available across maps
     _clipboardTileEdits.clear();
-    _nodeRegister.clear();
-    _proposedNodeEdits.clear();
     _clipboardNodeEdits.clear();
-    _selectedTiles.clear();
-    _selectedNodes.clear();
 }
 
 /**
@@ -54,6 +51,24 @@ MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
 MapEditor::~MapEditor()
 {
 
+}
+
+/**
+ * Clears and initializes everything necessary for loading a new map
+ */
+void MapEditor::init()
+{
+    _tileRegister.clear();
+    _proposedTileEdits.clear();
+    _nodeRegister.clear();
+    _proposedNodeEdits.clear();
+    _selectedTiles.clear();
+    _selectedNodes.clear();
+    _activeNodes.clear();
+
+    _tileRegisterPosition = 0;
+    _nodeRegisterPosition = 0;
+    _numberOfActiveNodes = 0;
 }
 
 /**
@@ -620,15 +635,6 @@ int MapEditor::getTileRegisterSize()
 }
 
 /**
- * Clears the tile register and resets the position
- */
-void MapEditor::clearTileRegister()
-{
-    _tileRegister.clear();
-    _tileRegisterPosition = 0;
-}
-
-/**
  * Gets the current position of the node edit register
  */
 int MapEditor::getNodeRegisterPosition()
@@ -642,15 +648,6 @@ int MapEditor::getNodeRegisterPosition()
 int MapEditor::getNodeRegisterSize()
 {
     return (int)_nodeRegister.size();
-}
-
-/**
- * Clears the node register and resets the position
- */
-void MapEditor::clearNodeRegister()
-{
-    _nodeRegister.clear();
-    _nodeRegisterPosition = 0;
 }
 
 /**

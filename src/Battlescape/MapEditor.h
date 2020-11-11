@@ -130,6 +130,8 @@ public :
     MapEditor(SavedBattleGame *save);
     /// Cleans up the Map Editor
     ~MapEditor();
+    /// Clears and initializes everything necessary for loading a new map
+    void init();
     /// Changes the data of a specific tile according to the given MCD data
     void changeTileData(EditType action, Tile *tile, int dataIDs[4], int dataSetIDs[4]);
     /// Changes the data of a specific node according to the selected route data
@@ -156,14 +158,10 @@ public :
     int getTileRegisterPosition();
     /// Gets the number of edits in the tile register
     int getTileRegisterSize();
-    /// Clears the tile register and resets the position
-    void clearTileRegister();
     /// Gets the current position of the node edit register
     int getNodeRegisterPosition();
     /// Gets the number of edits in the node register
     int getNodeRegisterSize();
-    /// Clears the node register and resets the position
-    void clearNodeRegister();
     /// Gets a pointer to the list of selected tiles for editing
     std::vector< Tile* > *getSelectedTiles();
     /// Gets a pointer to the list of selected nodes for editing
