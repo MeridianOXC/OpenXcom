@@ -44,13 +44,15 @@ private :
     TextButton *_btnReplace, *_btnCancel;
     InteractiveSurface *_tileObjectSelectedReplace;
     ComboBox *_cbxClipBoardOrNot, *_cbxTilePartReplace, *_cbxHandleTileContents;
-	InteractiveSurface *_backgroundTileSelection, *_tileSelection;
+	InteractiveSurface *_backgroundTileSelection;
 	InteractiveSurface *_panelTileSelection;
 	InteractiveSurface *_backgroundTileSelectionNavigation;
 	BattlescapeButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow, *_tileSelectionPageCount;
 	Text *_txtSelectionPageCount;
 	std::vector<InteractiveSurface*> _tileSelectionGrid;
+    InteractiveSurface *_clickedTileButton;
     int _selectedTileFind, _selectedTileReplace;
+    int _tileSelectionRows, _tileSelectionColumns, _tileSelectionCurrentPage, _tileSelectionLastPage;
 
 public :
     /// Creates the Map Editor Info window
@@ -59,7 +61,20 @@ public :
     ~MapEditorFindTileState();
     /// Returns to the previous menu
     void btnCancelClick(Action *action);
-
+	/// Toggles the tile selection UI
+	void tileSelectionClick(Action *action);
+	/// Draws the tile sprites on the selection grid
+	void drawTileSelectionGrid();
+	/// Moves the tile selection UI left one page
+	void tileSelectionLeftArrowClick(Action *action);
+	/// Moves the tile selection UI right one page
+	void tileSelectionRightArrowClick(Action *action);
+	/// Selects the tile from the tile selection UI
+	void tileSelectionGridClick(Action *action);
+	/// Handles mouse wheel scrolling for the tile selectionUI
+	void tileSelectionMousePress(Action *action);
+	/// Draws a tile sprite on a given surface
+	bool drawTileSpriteOnSurface(Surface *surface, int index);
 };
 
 }

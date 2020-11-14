@@ -45,7 +45,7 @@ namespace OpenXcom
  * Initializes all elements in the find and replace tiles window for the map editor
  * @param game Pointer to the core game.
  */
-MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selectedTileIndex) : _selectedTileFind(selectedTileIndex), _selectedTileReplace(-1)
+MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selectedTileIndex) : _selectedTileFind(selectedTileIndex), _selectedTileReplace(0), _tileSelectionCurrentPage(0)
 {
     _screen = false;
 
@@ -83,23 +83,22 @@ MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selecte
 	icons->getFrame(15)->blitNShade(_backgroundTileSelection, 0, 0);
 	icons->getFrame(15)->blitNShade(_backgroundTileSelection, 0, 126 - 36);
 
-	/**_backgroundTileSelectionNavigation = new InteractiveSurface(96, 40, 32, 0);
+	_backgroundTileSelectionNavigation = new InteractiveSurface(96, 40, 112, -14);
 	for (int i = 0; i < 3; ++i)
 	{
 		icons->getFrame(i + 16)->blitNShade(_backgroundTileSelectionNavigation, i * 32, 0);
 	}
-	_tileSelectionColumns = screenWidth / 2 / 32;
-	_tileSelectionColumns = std::max(2, std::min(_tileSelectionColumns, Options::mapEditorMaxTileSelectionColumns));
-	_tileSelectionRows = (screenHeight - 2 * 40) / 40;
-	_tileSelectionRows = std::max(2, std::min(_tileSelectionRows, Options::mapEditorMaxTileSelectionRows));
+	_tileSelectionColumns = 10;
+	_tileSelectionRows = 4;
 	int tileSelectionWidth = _tileSelectionColumns * 32;
 	int tileSelectionHeight = _tileSelectionRows * 40;
-	_tileSelection = new InteractiveSurface(32, 40, 0, 0);
-	_panelTileSelection = new InteractiveSurface(tileSelectionWidth, tileSelectionHeight, 0, 40);
-	_tileSelectionPageCount = new BattlescapeButton(32, 12, 64, 28);
-	_tileSelectionLeftArrow = new BattlescapeButton(32, 12, 32, 28);
-	_tileSelectionRightArrow = new BattlescapeButton(32, 12, 96, 28);
-	_txtSelectionPageCount = new Text(32, 12, 64, 28);
+	_tileObjectSelectedFind = new InteractiveSurface(32, 40, windowX + 7, windowY + 36);
+	_tileObjectSelectedReplace = new InteractiveSurface(32, 40, windowX + 7, windowY + 126);
+	_panelTileSelection = new InteractiveSurface(tileSelectionWidth, tileSelectionHeight, 0, 26);
+	_tileSelectionPageCount = new BattlescapeButton(32, 12, 144, 14);
+	_tileSelectionLeftArrow = new BattlescapeButton(32, 12, 112, 14);
+	_tileSelectionRightArrow = new BattlescapeButton(32, 12, 176, 14);
+	_txtSelectionPageCount = new Text(32, 12, 144, 14);
 	_tileSelectionGrid.clear();
 	for (int i = 0; i < _tileSelectionRows; ++i)
 	{
@@ -122,22 +121,9 @@ MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selecte
 			// draw the background
 			icons->getFrame(panelSpriteOffset)->blitNShade(_panelTileSelection, j * 32, i * 40);
 
-			_tileSelectionGrid.push_back(new InteractiveSurface(32, 40, j * 32, i * 40 + 40));
+			_tileSelectionGrid.push_back(new InteractiveSurface(32, 40, j * 32, i * 40 + 26));
 		}
-	}**/
-
-	//TextButton *_btnFind;
-    //BattlescapeButton *_tileObjectSelectedFind;
-    //Text *_txtReplace, *_txtInTilePartReplace;
-    //TextButton *_btnReplace *_btnCancel;
-    //BattlescapeButton *_tileObjectSelectedReplace;
-    //ComboBox *_cbxClipBoardOrNot, *_cbxTilePartReplace, *_cbxHandleTileContents;
-	//InteractiveSurface *_backgroundTileSelection, *_tileSelection;
-	//InteractiveSurface *_panelTileSelection;
-	//InteractiveSurface *_backgroundTileSelectionNavigation;
-	//BattlescapeButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow, *_tileSelectionPageCount;
-	//Text *_txtSelectionPageCount;
-	//std::vector<InteractiveSurface*> _tileSelectionGrid;
+	}
 
 	// Set palette
 	setInterface("optionsMenu", false, _game->getSavedGame()->getSavedBattle());
@@ -160,6 +146,20 @@ MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selecte
 	add(_cbxCurrentSelection, "infoBoxOKButton", "battlescape");
 	add(_cbxTilePartFind, "infoBoxOKButton", "battlescape");
     add(_btnCancel, "button", "optionsMenu");
+
+	add(_backgroundTileSelectionNavigation);
+	add(_tileObjectSelectedFind, "", "battlescape", _backgroundTileSelection);
+	add(_tileObjectSelectedReplace, "", "battlescape", _backgroundTileSelection);
+	add(_panelTileSelection);
+	add(_tileSelectionPageCount, "", "battlescape", _backgroundTileSelectionNavigation);
+	add(_tileSelectionLeftArrow, "", "battlescape", _backgroundTileSelectionNavigation);
+	add(_tileSelectionRightArrow, "", "battlescape", _backgroundTileSelectionNavigation);
+	add(_txtSelectionPageCount);
+	for (auto i : _tileSelectionGrid)
+	{
+		add(i);
+		i->onMouseClick((ActionHandler)&MapEditorFindTileState::tileSelectionGridClick);
+	}
 
     centerAllSurfaces();
 
@@ -188,6 +188,60 @@ MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selecte
 	_btnCancel->setText(tr("STR_CANCEL"));
 	_btnCancel->onMouseClick((ActionHandler)&MapEditorFindTileState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&MapEditorFindTileState::btnCancelClick, Options::keyCancel);
+
+	//_tileSelection->setColor(232); // Goal of background color 235
+	_tileObjectSelectedFind->onMouseClick((ActionHandler)&MapEditorFindTileState::tileSelectionClick);
+	_tileObjectSelectedReplace->onMouseClick((ActionHandler)&MapEditorFindTileState::tileSelectionClick);
+
+	int mapDataObjects = 0;
+	for (auto mapDataSet : *_game->getSavedGame()->getSavedBattle()->getMapDataSets())
+	{
+		mapDataObjects += mapDataSet->getSize();
+	}
+	_tileSelectionLastPage = mapDataObjects / (_tileSelectionColumns * _tileSelectionRows);
+	_txtSelectionPageCount->setSmall();
+	_txtSelectionPageCount->setAlign(ALIGN_CENTER);
+	_txtSelectionPageCount->setVerticalAlign(ALIGN_MIDDLE);
+	_txtSelectionPageCount->setWordWrap(true);
+	_txtSelectionPageCount->setColor(224);
+	_txtSelectionPageCount->setHighContrast(true);
+	std::ostringstream ss;
+	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
+	_txtSelectionPageCount->setText(ss.str().c_str());
+	_txtSelectionPageCount->setVisible(false);
+
+	_tileSelectionPageCount->setVisible(false);
+	_tileSelectionPageCount->onMousePress((ActionHandler)&MapEditorFindTileState::tileSelectionMousePress);
+
+	if (_tileSelectionCurrentPage == _tileSelectionLastPage)
+	{
+		size_t arrowColor = 1;
+		icons->getFrame(16)->blitNShade(_tileSelectionLeftArrow, 0, -28, 0, false, arrowColor);
+		icons->getFrame(18)->blitNShade(_tileSelectionRightArrow, 0, -28, 0, false, arrowColor);
+	}
+
+	_tileSelectionLeftArrow->onMouseClick((ActionHandler)&MapEditorFindTileState::tileSelectionLeftArrowClick);
+	_tileSelectionLeftArrow->onMousePress((ActionHandler)&MapEditorFindTileState::tileSelectionMousePress);
+	_tileSelectionLeftArrow->setVisible(false);
+
+	_tileSelectionRightArrow->onMouseClick((ActionHandler)&MapEditorFindTileState::tileSelectionRightArrowClick);
+	_tileSelectionRightArrow->onMousePress((ActionHandler)&MapEditorFindTileState::tileSelectionMousePress);
+	_tileSelectionRightArrow->setVisible(false);
+
+	//_panelTileSelection->setColor(232); // nice purple
+	_panelTileSelection->onMousePress((ActionHandler)&MapEditorFindTileState::tileSelectionMousePress);
+	drawTileSelectionGrid();
+	for (auto i : _tileSelectionGrid)
+	{
+		i->setVisible(false);
+	}
+	_panelTileSelection->setVisible(false);
+
+	_backgroundTileSelectionNavigation->setVisible(false);
+
+    _selectedTileFind = std::max(0, _selectedTileFind);
+    drawTileSpriteOnSurface(_tileObjectSelectedFind, _selectedTileFind);
+    drawTileSpriteOnSurface(_tileObjectSelectedReplace, _selectedTileReplace);
 
     std::vector<std::string> lstOptions;
     lstOptions.clear();
@@ -240,9 +294,181 @@ MapEditorFindTileState::~MapEditorFindTileState()
  * Returns to the previous menu
  * @param action Pointer to an action.
  */
-void MapEditorFindTileState::btnCancelClick(Action *)
+void MapEditorFindTileState::btnCancelClick(Action *action)
 {
+	// Pressing escape closes the tile selection UI first
+	if (_panelTileSelection->getVisible() && action->getDetails()->type == SDL_KEYDOWN)
+	{
+		tileSelectionClick(action);
+		return;
+	}
+
     _game->popState();
+}
+
+/**
+ * Toggles the tile selection UI
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::tileSelectionClick(Action *action)
+{
+    bool closePanel = _panelTileSelection->getVisible();
+
+    if (!closePanel && (action->getSender() == _tileObjectSelectedFind || action->getSender() == _tileObjectSelectedReplace))
+    {
+        _clickedTileButton = action->getSender();
+    }
+    else
+    {
+        _clickedTileButton = 0;
+    }
+
+	_btnFind->setVisible(closePanel);
+    _cbxTilePartFind->setVisible(closePanel);
+    _cbxCurrentSelection->setVisible(closePanel);
+    _cbxHandleSelection->setVisible(closePanel);
+    _btnReplace->setVisible(closePanel);
+    int screenHeight = Options::baseYResolution;
+    _btnCancel->setY(closePanel ? (screenHeight - _window->getHeight()) / 2 + 172 : -screenHeight / 2); // just move the cancel button off the screen so it can still handle pressing escape to close the panel
+    _cbxClipBoardOrNot->setVisible(closePanel);
+    _cbxTilePartReplace->setVisible(closePanel);
+    _cbxHandleTileContents->setVisible(closePanel);
+
+    _tileObjectSelectedFind->setVisible(closePanel);
+    _tileObjectSelectedReplace->setVisible(closePanel);
+
+	_backgroundTileSelectionNavigation->setVisible(!closePanel);
+	_txtSelectionPageCount->setVisible(!closePanel);
+	_tileSelectionPageCount->setVisible(!closePanel);
+	_tileSelectionLeftArrow->setVisible(!closePanel);
+	_tileSelectionRightArrow->setVisible(!closePanel);
+	for (auto i : _tileSelectionGrid)
+	{
+		i->setVisible(!closePanel);
+	}
+	_panelTileSelection->setVisible(!closePanel);
+
+	drawTileSpriteOnSurface(_tileObjectSelectedFind, _selectedTileFind);
+	drawTileSpriteOnSurface(_tileObjectSelectedReplace, _selectedTileReplace);
+}
+
+/**
+ * Draws the tile images on the selection grid
+ */
+void MapEditorFindTileState::drawTileSelectionGrid()
+{
+	for (int i = 0; i < (int)_tileSelectionGrid.size(); ++i)
+	{
+		_tileSelectionGrid.at(i)->draw();
+		drawTileSpriteOnSurface(_tileSelectionGrid.at(i), i + _tileSelectionCurrentPage * _tileSelectionRows * _tileSelectionColumns);
+	}
+}
+
+/**
+ * Moves the tile selection UI left one page
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::tileSelectionLeftArrowClick(Action *action)
+{
+	if (_tileSelectionCurrentPage == 0)
+		return;
+
+	--_tileSelectionCurrentPage;
+	drawTileSelectionGrid();
+	std::ostringstream ss;
+	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
+	_txtSelectionPageCount->setText(ss.str().c_str());
+}
+
+/**
+ * Moves the tile selection UI right one page
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::tileSelectionRightArrowClick(Action *action)
+{
+	if (_tileSelectionCurrentPage == _tileSelectionLastPage)
+		return;
+
+	++_tileSelectionCurrentPage;
+	drawTileSelectionGrid();
+	std::ostringstream ss;
+	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
+	_txtSelectionPageCount->setText(ss.str().c_str());
+}
+
+/**
+ * Selects the tile from the tile selection UI
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::tileSelectionGridClick(Action *action)
+{
+    int index = 0;
+    for (auto i : _tileSelectionGrid)
+    {
+        if (i == action->getSender())
+        {
+            break;
+        }
+
+        ++index;
+    }
+	index += _tileSelectionCurrentPage * _tileSelectionRows * _tileSelectionColumns;
+
+	if (drawTileSpriteOnSurface(_clickedTileButton, index))
+	{
+		if (_clickedTileButton == _tileObjectSelectedFind)
+        {
+            _selectedTileFind = index;
+        }
+        else if (_clickedTileButton == _tileObjectSelectedReplace)
+        {
+            _selectedTileReplace = index;
+        }
+	}
+
+	tileSelectionClick(action);
+}
+
+/**
+ * Handles mouse wheel scrolling of the tile selection UI
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::tileSelectionMousePress(Action *action)
+{
+    if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
+    {
+        tileSelectionLeftArrowClick(action);
+        // Consume the event so the map doesn't scroll up or down
+        //action->getDetails()->type = SDL_NOEVENT;
+    }
+    else if (action->getDetails()->button.button == SDL_BUTTON_WHEELDOWN)
+    {
+        tileSelectionRightArrowClick(action);
+        // Consume the event so the map doesn't scroll up or down
+        //action->getDetails()->type = SDL_NOEVENT;
+    }
+}
+
+/**
+ * Draws a tile sprite on a given surface
+ * @param surface Pointer to the surface.
+ * @param index Index of the tile object.
+ * @return Whether or not we found and drew the proper tile object.
+ */
+bool MapEditorFindTileState::drawTileSpriteOnSurface(Surface *surface, int index)
+{
+	int mapDataSetID = 0;
+	int mapDataID = 0;
+	MapData *mapData = _game->getMapEditor()->getMapDataFromIndex(index, &mapDataSetID, &mapDataID);
+
+	if (surface && mapData)
+	{
+		surface->draw();
+		_game->getSavedGame()->getSavedBattle()->getMapDataSets()->at(mapDataSetID)->getSurfaceset()->getFrame(mapData->getSprite(0))->blitNShade(surface, 0, 0);
+		return true;
+	}
+
+	return false;
 }
 
 }
