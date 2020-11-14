@@ -25,7 +25,9 @@
 namespace OpenXcom
 {
 
+class MapEditorState;
 class Window;
+class SavedBattleGame;
 class Text;
 class TextButton;
 class BattlescapeButton;
@@ -35,7 +37,9 @@ class InteractiveSurface;
 class MapEditorFindTileState : public State
 {
 private :
+    MapEditorState *_mapEditorState;
 	Window *_window;
+    SavedBattleGame *_save;
 	Text *_txtFind, *_txtWithMCDEntry, *_txtInTilePartFind, *_txtActionFind;
 	TextButton *_btnFind;
     InteractiveSurface *_tileObjectSelectedFind;
@@ -56,11 +60,19 @@ private :
 
 public :
     /// Creates the Map Editor Info window
-    MapEditorFindTileState(int selectedTilePart, int selectedTileIndex);
+    MapEditorFindTileState(MapEditorState *mapEditorState, int selectedTilePart, int selectedTileIndex);
     /// Creates the Map Editor Info window
     ~MapEditorFindTileState();
+    /// Handles clicking the find button
+    void btnFindClick(Action *action);
+    /// Handles clicking the replace button
+    void btnReplaceClick(Action *action);
     /// Returns to the previous menu
     void btnCancelClick(Action *action);
+    /// Selects tiles according to the parameters chosen
+    void selectTiles(); 
+    /// Replaces tiles according to the parameters chosen
+    void replaceTiles();
 	/// Toggles the tile selection UI
 	void tileSelectionClick(Action *action);
 	/// Draws the tile sprites on the selection grid

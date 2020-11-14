@@ -31,7 +31,9 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
+#include "../Battlescape/Map.h"
 #include "../Battlescape/MapEditor.h"
+#include "../Battlescape/MapEditorState.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Mod/Mod.h"
@@ -45,13 +47,15 @@ namespace OpenXcom
  * Initializes all elements in the find and replace tiles window for the map editor
  * @param game Pointer to the core game.
  */
-MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selectedTileIndex) : _selectedTileFind(selectedTileIndex), _selectedTileReplace(0), _tileSelectionCurrentPage(0)
+MapEditorFindTileState::MapEditorFindTileState(MapEditorState *mapEditorState, int selectedTilePart, int selectedTileIndex) : _mapEditorState(mapEditorState), _selectedTileFind(selectedTileIndex), _selectedTileReplace(0), _tileSelectionCurrentPage(0)
 {
     _screen = false;
 
     int windowX = 32;
     int windowY = 0;
     _window = new Window(this, 256, 200, 32, 0, POPUP_BOTH);
+
+    _save = _game->getSavedGame()->getSavedBattle();
 
     _txtFind = new Text(256, 17, windowX, windowY + 9);
 
@@ -126,7 +130,7 @@ MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selecte
 	}
 
 	// Set palette
-	setInterface("optionsMenu", false, _game->getSavedGame()->getSavedBattle());
+	setInterface("optionsMenu", false, _save);
 
     add(_window, "window", "optionsMenu");
     add(_txtFind, "text", "optionsMenu");
@@ -169,13 +173,15 @@ MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selecte
 
 	_txtFind->setAlign(ALIGN_CENTER);
 	_txtFind->setBig();
-	_txtFind->setText("FIND TILES"); //tr("STR_MAP_EDITOR_FIND_TILES"));
+	_txtFind->setText("FIND TILES"); //tr("STR_MAP_game->getMapEditor()_FIND_TILES"));
 
-    _txtWithMCDEntry->setText("With:"); //tr("STR_MAP_EDITOR_FIND_TILES_WITH")
+    _txtWithMCDEntry->setText("With:"); //tr("STR_MAP_game->getMapEditor()_FIND_TILES_WITH")
     _txtInTilePartFind->setText("In Tile Part:");
     _txtActionFind->setText("Then:");
 
     _btnFind->setText("Find");
+	_btnFind->onMouseClick((ActionHandler)&MapEditorFindTileState::btnFindClick);
+	_btnFind->onKeyboardPress((ActionHandler)&MapEditorFindTileState::btnFindClick, Options::keyOk);
 
 	_txtReplace->setAlign(ALIGN_CENTER);
 	_txtReplace->setBig();
@@ -194,7 +200,7 @@ MapEditorFindTileState::MapEditorFindTileState(int selectedTilePart, int selecte
 	_tileObjectSelectedReplace->onMouseClick((ActionHandler)&MapEditorFindTileState::tileSelectionClick);
 
 	int mapDataObjects = 0;
-	for (auto mapDataSet : *_game->getSavedGame()->getSavedBattle()->getMapDataSets())
+	for (auto mapDataSet : *_save->getMapDataSets())
 	{
 		mapDataObjects += mapDataSet->getSize();
 	}
@@ -291,6 +297,27 @@ MapEditorFindTileState::~MapEditorFindTileState()
 }
 
 /**
+ * Handles clicking the find button
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::btnFindClick(Action *action)
+{
+    selectTiles();
+    _game->popState();
+}
+
+/**
+ * Handles clicking the replace button
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::btnReplaceClick(Action *action)
+{
+    selectTiles();
+    replaceTiles();
+    _game->popState();
+}
+
+/**
  * Returns to the previous menu
  * @param action Pointer to an action.
  */
@@ -304,6 +331,100 @@ void MapEditorFindTileState::btnCancelClick(Action *action)
 	}
 
     _game->popState();
+}
+
+/**
+ * Selects tiles according to the parameters chosen
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::selectTiles()
+{
+    // clear the current selection if that's what was selected
+    if (_cbxHandleSelection->getSelected() == 0)
+    {
+        _game->getMapEditor()->getSelectedTiles()->clear();
+    }
+
+    int dataIDToCheck = -1;
+    int dataSetIDToCheck = -1;
+    _game->getMapEditor()->getMapDataFromIndex(_selectedTileFind, &dataSetIDToCheck, &dataIDToCheck);
+
+    for (int z = 0; z < _save->getMapSizeZ(); z++)
+    {
+        for (int y = 0; y < _save->getMapSizeY(); y++)
+        {
+            for (int x = 0; x < _save->getMapSizeX(); x++)
+            {
+                Tile *tile = _save->getTile(Position(x, y, z));
+                std::vector<Tile*>::iterator it = std::find_if(_game->getMapEditor()->getSelectedTiles()->begin(), _game->getMapEditor()->getSelectedTiles()->end(), 
+                                                        [&](const Tile *t){ return t == tile; });
+
+                // We can skip this tile if we're looking only inside the current selection and it's outside
+                // or we're looking outside the current selection and it's inside
+                if ((_cbxCurrentSelection->getSelected() == 1 && it == _game->getMapEditor()->getSelectedTiles()->end())
+                    || (_cbxCurrentSelection->getSelected() == 2 && it != _game->getMapEditor()->getSelectedTiles()->end()))
+                {
+                    continue;
+                }
+
+                // Check the tile part filter and selected MCD
+                bool isTileAMatch = false;
+                std::vector<TilePart> tileParts;
+                if (_cbxTilePartFind->getSelected() == O_MAX)
+                {
+                    tileParts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
+                }
+                else
+                {
+                    tileParts = {(TilePart)_cbxTilePartFind->getSelected()};
+                }
+                for (auto part : tileParts)
+                {
+                    int dataID;
+                    int dataSetID;
+                    tile->getMapData(&dataID, &dataSetID, part);
+
+                    isTileAMatch = isTileAMatch || (dataID == dataIDToCheck && dataSetID == dataSetIDToCheck);
+                }
+
+                // this tile is what we're looking for! now add/remove from selection as requested
+                if (isTileAMatch)
+                {
+                    // add to current selection
+                    if (_cbxHandleSelection->getSelected() != 2 && it == _game->getMapEditor()->getSelectedTiles()->end())
+                    {
+                        _game->getMapEditor()->getSelectedTiles()->push_back(tile);
+                    }
+                    // remove from current selection
+                    else if (_cbxHandleSelection->getSelected() == 2 && it != _game->getMapEditor()->getSelectedTiles()->end())
+                    {
+                        _game->getMapEditor()->getSelectedTiles()->erase(it);
+                    }
+                }
+            }
+        }
+    }
+
+    _mapEditorState->getMap()->resetObstacles();
+    if (Options::mapEditorSelectedTilesKeepFlashing)
+    {
+        for (auto tile : *_game->getMapEditor()->getSelectedTiles())
+        {
+            for (int i = 0; i < O_MAX; ++i)
+            {
+                tile->setObstacle(i);
+            }
+        }							
+    }
+}
+
+/**
+ * Replaces tiles according to the parameters chosen
+ * @param action Pointer to an action.
+ */
+void MapEditorFindTileState::replaceTiles()
+{
+
 }
 
 /**
@@ -464,7 +585,7 @@ bool MapEditorFindTileState::drawTileSpriteOnSurface(Surface *surface, int index
 	if (surface && mapData)
 	{
 		surface->draw();
-		_game->getSavedGame()->getSavedBattle()->getMapDataSets()->at(mapDataSetID)->getSurfaceset()->getFrame(mapData->getSprite(0))->blitNShade(surface, 0, 0);
+		_save->getMapDataSets()->at(mapDataSetID)->getSurfaceset()->getFrame(mapData->getSprite(0))->blitNShade(surface, 0, 0);
 		return true;
 	}
 
