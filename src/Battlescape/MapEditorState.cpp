@@ -2296,7 +2296,7 @@ inline void MapEditorState::handle(Action *action)
 				}
 				else if (key == SDLK_f && ctrlPressed) // change f to options, pushstate to button click
 				{
-					_game->pushState(new MapEditorFindTileState(O_MAX, -1));
+					_game->pushState(new MapEditorFindTileState(O_MAX, _selectedTileIndex));
 				}
 
 				// quick save and quick load
@@ -3743,11 +3743,18 @@ void MapEditorState::tileSelectionRightArrowClick(Action *action)
  */
 void MapEditorState::tileSelectionGridClick(Action *action)
 {
-	int mouseX = (int)action->getAbsoluteXMouse();
-	int mouseY = (int)action->getAbsoluteYMouse();
+    int index = 0;
+    for (auto i : _tileSelectionGrid)
+    {
+        if (i == action->getSender())
+        {
+            break;
+        }
 
-	int index = _tileSelectionColumns * ((mouseY - 40) / 40) + (mouseX / 32);
+        ++index;
+    }
 	index += _tileSelectionCurrentPage * _tileSelectionRows * _tileSelectionColumns;
+
 	if (drawTileSpriteOnSurface(_tileSelection, index))
 	{
 		_selectedTileIndex = index;
