@@ -63,10 +63,8 @@ public :
     MapEditorFindTileState(MapEditorState *mapEditorState, int selectedTilePart, int selectedTileIndex);
     /// Creates the Map Editor Info window
     ~MapEditorFindTileState();
-    /// Handles clicking the find button
+    /// Handles clicking the find or replace buttons
     void btnFindClick(Action *action);
-    /// Handles clicking the replace button
-    void btnReplaceClick(Action *action);
     /// Returns to the previous menu
     void btnCancelClick(Action *action);
     /// Selects tiles according to the parameters chosen

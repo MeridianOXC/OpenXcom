@@ -2296,7 +2296,7 @@ inline void MapEditorState::handle(Action *action)
 				}
 				else if (key == SDLK_f && ctrlPressed) // change f to options, pushstate to button click
 				{
-					_game->pushState(new MapEditorFindTileState(this, O_MAX, _selectedTileIndex));
+					_game->pushState(new MapEditorFindTileState(this, _editor->getSelectedObject(), _selectedTileIndex));
 				}
 
 				// quick save and quick load

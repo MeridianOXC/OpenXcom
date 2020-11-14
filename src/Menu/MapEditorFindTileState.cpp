@@ -173,23 +173,24 @@ MapEditorFindTileState::MapEditorFindTileState(MapEditorState *mapEditorState, i
 
 	_txtFind->setAlign(ALIGN_CENTER);
 	_txtFind->setBig();
-	_txtFind->setText("FIND TILES"); //tr("STR_MAP_game->getMapEditor()_FIND_TILES"));
+	_txtFind->setText(tr("STR_FIND_TILES"));
 
-    _txtWithMCDEntry->setText("With:"); //tr("STR_MAP_game->getMapEditor()_FIND_TILES_WITH")
-    _txtInTilePartFind->setText("In Tile Part:");
-    _txtActionFind->setText("Then:");
+    _txtWithMCDEntry->setText(tr("STR_FIND_TILES_WITH"));
+    _txtInTilePartFind->setText(tr("STR_FIND_TILES_IN_PART"));
+    _txtActionFind->setText(tr("STR_FIND_TILES_THEN"));
 
-    _btnFind->setText("Find");
+    _btnFind->setText(tr("STR_FIND_TILES_BUTTON"));
 	_btnFind->onMouseClick((ActionHandler)&MapEditorFindTileState::btnFindClick);
 	_btnFind->onKeyboardPress((ActionHandler)&MapEditorFindTileState::btnFindClick, Options::keyOk);
 
 	_txtReplace->setAlign(ALIGN_CENTER);
 	_txtReplace->setBig();
-	_txtReplace->setText("AND REPLACE WITH");
+	_txtReplace->setText(tr("STR_FIND_TILES_AND_REPLACE"));
 
-    _txtInTilePartReplace->setText("In Tile Part:");
+    _txtInTilePartReplace->setText(tr("STR_FIND_TILES_IN_PART"));
 
-    _btnReplace->setText("Replace");
+    _btnReplace->setText(tr("STR_REPLACE_TILES_BUTTON"));
+	_btnReplace->onMouseClick((ActionHandler)&MapEditorFindTileState::btnFindClick);
 
 	_btnCancel->setText(tr("STR_CANCEL"));
 	_btnCancel->onMouseClick((ActionHandler)&MapEditorFindTileState::btnCancelClick);
@@ -251,39 +252,66 @@ MapEditorFindTileState::MapEditorFindTileState(MapEditorState *mapEditorState, i
 
     std::vector<std::string> lstOptions;
     lstOptions.clear();
-    lstOptions.push_back("Floor");
-    lstOptions.push_back("West Wall");
-    lstOptions.push_back("North Wall");
-    lstOptions.push_back("Object");
-    lstOptions.push_back("Any");
+    lstOptions.push_back(tr("STR_FIND_O_FLOOR"));
+    lstOptions.push_back(tr("STR_FIND_O_WESTWALL"));
+    lstOptions.push_back(tr("STR_FIND_O_NORTHWALL"));
+    lstOptions.push_back(tr("STR_FIND_O_OBJECT"));
+    lstOptions.push_back(tr("STR_FIND_O_MAX"));
     _cbxTilePartFind->setOptions(lstOptions, false);
     _cbxTilePartFind->setSelected(selectedTilePart);
+    lstOptions.erase(lstOptions.end() - 1);
+    lstOptions.push_back(tr("STR_FIND_MATCH_SEARCH"));
     _cbxTilePartReplace->setOptions(lstOptions, false);
-    _cbxTilePartReplace->setSelected(selectedTilePart);
+    _cbxTilePartReplace->setSelected(O_MAX);
 
     lstOptions.clear();
-    lstOptions.push_back("Anywhere");
-    lstOptions.push_back("Inside Selection"); // disable if no selection
-    lstOptions.push_back("Outside Selection");
+    lstOptions.push_back(tr("STR_FIND_TILES_ANYWHERE"));
+    Uint8 colorDisabled = 8; // TODO move to elements ruleset
+    if (_game->getMapEditor()->getSelectedTiles()->empty())
+    {
+        _cbxCurrentSelection->setColor(colorDisabled);
+        _cbxCurrentSelection->setHighContrast(false);
+    }
+    else
+    {
+        lstOptions.push_back(tr("STR_FIND_TILES_IN_SELECTION"));
+        lstOptions.push_back(tr("STR_FIND_TILES_OUTSIDE_SELECTION"));
+    }
     _cbxCurrentSelection->setOptions(lstOptions, false);
     _cbxCurrentSelection->setSelected(0);
 
     lstOptions.clear();
-    lstOptions.push_back("Create New Selection");
-    lstOptions.push_back("Add to Selection"); // disable if no selection
-    lstOptions.push_back("Remove from Selection");
+    lstOptions.push_back(tr("STR_CREATE_NEW_SELECTION"));
+    if (_game->getMapEditor()->getSelectedTiles()->empty())
+    {
+        _cbxHandleSelection->setColor(colorDisabled);
+        _cbxHandleSelection->setHighContrast(false);
+    }
+    else
+    {
+        lstOptions.push_back(tr("STR_ADD_TO_SELECTION"));
+        lstOptions.push_back(tr("STR_REMOVE_FROM_SELECTION"));
+    }
     _cbxHandleSelection->setOptions(lstOptions, false);
     _cbxHandleSelection->setSelected(0);
     
     lstOptions.clear();
-    lstOptions.push_back("Selected Tile from MCD");
-    lstOptions.push_back("First Tile in Clipboard"); // disable in clipboard empty
+    lstOptions.push_back(tr("STR_REPLACE_FROM_MCD"));
+    if (_game->getMapEditor()->getClipboardTileEdits()->empty())
+    {
+        _cbxClipBoardOrNot->setColor(colorDisabled);
+        _cbxClipBoardOrNot->setHighContrast(false);
+    }
+    else
+    {
+        lstOptions.push_back(tr("STR_REPLACE_FROM_CLIPBOARD"));
+    }
     _cbxClipBoardOrNot->setOptions(lstOptions, false);
     _cbxClipBoardOrNot->setSelected(0);
 
     lstOptions.clear();
-    lstOptions.push_back("Don't Clear First");
-    lstOptions.push_back("Clear Tile First");
+    lstOptions.push_back(tr("STR_REPLACE_WITHOUT_CLEARING"));
+    lstOptions.push_back(tr("STR_REPLACE_WITH_CLEARING"));
     _cbxHandleTileContents->setOptions(lstOptions, false);
     _cbxHandleTileContents->setSelected(0);
 }
@@ -303,17 +331,13 @@ MapEditorFindTileState::~MapEditorFindTileState()
 void MapEditorFindTileState::btnFindClick(Action *action)
 {
     selectTiles();
-    _game->popState();
-}
 
-/**
- * Handles clicking the replace button
- * @param action Pointer to an action.
- */
-void MapEditorFindTileState::btnReplaceClick(Action *action)
-{
-    selectTiles();
-    replaceTiles();
+    bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+    if (action->getSender() == _btnReplace || ctrlPressed)
+    {
+        replaceTiles();
+    }
+
     _game->popState();
 }
 
@@ -424,7 +448,65 @@ void MapEditorFindTileState::selectTiles()
  */
 void MapEditorFindTileState::replaceTiles()
 {
+    // we didn't save which tile part matched in the search, so we'll have to check against the selected object again
+    // and before you ask, no, I'm not going to add an extra data structure here or in MapEditor to save that, this works fine.
+    int dataIDToCheck = -1;
+    int dataSetIDToCheck = -1;
+    _game->getMapEditor()->getMapDataFromIndex(_selectedTileFind, &dataSetIDToCheck, &dataIDToCheck);
 
+    // determine what we're using to replace the found tiles
+    int replaceDataIDs[O_MAX];
+    int replaceDataSetIDs[O_MAX];
+    for (int partIndex = 0; partIndex < O_MAX; ++partIndex)
+    {
+        if (_cbxClipBoardOrNot->getSelected() == 1)
+        {
+            replaceDataIDs[partIndex] = _game->getMapEditor()->getClipboardTileEdits()->front().tileAfterDataIDs[partIndex];
+            replaceDataSetIDs[partIndex] = _game->getMapEditor()->getClipboardTileEdits()->front().tileAfterDataSetIDs[partIndex];
+        }
+        else
+        {
+            _game->getMapEditor()->getMapDataFromIndex(_selectedTileReplace, &replaceDataSetIDs[partIndex], &replaceDataIDs[partIndex]);
+        }
+    }
+
+    for (auto tile : *_game->getMapEditor()->getSelectedTiles())
+    {
+        int dataIDs[O_MAX];
+        int dataSetIDs[O_MAX];
+
+        std::vector<TilePart> parts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
+        for (auto part : parts)
+        {
+            int partIndex = (int)part;
+            tile->getMapData(&dataIDs[partIndex], &dataSetIDs[partIndex], part);
+
+            // make sure this tile part matches what we found in the search
+            // see, told you this works out fine.
+            bool partMatches = dataIDs[partIndex] == dataIDToCheck && dataSetIDs[partIndex] == dataSetIDToCheck;
+
+
+            // replace criteria say to clear the tile first
+            if (_cbxHandleTileContents->getSelected() == 1)
+            {
+                dataIDs[partIndex] = -1;
+                dataSetIDs[partIndex] = -1;
+            }
+
+            // replace with tile data from criteria if ...
+            if ((size_t)partIndex == _cbxTilePartReplace->getSelected() // this is the tile part selected by the drop-down
+                || (partMatches && _cbxTilePartReplace->getSelected() == O_MAX) // this tile part matched the search criteria and we're replacing that
+                || (_cbxClipBoardOrNot->getSelected() == 1 && _cbxTilePartReplace->getSelected() == O_MAX)) // this entire tile is getting replaced with the first one from the clipboard
+            {
+                dataIDs[partIndex] = replaceDataIDs[partIndex];
+                dataSetIDs[partIndex] = replaceDataSetIDs[partIndex];
+            }
+        }
+
+        _game->getMapEditor()->changeTileData(MET_DO, tile, dataIDs, dataSetIDs);
+    }
+
+	_game->getMapEditor()->confirmChanges(false);
 }
 
 /**
