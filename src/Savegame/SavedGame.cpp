@@ -3157,6 +3157,30 @@ std::string debugDisplayScript(const GameTime* p)
 	}
 }
 
+void getRuleResearch(const Mod* mod, const RuleResearch*& rule, const std::string& name)
+{
+	if (mod)
+	{
+		rule = mod->getResearch(name);
+	}
+	else
+	{
+		rule = nullptr;
+	}
+}
+
+void isResearchedScript(const SavedGame* sg, int& val, const std::string& name)
+{
+	if (sg)
+	{
+		if (sg->isResearched(name))
+		{
+			val = 1;
+		}
+	}
+	val = 0;
+}
+
 std::string debugDisplayScript(const SavedGame* p)
 {
 	if (p)
@@ -3217,6 +3241,9 @@ void SavedGame::ScriptRegister(ScriptParserBase* parser)
 
 	sgg.add<&getTimeScript>("getTime", "Get global time that is Greenwich Mean Time");
 	sgg.add<&getRandomScript>("getRandomState");
+
+	sgg.add<&getRuleResearch>("getRuleResearch");
+	sgg.add<&isResearchedScript>("isResearched");
 
 	sgg.addScriptValue<&SavedGame::_scriptValues>();
 

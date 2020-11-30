@@ -20,6 +20,7 @@
 #include "RuleResearch.h"
 #include "../Engine/Exception.h"
 #include "../Engine/Collections.h"
+#include "../Engine/ScriptBind.h"
 #include "Mod.h"
 
 namespace OpenXcom
@@ -249,6 +250,47 @@ const std::string & RuleResearch::getCutscene() const
 const std::string & RuleResearch::getSpawnedItem() const
 {
 	return _spawnedItem;
+}
+
+////////////////////////////////////////////////////////////
+//					Script binding
+////////////////////////////////////////////////////////////
+
+namespace
+{
+
+	std::string debugDisplayScript(const RuleResearch* ru)
+	{
+		if (ru)
+		{
+			std::string s;
+			s += RuleResearch::ScriptName;
+			s += "(name: \"";
+			s += ru->getName();
+			s += "\")";
+			return s;
+		}
+		else
+		{
+			return "null";
+		}
+	}
+
+}
+
+/**
+ * Register RuleResearch in script parser.
+ * @param parser Script parser.
+ */
+void RuleResearch::ScriptRegister(ScriptParserBase* parser)
+{
+	Bind<RuleResearch> ar = { parser };
+
+	ar.add<&RuleResearch::getCost>("getCost");
+	ar.add<&RuleResearch::getPoints>("getPoints");
+
+	ar.addScriptValue<BindBase::OnlyGet, &RuleResearch::_scriptValues>();
+	ar.addDebugDisplay<&debugDisplayScript>();
 }
 
 }

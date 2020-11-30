@@ -21,6 +21,7 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include "RuleBaseFacilityFunctions.h"
+#include "ModScript.h"
 
 namespace OpenXcom
 {
@@ -52,7 +53,14 @@ class RuleResearch
 	std::map<const RuleResearch*, std::vector<const RuleResearch*> > _getOneFreeProtected;
 	bool _needItem, _destroyItem;
 	int _listOrder;
+
+	ScriptValues<RuleResearch> _scriptValues;
 public:
+	/// Name of class used in script.
+	static constexpr const char* ScriptName = "RuleResearch";
+	/// Register all useful function used by script.
+	static void ScriptRegister(ScriptParserBase* parser);
+
 	static const int RESEARCH_STATUS_NEW = 0;
 	static const int RESEARCH_STATUS_NORMAL = 1;
 	static const int RESEARCH_STATUS_DISABLED = 2;
