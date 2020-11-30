@@ -3169,7 +3169,7 @@ void getRuleResearch(const Mod* mod, const RuleResearch*& rule, const std::strin
 	}
 }
 
-void isResearchedScript(const SavedGame* sg, int& val, const std::string& name)
+void isResearchedScript(const SavedGame* sg, int& val, const RuleResearch* name)
 {
 	if (sg)
 	{
