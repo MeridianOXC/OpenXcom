@@ -2220,7 +2220,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		if (rule != 0)
 		{
 			_researchListOrder += 100;
-			rule->load(*i, this, _researchListOrder);
+			rule->load(*i, this, parsers, _researchListOrder);
 			if ((*i)["unlockFinalMission"].as<bool>(false))
 			{
 				_finalResearch = (*i)["name"].as<std::string>(_finalResearch);

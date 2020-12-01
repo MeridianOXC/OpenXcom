@@ -35,11 +35,11 @@ RuleResearch::RuleResearch(const std::string &name) : _name(name), _cost(0), _po
  * @param node YAML node.
  * @param listOrder The list weight for this research.
  */
-void RuleResearch::load(const YAML::Node &node, Mod* mod, int listOrder)
+void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parsers, int listOrder)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent, mod, listOrder);
+		load(parent, mod, parsers, listOrder);
 	}
 	_name = node["name"].as<std::string>(_name);
 	_lookup = node["lookup"].as<std::string>(_lookup);
@@ -68,6 +68,7 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, int listOrder)
 	{
 		throw Exception("Research topic " + _name + " has requirements, but the cost is not zero. Sorry, this is not allowed!");
 	}
+	_scriptValues.load(node, parsers.getShared());
 }
 
 /**

@@ -67,7 +67,7 @@ public:
 	RuleResearch(const std::string &name);
 
 	/// Loads the research from YAML.
-	void load(const YAML::Node& node, Mod* mod, int listOrder);
+	void load(const YAML::Node& node, Mod* mod, const ModScript& parsers, int listOrder);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 
