@@ -660,6 +660,8 @@ void refreshMods()
 	}
 	Log(LOG_INFO) << "Scanning user mods in '" << getUserFolder() << "'...";
 	FileMap::scanModDir(getUserFolder(), "mods", false);
+	Log(LOG_INFO) << "Scanning system mods in '" << getDataFolder() << "'...";
+	FileMap::scanModDir(getDataFolder(), "mods", false);
 #ifdef __MOBILE__
 	if (getDataFolder() == getUserFolder())
 	{
