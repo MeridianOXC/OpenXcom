@@ -2718,7 +2718,7 @@ void MapEditorState::updateNodePanels()
 	// set the displayed value for the combo boxes
 	// if there's more than one node, we'll only display the values for those that have all the same value
 	// start by setting the values according to the first node selected, then change the display if the following nodes differ
-	_cbxNodeType->setSelected(_editor->getSelectedNodes()->front()->getType());
+	_cbxNodeType->setSelected(_nodeTypes.at(_editor->getSelectedNodes()->front()->getType()));
 	_cbxNodeRank->setSelected(_editor->getSelectedNodes()->front()->getRank());
 	_cbxNodeFlag->setSelected(_editor->getSelectedNodes()->front()->getFlags());
 	_cbxNodePriority->setSelected(_editor->getSelectedNodes()->front()->getPriority());
