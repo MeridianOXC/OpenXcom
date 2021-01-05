@@ -1604,6 +1604,9 @@ void MapEditorState::mapClick(Action *action)
 				_map->enableObstacles();
 			}
 		}
+
+		// right-click adds to proposed selection on press but doesn't ever clear it, so we'll do it here on performing an action
+		_proposedSelection.clear();
 	}
 }
 
