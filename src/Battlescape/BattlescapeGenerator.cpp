@@ -4822,7 +4822,6 @@ void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
 
 		loadMAP(block, 0, 0, 0, _terrain, 0, true);
 		loadRMP(block, 0, 0, 0, 0);
-		attachNodeLinks();
 	}
 	else
 	{
