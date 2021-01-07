@@ -363,15 +363,17 @@ void MapEditorFindTileState::btnCancelClick(Action *action)
  */
 void MapEditorFindTileState::selectTiles()
 {
-    // clear the current selection if that's what was selected
-    if (_cbxHandleSelection->getSelected() == 0)
-    {
-        _game->getMapEditor()->getSelectedTiles()->clear();
-    }
-
     int dataIDToCheck = -1;
     int dataSetIDToCheck = -1;
     _game->getMapEditor()->getMapDataFromIndex(_selectedTileFind, &dataSetIDToCheck, &dataIDToCheck);
+
+    size_t currentSelection = _cbxCurrentSelection->getSelected();
+    bool searchInsideSelection = currentSelection != 2;
+    bool searchOutsideSelection = currentSelection != 1;
+
+    size_t handleSelection = _cbxHandleSelection->getSelected();
+    bool addMatches = handleSelection != 2;
+    bool keepSelection = handleSelection != 0;
 
     for (int z = 0; z < _save->getMapSizeZ(); z++)
     {
@@ -380,16 +382,6 @@ void MapEditorFindTileState::selectTiles()
             for (int x = 0; x < _save->getMapSizeX(); x++)
             {
                 Tile *tile = _save->getTile(Position(x, y, z));
-                std::vector<Tile*>::iterator it = std::find_if(_game->getMapEditor()->getSelectedTiles()->begin(), _game->getMapEditor()->getSelectedTiles()->end(), 
-                                                        [&](const Tile *t){ return t == tile; });
-
-                // We can skip this tile if we're looking only inside the current selection and it's outside
-                // or we're looking outside the current selection and it's inside
-                if ((_cbxCurrentSelection->getSelected() == 1 && it == _game->getMapEditor()->getSelectedTiles()->end())
-                    || (_cbxCurrentSelection->getSelected() == 2 && it != _game->getMapEditor()->getSelectedTiles()->end()))
-                {
-                    continue;
-                }
 
                 // Check the tile part filter and selected MCD
                 bool isTileAMatch = false;
@@ -411,19 +403,24 @@ void MapEditorFindTileState::selectTiles()
                     isTileAMatch = isTileAMatch || (dataID == dataIDToCheck && dataSetID == dataSetIDToCheck);
                 }
 
-                // this tile is what we're looking for! now add/remove from selection as requested
-                if (isTileAMatch)
+                std::vector<Tile*>::iterator it = std::find_if(_game->getMapEditor()->getSelectedTiles()->begin(), _game->getMapEditor()->getSelectedTiles()->end(), 
+                                                        [&](const Tile *t){ return t == tile; });
+                bool isTileInSelection = it != _game->getMapEditor()->getSelectedTiles()->end();
+                isTileAMatch = isTileAMatch && ((isTileInSelection && searchInsideSelection) || (!isTileInSelection && searchOutsideSelection));
+                
+                // adding to selection
+                if (isTileAMatch
+                    && addMatches
+                    && !isTileInSelection && searchOutsideSelection) // don't add to selection things that are already there
                 {
-                    // add to current selection
-                    if (_cbxHandleSelection->getSelected() != 2 && it == _game->getMapEditor()->getSelectedTiles()->end())
-                    {
-                        _game->getMapEditor()->getSelectedTiles()->push_back(tile);
-                    }
-                    // remove from current selection
-                    else if (_cbxHandleSelection->getSelected() == 2 && it != _game->getMapEditor()->getSelectedTiles()->end())
-                    {
-                        _game->getMapEditor()->getSelectedTiles()->erase(it);
-                    }
+                    _game->getMapEditor()->getSelectedTiles()->push_back(tile);
+                }
+                // removing from selection
+                else if (isTileInSelection
+                        && ((!keepSelection && !isTileAMatch) // clear out things that aren't a match if we aren't keeping them
+                        || (!addMatches && isTileAMatch))) // opposite of adding matches is removing them!
+                {
+                    _game->getMapEditor()->getSelectedTiles()->erase(it);
                 }
             }
         }
