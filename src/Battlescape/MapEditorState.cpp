@@ -50,6 +50,7 @@
 #include "../Interface/TextButton.h"
 #include "../Menu/MapEditorMenuState.h"
 #include "../Menu/MapEditorFindTileState.h"
+#include "../Menu/MapEditorFindNodeState.h"
 #include "../Menu/MapEditorInfoState.h"
 #include "../Menu/MapEditorOptionsState.h"
 #include "../Menu/MapEditorSaveAsState.h"
@@ -726,7 +727,7 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 
 	std::vector<std::string> numberStrings;
 	numberStrings.clear();
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 11; ++i)
 	{
 		numberStrings.push_back(std::to_string(i));
 	}
@@ -2299,7 +2300,14 @@ inline void MapEditorState::handle(Action *action)
 				}
 				else if (key == SDLK_f && ctrlPressed) // change f to options, pushstate to button click
 				{
-					_game->pushState(new MapEditorFindTileState(this, _editor->getSelectedObject(), _selectedTileIndex));
+					if (getRouteMode())
+					{
+						_game->pushState(new MapEditorFindNodeState(this));
+					}
+					else
+					{
+						_game->pushState(new MapEditorFindTileState(this, _editor->getSelectedObject(), _selectedTileIndex));
+					}
 				}
 
 				// quick save and quick load
@@ -2694,7 +2702,7 @@ void MapEditorState::updateNodePanels()
 
 	std::vector<std::string> numberStrings;
 	numberStrings.clear();
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 11; ++i)
 	{
 		numberStrings.push_back(std::to_string(i));
 	}
@@ -2784,7 +2792,7 @@ void MapEditorState::updateNodePanels()
 
 		if (_cbxNodeRank->getSelected() != (size_t)node->getRank())
 		{
-			_cbxNodeType->setText(emptyString);
+			_cbxNodeRank->setText(emptyString);
 		}
 
 		if (_cbxNodeFlag->getSelected() != (size_t)node->getFlags())
