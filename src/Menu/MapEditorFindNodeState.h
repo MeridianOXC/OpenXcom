@@ -18,9 +18,11 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../Engine/State.h"
+#include "../Battlescape/MapEditor.h"
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace OpenXcom
 {
@@ -34,57 +36,38 @@ class BattlescapeButton;
 class ComboBox;
 class InteractiveSurface;
 
+enum NodeChangeType;
+
 class MapEditorFindNodeState : public State
 {
 private :
     MapEditorState *_mapEditorState;
 	Window *_window;
     SavedBattleGame *_save;
-	Text *_txtFind, *_txtWithMCDEntry, *_txtInTilePartFind, *_txtActionFind;
+	Text *_txtFind, *_txtWithNodeParameter, *_txtValueEqualToFind, *_txtActionFind;
 	TextButton *_btnFind;
-    InteractiveSurface *_tileObjectSelectedFind;
-    ComboBox *_cbxTilePartFind, *_cbxCurrentSelection, *_cbxHandleSelection;
-    Text *_txtReplace, *_txtInTilePartReplace;
+    ComboBox *_cbxNodeParameterFind, *_cbxNodeValueFind, *_cbxCurrentSelection, *_cbxHandleSelection;
+    Text *_txtReplace, *_txtValueEqualToReplace;
     TextButton *_btnReplace, *_btnCancel;
-    InteractiveSurface *_tileObjectSelectedReplace;
-    ComboBox *_cbxClipBoardOrNot, *_cbxTilePartReplace, *_cbxHandleTileContents;
-	InteractiveSurface *_backgroundTileSelection;
-	InteractiveSurface *_panelTileSelection;
-	InteractiveSurface *_backgroundTileSelectionNavigation;
-	BattlescapeButton *_tileSelectionLeftArrow, *_tileSelectionRightArrow, *_tileSelectionPageCount;
-	Text *_txtSelectionPageCount;
-	std::vector<InteractiveSurface*> _tileSelectionGrid;
-    InteractiveSurface *_clickedTileButton;
-    int _selectedTileFind, _selectedTileReplace;
-    int _tileSelectionRows, _tileSelectionColumns, _tileSelectionCurrentPage, _tileSelectionLastPage;
+    ComboBox *_cbxNodeParameterReplace, *_cbxNodeValueReplace;
+    std::map<ComboBox*, size_t> _selectedParameters;
+    std::vector<NodeChangeType> _nodeParameters;
 
 public :
     /// Creates the Map Editor Info window
-    MapEditorFindNodeState(MapEditorState *mapEditorState, int selectedTilePart, int selectedTileIndex);
+    MapEditorFindNodeState(MapEditorState *mapEditorState);
     /// Creates the Map Editor Info window
     ~MapEditorFindNodeState();
+    /// Handles updating the node values dropdowns according to parameters chosen
+    void cbxNodeParameterChange(Action *action);
     /// Handles clicking the find or replace buttons
     void btnFindClick(Action *action);
     /// Returns to the previous menu
     void btnCancelClick(Action *action);
-    /// Selects tiles according to the parameters chosen
-    void selectTiles(); 
-    /// Replaces tiles according to the parameters chosen
-    void replaceTiles();
-	/// Toggles the tile selection UI
-	void tileSelectionClick(Action *action);
-	/// Draws the tile sprites on the selection grid
-	void drawTileSelectionGrid();
-	/// Moves the tile selection UI left one page
-	void tileSelectionLeftArrowClick(Action *action);
-	/// Moves the tile selection UI right one page
-	void tileSelectionRightArrowClick(Action *action);
-	/// Selects the tile from the tile selection UI
-	void tileSelectionGridClick(Action *action);
-	/// Handles mouse wheel scrolling for the tile selectionUI
-	void tileSelectionMousePress(Action *action);
-	/// Draws a tile sprite on a given surface
-	bool drawTileSpriteOnSurface(Surface *surface, int index);
+    /// Selects nodes according to the parameters chosen
+    void selectNodes(); 
+    /// Replaces node data according to the parameters chosen
+    void replaceNodes();
 };
 
 }

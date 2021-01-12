@@ -21,24 +21,19 @@
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
 #include "../Engine/Action.h"
-#include "../Engine/InteractiveSurface.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Screen.h"
-#include "../Engine/Surface.h"
-#include "../Engine/SurfaceSet.h"
 #include "../Interface/BattlescapeButton.h"
 #include "../Interface/ComboBox.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
 #include "../Battlescape/Map.h"
-#include "../Battlescape/MapEditor.h"
+//#include "../Battlescape/MapEditor.h" // already included in header
 #include "../Battlescape/MapEditorState.h"
+#include "../Savegame/Node.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
-#include "../Mod/Mod.h"
-#include "../Mod/MapDataSet.h"
-#include "../Mod/RuleTerrain.h"
 
 namespace OpenXcom
 {
@@ -47,7 +42,7 @@ namespace OpenXcom
  * Initializes all elements in the find and replace tiles window for the map editor
  * @param game Pointer to the core game.
  */
-MapEditorFindNodeState::MapEditorFindNodeState(MapEditorState *mapEditorState, int selectedTilePart, int selectedTileIndex) : _mapEditorState(mapEditorState), _selectedTileFind(selectedTileIndex), _selectedTileReplace(0), _tileSelectionCurrentPage(0)
+MapEditorFindNodeState::MapEditorFindNodeState(MapEditorState *mapEditorState) : _mapEditorState(mapEditorState)
 {
     _screen = false;
 
@@ -59,111 +54,48 @@ MapEditorFindNodeState::MapEditorFindNodeState(MapEditorState *mapEditorState, i
 
     _txtFind = new Text(256, 17, windowX, windowY + 9);
 
-    _txtWithMCDEntry = new Text(118, 10, windowX + 9, windowY + 26);
-    _txtInTilePartFind = new Text(118, 10, windowX + 43, windowY + 26);
-    _txtActionFind = new Text(118, 10, windowX + 43, windowY + 72);
+    _txtWithNodeParameter = new Text(118, 10, windowX + 9, windowY + 26);
+    _txtValueEqualToFind = new Text(118, 10, windowX + 128 + 3, windowY + 26);
+    _txtActionFind = new Text(118, 10, windowX + 128 + 3, windowY + 72);
 
-    _cbxTilePartFind = new ComboBox(this, 120, 16, windowX + 41, windowY + 36, false);
-    _cbxCurrentSelection = new ComboBox(this, 120, 16, windowX + 41, windowY + 54, false);
-    _cbxHandleSelection = new ComboBox(this, 120, 16, windowX + 41, windowY + 82, false);
+    _cbxNodeParameterFind = new ComboBox(this, 120, 16, windowX + 7, windowY + 36, false);
+    _cbxNodeValueFind = new ComboBox(this, 120, 16, windowX + 128 + 1, windowY + 36, false);
+    _cbxCurrentSelection = new ComboBox(this, 120, 16, windowX + 128 + 1, windowY + 54, false);
+    _cbxHandleSelection = new ComboBox(this, 120, 16, windowX + 128 + 1, windowY + 82, false);
 
-    _btnFind = new TextButton(84, 16, windowX + 165, windowY + 82);
+    _btnFind = new TextButton(84, 16, windowX + 165, windowY + 100);
 
-    _txtReplace = new Text(256, 17, windowX, windowY + 109);
+    _txtReplace = new Text(256, 17, windowX, windowY + 132);
 
-    _txtInTilePartReplace = new Text(118, 10, windowX + 43, windowY + 144);
+    _txtValueEqualToReplace = new Text(118, 10, windowX + 9, windowY + 167);
 
-    _cbxClipBoardOrNot = new ComboBox(this, 120, 16, windowX + 41, windowY + 126, true);
-    _cbxTilePartReplace = new ComboBox(this, 120, 16, windowX + 41, windowY + 154, true);
-    _cbxHandleTileContents = new ComboBox(this, 120, 16, windowX + 41, windowY + 172, true);
+    _cbxNodeParameterReplace = new ComboBox(this, 120, 16, windowX + 7, windowY + 149, true);
+    _cbxNodeValueReplace = new ComboBox(this, 120, 16, windowX + 7, windowY + 177, true);
 
-    _btnReplace = new TextButton(84, 16, windowX + 165, windowY + 154);
+    _btnReplace = new TextButton(84, 16, windowX + 165, windowY + 159);
 
-    _btnCancel = new TextButton(84, 16, windowX + 165, windowY + 172);
-
-	SurfaceSet *icons = _game->getMod()->getSurfaceSet("MapEditorIcons");
-
-	_backgroundTileSelection = new InteractiveSurface(32, 160, windowX + 7, windowY + 36);
-	icons->getFrame(15)->blitNShade(_backgroundTileSelection, 0, 0);
-	icons->getFrame(15)->blitNShade(_backgroundTileSelection, 0, 126 - 36);
-
-	_backgroundTileSelectionNavigation = new InteractiveSurface(96, 40, 112, -14);
-	for (int i = 0; i < 3; ++i)
-	{
-		icons->getFrame(i + 16)->blitNShade(_backgroundTileSelectionNavigation, i * 32, 0);
-	}
-	_tileSelectionColumns = 10;
-	_tileSelectionRows = 4;
-	int tileSelectionWidth = _tileSelectionColumns * 32;
-	int tileSelectionHeight = _tileSelectionRows * 40;
-	_tileObjectSelectedFind = new InteractiveSurface(32, 40, windowX + 7, windowY + 36);
-	_tileObjectSelectedReplace = new InteractiveSurface(32, 40, windowX + 7, windowY + 126);
-	_panelTileSelection = new InteractiveSurface(tileSelectionWidth, tileSelectionHeight, 0, 26);
-	_tileSelectionPageCount = new BattlescapeButton(32, 12, 144, 14);
-	_tileSelectionLeftArrow = new BattlescapeButton(32, 12, 112, 14);
-	_tileSelectionRightArrow = new BattlescapeButton(32, 12, 176, 14);
-	_txtSelectionPageCount = new Text(32, 12, 144, 14);
-	_tileSelectionGrid.clear();
-	for (int i = 0; i < _tileSelectionRows; ++i)
-	{
-		for (int j = 0; j < _tileSelectionColumns; ++j)
-		{
-			// select which of the background panel frames is appropriate for this position on the grid
-			int panelSpriteOffset = 20;
-			if (i % (_tileSelectionRows - 1) != 0) // we're in a middle row
-				panelSpriteOffset += 3;
-			else if (i / (_tileSelectionRows - 1) == 1) // we're on the bottom row
-				panelSpriteOffset += 6;
-			// else we're on the top row
-
-			if (j % (_tileSelectionColumns - 1) != 0) // we're in a middle column
-				panelSpriteOffset += 1;
-			else if (j / (_tileSelectionColumns - 1) == 1) // we're on the right edge
-				panelSpriteOffset += 2;
-			// else we're on the left edge
-
-			// draw the background
-			icons->getFrame(panelSpriteOffset)->blitNShade(_panelTileSelection, j * 32, i * 40);
-
-			_tileSelectionGrid.push_back(new InteractiveSurface(32, 40, j * 32, i * 40 + 26));
-		}
-	}
+    _btnCancel = new TextButton(84, 16, windowX + 165, windowY + 177);
 
 	// Set palette
 	setInterface("optionsMenu", false, _save);
 
     add(_window, "window", "optionsMenu");
     add(_txtFind, "text", "optionsMenu");
-    add(_txtWithMCDEntry, "text", "optionsMenu");
-    add(_txtInTilePartFind, "text", "optionsMenu");
+    add(_txtWithNodeParameter, "text", "optionsMenu");
+    add(_txtValueEqualToFind, "text", "optionsMenu");
     add(_txtActionFind, "text", "optionsMenu");
     add(_btnFind, "button", "optionsMenu");
     add(_txtReplace, "text", "optionsMenu");
-    add(_txtInTilePartReplace, "text", "optionsMenu");
+    add(_txtValueEqualToReplace, "text", "optionsMenu");
     add(_btnReplace, "button", "optionsMenu");
-	add(_backgroundTileSelection);
     // add combo boxes in reverse order so they properly layer over each other when open
-    add(_cbxClipBoardOrNot, "infoBoxOKButton", "battlescape");
-    add(_cbxTilePartReplace, "infoBoxOKButton", "battlescape");
-    add(_cbxHandleTileContents, "infoBoxOKButton", "battlescape");
+    add(_cbxNodeParameterReplace, "infoBoxOKButton", "battlescape");
+    add(_cbxNodeValueReplace, "infoBoxOKButton", "battlescape");
 	add(_cbxHandleSelection, "infoBoxOKButton", "battlescape");
 	add(_cbxCurrentSelection, "infoBoxOKButton", "battlescape");
-	add(_cbxTilePartFind, "infoBoxOKButton", "battlescape");
+	add(_cbxNodeValueFind, "infoBoxOKButton", "battlescape");
+    add(_cbxNodeParameterFind, "infoBoxOKButton", "battlescape");
     add(_btnCancel, "button", "optionsMenu");
-
-	add(_backgroundTileSelectionNavigation);
-	add(_tileObjectSelectedFind, "", "battlescape", _backgroundTileSelection);
-	add(_tileObjectSelectedReplace, "", "battlescape", _backgroundTileSelection);
-	add(_panelTileSelection);
-	add(_tileSelectionPageCount, "", "battlescape", _backgroundTileSelectionNavigation);
-	add(_tileSelectionLeftArrow, "", "battlescape", _backgroundTileSelectionNavigation);
-	add(_tileSelectionRightArrow, "", "battlescape", _backgroundTileSelectionNavigation);
-	add(_txtSelectionPageCount);
-	for (auto i : _tileSelectionGrid)
-	{
-		add(i);
-		i->onMouseClick((ActionHandler)&MapEditorFindNodeState::tileSelectionGridClick);
-	}
 
     centerAllSurfaces();
 
@@ -173,116 +105,75 @@ MapEditorFindNodeState::MapEditorFindNodeState(MapEditorState *mapEditorState, i
 
 	_txtFind->setAlign(ALIGN_CENTER);
 	_txtFind->setBig();
-	_txtFind->setText(tr("STR_FIND_TILES"));
+	_txtFind->setText(tr("STR_FIND_NODES"));
 
-    _txtWithMCDEntry->setText(tr("STR_FIND_TILES_WITH"));
-    _txtInTilePartFind->setText(tr("STR_FIND_TILES_IN_PART"));
-    _txtActionFind->setText(tr("STR_FIND_TILES_THEN"));
+    _txtWithNodeParameter->setText(tr("STR_FIND_NODES_PARAMETER"));
+    _txtValueEqualToFind->setText(tr("STR_FIND_NODES_WITH_VALUE"));
+    _txtActionFind->setText(tr("STR_FIND_NODES_THEN"));
 
-    _btnFind->setText(tr("STR_FIND_TILES_BUTTON"));
+    _btnFind->setText(tr("STR_FIND_NODES_BUTTON"));
 	_btnFind->onMouseClick((ActionHandler)&MapEditorFindNodeState::btnFindClick);
 	_btnFind->onKeyboardPress((ActionHandler)&MapEditorFindNodeState::btnFindClick, Options::keyOk);
 
 	_txtReplace->setAlign(ALIGN_CENTER);
 	_txtReplace->setBig();
-	_txtReplace->setText(tr("STR_FIND_TILES_AND_REPLACE"));
+	_txtReplace->setText(tr("STR_FIND_NODES_AND_REPLACE"));
 
-    _txtInTilePartReplace->setText(tr("STR_FIND_TILES_IN_PART"));
+    _txtValueEqualToReplace->setText(tr("STR_REPLACE_NODES_VALUE"));
 
-    _btnReplace->setText(tr("STR_REPLACE_TILES_BUTTON"));
+    _btnReplace->setText(tr("STR_REPLACE_NODES_BUTTON"));
 	_btnReplace->onMouseClick((ActionHandler)&MapEditorFindNodeState::btnFindClick);
 
 	_btnCancel->setText(tr("STR_CANCEL"));
 	_btnCancel->onMouseClick((ActionHandler)&MapEditorFindNodeState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&MapEditorFindNodeState::btnCancelClick, Options::keyCancel);
 
-	//_tileSelection->setColor(232); // Goal of background color 235
-	_tileObjectSelectedFind->onMouseClick((ActionHandler)&MapEditorFindNodeState::tileSelectionClick);
-	_tileObjectSelectedReplace->onMouseClick((ActionHandler)&MapEditorFindNodeState::tileSelectionClick);
-
-	int mapDataObjects = 0;
-	for (auto mapDataSet : *_save->getMapDataSets())
-	{
-		mapDataObjects += mapDataSet->getSize();
-	}
-	_tileSelectionLastPage = mapDataObjects / (_tileSelectionColumns * _tileSelectionRows);
-	_txtSelectionPageCount->setSmall();
-	_txtSelectionPageCount->setAlign(ALIGN_CENTER);
-	_txtSelectionPageCount->setVerticalAlign(ALIGN_MIDDLE);
-	_txtSelectionPageCount->setWordWrap(true);
-	_txtSelectionPageCount->setColor(224);
-	_txtSelectionPageCount->setHighContrast(true);
-	std::ostringstream ss;
-	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
-	_txtSelectionPageCount->setText(ss.str().c_str());
-	_txtSelectionPageCount->setVisible(false);
-
-	_tileSelectionPageCount->setVisible(false);
-	_tileSelectionPageCount->onMousePress((ActionHandler)&MapEditorFindNodeState::tileSelectionMousePress);
-
-	if (_tileSelectionCurrentPage == _tileSelectionLastPage)
-	{
-		size_t arrowColor = 1;
-		icons->getFrame(16)->blitNShade(_tileSelectionLeftArrow, 0, -28, 0, false, arrowColor);
-		icons->getFrame(18)->blitNShade(_tileSelectionRightArrow, 0, -28, 0, false, arrowColor);
-	}
-
-	_tileSelectionLeftArrow->onMouseClick((ActionHandler)&MapEditorFindNodeState::tileSelectionLeftArrowClick);
-	_tileSelectionLeftArrow->onMousePress((ActionHandler)&MapEditorFindNodeState::tileSelectionMousePress);
-	_tileSelectionLeftArrow->setVisible(false);
-
-	_tileSelectionRightArrow->onMouseClick((ActionHandler)&MapEditorFindNodeState::tileSelectionRightArrowClick);
-	_tileSelectionRightArrow->onMousePress((ActionHandler)&MapEditorFindNodeState::tileSelectionMousePress);
-	_tileSelectionRightArrow->setVisible(false);
-
-	//_panelTileSelection->setColor(232); // nice purple
-	_panelTileSelection->onMousePress((ActionHandler)&MapEditorFindNodeState::tileSelectionMousePress);
-	drawTileSelectionGrid();
-	for (auto i : _tileSelectionGrid)
-	{
-		i->setVisible(false);
-	}
-	_panelTileSelection->setVisible(false);
-
-	_backgroundTileSelectionNavigation->setVisible(false);
-
-    _selectedTileFind = std::max(0, _selectedTileFind);
-    drawTileSpriteOnSurface(_tileObjectSelectedFind, _selectedTileFind);
-    drawTileSpriteOnSurface(_tileObjectSelectedReplace, _selectedTileReplace);
-
     std::vector<std::string> lstOptions;
     lstOptions.clear();
-    lstOptions.push_back(tr("STR_FIND_O_FLOOR"));
-    lstOptions.push_back(tr("STR_FIND_O_WESTWALL"));
-    lstOptions.push_back(tr("STR_FIND_O_NORTHWALL"));
-    lstOptions.push_back(tr("STR_FIND_O_OBJECT"));
-    lstOptions.push_back(tr("STR_FIND_O_MAX"));
-    _cbxTilePartFind->setOptions(lstOptions, false);
-    _cbxTilePartFind->setSelected(selectedTilePart);
+    lstOptions.push_back(tr("STR_FIND_NODE_TYPE"));
+    lstOptions.push_back(tr("STR_FIND_NODE_RANK"));
+    lstOptions.push_back(tr("STR_FIND_NODE_PATROL"));
+    lstOptions.push_back(tr("STR_FIND_NODE_SPAWN"));
+    lstOptions.push_back(tr("STR_FIND_NODE_TARGET"));
+    lstOptions.push_back(tr("STR_FIND_NODE_LINKS"));
+    _cbxNodeParameterFind->setOptions(lstOptions, false);
+    _cbxNodeParameterFind->setSelected(0);
+    _cbxNodeParameterFind->onChange((ActionHandler)&MapEditorFindNodeState::cbxNodeParameterChange);
+
     lstOptions.erase(lstOptions.end() - 1);
-    lstOptions.push_back(tr("STR_FIND_MATCH_SEARCH"));
-    _cbxTilePartReplace->setOptions(lstOptions, false);
-    _cbxTilePartReplace->setSelected(O_MAX);
+    lstOptions.push_back(tr("STR_REPLACE_NODE_LINKS"));
+    _cbxNodeParameterReplace->setOptions(lstOptions, false);
+    _cbxNodeParameterReplace->setSelected(0);
+    _cbxNodeParameterReplace->onChange((ActionHandler)&MapEditorFindNodeState::cbxNodeParameterChange);
+
+    // create a list of possible changes to match the parameters of nodes, to make it easier to use a switch-case structure later
+    _nodeParameters.clear();
+    _nodeParameters.push_back(NCT_TYPE);
+    _nodeParameters.push_back(NCT_RANK);
+    _nodeParameters.push_back(NCT_FLAG);
+    _nodeParameters.push_back(NCT_PRIORITY);
+    _nodeParameters.push_back(NCT_RESERVED);
+    _nodeParameters.push_back(NCT_LINKS);
 
     lstOptions.clear();
-    lstOptions.push_back(tr("STR_FIND_TILES_ANYWHERE"));
+    lstOptions.push_back(tr("STR_FIND_NODES_ANYWHERE"));
     Uint8 colorDisabled = 8; // TODO move to elements ruleset
-    if (_game->getMapEditor()->getSelectedTiles()->empty())
+    if (_game->getMapEditor()->getSelectedNodes()->empty())
     {
         _cbxCurrentSelection->setColor(colorDisabled);
         _cbxCurrentSelection->setHighContrast(false);
     }
     else
     {
-        lstOptions.push_back(tr("STR_FIND_TILES_IN_SELECTION"));
-        lstOptions.push_back(tr("STR_FIND_TILES_OUTSIDE_SELECTION"));
+        lstOptions.push_back(tr("STR_FIND_NODES_IN_SELECTION"));
+        lstOptions.push_back(tr("STR_FIND_NODES_OUTSIDE_SELECTION"));
     }
     _cbxCurrentSelection->setOptions(lstOptions, false);
     _cbxCurrentSelection->setSelected(0);
 
     lstOptions.clear();
     lstOptions.push_back(tr("STR_CREATE_NEW_SELECTION"));
-    if (_game->getMapEditor()->getSelectedTiles()->empty())
+    if (_game->getMapEditor()->getSelectedNodes()->empty())
     {
         _cbxHandleSelection->setColor(colorDisabled);
         _cbxHandleSelection->setHighContrast(false);
@@ -294,26 +185,18 @@ MapEditorFindNodeState::MapEditorFindNodeState(MapEditorState *mapEditorState, i
     }
     _cbxHandleSelection->setOptions(lstOptions, false);
     _cbxHandleSelection->setSelected(0);
-    
-    lstOptions.clear();
-    lstOptions.push_back(tr("STR_REPLACE_FROM_MCD"));
-    if (_game->getMapEditor()->getClipboardTileEdits()->empty())
-    {
-        _cbxClipBoardOrNot->setColor(colorDisabled);
-        _cbxClipBoardOrNot->setHighContrast(false);
-    }
-    else
-    {
-        lstOptions.push_back(tr("STR_REPLACE_FROM_CLIPBOARD"));
-    }
-    _cbxClipBoardOrNot->setOptions(lstOptions, false);
-    _cbxClipBoardOrNot->setSelected(0);
 
-    lstOptions.clear();
-    lstOptions.push_back(tr("STR_REPLACE_WITHOUT_CLEARING"));
-    lstOptions.push_back(tr("STR_REPLACE_WITH_CLEARING"));
-    _cbxHandleTileContents->setOptions(lstOptions, false);
-    _cbxHandleTileContents->setSelected(0);
+    // Initialize the node value combo boxes using the method we designed for that
+    _selectedParameters[_cbxNodeParameterFind] = -1;
+    _selectedParameters[_cbxNodeParameterReplace] = -1;
+	SDL_Event ev;
+	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.button.button = SDL_BUTTON_LEFT;
+	Action action = Action(&ev, 0.0, 0.0, 0, 0);
+    action.setSender(_cbxNodeParameterFind);
+    cbxNodeParameterChange(&action);
+    action.setSender(_cbxNodeParameterReplace);
+    cbxNodeParameterChange(&action);
 }
 
 /**
@@ -325,17 +208,118 @@ MapEditorFindNodeState::~MapEditorFindNodeState()
 }
 
 /**
+ * Handles updating the node values dropdowns according to parameters chosen
+ * @param action Pointer to an action.
+ */
+void MapEditorFindNodeState::cbxNodeParameterChange(Action *action)
+{
+    // Figure out which of the two parameter boxes was changed
+    // And set which of the two value parameter boxes we're determining the options for
+    ComboBox *sender;
+    ComboBox *cbxToChange;
+    if (action->getSender() == _cbxNodeParameterFind)
+    {
+        sender = _cbxNodeParameterFind;
+        cbxToChange = _cbxNodeValueFind;
+    }
+    else
+    {
+        sender = _cbxNodeParameterReplace;
+        cbxToChange = _cbxNodeValueReplace;
+    }
+
+    // If we're keeping the same parameter as before, we don't need to reset the values
+    if (_selectedParameters[sender] == sender->getSelected())
+    {
+        return;
+    }
+    else
+    {
+        _selectedParameters[sender] = sender->getSelected();
+    }
+
+    // Figure out what values we need to populate the value combo boxes
+    NodeChangeType parameter = _nodeParameters.at(sender->getSelected());
+    std::vector<std::string> listOptions;
+    listOptions.clear();
+    switch(parameter)
+    {
+        case NCT_TYPE:
+            {
+                listOptions.push_back(tr("STR_NODE_TYPE_ANY"));
+                listOptions.push_back(tr("STR_NODE_TYPE_SMALL"));
+                listOptions.push_back(tr("STR_NODE_TYPE_FLYING"));
+                listOptions.push_back(tr("STR_NODE_TYPE_FLYINGSMALL"));
+            }
+
+            break;
+
+        case NCT_RANK:
+            {
+                listOptions.push_back(tr("STR_NODE_RANK_CIVSCOUT"));
+                listOptions.push_back(tr("STR_NODE_RANK_XCOM"));
+                listOptions.push_back(tr("STR_NODE_RANK_SOLDIER"));
+                listOptions.push_back(tr("STR_NODE_RANK_NAVIGATOR"));
+                listOptions.push_back(tr("STR_NODE_RANK_LEADERCOMMANDER"));
+                listOptions.push_back(tr("STR_NODE_RANK_ENGINEER"));
+                listOptions.push_back(tr("STR_NODE_RANK_TERRORIST0"));
+                listOptions.push_back(tr("STR_NODE_RANK_MEDIC"));
+                listOptions.push_back(tr("STR_NODE_RANK_TERRORIST1"));
+            }
+
+            break;
+
+        case NCT_FLAG:
+        case NCT_PRIORITY:
+        case NCT_RESERVED:
+            {
+                for (int i = 0; i < 11; ++i)
+                {
+                    listOptions.push_back(std::to_string(i));
+                }
+            }
+
+            break;
+
+        case NCT_LINKS:
+            {
+                listOptions.push_back(tr("STR_LINK_UNUSED"));
+                listOptions.push_back(tr("STR_LINK_NORTH"));
+                listOptions.push_back(tr("STR_LINK_EAST"));
+                listOptions.push_back(tr("STR_LINK_SOUTH"));
+                listOptions.push_back(tr("STR_LINK_WEST"));
+                for (auto node : *_save->getNodes())
+                {
+                    listOptions.push_back(std::to_string(node->getID()));
+                }
+            }
+
+            break;
+
+        default:
+            {
+                listOptions.push_back("--");
+            }
+
+            break;
+    }
+
+    cbxToChange->setOptions(listOptions);
+    cbxToChange->setSelected(0);
+}
+
+/**
  * Handles clicking the find button
  * @param action Pointer to an action.
  */
 void MapEditorFindNodeState::btnFindClick(Action *action)
 {
-    selectTiles();
+    selectNodes();
 
     bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
     if (action->getSender() == _btnReplace || ctrlPressed)
     {
-        replaceTiles();
+        replaceNodes();
     }
 
     _game->popState();
@@ -347,331 +331,199 @@ void MapEditorFindNodeState::btnFindClick(Action *action)
  */
 void MapEditorFindNodeState::btnCancelClick(Action *action)
 {
-	// Pressing escape closes the tile selection UI first
-	if (_panelTileSelection->getVisible() && action->getDetails()->type == SDL_KEYDOWN)
-	{
-		tileSelectionClick(action);
-		return;
-	}
-
     _game->popState();
 }
 
 /**
- * Selects tiles according to the parameters chosen
+ * Selects nodes according to the parameters chosen
  * @param action Pointer to an action.
  */
-void MapEditorFindNodeState::selectTiles()
+void MapEditorFindNodeState::selectNodes()
 {
-    // clear the current selection if that's what was selected
-    if (_cbxHandleSelection->getSelected() == 0)
-    {
-        _game->getMapEditor()->getSelectedTiles()->clear();
-    }
+    NodeChangeType parameter = _nodeParameters.at(_cbxNodeParameterFind->getSelected());
+    int valueToCheck = (int)_cbxNodeValueFind->getSelected();
 
-    int dataIDToCheck = -1;
-    int dataSetIDToCheck = -1;
-    _game->getMapEditor()->getMapDataFromIndex(_selectedTileFind, &dataSetIDToCheck, &dataIDToCheck);
+    size_t currentSelection = _cbxCurrentSelection->getSelected();
+    bool searchInsideSelection = currentSelection != 2;
+    bool searchOutsideSelection = currentSelection != 1;
 
-    for (int z = 0; z < _save->getMapSizeZ(); z++)
+    size_t handleSelection = _cbxHandleSelection->getSelected();
+    bool addMatches = handleSelection != 2;
+    bool keepSelection = handleSelection != 0;
+
+    for (auto node : *_save->getNodes())
     {
-        for (int y = 0; y < _save->getMapSizeY(); y++)
+        // Check whether the node matches our filter parameters
+        bool isNodeAMatch = false;
+        switch (parameter)
         {
-            for (int x = 0; x < _save->getMapSizeX(); x++)
-            {
-                Tile *tile = _save->getTile(Position(x, y, z));
-                std::vector<Tile*>::iterator it = std::find_if(_game->getMapEditor()->getSelectedTiles()->begin(), _game->getMapEditor()->getSelectedTiles()->end(), 
-                                                        [&](const Tile *t){ return t == tile; });
-
-                // We can skip this tile if we're looking only inside the current selection and it's outside
-                // or we're looking outside the current selection and it's inside
-                if ((_cbxCurrentSelection->getSelected() == 1 && it == _game->getMapEditor()->getSelectedTiles()->end())
-                    || (_cbxCurrentSelection->getSelected() == 2 && it != _game->getMapEditor()->getSelectedTiles()->end()))
+            case NCT_TYPE:
                 {
-                    continue;
+                    std::vector<int> nodeTypes = {0, 2, 1, 3}; // to have byte flag for type match order in drop-down
+                    isNodeAMatch = node->getType() == nodeTypes.at(valueToCheck); 
                 }
 
-                // Check the tile part filter and selected MCD
-                bool isTileAMatch = false;
-                std::vector<TilePart> tileParts;
-                if (_cbxTilePartFind->getSelected() == O_MAX)
-                {
-                    tileParts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
-                }
-                else
-                {
-                    tileParts = {(TilePart)_cbxTilePartFind->getSelected()};
-                }
-                for (auto part : tileParts)
-                {
-                    int dataID;
-                    int dataSetID;
-                    tile->getMapData(&dataID, &dataSetID, part);
+                break;
 
-                    isTileAMatch = isTileAMatch || (dataID == dataIDToCheck && dataSetID == dataSetIDToCheck);
+            case NCT_RANK:
+                {
+                    isNodeAMatch = node->getRank() == valueToCheck;
                 }
 
-                // this tile is what we're looking for! now add/remove from selection as requested
-                if (isTileAMatch)
+                break;
+
+            case NCT_FLAG:
                 {
-                    // add to current selection
-                    if (_cbxHandleSelection->getSelected() != 2 && it == _game->getMapEditor()->getSelectedTiles()->end())
+                    isNodeAMatch = node->getFlags() == valueToCheck;
+                }
+
+                break;
+
+            case NCT_PRIORITY:
+                {
+                    isNodeAMatch = node->getPriority() == valueToCheck;
+                }
+
+                break;
+
+            case NCT_RESERVED:
+                {
+                    isNodeAMatch = (node->isTarget() ? 5 : 0) == valueToCheck;
+                }
+
+                break;
+
+            case NCT_LINKS:
+                {
+                    for (int i = 0; i < 5; ++i)
                     {
-                        _game->getMapEditor()->getSelectedTiles()->push_back(tile);
-                    }
-                    // remove from current selection
-                    else if (_cbxHandleSelection->getSelected() == 2 && it != _game->getMapEditor()->getSelectedTiles()->end())
-                    {
-                        _game->getMapEditor()->getSelectedTiles()->erase(it);
+                        int linkID = node->getNodeLinks()->at(i);
+                        linkID = linkID < 0 ? -linkID - 1 : linkID + 5;
+                        isNodeAMatch = isNodeAMatch || linkID == valueToCheck;
                     }
                 }
-            }
+
+                break;
+
+            default:
+
+                break;            
+        }
+
+        std::vector<Node*>::iterator it = std::find_if(_game->getMapEditor()->getSelectedNodes()->begin(), _game->getMapEditor()->getSelectedNodes()->end(), 
+                                                [&](const Node *n){ return n == node; });
+        bool isNodeInSelection = it != _game->getMapEditor()->getSelectedNodes()->end();
+        isNodeAMatch = isNodeAMatch && ((isNodeInSelection && searchInsideSelection) || (!isNodeInSelection && searchOutsideSelection));
+        
+        // adding to selection
+        if (isNodeAMatch
+            && addMatches
+            && !isNodeInSelection && searchOutsideSelection) // don't add to selection things that are already there
+        {
+            _game->getMapEditor()->getSelectedNodes()->push_back(node);
+        }
+        // removing from selection
+        else if (isNodeInSelection
+                && ((!keepSelection && !isNodeAMatch) // clear out things that aren't a match if we aren't keeping them
+                || (!addMatches && isNodeAMatch))) // opposite of adding matches is removing them!
+        {
+            _game->getMapEditor()->getSelectedNodes()->erase(it);
         }
     }
+}
 
-    _mapEditorState->getMap()->resetObstacles();
-    if (Options::mapEditorSelectedTilesKeepFlashing)
+/**
+ * Replaces node values according to the parameters chosen
+ * @param action Pointer to an action.
+ */
+void MapEditorFindNodeState::replaceNodes()
+{
+    NodeChangeType parameter = _nodeParameters.at(_cbxNodeParameterReplace->getSelected());
+    int valueToSet = (int)_cbxNodeValueReplace->getSelected();
+
+    std::vector<int> data;
+    data.clear();
+
+    switch (parameter)
     {
-        for (auto tile : *_game->getMapEditor()->getSelectedTiles())
-        {
-            for (int i = 0; i < O_MAX; ++i)
+        case NCT_TYPE:
             {
-                tile->setObstacle(i);
-            }
-        }							
-    }
-}
-
-/**
- * Replaces tiles according to the parameters chosen
- * @param action Pointer to an action.
- */
-void MapEditorFindNodeState::replaceTiles()
-{
-    // we didn't save which tile part matched in the search, so we'll have to check against the selected object again
-    // and before you ask, no, I'm not going to add an extra data structure here or in MapEditor to save that, this works fine.
-    int dataIDToCheck = -1;
-    int dataSetIDToCheck = -1;
-    _game->getMapEditor()->getMapDataFromIndex(_selectedTileFind, &dataSetIDToCheck, &dataIDToCheck);
-
-    // determine what we're using to replace the found tiles
-    int replaceDataIDs[O_MAX];
-    int replaceDataSetIDs[O_MAX];
-    for (int partIndex = 0; partIndex < O_MAX; ++partIndex)
-    {
-        if (_cbxClipBoardOrNot->getSelected() == 1)
-        {
-            replaceDataIDs[partIndex] = _game->getMapEditor()->getClipboardTileEdits()->front().tileAfterDataIDs[partIndex];
-            replaceDataSetIDs[partIndex] = _game->getMapEditor()->getClipboardTileEdits()->front().tileAfterDataSetIDs[partIndex];
-        }
-        else
-        {
-            _game->getMapEditor()->getMapDataFromIndex(_selectedTileReplace, &replaceDataSetIDs[partIndex], &replaceDataIDs[partIndex]);
-        }
-    }
-
-    for (auto tile : *_game->getMapEditor()->getSelectedTiles())
-    {
-        int dataIDs[O_MAX];
-        int dataSetIDs[O_MAX];
-
-        std::vector<TilePart> parts = {O_FLOOR, O_WESTWALL, O_NORTHWALL, O_OBJECT};
-        for (auto part : parts)
-        {
-            int partIndex = (int)part;
-            tile->getMapData(&dataIDs[partIndex], &dataSetIDs[partIndex], part);
-
-            // make sure this tile part matches what we found in the search
-            // see, told you this works out fine.
-            bool partMatches = dataIDs[partIndex] == dataIDToCheck && dataSetIDs[partIndex] == dataSetIDToCheck;
-
-
-            // replace criteria say to clear the tile first
-            if (_cbxHandleTileContents->getSelected() == 1)
-            {
-                dataIDs[partIndex] = -1;
-                dataSetIDs[partIndex] = -1;
+                std::vector<int> nodeTypes = {0, 2, 1, 3}; // to have byte flag for type match order in drop-down
+                data.push_back(nodeTypes.at(valueToSet)); 
             }
 
-            // replace with tile data from criteria if ...
-            if ((size_t)partIndex == _cbxTilePartReplace->getSelected() // this is the tile part selected by the drop-down
-                || (partMatches && _cbxTilePartReplace->getSelected() == O_MAX) // this tile part matched the search criteria and we're replacing that
-                || (_cbxClipBoardOrNot->getSelected() == 1 && _cbxTilePartReplace->getSelected() == O_MAX)) // this entire tile is getting replaced with the first one from the clipboard
-            {
-                dataIDs[partIndex] = replaceDataIDs[partIndex];
-                dataSetIDs[partIndex] = replaceDataSetIDs[partIndex];
-            }
-        }
-
-        _game->getMapEditor()->changeTileData(MET_DO, tile, dataIDs, dataSetIDs);
-    }
-
-	_game->getMapEditor()->confirmChanges(false);
-}
-
-/**
- * Toggles the tile selection UI
- * @param action Pointer to an action.
- */
-void MapEditorFindNodeState::tileSelectionClick(Action *action)
-{
-    bool closePanel = _panelTileSelection->getVisible();
-
-    if (!closePanel && (action->getSender() == _tileObjectSelectedFind || action->getSender() == _tileObjectSelectedReplace))
-    {
-        _clickedTileButton = action->getSender();
-    }
-    else
-    {
-        _clickedTileButton = 0;
-    }
-
-	_btnFind->setVisible(closePanel);
-    _cbxTilePartFind->setVisible(closePanel);
-    _cbxCurrentSelection->setVisible(closePanel);
-    _cbxHandleSelection->setVisible(closePanel);
-    _btnReplace->setVisible(closePanel);
-    int screenHeight = Options::baseYResolution;
-    _btnCancel->setY(closePanel ? (screenHeight - _window->getHeight()) / 2 + 172 : -screenHeight / 2); // just move the cancel button off the screen so it can still handle pressing escape to close the panel
-    _cbxClipBoardOrNot->setVisible(closePanel);
-    _cbxTilePartReplace->setVisible(closePanel);
-    _cbxHandleTileContents->setVisible(closePanel);
-
-    _tileObjectSelectedFind->setVisible(closePanel);
-    _tileObjectSelectedReplace->setVisible(closePanel);
-
-	_backgroundTileSelectionNavigation->setVisible(!closePanel);
-	_txtSelectionPageCount->setVisible(!closePanel);
-	_tileSelectionPageCount->setVisible(!closePanel);
-	_tileSelectionLeftArrow->setVisible(!closePanel);
-	_tileSelectionRightArrow->setVisible(!closePanel);
-	for (auto i : _tileSelectionGrid)
-	{
-		i->setVisible(!closePanel);
-	}
-	_panelTileSelection->setVisible(!closePanel);
-
-	drawTileSpriteOnSurface(_tileObjectSelectedFind, _selectedTileFind);
-	drawTileSpriteOnSurface(_tileObjectSelectedReplace, _selectedTileReplace);
-}
-
-/**
- * Draws the tile images on the selection grid
- */
-void MapEditorFindNodeState::drawTileSelectionGrid()
-{
-	for (int i = 0; i < (int)_tileSelectionGrid.size(); ++i)
-	{
-		_tileSelectionGrid.at(i)->draw();
-		drawTileSpriteOnSurface(_tileSelectionGrid.at(i), i + _tileSelectionCurrentPage * _tileSelectionRows * _tileSelectionColumns);
-	}
-}
-
-/**
- * Moves the tile selection UI left one page
- * @param action Pointer to an action.
- */
-void MapEditorFindNodeState::tileSelectionLeftArrowClick(Action *action)
-{
-	if (_tileSelectionCurrentPage == 0)
-		return;
-
-	--_tileSelectionCurrentPage;
-	drawTileSelectionGrid();
-	std::ostringstream ss;
-	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
-	_txtSelectionPageCount->setText(ss.str().c_str());
-}
-
-/**
- * Moves the tile selection UI right one page
- * @param action Pointer to an action.
- */
-void MapEditorFindNodeState::tileSelectionRightArrowClick(Action *action)
-{
-	if (_tileSelectionCurrentPage == _tileSelectionLastPage)
-		return;
-
-	++_tileSelectionCurrentPage;
-	drawTileSelectionGrid();
-	std::ostringstream ss;
-	ss << _tileSelectionCurrentPage + 1 << "/" << _tileSelectionLastPage + 1;
-	_txtSelectionPageCount->setText(ss.str().c_str());
-}
-
-/**
- * Selects the tile from the tile selection UI
- * @param action Pointer to an action.
- */
-void MapEditorFindNodeState::tileSelectionGridClick(Action *action)
-{
-    int index = 0;
-    for (auto i : _tileSelectionGrid)
-    {
-        if (i == action->getSender())
-        {
             break;
-        }
 
-        ++index;
+        case NCT_RANK:
+        case NCT_FLAG:
+        case NCT_PRIORITY:
+        case NCT_RESERVED:
+            {
+                data.push_back(valueToSet);
+            }
+
+            break;
+
+        case NCT_LINKS:
+            {
+                std::vector<int> knownLinks;
+                knownLinks.clear();
+                knownLinks.push_back(-1); // unused link
+                knownLinks.push_back(-2); // exit north
+                knownLinks.push_back(-3); // exit east
+                knownLinks.push_back(-4); // exit south
+                knownLinks.push_back(-5); // exit west
+                for (auto otherNode : *_save->getNodes())
+                {
+                    knownLinks.push_back(otherNode->getID());
+                }
+
+                data.push_back(0); // to be set later according to the node we're changing
+                data.push_back(knownLinks.at(valueToSet));
+            }
+
+            break;
+
+        default:
+            {
+                // don't do anything if we somehow get here with no change type
+                return;
+            }
+
+            break;            
     }
-	index += _tileSelectionCurrentPage * _tileSelectionRows * _tileSelectionColumns;
 
-	if (drawTileSpriteOnSurface(_clickedTileButton, index))
+	for (auto node : *_game->getMapEditor()->getSelectedNodes())
 	{
-		if (_clickedTileButton == _tileObjectSelectedFind)
+        // we need some extra data for where the new links go
+        if (parameter == NCT_LINKS)
         {
-            _selectedTileFind = index;
+            // figure out which, if any, links on this node are open
+            int linkIndex = _game->getMapEditor()->getNextNodeConnectionIndex(node);
+
+            // we searched for a link, so let's replace that link instead
+            if (_nodeParameters.at(_cbxNodeParameterFind->getSelected()) == NCT_LINKS)
+            {
+                int valueToCheck = (int)_cbxNodeValueFind->getSelected();
+                for (int i = 0; i < 5; ++i)
+                {
+                    int linkID = node->getNodeLinks()->at(i);
+                    linkID = linkID < 0 ? -linkID - 1 : linkID + 5;
+                    if (linkID == valueToCheck)
+                    {
+                        linkIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            data.at(0) = linkIndex;
         }
-        else if (_clickedTileButton == _tileObjectSelectedReplace)
-        {
-            _selectedTileReplace = index;
-        }
+
+		_game->getMapEditor()->changeNodeData(MET_DO, node, parameter, data);
 	}
 
-	tileSelectionClick(action);
-}
-
-/**
- * Handles mouse wheel scrolling of the tile selection UI
- * @param action Pointer to an action.
- */
-void MapEditorFindNodeState::tileSelectionMousePress(Action *action)
-{
-    if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
-    {
-        tileSelectionLeftArrowClick(action);
-        // Consume the event so the map doesn't scroll up or down
-        //action->getDetails()->type = SDL_NOEVENT;
-    }
-    else if (action->getDetails()->button.button == SDL_BUTTON_WHEELDOWN)
-    {
-        tileSelectionRightArrowClick(action);
-        // Consume the event so the map doesn't scroll up or down
-        //action->getDetails()->type = SDL_NOEVENT;
-    }
-}
-
-/**
- * Draws a tile sprite on a given surface
- * @param surface Pointer to the surface.
- * @param index Index of the tile object.
- * @return Whether or not we found and drew the proper tile object.
- */
-bool MapEditorFindNodeState::drawTileSpriteOnSurface(Surface *surface, int index)
-{
-	int mapDataSetID = 0;
-	int mapDataID = 0;
-	MapData *mapData = _game->getMapEditor()->getMapDataFromIndex(index, &mapDataSetID, &mapDataID);
-
-	if (surface && mapData)
-	{
-		surface->draw();
-		_save->getMapDataSets()->at(mapDataSetID)->getSurfaceset()->getFrame(mapData->getSprite(0))->blitNShade(surface, 0, 0);
-		return true;
-	}
-
-	return false;
+	_game->getMapEditor()->confirmChanges(true);
 }
 
 }
