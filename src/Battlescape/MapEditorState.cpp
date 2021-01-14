@@ -135,16 +135,16 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	{
 		icons->getFrame(i + 10)->blitNShade(_iconsUpperRight, i * 32, 0);
 	}
-	_btnSelectedTile = new BattlescapeButton(32, 40, screenWidth - 160, 0);
-	_btnSelectedTile->setColor(232);
-	_btnTileFilterGround = new BattlescapeButton(32, 40, screenWidth - 128, 0);
+	_btnTileFilterGround = new BattlescapeButton(32, 40, screenWidth - 160, 0);
 	_btnTileFilterGround->setColor(232);
-	_btnTileFilterWestWall = new BattlescapeButton(32, 40, screenWidth - 96, 0);
+	_btnTileFilterWestWall = new BattlescapeButton(32, 40, screenWidth - 128, 0);
 	_btnTileFilterWestWall->setColor(232);
-	_btnTileFilterNorthWall = new BattlescapeButton(32, 40, screenWidth - 64, 0);
+	_btnTileFilterNorthWall = new BattlescapeButton(32, 40, screenWidth - 96, 0);
 	_btnTileFilterNorthWall->setColor(232);
-	_btnTileFilterObject = new BattlescapeButton(32, 40, screenWidth - 32, 0);
+	_btnTileFilterObject = new BattlescapeButton(32, 40, screenWidth - 64, 0);
 	_btnTileFilterObject->setColor(232);
+	_btnFindTile = new BattlescapeButton(32, 40, screenWidth - 32, 0);
+	_btnFindTile->setColor(232);
 
 	_tileFilters[O_FLOOR] = _btnTileFilterGround;
 	_tileFilters[O_WESTWALL] = _btnTileFilterWestWall;
@@ -229,16 +229,16 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	{
 		icons->getFrame(i + 40)->blitNShade(_iconsUpperRightNodes, i * 32, 0);
 	}
-	_btnSelectedNode = new BattlescapeButton(32, 40, screenWidth - 160, 0);
-	_btnSelectedNode->setColor(232);
-	_btnNodeFilterSelect = new BattlescapeButton(32, 40, screenWidth - 128, 0);
+	_btnNodeFilterSelect = new BattlescapeButton(32, 40, screenWidth - 160, 0);
 	_btnNodeFilterSelect->setColor(232);
-	_btnNodeFilterMove = new BattlescapeButton(32, 40, screenWidth - 96, 0);
+	_btnNodeFilterMove = new BattlescapeButton(32, 40, screenWidth - 128, 0);
 	_btnNodeFilterMove->setColor(232);
-	_btnNodeFilterOneWayConnect = new BattlescapeButton(32, 40, screenWidth - 64, 0);
+	_btnNodeFilterOneWayConnect = new BattlescapeButton(32, 40, screenWidth - 96, 0);
 	_btnNodeFilterOneWayConnect->setColor(232);
-	_btnNodeFilterTwoWayConnect = new BattlescapeButton(32, 40, screenWidth - 32, 0);
+	_btnNodeFilterTwoWayConnect = new BattlescapeButton(32, 40, screenWidth - 64, 0);
 	_btnNodeFilterTwoWayConnect->setColor(232);
+	_btnFindNode = new BattlescapeButton(32, 40, screenWidth - 32, 0);
+	_btnFindNode->setColor(232);
 
 	_nodeFilterMode = _btnNodeFilterSelect;
 	//_btnNodeFilterSelect->setGroup(&_nodeFilterMode); // this one will have group set when first switching to route mode
@@ -246,7 +246,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnNodeFilterOneWayConnect->setGroup(&_nodeFilterMode);
 	_btnNodeFilterTwoWayConnect->setGroup(&_nodeFilterMode);
 
-	//// TODO: sprites for the buttons
 	_iconsUpperLeftNodes = new InteractiveSurface(64, 40, 0, 0);
 	icons->getFrame(45)->blitNShade(_iconsUpperLeftNodes, 0, 0);
 	icons->getFrame(46)->blitNShade(_iconsUpperLeftNodes, 32, 0);
@@ -324,11 +323,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	add(_btnCut, "", "battlescape", _iconsLowerRight);
 	add(_btnCopy, "", "battlescape", _iconsLowerRight);
 	add(_btnPaste, "", "battlescape", _iconsLowerRight);
-	add(_btnSelectedTile, "", "battlescape", _iconsUpperRight);
 	add(_btnTileFilterGround, "", "battlescape", _iconsUpperRight);
 	add(_btnTileFilterWestWall, "", "battlescape", _iconsUpperRight);
 	add(_btnTileFilterNorthWall, "", "battlescape", _iconsUpperRight);
 	add(_btnTileFilterObject, "", "battlescape", _iconsUpperRight);
+	add(_btnFindTile, "", "battlescape", _iconsUpperRight);
 	add(_backgroundTileSelection);
 	add(_backgroundTileSelectionNavigation);
 	add(_tileSelection, "", "battlescape", _backgroundTileSelection);
@@ -353,11 +352,11 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	add(_btnNodeCut, "", "battlescape", _iconsLowerRightNodes);
 	add(_btnNodeCopy, "", "battlescape", _iconsLowerRightNodes);
 	add(_btnNodePaste, "", "battlescape", _iconsLowerRightNodes);
-	add(_btnSelectedNode, "", "battlescape", _iconsUpperRightNodes);
 	add(_btnNodeFilterSelect, "", "battlescape", _iconsUpperRightNodes);
 	add(_btnNodeFilterMove, "", "battlescape", _iconsUpperRightNodes);
 	add(_btnNodeFilterOneWayConnect, "", "battlescape", _iconsUpperRightNodes);
 	add(_btnNodeFilterTwoWayConnect, "", "battlescape", _iconsUpperRightNodes);
+	add(_btnFindNode, "", "battlescape", _iconsUpperRightNodes);
 	add(_btnRouteInformation, "", "battlescape", _iconsUpperLeftNodes);
 	add(_btnRouteConnections, "", "battlescape", _iconsUpperLeftNodes);
 	add(_panelRouteInformation);
@@ -499,12 +498,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnPaste->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnPaste->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
-	//_btnSelectedTile->onMouseClick((ActionHandler)&MapEditorState::btnSelectedTileClick);
-	//_btnSelectedTile->onKeyboardPress((ActionHandler)&MapEditorState::btnSelectedTileClick, SDLK_v); // change to options
-	_btnSelectedTile->setTooltip("STR_TOOLTIP_SELECTED_TILE");
-	_btnSelectedTile->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
-	_btnSelectedTile->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
-
 	_btnTileFilterGround->onMouseClick((ActionHandler)&MapEditorState::btnTileFilterClick);
 	_btnTileFilterGround->onKeyboardPress((ActionHandler)&MapEditorState::btnTileFilterClick, SDLK_1); // change to options
 	_btnTileFilterGround->setTooltip("STR_TOOLTIP_TILE_GROUND");
@@ -528,6 +521,12 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnTileFilterObject->setTooltip("STR_TOOLTIP_TILE_OBJECT");
 	_btnTileFilterObject->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnTileFilterObject->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+
+	_btnFindTile->onMouseClick((ActionHandler)&MapEditorState::btnFindReplaceClick);
+	//_btnFindTile->onKeyboardPress((ActionHandler)&MapEditorState::btnFindReplaceClick, SDLK_f); // change to options
+	_btnFindTile->setTooltip("STR_TOOLTIP_FIND_TILES");
+	_btnFindTile->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnFindTile->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 
 	//_tileSelection->setColor(232); // Goal of background color 235
 	_tileSelection->onMouseClick((ActionHandler)&MapEditorState::tileSelectionClick);
@@ -602,8 +601,6 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_iconsUpperLeftNodes->onMouseOut((ActionHandler)&MapEditorState::mouseOutIcons);
 	_iconsUpperLeftNodes->setVisible(false);
 
-	_btnSelectedNode->setVisible(false);
-
 	_btnNodeNew->onMouseClick((ActionHandler)&MapEditorState::btnNodeNewClick);
 	//_btnNodeNew->onKeyboardPress((ActionHandler)&MapEditorState::btnNodeNewClick, SDLK_1); // change to options
 	_btnNodeNew->setTooltip("STR_TOOLTIP_NODE_NEW");
@@ -663,6 +660,13 @@ MapEditorState::MapEditorState(MapEditor *editor) : _firstInit(true), _isMouseSc
 	_btnNodeFilterTwoWayConnect->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
 	_btnNodeFilterTwoWayConnect->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
 	_btnNodeFilterTwoWayConnect->setVisible(false);
+
+	_btnFindNode->onMouseClick((ActionHandler)&MapEditorState::btnFindReplaceClick);
+	//_btnFindNode->onKeyboardPress((ActionHandler)&MapEditorState::btnFindReplaceClick, SDLK_f); // change to options
+	_btnFindNode->setTooltip("STR_TOOLTIP_FIND_NODES");
+	_btnFindNode->onMouseIn((ActionHandler)&MapEditorState::txtTooltipIn);
+	_btnFindNode->onMouseOut((ActionHandler)&MapEditorState::txtTooltipOut);
+	_btnFindNode->setVisible(false);
 
 	//_btnRouteInformation->setText(tr("STR_INFO"));
 	_btnRouteInformation->onMouseClick((ActionHandler)&MapEditorState::toggleNodeInfoPanel);
@@ -1914,6 +1918,22 @@ void MapEditorState::btnTileFilterClick(Action *action)
 }
 
 /**
+ * Handles pressing the find and replace buttons
+ * @param action Pointer to an action.
+ */
+void MapEditorState::btnFindReplaceClick(Action *action)
+{
+	if (getRouteMode())
+	{
+		_game->pushState(new MapEditorFindNodeState(this));
+	}
+	else
+	{
+		_game->pushState(new MapEditorFindTileState(this, _editor->getSelectedObject(), _selectedTileIndex));
+	}
+}
+
+/**
  * Switches between tile and route mode
  * @param action Pointer to an action.
  */
@@ -2300,14 +2320,7 @@ inline void MapEditorState::handle(Action *action)
 				}
 				else if (key == SDLK_f && ctrlPressed) // change f to options, pushstate to button click
 				{
-					if (getRouteMode())
-					{
-						_game->pushState(new MapEditorFindNodeState(this));
-					}
-					else
-					{
-						_game->pushState(new MapEditorFindTileState(this, _editor->getSelectedObject(), _selectedTileIndex));
-					}
+					btnFindReplaceClick(action);
 				}
 
 				// quick save and quick load
@@ -2477,7 +2490,7 @@ void MapEditorState::toggleRouteMode(Action *action)
 	_btnCopy->setVisible(!getRouteMode());
 	_btnPaste->setVisible(!getRouteMode());
 	_iconsUpperRight->setVisible(!getRouteMode());
-	_btnSelectedTile->setVisible(!getRouteMode());
+	_btnFindTile->setVisible(!getRouteMode());
 	_btnTileFilterGround->setVisible(!getRouteMode());
 	_btnTileFilterNorthWall->setVisible(!getRouteMode());
 	_btnTileFilterWestWall->setVisible(!getRouteMode());
@@ -2497,7 +2510,7 @@ void MapEditorState::toggleRouteMode(Action *action)
 	_btnNodeCopy->setVisible(getRouteMode());
 	_btnNodePaste->setVisible(getRouteMode());
 	_iconsUpperRightNodes->setVisible(getRouteMode());
-	_btnSelectedNode->setVisible(getRouteMode());
+	_btnFindNode->setVisible(getRouteMode());
 	_btnNodeFilterSelect->setVisible(getRouteMode());
 	_btnNodeFilterMove->setVisible(getRouteMode());
 	_btnNodeFilterOneWayConnect->setVisible(getRouteMode());

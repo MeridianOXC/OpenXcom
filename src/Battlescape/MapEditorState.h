@@ -56,7 +56,7 @@ private:
     BattlescapeButton *_btnOptions, *_btnSave, *_btnLoad, *_btnUndo, *_btnRedo;
 	BattlescapeButton *_btnFill, *_btnClear, *_btnCut, *_btnCopy, *_btnPaste;
 	BattlescapeButton *_tileEditMode;
-	BattlescapeButton *_btnSelectedTile, *_btnTileFilterGround, *_btnTileFilterWestWall, *_btnTileFilterNorthWall, *_btnTileFilterObject;
+	BattlescapeButton *_btnTileFilterGround, *_btnTileFilterWestWall, *_btnTileFilterNorthWall, *_btnTileFilterObject, *_btnFindTile;
 	BattlescapeButton *_tileObjectSelected;
 	std::map<TilePart, BattlescapeButton*> _tileFilters;
 	InteractiveSurface *_backgroundTileSelection, *_tileSelection;
@@ -92,7 +92,7 @@ private:
 	InteractiveSurface *_iconsLowerRightNodes, *_iconsUpperRightNodes, *_iconsUpperLeftNodes;
 	BattlescapeButton *_nodeEditMode, *_nodeFilterMode;
 	BattlescapeButton *_btnNodeNew, *_btnNodeDelete, *_btnNodeCut, *_btnNodeCopy, *_btnNodePaste;
-	BattlescapeButton *_btnSelectedNode, *_btnNodeFilterSelect, *_btnNodeFilterMove, *_btnNodeFilterOneWayConnect, *_btnNodeFilterTwoWayConnect;
+	BattlescapeButton *_btnNodeFilterSelect, *_btnNodeFilterMove, *_btnNodeFilterOneWayConnect, *_btnNodeFilterTwoWayConnect, *_btnFindNode;
 	BattlescapeButton *_btnRouteInformation, *_btnRouteConnections;
 	InteractiveSurface *_panelRouteInformation;
 	Text *_txtNodeID, *_txtNodeType, *_txtNodeRank, *_txtNodeFlag, *_txtNodePriority, *_txtNodeReserved, *_txtNodeLinks;
@@ -147,6 +147,8 @@ public:
 	void btnPasteClick(Action *action);
 	/// Handler for pressing the tile filter buttons.
 	void btnTileFilterClick(Action *action);
+	/// Handler for pressing the find and replace buttons.
+	void btnFindReplaceClick(Action *action);
 	/// Handler for clicking the mode switch button.
 	void btnModeSwitchClick(Action *action);
 	/// Handler for pressing the node new button.
