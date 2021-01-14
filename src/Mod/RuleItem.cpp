@@ -2650,6 +2650,11 @@ void getRandomTypeScript(const RuleDamageType* rdt, int &ret)
 	ret = rdt ? rdt->RandomType : 0;
 }
 
+void getArmorEffectivenessScript(const RuleDamageType* rdt, int& ret)
+{
+	ret = rdt ? round(rdt->ArmorEffectiveness * 100) : 0;
+}
+
 template<float RuleDamageType::* Ptr>
 void getDamageToScript(const RuleDamageType* rdt, int &ret, int value)
 {
@@ -2724,6 +2729,8 @@ void RuleItem::ScriptRegister(ScriptParserBase* parser)
 
 		rs.add<&getResistTypeScript>("getResistType", "which damage resistance type is used for damage reduction");
 		rs.add<&getRandomTypeScript>("getRandomType", "how to calculate randomized weapon damage from the weapon's power");
+
+		rs.add<&getArmorEffectivenessScript>("getArmorEffectiveness", "how effective is a unit's armor against this damage, % (value multiplied by 100 compared to ruleset value)");
 
 		rs.add<&getDamageToScript<&RuleDamageType::ToArmorPre>>("getDamageToArmorPre", "calculated damage value multiplied by the corresponding modifier");
 		rs.add<&getDamageToScript<&RuleDamageType::ToArmor>>("getDamageToArmor", "calculated damage value multiplied by the corresponding modifier");
