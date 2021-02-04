@@ -25,6 +25,7 @@ namespace OpenXcom
 {
 
 class TextButton;
+class TextEdit;
 class TextList;
 class Window;
 class Text;
@@ -35,9 +36,10 @@ class MapEditorMenuState : public State
 {
 private :
 	Window *_window;
-	Text *_txtTitle, *_txtSelectedMap, *_txtSelectedMapTerrain;
+	Text *_txtTitle, *_txtSearch, *_txtSelectedMap, *_txtSelectedMapTerrain;
     TextButton *_filterTerrain, *_filterCraft, *_filterUFOs, *_mapFilter;
 	TextButton *_btnOk, *_btnCancel, *_btnNew;
+    TextEdit *_edtQuickSearch;
     TextList *_lstMaps;
     Frame *_frameLeft, *_frameRight;
     std::vector< std::pair<std::string, std::string> > _mapsList;
@@ -52,13 +54,17 @@ public :
     /// Cleans up the Map Editor Menu State
     ~MapEditorMenuState();
     /// Initializes the data in the Map Editor Menu
-    void init();
+    void init() override;
     /// Populates the list of available maps
     void populateMapsList();
     /// Populates the list of available terrains
     void populateTerrainsList();
     /// Handles clicking on the filter buttons for available maps
     void btnMapFilterClick(Action *action);
+    /// Handles focusing the quick search filter
+    void edtQuickSearchFocus(Action *action);
+    /// Handles applying the quick search filter
+    void edtQuickSearchApply(Action *action);
     /// Handles clicking on the list of available maps
     void lstMapsClick(Action *action);
     /// Handles clicking the OK button

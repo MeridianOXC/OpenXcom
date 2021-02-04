@@ -31,9 +31,10 @@
 #include "../Engine/Action.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Screen.h"
-#include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
+#include "../Interface/TextButton.h"
+#include "../Interface/TextEdit.h"
 #include "../Interface/TextList.h"
 #include "../Interface/Frame.h"
 #include "../Battlescape/MapEditor.h"
@@ -83,13 +84,16 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false),
     _filterCraft->setGroup(&_mapFilter);
     _filterUFOs->setGroup(&_mapFilter);
 
-    _lstMaps = new TextList(119, 104, 14, 52);
+    _txtSearch = new Text(48, 10, 8, 46);
+    _edtQuickSearch = new TextEdit(this, 98, 10, 58, 46);
+
+    _lstMaps = new TextList(119, 104, 14, 64);
     
     _txtSelectedMap = new Text(100, 8, 170, 52);
     _txtSelectedMapTerrain = new Text(100, 8, 170, 62);
 
-    _frameLeft = new Frame(148, 116, 8, 46);
-    _frameRight = new Frame(148, 116, 164, 46);
+    _frameLeft = new Frame(148, 116, 8, 58);
+    _frameRight = new Frame(148, 128, 164, 46);
 
 	// Set palette
 	setInterface("mainMenu");
@@ -102,6 +106,8 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false),
     add(_filterTerrain, "button", "mainMenu");
     add(_filterCraft, "button", "mainMenu");
     add(_filterUFOs, "button", "mainMenu");
+    add(_txtSearch, "text", "mainMenu");
+    add(_edtQuickSearch, "button", "mainMenu");
     add(_lstMaps, "list", "saveMenus");
     add(_txtSelectedMap, "text", "mainMenu");
     add(_txtSelectedMapTerrain, "text", "mainMenu");
@@ -125,6 +131,7 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false),
 	_btnCancel->setText(tr("STR_CANCEL"));
 	_btnCancel->onMouseClick((ActionHandler)&MapEditorMenuState::btnCancelClick);
 	_btnCancel->onKeyboardPress((ActionHandler)&MapEditorMenuState::btnCancelClick, Options::keyCancel);
+    _btnCancel->onKeyboardRelease((ActionHandler)&MapEditorMenuState::edtQuickSearchFocus, Options::keyToggleQuickSearch);
 
     _btnNew->setText(tr("STR_NEW_MAP"));
     _btnNew->onMouseClick((ActionHandler)&MapEditorMenuState::btnNewMapClick);
@@ -137,6 +144,13 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false),
 
     _filterUFOs->setText(tr("STR_UFOS"));
     _filterUFOs->onMouseClick((ActionHandler)&MapEditorMenuState::btnMapFilterClick);
+
+	_txtSearch->setText(tr("STR_MAP_EDITOR_MENU_SEARCH"));
+
+    _edtQuickSearch->setText("");
+    _edtQuickSearch->setColor(15 * 16 - 1);
+    _edtQuickSearch->onChange((ActionHandler)&MapEditorMenuState::edtQuickSearchApply);
+    _edtQuickSearch->onEnter((ActionHandler)&MapEditorMenuState::edtQuickSearchApply);
 
     _lstMaps->setColumns(1, 120);
     _lstMaps->setAlign(ALIGN_LEFT);
@@ -166,6 +180,9 @@ void MapEditorMenuState::init()
  */
 void MapEditorMenuState::populateMapsList()
 {
+	std::string searchString = _edtQuickSearch->getText();
+	Unicode::upperCase(searchString);
+
     _mapsList.clear();
     _lstMaps->clearList();
 
@@ -187,6 +204,19 @@ void MapEditorMenuState::populateMapsList()
         {
             for (auto j : *_game->getMod()->getTerrain(i)->getMapBlocks())
             {
+                // Apply the search filter
+                if (!searchString.empty())
+                {
+                    std::string terrainName = i;
+                    Unicode::upperCase(terrainName);
+                    std::string mapName = j->getName();
+                    Unicode::upperCase(mapName);
+                    if (mapName.find(searchString) == std::string::npos && terrainName.find(searchString) == std::string::npos)
+                    {
+                        continue;
+                    }
+                }
+
                 _lstMaps->addRow(1, j->getName().c_str());
                 _mapsList.push_back(std::make_pair(j->getName(), i));
             }
@@ -201,6 +231,19 @@ void MapEditorMenuState::populateMapsList()
 
             for (auto j : *_game->getMod()->getCraft(i)->getBattlescapeTerrainData()->getMapBlocks())
             {
+                // Apply the search filter
+                if (!searchString.empty())
+                {
+                    std::string terrainName = i;
+                    Unicode::upperCase(terrainName);
+                    std::string mapName = j->getName();
+                    Unicode::upperCase(mapName);
+                    if (mapName.find(searchString) == std::string::npos && terrainName.find(searchString) == std::string::npos)
+                    {
+                        continue;
+                    }
+                }
+
                 _lstMaps->addRow(1, j->getName().c_str());
                 _mapsList.push_back(std::make_pair(j->getName(), i));
             }
@@ -215,10 +258,28 @@ void MapEditorMenuState::populateMapsList()
 
             for (auto j : *_game->getMod()->getUfo(i)->getBattlescapeTerrainData()->getMapBlocks())
             {
+                // Apply the search filter
+                if (!searchString.empty())
+                {
+                    std::string terrainName = i;
+                    Unicode::upperCase(terrainName);
+                    std::string mapName = j->getName();
+                    Unicode::upperCase(mapName);
+                    if (mapName.find(searchString) == std::string::npos && terrainName.find(searchString) == std::string::npos)
+                    {
+                        continue;
+                    }
+                }
+
                 _lstMaps->addRow(1, j->getName().c_str());
                 _mapsList.push_back(std::make_pair(j->getName(), i));
             }
         }
+    }
+
+    if (_mapsList.size() == 1)
+    {
+        lstMapsClick(0);
     }
 }
 
@@ -227,10 +288,24 @@ void MapEditorMenuState::populateMapsList()
  */
 void MapEditorMenuState::populateTerrainsList()
 {
+	std::string searchString = _edtQuickSearch->getText();
+	Unicode::upperCase(searchString);
+
     if (_mapFilter == _filterTerrain)
     {
         for (auto &i : _game->getMod()->getTerrainList())
         {
+            // Apply the search filter
+            if (!searchString.empty())
+            {
+                std::string terrainName = i;
+                Unicode::upperCase(terrainName);
+                if (terrainName.find(searchString) == std::string::npos)
+                {
+                    continue;
+                }
+            }
+            
             _lstMaps->addRow(1, i.c_str());
             _mapsList.push_back(std::make_pair(i, i));
         }
@@ -243,6 +318,17 @@ void MapEditorMenuState::populateTerrainsList()
                 continue;
 
             std::string terrain = _game->getMod()->getCraft(i)->getBattlescapeTerrainData()->getName();
+            // Apply the search filter
+            if (!searchString.empty())
+            {
+                std::string terrainName = terrain;
+                Unicode::upperCase(terrainName);
+                if (terrainName.find(searchString) == std::string::npos)
+                {
+                    continue;
+                }
+            }
+
 			auto it = std::find_if(_mapsList.begin(), _mapsList.end(), [&](const std::pair<std::string, std::string>& str) { return str.first == terrain; });
 			if (it == _mapsList.end())
 			{
@@ -259,6 +345,17 @@ void MapEditorMenuState::populateTerrainsList()
                 continue;
             
             std::string terrain = _game->getMod()->getUfo(i)->getBattlescapeTerrainData()->getName();
+            // Apply the search filter
+            if (!searchString.empty())
+            {
+                std::string terrainName = terrain;
+                Unicode::upperCase(terrainName);
+                if (terrainName.find(searchString) == std::string::npos)
+                {
+                    continue;
+                }
+            }
+
 			auto it = std::find_if(_mapsList.begin(), _mapsList.end(), [&](const std::pair<std::string, std::string>& str) { return str.first == terrain; });
 			if (it == _mapsList.end())
 			{
@@ -267,6 +364,34 @@ void MapEditorMenuState::populateTerrainsList()
 			}
         }
     }
+
+    if (_mapsList.size() == 1)
+    {
+        lstMapsClick(0);
+    }
+}
+
+/**
+ * Handles focusing the quick search filter
+ * @param action Pointer to an action.
+ */
+void MapEditorMenuState::edtQuickSearchFocus(Action *action)
+{
+    if (!_edtQuickSearch->isFocused())
+    {
+        _edtQuickSearch->setText("");
+        _edtQuickSearch->setFocus(true);
+        edtQuickSearchApply(0);
+    }
+}
+
+/**
+ * Handles applying the quick search filter
+ * @param action Pointer to an action.
+ */
+void MapEditorMenuState::edtQuickSearchApply(Action *action)
+{
+    populateMapsList();
 }
 
 /**
@@ -303,12 +428,12 @@ void MapEditorMenuState::btnMapFilterClick(Action *action)
 /**
  * Handles clicking on the list of maps.
  * @param action Pointer to an action.
+ * @param single If there's only one map matched, set it as selected
  */
 void MapEditorMenuState::lstMapsClick(Action *)
 {
-    // TODO: searching the list for a certain map
-    _selectedMap = _lstMaps->getSelectedRow();
-    if (_selectedMap > -1 && _selectedMap < _mapsList.size() + 1)
+    _selectedMap = _mapsList.size() == 1 ? 0 : _lstMaps->getSelectedRow();
+    if (_selectedMap > -1 && _selectedMap < (int)_mapsList.size() + 1)
     {
         _txtSelectedMap->setText(_mapsList.at(_selectedMap).first);
         _txtSelectedMapTerrain->setText(_mapsList.at(_selectedMap).second);
