@@ -168,7 +168,7 @@ MapEditorFindTileState::MapEditorFindTileState(MapEditorState *mapEditorState, i
     centerAllSurfaces();
 
     // Set up objects
-	applyBattlescapeTheme();
+	applyBattlescapeTheme("mainMenu");
 	setWindowBackground(_window, "mainMenu");
 
 	_txtFind->setAlign(ALIGN_CENTER);

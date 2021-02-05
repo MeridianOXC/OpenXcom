@@ -100,7 +100,7 @@ MapEditorFindNodeState::MapEditorFindNodeState(MapEditorState *mapEditorState) :
     centerAllSurfaces();
 
     // Set up objects
-	applyBattlescapeTheme();
+	applyBattlescapeTheme("mainMenu");
 	setWindowBackground(_window, "mainMenu");
 
 	_txtFind->setAlign(ALIGN_CENTER);

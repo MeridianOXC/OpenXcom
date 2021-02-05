@@ -81,7 +81,7 @@ MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(ori
     centerAllSurfaces();
 
     // Set up objects
-	applyBattlescapeTheme();
+	applyBattlescapeTheme("mainMenu");
 	setWindowBackground(_window, "mainMenu");
 
 	_txtTitle->setAlign(ALIGN_CENTER);

@@ -70,7 +70,7 @@ MapEditorInfoState::MapEditorInfoState()
     centerAllSurfaces();
 
     // Set up objects
-	applyBattlescapeTheme();
+	applyBattlescapeTheme("mainMenu");
 	setWindowBackground(_window, "mainMenu");
 
 	_txtTitle->setAlign(ALIGN_CENTER);
