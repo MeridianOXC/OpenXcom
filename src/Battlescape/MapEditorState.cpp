@@ -1897,6 +1897,7 @@ void MapEditorState::btnTileFilterClick(Action *action)
 		_tileObjectSelected->mouseRelease(action, this);
 		_tileObjectSelected->draw();
 		_tileObjectSelected = 0;
+		action->getDetails()->type = SDL_NOEVENT;
 
 		return;
 	}
