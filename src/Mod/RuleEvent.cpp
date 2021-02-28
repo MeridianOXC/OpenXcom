@@ -49,6 +49,7 @@ void RuleEvent::load(const YAML::Node &node)
 	_spawnedPersons = node["spawnedPersons"].as<int>(_spawnedPersons);
 	_spawnedPersonType = node["spawnedPersonType"].as<std::string>(_spawnedPersonType);
 	_spawnedPersonName = node["spawnedPersonName"].as<std::string>(_spawnedPersonName);
+	_removedCovertOperationsList = node["removedCovertOperationsList"].as<std::vector<std::string> >(_removedCovertOperationsList);
 	if (node["spawnedSoldier"])
 	{
 		_spawnedSoldier = node["spawnedSoldier"];

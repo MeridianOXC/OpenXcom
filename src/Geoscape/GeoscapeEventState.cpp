@@ -214,7 +214,17 @@ void GeoscapeEventState::eventLogic()
 
 	save->setLoyalty(save->getLoyalty() + rule.getLoyalty());
 
-	// 3. spawn/transfer persons (soldiers, engineers, scientists, ...)
+	// 3. saving removed covered operations list if exist
+	std::vector<std::string>  removedCovertOperationsList = rule.getRemovedCovertOperationsList();
+	if (!removedCovertOperationsList.empty())
+	{
+		for (auto it = removedCovertOperationsList.begin(); it < removedCovertOperationsList.end(); it++)
+		{
+			save->removePerformedCovertOperation((*it));
+		}
+	}
+
+	// 4. spawn/transfer persons (soldiers, engineers, scientists, ...)
 	const std::string& spawnedPersonType = rule.getSpawnedPersonType();
 	if (rule.getSpawnedPersons() > 0 && !spawnedPersonType.empty())
 	{
@@ -251,7 +261,7 @@ void GeoscapeEventState::eventLogic()
 		}
 	}
 
-	// 3. spawn/transfer item into the HQ
+	// 5. spawn/transfer item into the HQ
 	std::map<std::string, int> itemsToTransfer;
 
 	for (auto& pair : rule.getEveryMultiItemList())
@@ -298,7 +308,7 @@ void GeoscapeEventState::eventLogic()
 		hq->getTransfers()->push_back(t);
 	}
 
-	// 4. give bonus research
+	// 6. give bonus research
 	std::vector<const RuleResearch*> possibilities;
 
 	for (auto rName : rule.getResearchList())
@@ -346,7 +356,7 @@ void GeoscapeEventState::eventLogic()
 		}
 	}
 
-	// 5. Add reputation
+	// 7. Add reputation
 	auto reputationScore = _eventRule.getReputationScore();
 	if (!reputationScore.empty())
 	{
