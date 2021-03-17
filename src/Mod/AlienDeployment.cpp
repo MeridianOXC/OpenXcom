@@ -290,6 +290,10 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	{
 		_successEvents.load(node["successEvents"]);
 	}
+	if (node["despawnEvents"])
+	{
+		_despawnEvents.load(node["despawnEvents"]);
+	}
 	if (node["failureEvents"])
 	{
 		_failureEvents.load(node["failureEvents"]);

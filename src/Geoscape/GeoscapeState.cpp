@@ -1727,6 +1727,9 @@ void GeoscapeState::baseHunting()
  */
 bool GeoscapeState::processMissionSite(MissionSite *site)
 {
+	SavedGame* save = _game->getSavedGame();
+	SavedBattleGame* battle = save->getSavedBattle();
+	auto alienCustomMission = _game->getMod()->getDeployment(battle->getAlienCustomMission());
 	bool removeSite = site->getSecondsRemaining() < 30 * 60;
 	if (!removeSite)
 	{
@@ -1745,6 +1748,11 @@ bool GeoscapeState::processMissionSite(MissionSite *site)
 			if (!noFollowers)
 			{
 				popup(new UfoLostState(site->getName(_game->getLanguage())));
+			}
+			auto eventName = alienCustomMission->chooseDespawnEvent();
+			if (!eventName.empty())
+			{
+				_game->getMasterMind()->spawnEvent(eventName);
 			}
 		}
 		else
