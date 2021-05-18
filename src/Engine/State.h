@@ -57,6 +57,7 @@ protected:
 	RuleInterface *_ruleInterface;
 	RuleInterface *_ruleInterfaceParent;
 	const Sound* _customSound;
+	std::string _fileName;
 
 	SDL_Color _palette[256];
 	Uint8 _cursorColor;
@@ -138,6 +139,11 @@ public:
 	int getCursorX() const;
 	/// Gets cursor Y coordinate.
 	int getCursorY() const;
+
+	/// Sets a file name for access by a parent state of the file browser
+	void setFileName(std::string fileName);
+	/// Gets the file name set by the browser
+	std::string getFileName();
 };
 
 }

@@ -38,6 +38,7 @@ private :
 	Window *_window;
 	Text *_txtTitle, *_txtSearch, *_txtSelectedMap, *_txtSelectedMapTerrain;
     TextButton *_filterTerrain, *_filterCraft, *_filterUFOs, *_mapFilter;
+    TextButton *_btnBrowser;
 	TextButton *_btnOk, *_btnCancel, *_btnNew;
     TextEdit *_edtQuickSearch;
     TextList *_lstMaps;
@@ -61,6 +62,8 @@ public :
     void populateTerrainsList();
     /// Handles clicking on the filter buttons for available maps
     void btnMapFilterClick(Action *action);
+    /// Handles clicking the file browser button
+    void btnBrowserClick(Action *action);
     /// Handles focusing the quick search filter
     void edtQuickSearchFocus(Action *action);
     /// Handles applying the quick search filter

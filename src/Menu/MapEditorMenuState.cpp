@@ -19,6 +19,7 @@
 #include "MapEditorMenuState.h"
 #include "MapEditorSetSizeState.h"
 #include <sstream>
+#include "FileBrowserState.h"
 #include "../version.h"
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
@@ -80,6 +81,8 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false),
     _filterUFOs = new TextButton(48, 16, 108, 28);
     _mapFilter = _filterTerrain;
 
+    _btnBrowser = new TextButton(148, 16, 164, 28);
+
     _filterTerrain->setGroup(&_mapFilter);
     _filterCraft->setGroup(&_mapFilter);
     _filterUFOs->setGroup(&_mapFilter);
@@ -106,6 +109,7 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false),
     add(_filterTerrain, "button", "mainMenu");
     add(_filterCraft, "button", "mainMenu");
     add(_filterUFOs, "button", "mainMenu");
+    add(_btnBrowser, "button", "mainMenu");
     add(_txtSearch, "text", "mainMenu");
     add(_edtQuickSearch, "button", "mainMenu");
     add(_lstMaps, "list", "saveMenus");
@@ -144,6 +148,10 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _newMapMode(false),
 
     _filterUFOs->setText(tr("STR_UFOS"));
     _filterUFOs->onMouseClick((ActionHandler)&MapEditorMenuState::btnMapFilterClick);
+
+	_btnBrowser->setText(tr("STR_FILE_BROWSER"));
+	_btnBrowser->onMouseClick((ActionHandler)&MapEditorMenuState::btnBrowserClick);
+	//_btnBrowser->onKeyboardPress((ActionHandler)&MapEditorMenuState::btnBrowserClick, SDLK_o); // change to options
 
 	_txtSearch->setText(tr("STR_MAP_EDITOR_MENU_SEARCH"));
 
@@ -423,6 +431,21 @@ void MapEditorMenuState::btnMapFilterClick(Action *action)
 
     // consume the action to keep the selected filter button pressed
     action->getDetails()->type = SDL_NOEVENT;
+}
+
+/**
+ * Handles clicking the file browser button
+ * @param action Poiter to an action.
+ */
+void MapEditorMenuState::btnBrowserClick(Action *action)
+{
+    //bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+    //if (action->getDetails()->type == SDL_KEYDOWN && !ctrlPressed)
+    //{
+    //    return;
+    //}
+
+    _game->pushState(new FileBrowserState(this, false));
 }
 
 /**
