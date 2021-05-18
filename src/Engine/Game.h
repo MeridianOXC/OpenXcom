@@ -119,7 +119,6 @@ public:
 	/// Is ALT pressed?
 	bool isAltPressed(bool considerTouchButtons = false) const;
 	/// Is SHIFT pressed?
-<<<<<<< HEAD
 	bool isShiftPressed(bool considerTouchButtons = false) const;
 
 	/// Is LMB pressed?
@@ -160,13 +159,11 @@ public:
 	bool getRMBFlag() const { return _rmb; }
 	/// Gets the _mmb flag.
 	bool getMMBFlag() const { return _mmb; }
-=======
-	bool isShiftPressed() const;
+
 	/// Sets the map editor for the game
 	void setMapEditor(MapEditor *mapEditor);
 	/// Gets the map editor for the game
 	MapEditor *getMapEditor();
->>>>>>> Moved handling of MapEditor from BattlescapeState to Game, but still crashing on changing video options
 };
 
 }

@@ -746,7 +746,6 @@ bool Game::isShiftPressed(bool considerTouchButtons) const
 }
 
 /**
-<<<<<<< HEAD
  * Is LMB pressed?
  */
 bool Game::isLeftClick(Action* action, bool considerTouchButtons) const
@@ -792,7 +791,9 @@ void Game::resetTouchButtonFlags()
 	_shift = false;
 	_rmb = false;
 	_mmb = false;
-=======
+}
+
+/**
  * Sets the pointer to the Map Editor to save it for multiple states
  * param mapEditor Pointer to the new Map Editor
  */
@@ -808,7 +809,6 @@ void Game::setMapEditor(MapEditor *mapEditor)
 MapEditor *Game::getMapEditor()
 {
 	return _mapEditor;
->>>>>>> Moved handling of MapEditor from BattlescapeState to Game, but still crashing on changing video options
 }
 
 }
