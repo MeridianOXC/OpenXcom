@@ -1500,11 +1500,42 @@ void Map::drawTerrain(Surface *surface)
 							_numWaypid->draw();
 							if ( !(_previewSetting & PATH_ARROWS) )
 							{
+								// TU only
 								_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (29-adjustment), 0, false, tile->getMarkerColor() );
 							}
 							else
 							{
-								_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0);
+								// Arrows + TUs
+								if (Options::oxceShowEnergyInPathReview)
+								{
+									if (tile->getTUMarker() == 0)
+									{
+										// 3 = red
+										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0, false, 3);
+									}
+									else
+									{
+										// 5 = lime green
+										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0, false, 5);
+									}
+
+									_numWaypid->setValue(tile->getEnergyMarker());
+									_numWaypid->draw();
+									if (tile->getEnergyMarker() == 0)
+									{
+										// 3 = red
+										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (29-adjustment), 0, false, 3);
+									}
+									else
+									{
+										// 10 = yellow
+										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (29-adjustment), 0, false, 10);
+									}
+								}
+								else
+								{
+									_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0);
+								}
 							}
 						}
 					}
