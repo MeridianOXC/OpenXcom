@@ -971,6 +971,7 @@ bool Pathfinding::previewPath(bool bRemove)
 					if ((x && y) || size == 0)
 					{
 						tile->setTUMarker(std::max(0,tus));
+						tile->setEnergyMarker(std::max(0,energy));
 					}
 					if (tileAbove && tileAbove->getPreview() == 0 && tu == 0 && _movementType != MT_FLY) //unit fell down, retroactively make the tile above's direction marker to DOWN
 					{
@@ -981,6 +982,7 @@ bool Pathfinding::previewPath(bool bRemove)
 				{
 					tile->setPreview(-1);
 					tile->setTUMarker(-1);
+					tile->setEnergyMarker(-1);
 				}
 				tile->setMarkerColor(bRemove?0:((tus>=0 && energy>=0)?(reserve?Pathfinding::green : Pathfinding::yellow) : Pathfinding::red));
 			}
