@@ -292,6 +292,8 @@ en-US:
   STR_REMEMBER_DISABLED_CRAFT_WEAPONS_DESC: "Craft weapons disabled during a dogfight will stay disabled. They will also not be rearmed at the base."
   STR_OFF_CENTRE_SHOOTING: "Off-center shooting"
   STR_OFF_CENTRE_SHOOTING_DESC: "Soldiers will automatically try to adjust the firing angle slightly in case there is no line of fire."
+  STR_KEEP_CRAFT_COMMANDS_AFTER_DOGFIGHT: "Keep Craft Commands after Dogfight"
+  STR_KEEP_CRAFT_COMMANDS_AFTER_DOGFIGHT_DESC: "Crafts will keep their commands despite having been engaged by a Hunter-Killer/UFO. Usually crafts will return to base once they have been in a dogfight."
 #===================
   STR_GRAPHS_ZOOM_IN: "Zoom In (Graphs)"
   STR_GRAPHS_ZOOM_OUT: "Zoom Out (Graphs)"
