@@ -298,7 +298,7 @@ void GeoscapeCraftState::btnBaseClick(Action *)
 void GeoscapeCraftState::btnTargetClick(Action *)
 {
 	_game->popState();
-	_game->pushState(new SelectDestinationState(_craft, _globe));
+	_game->pushState(new SelectDestinationState(std::vector{ _craft }, _globe));
 	delete _waypoint;
 }
 

@@ -50,16 +50,21 @@ namespace OpenXcom
 /**
  * Initializes all the elements in the Confirm Destination window.
  * @param game Pointer to the core game.
- * @param craft Pointer to the craft to retarget.
+ * @param crafts Vector for the crafts part of a wing to retarget.
  * @param target Pointer to the selected target (NULL if it's just a point on the globe).
  */
-ConfirmDestinationState::ConfirmDestinationState(Craft *craft, Target *target) : _craft(craft), _target(target)
+ConfirmDestinationState::ConfirmDestinationState(std::vector<Craft*> crafts, Target *target) : _crafts(std::move(crafts)), _target(target)
 {
 	Waypoint *w = dynamic_cast<Waypoint*>(_target);
 	_screen = false;
 
 	Base *base = dynamic_cast<Base*>(_target);
-	bool transferAvailable = (Options::canTransferCraftsWhileAirborne && base != 0 && base != _craft->getBase());
+	bool transferAvailable = false; // no transfer allowed for wings
+
+	if (_crafts.size() == 1)
+	{
+		transferAvailable = (Options::canTransferCraftsWhileAirborne && base != 0 && base != _crafts.front()->getBase());
+	}
 
 	int btnOkX = transferAvailable ? 29 : 68;
 	int btnCancelX = transferAvailable ? 177 : 138;
@@ -162,9 +167,14 @@ std::string ConfirmDestinationState::checkStartingCondition()
 		return "";
 	}
 
+	// Only check first selected craft
+	// The other crafts will follow the first selected craft so they will not land at the mission site
+	// This check is only performed once per wing
+	// Checking if _crafts.size() != 1 will disallow the escorting scenario
+
 	// check required item(s)
 	auto requiredItems = rule->getRequiredItems();
-	if (!_craft->areRequiredItemsOnboard(requiredItems))
+	if (!_crafts.front()->areRequiredItemsOnboard(requiredItems))
 	{
 		std::ostringstream ss2;
 		int i2 = 0;
@@ -180,7 +190,7 @@ std::string ConfirmDestinationState::checkStartingCondition()
 	}
 
 	// check permitted soldiers
-	if (!_craft->areOnlyPermittedSoldierTypesOnboard(rule))
+	if (!_crafts.front()->areOnlyPermittedSoldierTypesOnboard(rule))
 	{
 		auto list = rule->getForbiddenSoldierTypes();
 		std::string messageCode = "STR_STARTING_CONDITION_SOLDIER_TYPE_FORBIDDEN";
@@ -212,7 +222,7 @@ std::string ConfirmDestinationState::checkStartingCondition()
 		return tr(messageCode).arg(argument);
 	}
 
-	if (rule->isCraftPermitted(_craft->getRules()->getType()))
+	if (rule->isCraftPermitted(_crafts.front()->getRules()->getType()))
 	{
 		// craft is permitted
 		return "";
@@ -264,12 +274,15 @@ void ConfirmDestinationState::btnOkClick(Action *)
 		return;
 	}
 
-	if (!_craft->arePilotsOnboard())
+	for (std::vector<Craft*>::iterator i = _crafts.begin(); i != _crafts.end(); ++i)
 	{
-		_game->popState();
-		_game->popState();
-		_game->pushState(new CraftNotEnoughPilotsState(_craft));
-		return;
+		if (!(*i)->arePilotsOnboard())
+		{
+			_game->popState();
+			_game->popState();
+			_game->pushState(new CraftNotEnoughPilotsState((*i)));
+			return;
+		}
 	}
 
 	Waypoint *w = dynamic_cast<Waypoint*>(_target);
@@ -278,13 +291,34 @@ void ConfirmDestinationState::btnOkClick(Action *)
 		w->setId(_game->getSavedGame()->getId("STR_WAY_POINT"));
 		_game->getSavedGame()->getWaypoints()->push_back(w);
 	}
-	_craft->setDestination(_target);
-	if (_craft->getRules()->canAutoPatrol())
+
+	// first selected _craft (first shift-clicked craft) is wing leader; the other crafts follow the wing leader
+	if (_crafts.front() == _target)
 	{
-		// cancel auto-patrol
-		_craft->setIsAutoPatrolling(false);
+		//setting itself as target works fine but it should be saying "patrolling" instead
+		_crafts.front()->setDestination(0);
 	}
-	_craft->setStatus("STR_OUT");
+	else
+	{
+		_crafts.front()->setDestination(_target);
+	}
+
+	for (std::vector<Craft*>::iterator i = _crafts.begin(); i != _crafts.end(); ++i)
+	{
+		if ((*i) != _crafts.front())
+		{
+			(*i)->setDestination(_crafts.front());
+		}
+
+		if ((*i)->getRules()->canAutoPatrol())
+		{
+			// cancel auto-patrol
+			(*i)->setIsAutoPatrolling(false);
+		}
+
+		(*i)->setStatus("STR_OUT");
+	}
+
 	_game->popState();
 	_game->popState();
 }
@@ -303,15 +337,15 @@ void ConfirmDestinationState::btnTransferClick(Action *)
 	{
 		errorMessage = tr("STR_NO_FREE_HANGARS_FOR_TRANSFER");
 	}
-	else if (_craft->getNumSoldiers() > targetBase->getAvailableQuarters() - targetBase->getUsedQuarters())
+	else if (_crafts.front()->getNumSoldiers() > targetBase->getAvailableQuarters() - targetBase->getUsedQuarters())
 	{
 		errorMessage = tr("STR_NO_FREE_ACCOMODATION_CREW");
 	}
-	else if (Options::storageLimitsEnforced && targetBase->storesOverfull(_craft->getTotalItemStorageSize(_game->getMod())))
+	else if (Options::storageLimitsEnforced && targetBase->storesOverfull(_crafts.front()->getTotalItemStorageSize(_game->getMod())))
 	{
 		errorMessage = tr("STR_NOT_ENOUGH_STORE_SPACE_FOR_CRAFT");
 	}
-	else if (_craft->getFuel() < _craft->getFuelLimit(targetBase))
+	else if (_crafts.front()->getFuel() < _crafts.front()->getFuelLimit(targetBase))
 	{
 		errorMessage = tr("STR_NOT_ENOUGH_FUEL_TO_REACH_TARGET");
 	}
@@ -322,10 +356,10 @@ void ConfirmDestinationState::btnTransferClick(Action *)
 	if (errorMessage.empty())
 	{
 		// Transfer soldiers inside craft
-		Base *currentBase = _craft->getBase();
+		Base *currentBase = _crafts.front()->getBase();
 		for (std::vector<Soldier*>::iterator s = currentBase->getSoldiers()->begin(); s != currentBase->getSoldiers()->end();)
 		{
-			if ((*s)->getCraft() == _craft)
+			if ((*s)->getCraft() == _crafts.front())
 			{
 				(*s)->setPsiTraining(false);
 				(*s)->setTraining(false);
@@ -339,14 +373,14 @@ void ConfirmDestinationState::btnTransferClick(Action *)
 		}
 
 		// Transfer craft
-		currentBase->removeCraft(_craft, false);
-		targetBase->getCrafts()->push_back(_craft);
-		_craft->setBase(targetBase, false);
-		_craft->returnToBase();
-		_craft->setStatus("STR_OUT");
-		if (_craft->getFuel() <= _craft->getFuelLimit(targetBase))
+		currentBase->removeCraft(_crafts.front(), false);
+		targetBase->getCrafts()->push_back(_crafts.front());
+		_crafts.front()->setBase(targetBase, false);
+		_crafts.front()->returnToBase();
+		_crafts.front()->setStatus("STR_OUT");
+		if (_crafts.front()->getFuel() <= _crafts.front()->getFuelLimit(targetBase))
 		{
-			_craft->setLowFuel(true);
+			_crafts.front()->setLowFuel(true);
 		}
 
 		// pop the selecting the destination state

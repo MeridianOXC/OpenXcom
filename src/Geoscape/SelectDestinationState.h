@@ -37,7 +37,7 @@ class TextButton;
 class SelectDestinationState : public State
 {
 private:
-	Craft *_craft;
+	std::vector<Craft*> _crafts; 
 	Globe *_globe;
 	InteractiveSurface *_btnRotateLeft, *_btnRotateRight, *_btnRotateUp, *_btnRotateDown, *_btnZoomIn, *_btnZoomOut;
 	Window *_window;
@@ -45,7 +45,7 @@ private:
 	TextButton *_btnCancel, *_btnCydonia;
 public:
 	/// Creates the Select Destination state.
-	SelectDestinationState(Craft *craft, Globe *globe);
+	SelectDestinationState(std::vector<Craft*> crafts, Globe *globe);
 	/// Cleans up the Select Destination state.
 	~SelectDestinationState();
 	/// Resets globe.

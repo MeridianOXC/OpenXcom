@@ -44,7 +44,7 @@ namespace OpenXcom
  * @param craft Pointer to craft to retarget (NULL if none).
  * @param state Pointer to the Geoscape state.
  */
-MultipleTargetsState::MultipleTargetsState(std::vector<Target*> targets, Craft *craft, GeoscapeState *state) : _targets(targets), _craft(craft), _state(state)
+MultipleTargetsState::MultipleTargetsState(std::vector<Target*> targets, std::vector<Craft*> crafts, GeoscapeState *state) : _targets(targets), _crafts(std::move(crafts)), _state(state)
 {
 	_screen = false;
 
@@ -114,7 +114,7 @@ void MultipleTargetsState::init()
 void MultipleTargetsState::popupTarget(Target *target)
 {
 	_game->popState();
-	if (_craft == 0)
+	if (_crafts.size() == 0)
 	{
 		Base* b = dynamic_cast<Base*>(target);
 		Craft* c = dynamic_cast<Craft*>(target);
@@ -138,7 +138,7 @@ void MultipleTargetsState::popupTarget(Target *target)
 	}
 	else
 	{
-		_game->pushState(new ConfirmDestinationState(_craft, target));
+		_game->pushState(new ConfirmDestinationState(_crafts, target));
 	}
 }
 

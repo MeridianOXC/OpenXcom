@@ -153,6 +153,9 @@ InterceptState::InterceptState(Globe *globe, Base *base, Target *target) : _glob
 	_lstCrafts->onMouseClick((ActionHandler)&InterceptState::lstCraftsRightClick, SDL_BUTTON_RIGHT);
 	_lstCrafts->onMouseClick((ActionHandler)&InterceptState::lstCraftsMiddleClick, SDL_BUTTON_MIDDLE);
 
+	//clear list of selected crafts before creating a new wing
+	_selCrafts.clear();
+
 	int row = 0;
 	for (std::vector<Base*>::iterator i = _game->getSavedGame()->getBases()->begin(); i != _game->getSavedGame()->getBases()->end(); ++i)
 	{
@@ -336,18 +339,59 @@ void InterceptState::btnGotoBaseClick(Action *)
  */
 void InterceptState::lstCraftsLeftClick(Action *)
 {
-	Craft* c = _crafts[_lstCrafts->getSelectedRow()];
-	if (c->getStatus() == "STR_READY" || ((c->getStatus() == "STR_OUT" || Options::craftLaunchAlways) && !c->getLowFuel() && !c->getMissionComplete()))
+	// condition used in shift and non-shift paths
+	auto allowStart = [&](Craft* c)
 	{
-		_game->popState();
-		if (_target == 0)
+		return c->getStatus() == "STR_READY" || (
+			 (c->getStatus() == "STR_OUT" || Options::craftLaunchAlways) &&
+			 !c->getLowFuel() &&
+			 !c->getMissionComplete() );
+	};
+
+	unsigned int row;
+	row = _lstCrafts->getSelectedRow();
+	Craft* c = _crafts[row];
+
+	// add and remove crafts to the wing to be created
+	if (_game->isShiftPressed())
+	{
+		// add craft to the list when it is not included yet
+		// limit to 4 (3+1 due to the dogfight window)
+		// need more sanity checks?
+		if (allowStart(c) && (_selCrafts.size() < 3) && !( std::find(_selCrafts.begin(), _selCrafts.end(), (Craft*) c) != _selCrafts.end()))
 		{
-			_game->pushState(new SelectDestinationState(c, _globe));
+			_selCrafts.push_back(c);
+			_lstCrafts->setCellColor(row, 0, _lstCrafts->getSecondaryColor());
 		}
-		else
+		// remove craft from the wing to be created when it is already included
+		else if (( std::find(_selCrafts.begin(), _selCrafts.end(), (Craft*) c) != _selCrafts.end()))
 		{
-			_game->pushState(new ConfirmDestinationState(c, _target));
-		}
+			std::vector<Craft *>::const_iterator craftIt = std::find (_selCrafts.begin(), _selCrafts.end(), (Craft*) c);
+			_selCrafts.erase(craftIt);
+			_lstCrafts->setCellColor(row, 0, _lstCrafts->getColor());
+ 		}
+	}
+	// add last craft to the wing (may already be part of the wing) and launch
+	else
+	{
+		if (allowStart(c))
+ 		{
+			//add itself to the list, but only if it isn't referenced in the list already
+			if (!( std::find(_selCrafts.begin(), _selCrafts.end(), c) != _selCrafts.end() ))
+			{
+				_selCrafts.push_back(c);
+			}
+
+			_game->popState();
+			if (_target == 0)
+			{
+				_game->pushState(new SelectDestinationState(_selCrafts, _globe));
+			}
+			else
+			{
+				_game->pushState(new ConfirmDestinationState(_selCrafts, _target));
+			}
+		 }
 	}
 }
 

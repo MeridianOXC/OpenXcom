@@ -35,7 +35,7 @@ class Target;
 class ConfirmDestinationState : public State
 {
 private:
-	Craft *_craft;
+	std::vector<Craft*> _crafts;
 	Target *_target;
 	Window *_window;
 	Text *_txtTarget;
@@ -44,7 +44,7 @@ private:
 	std::string checkStartingCondition();
 public:
 	/// Creates the Confirm Destination state.
-	ConfirmDestinationState(Craft *craft, Target *target);
+	ConfirmDestinationState(std::vector<Craft*> crafts, Target *target);
 	/// Cleans up the Confirm Destination state.
 	~ConfirmDestinationState();
 	/// Handler for clicking the OK button.
