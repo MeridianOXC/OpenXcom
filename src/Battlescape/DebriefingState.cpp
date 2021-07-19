@@ -1966,10 +1966,10 @@ void DebriefingState::prepareDebriefing()
 	}
 	// Extended mission types handling
 	int extraPoints = 0;
-	if (ruleDeploy && ruleDeploy->getExtendedObjectiveType() == "STR_EVACUATION" && (vipsLost > 0 || vipsSaved > 0))
+	if (ruleDeploy && ruleDeploy->getExtendedObjectiveType() == "STR_EVACUATION")
 	{
 		success = true;
-		if (vipsSaved == 0 || (vipsSaved * 4) < vipsLost)
+		if ((vipsLost > 0 && (vipsSaved * 4) < vipsLost) || (vipsSaved == 0 && playersSurvived == 0)) // if we saved too few VIPs or if there were no VIPs and we lost all soldiers
 		{
 			_txtTitle->setText(tr("STR_EVACUATION_FAILED"));
 			success = false;
@@ -1978,7 +1978,7 @@ void DebriefingState::prepareDebriefing()
 				addStat(objectiveFailedText, 1, objectiveFailedScore);
 			}
 		}
-		else if (vipsLost == 0 || (vipsLost * 4) < vipsSaved)
+		else if ((vipsSaved > 0 && (vipsLost * 4) < vipsSaved) || (vipsLost == 0 && deadSoldiers == 0 && playersMIA == 0)) // if we saved enough VIPs or if there were no VIPs and we saved all soldiers
 		{
 			_txtTitle->setText(tr("STR_EVACUATION_SUCCESSFUL"));
 			if (!objectiveCompleteText.empty())
@@ -1986,7 +1986,7 @@ void DebriefingState::prepareDebriefing()
 				addStat(objectiveCompleteText, 1, objectiveCompleteScore);
 			}
 		}
-		else
+		else // any other combination
 		{
 			_txtTitle->setText(tr("STR_EVACUATION_COMPLETE"));
 		}
