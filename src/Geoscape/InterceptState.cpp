@@ -376,11 +376,13 @@ void InterceptState::lstCraftsLeftClick(Action *)
 	{
 		if (allowStart(c))
  		{
-			//add itself to the list, but only if it isn't referenced in the list already
-			if (!( std::find(_selCrafts.begin(), _selCrafts.end(), c) != _selCrafts.end() ))
+			//remove itself from the vector assuming it is already inside, so it can be put in front of the vector
+			auto craftIt = std::find (_selCrafts.begin(), _selCrafts.end(), c);
+			if ( craftIt != _selCrafts.end() )
 			{
-				_selCrafts.push_back(c);
+				_selCrafts.erase(craftIt);
 			}
+			_selCrafts.insert(_selCrafts.begin(), c);
 
 			_game->popState();
 			if (_target == 0)
