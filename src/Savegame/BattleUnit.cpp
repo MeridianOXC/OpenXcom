@@ -5183,6 +5183,7 @@ void getReactionScoreScript(const BattleUnit *bu, int &ret)
 	if (bu)
 	{
 		ret = (int)bu->getReactionScore();
+		return;
 	}
 	ret = 0;
 }
