@@ -122,7 +122,7 @@ public:
 	static void ScriptRegister(ScriptParserBase* parser);
 
 
-	static const int MAX_EQUIPMENT_LAYOUT_TEMPLATES = 20;
+	static const int MAX_EQUIPMENT_LAYOUT_TEMPLATES = 200;
 	static const int MAX_CRAFT_LOADOUT_TEMPLATES = 10;
 
 private:

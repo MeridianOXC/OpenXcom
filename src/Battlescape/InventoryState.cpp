@@ -914,15 +914,34 @@ void InventoryState::btnGlobalEquipmentLayoutClick(Action *action)
 		return;
 	}
 
-	// SDLK_1 = 49, SDLK_9 = 57
-	const int index = action->getDetails()->key.keysym.sym - 49;
-	if (index < 0 || index > 8)
+	// SDLK_0 = 48, SDLK_1 = 49, SDLK_9 = 57
+	// SDLK_0 selects 10-th inventory layout
+	// by repeating a key you can load a layout from next decade
+	const int sym = action->getDetails()->key.keysym.sym;
+	const int layout_no = (sym == 48) ? 10 : sym - 48;
+
+	if (!_game->isCtrlPressed() && sym == _prev_key)
 	{
-		return; // just in case
+		_key_repeats++;
+	}
+	else
+	{
+		_key_repeats = 0;
+	}
+	_prev_key = sym;
+
+	int index = 10 * _key_repeats + layout_no - 1;
+
+	if (index < 0 || index >= SavedGame::MAX_EQUIPMENT_LAYOUT_TEMPLATES)
+	{
+		// do nothing if layout is out of bonds
+		return;
 	}
 
 	if (_game->isCtrlPressed())
 	{
+		// can't save layout >10 this way
+		_prev_key = 0, _key_repeats = 0;
 		saveGlobalLayout(index, false);
 
 		// give audio feedback
@@ -1583,6 +1602,7 @@ void InventoryState::onAutoequip(Action *)
 void InventoryState::invClick(Action *act)
 {
 	updateStats();
+	_prev_key = 0, _key_repeats = 0;
 }
 
 /**
@@ -1919,13 +1939,18 @@ void InventoryState::handle(Action *action)
 	{
 		// "ctrl+1..9" - save equipment
 		// "1..9" - load equipment
-		if (action->getDetails()->key.keysym.sym >= SDLK_1 && action->getDetails()->key.keysym.sym <= SDLK_9)
+		if (action->getDetails()->key.keysym.sym >= SDLK_0 && action->getDetails()->key.keysym.sym <= SDLK_9)
 		{
 			if (!_btnQuickSearch->isFocused())
 			{
 				btnGlobalEquipmentLayoutClick(action);
 			}
 		}
+		else
+		{
+			_prev_key = 0, _key_repeats = 0;
+		}
+
 		if (action->getDetails()->key.keysym.sym == Options::keyInvClear)
 		{
 			if (_game->isCtrlPressed() && _game->isAltPressed())
