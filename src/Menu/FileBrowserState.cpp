@@ -35,6 +35,8 @@
 #include "../Interface/TextEdit.h"
 #include "../Interface/TextList.h"
 #include "../Interface/Frame.h"
+#include "../Mod/Mod.h"
+#include "../Mod/RuleInterface.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 
@@ -105,16 +107,16 @@ FileBrowserState::FileBrowserState(State *parent, bool saveMode, std::string fil
 	_sortType = new ArrowButton(ARROW_SMALL_DOWN, 11, 8, 14 + fileNameWidth, 36);
 	_sortDate = new ArrowButton(ARROW_NONE, 11, 8, 14 + fileNameWidth + fileTypeWidth, 36);
 
-	_btnSelect = new TextButton(64, 16, 0, 0);
 	_btnCut = new TextButton(64, 16, 0, 0);
 	_btnCopy = new TextButton(64, 16, 0, 0);
 	_btnPaste = new TextButton(64, 16, 0, 0);
+	_btnDelete = new TextButton(64, 16, 0, 0);
 	_btnClose = new TextButton(64, 16, 0, 0);
 
-	_rightClickMenu.push_back(_btnSelect);
 	_rightClickMenu.push_back(_btnCut);
 	_rightClickMenu.push_back(_btnCopy);
 	_rightClickMenu.push_back(_btnPaste);
+	_rightClickMenu.push_back(_btnDelete);
 	_rightClickMenu.push_back(_btnClose);
 
 	_btnOk = new TextButton(100, 16, 8, 176);
@@ -172,9 +174,6 @@ FileBrowserState::FileBrowserState(State *parent, bool saveMode, std::string fil
 	_sortDate->setX(_sortDate->getX() + _txtFiledate->getTextWidth() + 5);
 	_sortDate->onMouseClick((ActionHandler)&FileBrowserState::sortArrowClick);
 
-	_btnSelect->setText(tr("STR_FILE_BROWSER_SELECT"));
-	_btnSelect->onMousePress((ActionHandler)&FileBrowserState::btnSelectClick);
-
 	_btnCut->setText(tr("STR_FILE_BROWSER_CUT"));
 	_btnCut->onMousePress((ActionHandler)&FileBrowserState::btnCutClick);
 
@@ -183,6 +182,9 @@ FileBrowserState::FileBrowserState(State *parent, bool saveMode, std::string fil
 
 	_btnPaste->setText(tr("STR_FILE_BROWSER_PASTE"));
 	_btnPaste->onMousePress((ActionHandler)&FileBrowserState::btnPasteClick);
+
+	_btnDelete->setText(tr("STR_FILE_BROWSER_DELETE"));
+	_btnDelete->onMousePress((ActionHandler)&FileBrowserState::btnDeleteClick);
 
 	_btnClose->setText(tr("STR_FILE_BROWSER_CLOSE"));
 	_btnClose->onMousePress((ActionHandler)&FileBrowserState::btnCloseClick);
@@ -209,14 +211,16 @@ FileBrowserState::FileBrowserState(State *parent, bool saveMode, std::string fil
     _edtQuickSearch->setColor(15 * 16 - 1);
     _edtQuickSearch->onEnter((ActionHandler)&FileBrowserState::edtQuickSearchApply);
 
-	// add date modified and other sort stuff?
-	// plus sorts for name/modified
     _lstBrowser->setColumns(4, fileNameWidth, fileTypeWidth, fileDateWidth, fileTimeWidth);
     _lstBrowser->setAlign(ALIGN_LEFT);
     _lstBrowser->setSelectable(true);
 	_lstBrowser->setBackground(_window);
     _lstBrowser->onMouseClick((ActionHandler)&FileBrowserState::lstBrowserClick, SDL_BUTTON_LEFT);
     _lstBrowser->onMouseClick((ActionHandler)&FileBrowserState::rightClickMenuOpen, SDL_BUTTON_RIGHT);
+
+	_directoryToCopyFrom = "";
+	_filesToCopy.clear();
+	_moveFiles = false;
 }
 
 FileBrowserState::~FileBrowserState()
@@ -237,10 +241,44 @@ void FileBrowserState::init()
 }
 
 /**
+ * Takes care of any events from the core game engine.
+ * Primarily for keyboard shortcuts
+ * @param action Pointer to an action.
+ */
+inline void FileBrowserState::handle(Action *action)
+{
+	State::handle(action);
+
+	if (action->getDetails()->type == SDL_KEYDOWN)
+	{
+		SDLKey key = action->getDetails()->key.keysym.sym;
+		bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+		//bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
+
+		if (key == SDLK_c && ctrlPressed) // change c to options
+		{
+			btnCopyClick(action);
+		}
+		else if (key == SDLK_x && ctrlPressed)
+		{
+			btnCutClick(action);
+		}
+		else if (key == SDLK_v && ctrlPressed)
+		{
+			btnPasteClick(action);
+		}
+		else if (key == SDLK_DELETE)
+		{
+			btnDeleteClick(action);
+		}
+	}
+}
+
+/**
  * Populates the list of files and folders in the browser
  * @param directory the file directory from which to list contents
  */
-void FileBrowserState::populateBrowserList(std::string directory)
+void FileBrowserState::populateBrowserList(std::string directory, bool forceRefresh)
 {
 	_clickedRow = -1;
 
@@ -254,17 +292,16 @@ void FileBrowserState::populateBrowserList(std::string directory)
 		directory = Options::getUserFolder(); //getMasterUserFolder()
 	}
 
-	_currentDirectory = directory;
+	if (forceRefresh || directory != _currentDirectory)
+	{
+		_currentDirectory = directory;
 
-	_txtDirectory->setText(tr("STR_FILE_BROWSER_CD").arg(_currentDirectory));
+		// change "" to exention to search
+		auto directoryContents = CrossPlatform::getFolderContents(directory, "");
+		_fileData.clear();
+		std::copy(directoryContents.begin(), directoryContents.end(), std::back_inserter(_fileData));
+	}
 
-	_lstBrowser->addRow(1, tr("STR_USER_FOLDER").c_str());
-	_lstBrowser->addRow(1, tr("STR_FILE_BROWSER_UP_ONE_DIRECTORY").c_str());
-
-	// change "" to exention to search
-	auto directoryContents = CrossPlatform::getFolderContents(directory, "");
-	_fileData.clear();
-	std::copy(directoryContents.begin(), directoryContents.end(), std::back_inserter(_fileData));
 	if (_reverseSort)
 	{
 		std::sort(_fileData.rbegin(), _fileData.rend(), FileSorter(_foldersFirst, _sortByName));
@@ -274,7 +311,14 @@ void FileBrowserState::populateBrowserList(std::string directory)
 		std::sort(_fileData.begin(), _fileData.end(), FileSorter(_foldersFirst, _sortByName));
 	}
 
+	_txtDirectory->setText(tr("STR_FILE_BROWSER_CD").arg(_currentDirectory));
+
+	_lstBrowser->addRow(1, tr("STR_USER_FOLDER").c_str());
+	_lstBrowser->addRow(1, tr("STR_FILE_BROWSER_UP_ONE_DIRECTORY").c_str());
+
 	// now list the files/folders
+	_fileDataIndexMap.clear();
+	size_t index = 0;
 	for (auto file : _fileData)
 	{
 		auto fileName = file.name;
@@ -284,6 +328,7 @@ void FileBrowserState::populateBrowserList(std::string directory)
 			Unicode::upperCase(uppercaseName);
 			if (uppercaseName.find(searchString) == std::string::npos)
 			{
+				++index;
 				continue;
 			}
 		}
@@ -292,6 +337,30 @@ void FileBrowserState::populateBrowserList(std::string directory)
 		std::pair<std::string, std::string> fileTime = CrossPlatform::timeToString(file.timestamp);
 
 		_lstBrowser->addRow(4, fileName.c_str(), fileType.c_str(), fileTime.first.c_str(), fileTime.second.c_str());
+		_fileDataIndexMap[_lstBrowser->getLastRowIndex()] = index;
+
+		++index;
+	}
+
+	highlightSelectedFiles();
+}
+
+/**
+ * Highlights selected files in the browser window
+ */
+void FileBrowserState::highlightSelectedFiles()
+{
+	_lstBrowser->setRowColor(0, _lstBrowser->getColor());
+	_lstBrowser->setRowColor(1, _lstBrowser->getColor());
+
+	for (auto file : _fileDataIndexMap)
+	{
+		_lstBrowser->setRowColor(file.first, _lstBrowser->getColor());
+
+		if (_fileData.at(file.second).selected)
+		{
+			_lstBrowser->setRowColor(file.first, 244); // change to options for secondary color
+		}
 	}
 }
 
@@ -380,20 +449,59 @@ void FileBrowserState::edtQuickSearchApply(Action *action)
  */
 void FileBrowserState::lstBrowserClick(Action *action)
 {
-	if (_btnSelect->getVisible())
+	if (_btnClose->getVisible())
 	{
 		btnCloseClick(action);
 	}
 
 	size_t selected = _lstBrowser->getSelectedRow();
+	bool ctrlPressed = (SDL_GetModState() & KMOD_CTRL) != 0;
+	bool shiftPressed = (SDL_GetModState() & KMOD_SHIFT) != 0;
 
 	if ((int)selected != _clickedRow)
 	{
-		if (_clickedRow > -1)
+		// holding shift will always select browser entries, even when clicking on the main or up directory buttons
+		if (shiftPressed)
 		{
-			_lstBrowser->setRowColor(_clickedRow, _lstBrowser->getColor());
+			for (auto &file : _fileData)
+			{
+				file.selected = false;
+			}
+
+			for (size_t index = std::max(std::min((int)selected, _clickedRow), 2); index <= (size_t)std::max((int)selected, _clickedRow); ++index)
+			{
+				_fileData.at(_fileDataIndexMap[index]).selected = true;
+			}
+
+			highlightSelectedFiles();
 		}
-		_lstBrowser->setRowColor(selected, 244); // change to options for secondary color
+		else if (selected > 1)
+		{
+			// not holding control - only single-select
+			if (!ctrlPressed)
+			{
+				for (auto &file : _fileData)
+				{
+					file.selected = false;
+				}
+			}
+
+			_fileData.at(_fileDataIndexMap[selected]).selected = !_fileData.at(_fileDataIndexMap[selected]).selected;
+
+			highlightSelectedFiles();
+		}
+		else
+		{
+			// clear highlights first here
+			for (auto &file : _fileData)
+			{
+				file.selected = false;
+			}
+			highlightSelectedFiles();
+
+			_lstBrowser->setRowColor(selected, 244); // change to options for secondary color
+		}
+
 		_clickedRow = selected;
 
 		_firstClickTime = SDL_GetTicks();
@@ -401,6 +509,13 @@ void FileBrowserState::lstBrowserClick(Action *action)
 	}
 	else if ((int)(SDL_GetTicks() - _firstClickTime) > (Options::dragScrollTimeTolerance))
 	{
+		// de-selecting a file
+		if (!shiftPressed && selected > 1)
+		{
+			_fileData.at(_fileDataIndexMap[selected]).selected = !_fileData.at(_fileDataIndexMap[selected]).selected;
+			highlightSelectedFiles();
+		}
+
 		_firstClickTime = SDL_GetTicks();
 		return;
 	}
@@ -418,10 +533,11 @@ void FileBrowserState::lstBrowserClick(Action *action)
 		// go up one level
 		case 1 :
 			{
-				_currentDirectory.erase(_currentDirectory.size() - 1, std::string::npos);
-				std::size_t lastBackslash = _currentDirectory.find_last_of("/");
-				_currentDirectory.erase(lastBackslash + 1, std::string::npos);
-				populateBrowserList(_currentDirectory);
+				std::string directory = _currentDirectory;
+				directory.erase(directory.size() - 1, std::string::npos);
+				std::size_t lastBackslash = directory.find_last_of("/");
+				directory.erase(lastBackslash + 1, std::string::npos);
+				populateBrowserList(directory);
 			}
 
 			break;
@@ -429,13 +545,12 @@ void FileBrowserState::lstBrowserClick(Action *action)
 		// selecting a file/folder
 		default :
 			{
-				selected -= 2;
-				FileData clickedFile = _fileData.at(selected);
+				FileData clickedFile = _fileData.at(_fileDataIndexMap[selected]);
 
 				if (clickedFile.isFolder)
 				{
-					_currentDirectory = _currentDirectory + clickedFile.name + "/";
-					populateBrowserList(_currentDirectory);
+					std::string directory = _currentDirectory + clickedFile.name + "/";
+					populateBrowserList(directory);
 				}
 			}
 
@@ -452,20 +567,28 @@ void FileBrowserState::rightClickMenuOpen(Action *action)
 {
 	size_t selected = _lstBrowser->getSelectedRow();
 
-	if ((int)selected != _clickedRow)
+	bool filesAlreadySelected = false;
+	for (auto file : _fileData)
 	{
-		if (_clickedRow > -1)
+		if (file.selected)
 		{
-			_lstBrowser->setRowColor(_clickedRow, _lstBrowser->getColor());
+			filesAlreadySelected = true;
+			break;
 		}
-		_lstBrowser->setRowColor(selected, 244); // change to options for secondary color
+	}
+
+	if (!filesAlreadySelected && selected > 1)
+	{
+		_fileData.at(_fileDataIndexMap[selected]).selected = true;
+		highlightSelectedFiles();
+
 		_clickedRow = selected;
 	}
 
 	int mouseY = action->getAbsoluteYMouse();
 	int mouseX = action->getAbsoluteXMouse();
-	bool openUp = mouseY > (200 - 5 * _btnSelect->getHeight());
-	bool openLeft = mouseX > (320 - _btnSelect->getWidth());
+	bool openUp = mouseY > (200 - 5 * _btnClose->getHeight());
+	bool openLeft = mouseX > (320 - _btnClose->getWidth());
 
 	int btnIndex = 0;
 	for (auto button : _rightClickMenu)
@@ -475,15 +598,31 @@ void FileBrowserState::rightClickMenuOpen(Action *action)
 		button->setVisible(true);
 		++btnIndex;
 	}
-}
 
-/**
- * Handles clicking the select button
- * @param action Pointer to an action.
- */
-void FileBrowserState::btnSelectClick(Action *action)
-{
-	btnCloseClick(action);
+	// grey out buttons that will have no action when clicked
+	// cut/copy/delete need something selected
+	if (!filesAlreadySelected && selected < 2)
+	{
+		_btnCopy->setColor(170); // change 170 to options or interface
+		_btnCut->setColor(170);
+		_btnDelete->setColor(170);
+	}
+	else
+	{
+		_btnCopy->setColor(_game->getMod()->getInterface("mainMenu")->getElement("button")->color);
+		_btnCut->setColor(_game->getMod()->getInterface("mainMenu")->getElement("button")->color);
+		_btnDelete->setColor(_game->getMod()->getInterface("mainMenu")->getElement("button")->color);
+	}
+
+	// paste needs something cut/copied
+	if (_filesToCopy.size() == 0)
+	{
+		_btnPaste->setColor(170); // change 170 to options or interface
+	}
+	else
+	{
+		_btnPaste->setColor(_game->getMod()->getInterface("mainMenu")->getElement("button")->color);
+	}
 }
 
 /**
@@ -492,6 +631,8 @@ void FileBrowserState::btnSelectClick(Action *action)
  */
 void FileBrowserState::btnCutClick(Action *action)
 {
+	_moveFiles = true;
+	markSelectedFiles();
 	btnCloseClick(action);
 }
 
@@ -501,7 +642,31 @@ void FileBrowserState::btnCutClick(Action *action)
  */
 void FileBrowserState::btnCopyClick(Action *action)
 {
+	_moveFiles = false;
+	markSelectedFiles();
 	btnCloseClick(action);
+}
+
+/**
+ * Marks files for cutting or copying
+ */
+void FileBrowserState::markSelectedFiles()
+{
+	_directoryToCopyFrom = "";
+	_filesToCopy.clear();
+
+	for (auto file : _fileData)
+	{
+		if (file.selected)
+		{
+			_filesToCopy.push_back(file.name);
+		}
+	}
+
+	if (_filesToCopy.size() != 0)
+	{
+		_directoryToCopyFrom = _currentDirectory;
+	}
 }
 
 /**
@@ -510,6 +675,63 @@ void FileBrowserState::btnCopyClick(Action *action)
  */
 void FileBrowserState::btnPasteClick(Action *action)
 {
+	for (auto fileToCopy : _filesToCopy)
+	{
+		// sanity check - make sure the file exists! if we deleted before pasting, can't move or copy...
+		if (!CrossPlatform::fileExists(_directoryToCopyFrom + fileToCopy))
+		{
+			continue;
+		}
+
+		// check if file exists in current directory - if so, needs to be handled
+		if (std::find_if(_fileData.begin(), _fileData.end(),
+			[&](const FileData file){ return file.name == fileToCopy; }) != _fileData.end())
+		{
+			// TODO: do something about file of same name
+			continue;
+		}
+
+		// perform the move or copy
+		if (_moveFiles)
+		{
+			CrossPlatform::moveFile(_directoryToCopyFrom + fileToCopy, _currentDirectory + fileToCopy);
+		}
+		else
+		{
+			CrossPlatform::copyFile(_directoryToCopyFrom + fileToCopy, _currentDirectory + fileToCopy);
+		}
+	}
+
+	// if moving files, they are no longer in the copied-from location, so clear that data
+	if (_moveFiles)
+	{
+		_directoryToCopyFrom = "";
+		_filesToCopy.clear();
+	}
+
+	// refresh the file list after the action is complete
+	populateBrowserList(_currentDirectory, true);
+
+	btnCloseClick(action);
+}
+
+/**
+ * Handles clicking the delete button
+ * @param action Pointer to an action.
+ */
+void FileBrowserState::btnDeleteClick(Action *action)
+{
+	for (auto file : _fileData)
+	{
+		if (file.selected)
+		{
+			CrossPlatform::deleteFile(_currentDirectory + file.name);
+		}
+	}
+
+	// refresh the file list after the action is complete
+	populateBrowserList(_currentDirectory, true);
+
 	btnCloseClick(action);
 }
 

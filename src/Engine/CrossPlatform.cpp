@@ -1046,6 +1046,24 @@ bool copyFile(const std::string& src, const std::string& dest)
 	auto srcW = pathToWindows(src);
 	auto dstW = pathToWindows(dest);
 	return (CopyFileW(srcW.c_str(), dstW.c_str(), false) != 0);
+#else
+	std::ifstream srcStream;
+	std::ofstream destStream;
+	srcStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	destStream.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+	try
+	{
+		srcStream.open(src.c_str(), std::ios::binary);
+		destStream.open(dest.c_str(), std::ios::binary);
+		destStream << srcStream.rdbuf();
+		srcStream.close();
+		destStream.close();
+	}
+	catch (const std::fstream::failure &)
+	{
+		return false;
+	}
+	return true;
 #endif
 	return false;
 }

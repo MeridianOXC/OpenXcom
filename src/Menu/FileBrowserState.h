@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <tuple>
+#include <map>
 
 namespace OpenXcom
 {
@@ -30,12 +31,14 @@ struct FileData
     std::string name;
     bool isFolder;
     time_t timestamp;
+    bool selected;
 
     FileData(std::tuple<std::string, bool, time_t> data)
     {
         name = std::get<0>(data);
         isFolder = std::get<1>(data);
         timestamp = std::get<2>(data);
+        selected = false;
     }
 };
 
@@ -57,7 +60,7 @@ private:
     Text *_txtTitle, *_txtDirectory, *_txtSearch;
     Text *_txtFilename, *_txtFiletype, *_txtFiledate;
     ArrowButton *_sortName, *_sortType, *_sortDate;
-    TextButton *_btnSelect, *_btnCut, *_btnCopy, *_btnPaste, *_btnClose;
+    TextButton *_btnCut, *_btnCopy, *_btnPaste, *_btnDelete, *_btnClose;
     std::vector<TextButton*> _rightClickMenu;
     TextButton *_btnOk, *_btnCancel;
     TextEdit *_edtQuickSearch;
@@ -66,9 +69,13 @@ private:
 
     std::string _currentDirectory;
     std::vector<FileData> _fileData;
+    std::map<size_t, size_t> _fileDataIndexMap;
     bool _foldersFirst, _sortByName, _reverseSort;
     int _clickedRow, _firstClickTime;
     bool _mouseOverRightClickMenu;
+    std::string _directoryToCopyFrom;
+    std::vector<std::string> _filesToCopy;
+    bool _moveFiles;
 
 public:
     /// Creates the File Browser window
@@ -77,8 +84,12 @@ public:
     ~FileBrowserState();
     /// Initializes the data in the File Browser window
     void init() override;
+	/// Handles keypresses.
+	void handle(Action *action) override;
     /// Populates the list of files and folders in the browser
-    void populateBrowserList(std::string directory);
+    void populateBrowserList(std::string directory, bool forceRefresh = false);
+    /// Highlights selected files in the browser window
+    void highlightSelectedFiles();
     /// Handles clicking the sort arrows
     void sortArrowClick(Action *action);
     /// Handles focusing the quick search filter
@@ -95,8 +106,12 @@ public:
     void btnCutClick(Action *action);
     /// Handles clicking the copy button
     void btnCopyClick(Action *action);
+    /// Marks files for cutting or copying
+    void markSelectedFiles();
     /// Handles clicking the paste button
     void btnPasteClick(Action *action);
+    /// Handles clicking the delete button
+    void btnDeleteClick(Action *action);
     /// Handles clicking the close button
     void btnCloseClick(Action *action);
     /// Handles clicking the OK button
