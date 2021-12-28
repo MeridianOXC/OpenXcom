@@ -1676,6 +1676,31 @@ void TechTreeViewerState::initLists()
 				++row;
 			}
 		}
+
+		// empty line
+		_lstFull->addRow(1, "");
+		_leftTopics.push_back("-");
+		_leftFlags.push_back(TTV_NONE);
+		++row;
+
+		// cost to buy
+		if (rule->getBuyCost() > 0)
+		{
+			_lstFull->addRow(1, tr("STR_TTV_COST_PER_UNIT").c_str());
+			_lstFull->setRowColor(row, _blue);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+
+			std::ostringstream txt;
+			txt << "  ";
+			txt << Unicode::formatFunding(rule->getBuyCost());
+			_lstFull->addRow(1, txt.str().c_str());
+			_lstFull->setRowColor(row, _white);
+			_leftTopics.push_back("-");
+			_leftFlags.push_back(TTV_NONE);
+			++row;
+		}
 	}
 }
 
