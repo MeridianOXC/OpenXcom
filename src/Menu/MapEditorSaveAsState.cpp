@@ -172,8 +172,12 @@ void MapEditorSaveAsState::edtMapNameOnClick(Action *)
  * Saves and returns to the previous menu
  *
  */
-void MapEditorSaveAsState::btnOkClick(Action *)
+void MapEditorSaveAsState::btnOkClick(Action *action)
 {
+    // confirm any changes made to the text edit that may have been clicked out of
+    action->getDetails()->key.keysym.sym = Options::keyOk;
+    edtMapNameOnChange(action);
+
     _game->getMapEditor()->setMapName(_mapName);
     _game->getMapEditor()->saveMapFile(_mapName);
     _game->popState();
