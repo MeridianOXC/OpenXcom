@@ -1894,6 +1894,7 @@ void MapEditorState::btnTileFilterClick(Action *action)
 		_btnTileFilterObject->setGroup(0);
 		
 		action->getDetails()->type = SDL_MOUSEBUTTONUP;
+		_tileObjectSelected->toggle(false);
 		_tileObjectSelected->mouseRelease(action, this);
 		_tileObjectSelected->draw();
 		_tileObjectSelected = 0;
@@ -2521,6 +2522,7 @@ void MapEditorState::toggleRouteMode(Action *action)
 	if (!getRouteMode())
 	{		
 		action->getDetails()->type = SDL_MOUSEBUTTONUP;
+		_nodeFilterMode->toggle(false);
 		_nodeFilterMode->mouseRelease(action, this);
 		_nodeFilterMode->draw();
 	}
