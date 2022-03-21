@@ -78,8 +78,6 @@ private:
 	SpecialAbility _specab;
 	bool _turnBeforeFirstStep;
 	int _turnCost;
-	int _moveTimeCostPercent = 100;
-	int _moveEnergyCostPercent = 100;
 	int _moveSound;
 	std::vector<int> _deathSoundMale, _deathSoundFemale;
 	std::vector<int> _selectUnitSoundMale, _selectUnitSoundFemale;
@@ -178,10 +176,6 @@ public:
 	bool getTurnBeforeFirstStep() const { return _turnBeforeFirstStep; }
 	/// Gets the turn cost.
 	int getTurnCost() const { return _turnCost; }
-	/// Multiplier of move TU cost.
-	int getMoveTimeCostPercent() const { return _moveTimeCostPercent; }
-	/// Multiplier of move Energy cost.
-	int getMoveEnergyCostPercent() const { return _moveEnergyCostPercent; }
 
 	/// Gets the move sound id. Overrides default/unit's move sound. To be used in BattleUnit constructors only too!
 	int getMoveSound() const;

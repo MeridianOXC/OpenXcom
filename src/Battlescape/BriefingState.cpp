@@ -263,7 +263,7 @@ void BriefingState::btnOkClick(Action *)
 	bs->getBattleGame()->spawnFromPrimedItems();
 	auto tally = bs->getBattleGame()->tallyUnits();
 	bool isPreview = _game->getSavedGame()->getSavedBattle()->isPreview();
-	if (tally.liveAliens > 0 || isPreview)
+	if (tally.liveAliens > 0 || tally.liveSentientAliens > 0 | isPreview)
 	{
 		_game->pushState(bs);
 		_game->getSavedGame()->getSavedBattle()->setBattleState(bs);

@@ -85,7 +85,6 @@ struct BattleUnitKills
 	YAML::Node save() const
 	{
 		YAML::Node node;
-		node.SetStyle(YAML::EmitterStyle::Flow);
 		if (!name.empty())
 			node["name"] = name;
 		if (!type.empty())
@@ -136,6 +135,7 @@ struct BattleUnitKills
 		switch (faction)
 		{
 		case FACTION_PLAYER:    return "FACTION_PLAYER";
+		case FACTION_ALIEN_PLAYER:	return "FACTION_HOSTILE";
 		case FACTION_HOSTILE:   return "FACTION_HOSTILE";
 		case FACTION_NEUTRAL:   return "FACTION_NEUTRAL";
 		default:                return "faction error";
@@ -296,7 +296,8 @@ struct BattleUnitKills
 	}
 
 	BattleUnitKills(const YAML::Node& node) { load(node); }
-	BattleUnitKills(): faction(FACTION_HOSTILE), status(STATUS_IGNORE_ME), mission(0), turn(0), id(0), side(SIDE_FRONT), bodypart(BODYPART_HEAD) { }
+	//BattleUnitKills(): faction(FACTION_HOSTILE), status(STATUS_IGNORE_ME), mission(0), turn(0), id(0), side(SIDE_FRONT), bodypart(BODYPART_HEAD) { }
+	BattleUnitKills() : faction(FACTION_ALIEN_PLAYER), status(STATUS_IGNORE_ME), mission(0), turn(0), id(0), side(SIDE_FRONT), bodypart(BODYPART_HEAD) {}
 	~BattleUnitKills() { }
 };
 

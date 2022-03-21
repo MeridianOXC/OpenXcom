@@ -90,7 +90,7 @@ UnitDieBState::UnitDieBState(BattlescapeGame *parent, BattleUnit *unit, const Ru
 	_unit->clearVisibleUnits();
 	_unit->freePatrolTarget();
 
-	if (!_parent->getSave()->isBeforeGame() && _unit->getFaction() == FACTION_HOSTILE)
+	if (!_parent->getSave()->isBeforeGame() && (_unit->getFaction() == FACTION_HOSTILE || _unit->getFaction() == FACTION_ALIEN_PLAYER))
 	{
 		std::vector<Node *> *nodes = _parent->getSave()->getNodes();
 		if (!nodes) return; // this better not happen.
@@ -260,8 +260,7 @@ void UnitDieBState::convertUnitToCorpse()
 	int size = _unit->getArmor()->getSize();
 	bool dropItems = (_unit->hasInventory() &&
 		(!Options::weaponSelfDestruction ||
-		(_unit->getOriginalFaction() != FACTION_HOSTILE || _unit->getStatus() == STATUS_UNCONSCIOUS)));
-
+		(_unit->getOriginalFaction() != FACTION_HOSTILE ||_unit->getOriginalFaction() != FACTION_ALIEN_PLAYER || _unit->getStatus() == STATUS_UNCONSCIOUS)));
 	if (!_noSound)
 	{
 		_parent->getSave()->getBattleState()->resetUiButton();

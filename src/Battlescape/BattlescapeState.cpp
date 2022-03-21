@@ -1145,7 +1145,7 @@ void BattlescapeState::btnUnitDownClick(Action *)
  */
 void BattlescapeState::btnMapUpClick(Action *)
 {
-	if (_save->getSide() == FACTION_PLAYER || _save->getDebugMode())
+	if (_save->getSide() == FACTION_PLAYER || _save->getDebugMode() || _save->getSide() == FACTION_ALIEN_PLAYER)
 		_map->getCamera()->up();
 }
 
@@ -1155,7 +1155,7 @@ void BattlescapeState::btnMapUpClick(Action *)
  */
 void BattlescapeState::btnMapDownClick(Action *)
 {
-	if (_save->getSide() == FACTION_PLAYER || _save->getDebugMode())
+	if (_save->getSide() == FACTION_PLAYER || _save->getDebugMode() || _save->getSide() == FACTION_ALIEN_PLAYER)
 		_map->getCamera()->down();
 }
 
@@ -2188,10 +2188,11 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 	_numberOfDirectlyVisibleUnits = j;
 
 	// go through all units on the map
-	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end() && j < VISIBLE_MAX; ++i)
+	// FOR HUMAN_PLAYER (HOST)
+	for (std::vector<BattleUnit *>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end() && _save->getSide() == FACTION_PLAYER && j < VISIBLE_MAX; ++i)
 	{
 		// check if they are hostile and visible (by any friendly unit)
-		if ((*i)->getOriginalFaction() == FACTION_HOSTILE && !(*i)->isOut() && (*i)->getVisible())
+		if (((*i)->getOriginalFaction() == FACTION_HOSTILE || (*i)->getOriginalFaction() == FACTION_ALIEN_PLAYER) && !(*i)->isOut() && (*i)->getVisible())
 		{
 			bool alreadyShown = false;
 			// check if they are not already shown (e.g. because we see them directly)
@@ -2212,15 +2213,53 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 			}
 		}
 	}
+	// FOR ALEIN_PLAYER (CLIENT)
+	for (std::vector<BattleUnit *>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end() && _save->getSide() == FACTION_ALIEN_PLAYER && j < VISIBLE_MAX; ++i)
+	{
+		// check if they are hostile and visible (by any friendly unit)
+		if (((*i)->getOriginalFaction() == FACTION_PLAYER) && !(*i)->isOut() && (*i)->getVisible())
+		{
+			bool alreadyShown = false;
+			// check if they are not already shown (e.g. because we see them directly)
+			for (std::vector<BattleUnit *>::iterator k = battleUnit->getVisibleUnits()->begin(); k != battleUnit->getVisibleUnits()->end(); ++k)
+			{
+				if ((*i)->getId() == (*k)->getId())
+				{
+					alreadyShown = true;
+				}
+			}
+			if (!alreadyShown)
+			{
+				_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[j]);
+				_btnVisibleUnit[j]->setVisible(true);
+				_numVisibleUnit[j]->setVisible(true);
+				_visibleUnit[j] = (*i);
+				++j;
+			}
+		}
+	}
 
 	// remember where green indicators turn blue
 	_numberOfEnemiesTotal = j;
 
-	{
+	{   // FOR HUMAN_PLAYER (HOST)
 		// go through all wounded units under player's control (incl. unconscious)
-		for (std::vector<BattleUnit*>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && j < VISIBLE_MAX; ++i)
+		for (std::vector<BattleUnit *>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && _save->getSide() == FACTION_PLAYER && j < VISIBLE_MAX; ++i)
 		{
 			if ((*i)->getFaction() == FACTION_PLAYER && (*i)->getStatus() != STATUS_DEAD && !(*i)->isIgnored() && (*i)->getFatalWounds() > 0 && (*i)->indicatorsAreEnabled())
+			{
+				_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX]);
+				_btnVisibleUnit[j]->setVisible(true);
+				_numVisibleUnit[j]->setVisible(true);
+				_visibleUnit[j] = (*i);
+				++j;
+			}
+		}
+		// FOR ALEIN_PLAYER (CLIENT)
+		// go through all wounded units under player's control (incl. unconscious)
+		for (std::vector<BattleUnit *>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && _save->getSide() == FACTION_ALIEN_PLAYER && j < VISIBLE_MAX; ++i)
+		{
+			if ((*i)->getFaction() == FACTION_ALIEN_PLAYER && (*i)->getStatus() != STATUS_DEAD && !(*i)->isIgnored() && (*i)->getFatalWounds() > 0 && (*i)->indicatorsAreEnabled())
 			{
 				_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX]);
 				_btnVisibleUnit[j]->setVisible(true);
@@ -2235,6 +2274,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 	_numberOfEnemiesTotalPlusWounded = j;
 
 	{
+		// FOR HUMAN_PLAYER (HOST)
 		// first show all stunned allies with negative health regen (usually caused by high stun level)
 		for (std::vector<BattleUnit*>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && j < VISIBLE_MAX; ++i)
 		{
@@ -2247,7 +2287,19 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 				++j;
 			}
 		}
-
+		// FOR ALEIN_PLAYER (CLIENT)
+		for (std::vector<BattleUnit *>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && j < VISIBLE_MAX; ++i)
+		{
+			if ((*i)->getOriginalFaction() == FACTION_ALIEN_PLAYER && (*i)->getStatus() == STATUS_UNCONSCIOUS && (*i)->hasNegativeHealthRegen() && (*i)->indicatorsAreEnabled())
+			{
+				_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX + 1]);
+				_btnVisibleUnit[j]->setVisible(true);
+				_numVisibleUnit[j]->setVisible(true);
+				_visibleUnit[j] = (*i);
+				++j;
+			}
+		}
+		// FOR HUMAN_PLAYER (HOST)
 		// then show all standing units under player's control with high stun level
 		for (std::vector<BattleUnit*>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && j < VISIBLE_MAX; ++i)
 		{
@@ -2256,6 +2308,21 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 				if ((*i)->getStunlevel() * 100 / (*i)->getHealth() >= 75)
 				{
 					_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX+1]);
+					_btnVisibleUnit[j]->setVisible(true);
+					_numVisibleUnit[j]->setVisible(true);
+					_visibleUnit[j] = (*i);
+					++j;
+				}
+			}
+		}
+		// FOR ALEIN_PLAYER (CLIENT)
+		for (std::vector<BattleUnit *>::iterator i = _battleGame->getSave()->getUnits()->begin(); i != _battleGame->getSave()->getUnits()->end() && j < VISIBLE_MAX; ++i)
+		{
+			if ((*i)->getFaction() == FACTION_ALIEN_PLAYER && !((*i)->isOut()) && (*i)->getHealth() > 0 && (*i)->indicatorsAreEnabled())
+			{
+				if ((*i)->getStunlevel() * 100 / (*i)->getHealth() >= 75)
+				{
+					_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX + 1]);
 					_btnVisibleUnit[j]->setVisible(true);
 					_numVisibleUnit[j]->setVisible(true);
 					_visibleUnit[j] = (*i);
@@ -2609,7 +2676,7 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)
 				{
-					if (_save->getSide() == FACTION_PLAYER)
+					if (_save->getSide() == FACTION_PLAYER || _save->getSide() == FACTION_ALIEN_PLAYER)
 					{
 						if (Options::oxceDisableHitLog)
 						{
@@ -2638,7 +2705,7 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-End" - toggle between various debug vision/brightness modes
 				else if (key == SDLK_END && ctrlPressed)
 				{
-					_map->toggleDebugVisionMode();
+					_map->toggleDebugVisionMode(); //jopper
 				}
 				// "ctrl-x" - mute/unmute unit response sounds
 				else if (key == SDLK_x && ctrlPressed)
@@ -2918,6 +2985,10 @@ void BattlescapeState::saveAIMap()
 					switch(wat->getFaction())
 					{
 					case FACTION_HOSTILE:
+						// #4080C0 is Volutar Blue
+						characterRGBA(img, r.x, r.y, (tilePos.z - z) ? 'a' : 'A', 0x40, 0x80, 0xC0, 0xff);
+						break;
+					case FACTION_ALIEN_PLAYER:
 						// #4080C0 is Volutar Blue
 						characterRGBA(img, r.x, r.y, (tilePos.z - z) ? 'a' : 'A', 0x40, 0x80, 0xC0, 0xff);
 						break;
@@ -3403,9 +3474,9 @@ bool BattlescapeState::getMouseOverIcons() const
  * @param allowSaving True, if the help button was clicked.
  * @return True if the player can still press buttons.
  */
-bool BattlescapeState::allowButtons(bool allowSaving) const
+bool BattlescapeState::allowButtons(bool allowSaving) const // Joper
 {
-	return ((allowSaving || _save->getSide() == FACTION_PLAYER || _save->getDebugMode())
+	return ((allowSaving || _save->getSide() == FACTION_PLAYER || _save->getDebugMode() || _save->getSide() == FACTION_ALIEN_PLAYER)
 		&& (_battleGame->getPanicHandled() || _firstInit )
 		&& (allowSaving || !_battleGame->isBusy() || _firstInit)
 		&& (_map->getProjectile() == 0));
@@ -3520,6 +3591,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 						continue;
 					}
 					if ((weaponRule->getAllowTargetFriendGround() && (*i)->getOriginalFaction() == FACTION_PLAYER) ||
+						(weaponRule->getAllowTargetFriendGround() && (*i)->getOriginalFaction() == FACTION_ALIEN_PLAYER) ||
 						(weaponRule->getAllowTargetNeutralGround() && (*i)->getOriginalFaction() == FACTION_NEUTRAL) ||
 						(weaponRule->getAllowTargetHostileGround() && (*i)->getOriginalFaction() == FACTION_HOSTILE))
 					{
@@ -3543,6 +3615,7 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 					if (tile != 0 && tile->getUnit() && (tile->getUnit()->isWoundable() || weaponRule->getAllowTargetImmune()))
 					{
 						if ((weaponRule->getAllowTargetFriendStanding() && tile->getUnit()->getOriginalFaction() == FACTION_PLAYER) ||
+							(weaponRule->getAllowTargetFriendGround() && tile->getUnit()->getOriginalFaction() == FACTION_ALIEN_PLAYER) ||
 							(weaponRule->getAllowTargetNeutralStanding() && tile->getUnit()->getOriginalFaction() == FACTION_NEUTRAL) ||
 							(weaponRule->getAllowTargetHostileStanding() && tile->getUnit()->getOriginalFaction() == FACTION_HOSTILE))
 						{
@@ -3565,6 +3638,9 @@ void BattlescapeState::txtTooltipInExtra(Action *action, bool leftHand, bool spe
 				} else if (targetUnit->getOriginalFaction() == FACTION_NEUTRAL) {
 					_txtTooltip->setColor(Palette::blockOffset(_medikitOrange));
 					tooltipExtra << tr("STR_TARGET_NEUTRAL");
+				} else if (targetUnit->getOriginalFaction() == FACTION_ALIEN_PLAYER)
+				{	_txtTooltip->setColor(Palette::blockOffset(_medikitRed));
+					tooltipExtra << tr("STR_TARGET_ENEMY_PLAYER"); //jopper Changes medkit pallete i guess. NOt sure rightnow.
 				} else if (targetUnit->getOriginalFaction() == FACTION_PLAYER) {
 					_txtTooltip->setColor(Palette::blockOffset(_medikitGreen));
 					tooltipExtra << tr("STR_TARGET_FRIEND");
@@ -3767,7 +3843,7 @@ void BattlescapeState::stopScrolling(Action *action)
 		SDL_WarpMouse(_xBeforeMouseScrolling, _yBeforeMouseScrolling);
 		action->setMouseAction(_xBeforeMouseScrolling, _yBeforeMouseScrolling, _map->getX(), _map->getY());
 		_battleGame->setupCursor();
-		if (_battleGame->getCurrentAction()->actor == 0 && (_save->getSide() == FACTION_PLAYER || _save->getDebugMode()))
+		if (_battleGame->getCurrentAction()->actor == 0 && (_save->getSide() == FACTION_PLAYER || _save->getSide() == FACTION_ALIEN_PLAYER || _save->getDebugMode()))
 		{
 			getMap()->setCursorType(CT_NORMAL);
 		}

@@ -92,7 +92,6 @@ void Node::load(const YAML::Node &node)
 YAML::Node Node::save() const
 {
 	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
 	node["id"] = _id;
 	node["position"] = _pos;
 	//node["segment"] = _segment;

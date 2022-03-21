@@ -141,14 +141,6 @@ void Armor::load(const YAML::Node &node, const ModScript &parsers, Mod *mod)
 
 	_turnBeforeFirstStep = node["turnBeforeFirstStep"].as<bool>(_turnBeforeFirstStep);
 	_turnCost = node["turnCost"].as<int>(_turnCost);
-	if (const YAML::Node &move =  node["moveCost"])
-	{
-		if (const YAML::Node &base =  move["basePercent"])
-		{
-			std::tie(_moveTimeCostPercent, _moveEnergyCostPercent) = base.as<std::pair<int, int>>();
-		}
-		//TODO: add other moddifers for move
-	}
 
 	mod->loadSoundOffset(_type, _moveSound, node["moveSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _deathSoundMale, node["deathMale"], "BATTLE.CAT");
@@ -1186,9 +1178,6 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	UnitStats::addGetStatsScript<&Armor::_stats>(ar, "Stats.");
 
 	ar.add<&getArmorValueScript>("getArmor");
-
-	ar.addField<&Armor::_moveTimeCostPercent>("MoveCost.getBaseTimePercent");
-	ar.addField<&Armor::_moveEnergyCostPercent>("MoveCost.getBaseEnergyPercent");
 
 	ar.addScriptValue<BindBase::OnlyGet, &Armor::_scriptValues>();
 	ar.addDebugDisplay<&debugDisplayScript>();

@@ -385,7 +385,9 @@ void AlienInventoryState::calculateRangedWeapon(BattleUnit* unit, BattleItem* we
 				&& closeQuartersTarget->getEnergy() >= _game->getMod()->getCloseQuartersEnergyCostGlobal() // Unit must have enough Energy
 				&& tileEngine->validMeleeRange(closeQuartersTarget, unit, checkDirection) // Unit must be able to see the unit attempting to fire
 				&& !(unit->getFaction() == FACTION_PLAYER && closeQuartersTarget->getFaction() == FACTION_NEUTRAL) // Civilians don't inhibit player
-				&& !(unit->getFaction() == FACTION_NEUTRAL && closeQuartersTarget->getFaction() == FACTION_PLAYER)) // Player doesn't inhibit civilians
+				&& !(unit->getFaction() == FACTION_NEUTRAL && closeQuartersTarget->getFaction() == FACTION_PLAYER) // Player doesn't inhibit civilians
+				&& !(unit->getFaction() == FACTION_ALIEN_PLAYER && closeQuartersTarget->getFaction() == FACTION_NEUTRAL) // Civilians don't inhibit ALIEN player
+				&& !(unit->getFaction() == FACTION_NEUTRAL && closeQuartersTarget->getFaction() == FACTION_ALIEN_PLAYER)) // ALIEN Player doesn't inhibit civilians
 			{
 				closeQuartersTargetList.push_back(closeQuartersTarget);
 			}

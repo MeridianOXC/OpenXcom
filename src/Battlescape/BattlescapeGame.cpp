@@ -224,10 +224,10 @@ void BattlescapeGame::think()
 			return;
 		}
 		// it's a non player side (ALIENS or CIVILIANS)
-		if (_save->getSide() != FACTION_PLAYER)
+		if (_save->getSide() != FACTION_PLAYER && _save->getSide() != FACTION_ALIEN_PLAYER) // Joper could be not working properly
 		{
 			_save->resetUnitHitStates();
-			if (!_debugPlay)
+			if (!_debugPlay) //( JOPER - this Handles the selection of units)
 			{
 				if (_save->getSelectedUnit())
 				{
@@ -271,7 +271,7 @@ void BattlescapeGame::init()
 {
 	if (_save->getSide() == FACTION_PLAYER && _save->getTurn() > 1)
 	{
-		_playerPanicHandled = false;
+		_playerPanicHandled = false; // BUG: PLAYER TURN 2, can't use UI button
 	}
 }
 
@@ -326,16 +326,57 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	AIModule *ai = unit->getAIModule();
 	if (!ai)
 	{
-		// for some reason the unit had no AI routine assigned..
-		unit->setAIModule(new AIModule(_save, unit, 0));
-		ai = unit->getAIModule();
+		_parentState->debug("Idle");
+		_AIActionCounter = 0;
+		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+		{
+			if (!_save->getDebugMode())
+			{
+				_endTurnRequested = true;
+				statePushBack(0); // end AI turn
+			}
+			else
+			{
+				_save->selectNextPlayerUnit();
+				_debugPlay = true;
+			}
+		}
+		if (_save->getSelectedUnit())
+		{
+			_parentState->updateSoldierInfo();
+			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
+			if (_save->getSelectedUnit()->getId() <= unit->getId())
+			{
+				_AISecondMove = true;
+			}
+		}
 	}
-	_AIActionCounter++;
 	if (_AIActionCounter == 1)
 	{
-		_playedAggroSound = false;
-		unit->setHiding(false);
-		if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
+		_parentState->debug("Idle");
+		_AIActionCounter = 0;
+		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
+		{
+			if (!_save->getDebugMode())
+			{
+				_endTurnRequested = true;
+				statePushBack(0); // end AI turn
+			}
+			else
+			{
+				_save->selectNextPlayerUnit();
+				_debugPlay = true;
+			}
+		}
+		if (_save->getSelectedUnit())
+		{
+			_parentState->updateSoldierInfo();
+			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
+			if (_save->getSelectedUnit()->getId() <= unit->getId())
+			{
+				_AISecondMove = true;
+			}
+		}
 	}
 
 	BattleAction action;
@@ -356,71 +397,83 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	bool walkToItem = false;
 	if (!weapon || !weapon->haveAnyAmmo())
 	{
-		if (unit->getOriginalFaction() != FACTION_PLAYER)
+		_parentState->debug("Idle");
+		_AIActionCounter = 0;
+		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
 		{
-			if ((unit->getOriginalFaction() == FACTION_HOSTILE && unit->getVisibleUnits()->empty()) || pickUpWeaponsMoreActively)
+			if (!_save->getDebugMode())
 			{
-				weaponPickedUp = findItem(&action, pickUpWeaponsMoreActively, walkToItem);
+				_endTurnRequested = true;
+				statePushBack(0); // end AI turn
+			}
+			else
+			{
+				_save->selectNextPlayerUnit();
+				_debugPlay = true;
 			}
 		}
-	}
-	if (pickUpWeaponsMoreActively && weaponPickedUp)
-	{
-		// you have just picked up a weapon... use it if you can!
-		_parentState->debug("Re-Rethink");
-		unit->getAIModule()->setWeaponPickedUp();
-		unit->think(&action);
-	}
-
-	if (unit->getCharging() != 0)
-	{
-		if (unit->hasAggroSound() && !_playedAggroSound)
+		if (_save->getSelectedUnit())
 		{
-			getMod()->getSoundByDepth(_save->getDepth(), unit->getRandomAggroSound())->play(-1, getMap()->getSoundAngle(unit->getPosition()));
-			_playedAggroSound = true;
+			_parentState->updateSoldierInfo();
+			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
+			if (_save->getSelectedUnit()->getId() <= unit->getId())
+			{
+				_AISecondMove = true;
+			}
 		}
 	}
 	if (action.type == BA_WALK)
 	{
-		ss << "Walking to " << action.target;
-		_parentState->debug(ss.str());
-
-		auto* targetTile = _save->getTile(action.target);
-		if (targetTile)
+		_parentState->debug("Idle");
+		_AIActionCounter = 0;
+		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
 		{
-			_save->getPathfinding()->calculate(action.actor, action.target, BAM_NORMAL);
+			if (!_save->getDebugMode())
+			{
+				_endTurnRequested = true;
+				statePushBack(0); // end AI turn
+			}
+			else
+			{
+				_save->selectNextPlayerUnit();
+				_debugPlay = true;
+			}
 		}
-		if (_save->getPathfinding()->getStartDirection() != -1)
+		if (_save->getSelectedUnit())
 		{
-			statePushBack(new UnitWalkBState(this, action));
-		}
-		else if (walkToItem)
-		{
-			// impossible to walk to this tile, don't try to pick up an item from there for the rest of the turn
-			targetTile->setDangerous(true);
+			_parentState->updateSoldierInfo();
+			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
+			if (_save->getSelectedUnit()->getId() <= unit->getId())
+			{
+				_AISecondMove = true;
+			}
 		}
 	}
 
 	if (action.type == BA_SNAPSHOT || action.type == BA_AUTOSHOT || action.type == BA_AIMEDSHOT || action.type == BA_THROW || action.type == BA_HIT || action.type == BA_MINDCONTROL || action.type == BA_USE || action.type == BA_PANIC || action.type == BA_LAUNCH)
 	{
-		ss.clear();
-		ss << "Attack type=" << action.type << " target="<< action.target << " weapon=" << action.weapon->getRules()->getName();
-		_parentState->debug(ss.str());
-		action.updateTU();
-		if (action.type == BA_MINDCONTROL || action.type == BA_PANIC || action.type == BA_USE)
+		_parentState->debug("Idle");
+		_AIActionCounter = 0;
+		if (_save->selectNextPlayerUnit(true, _AISecondMove) == 0)
 		{
-			statePushBack(new PsiAttackBState(this, action));
-		}
-		else
-		{
-			statePushBack(new UnitTurnBState(this, action));
-			if (action.type == BA_HIT)
+			if (!_save->getDebugMode())
 			{
-				statePushBack(new MeleeAttackBState(this, action));
+				_endTurnRequested = true;
+				statePushBack(0); // end AI turn
 			}
 			else
 			{
-				statePushBack(new ProjectileFlyBState(this, action));
+				_save->selectNextPlayerUnit();
+				_debugPlay = true;
+			}
+		}
+		if (_save->getSelectedUnit())
+		{
+			_parentState->updateSoldierInfo();
+			getMap()->getCamera()->centerOnPosition(_save->getSelectedUnit()->getPosition());
+			if (_save->getSelectedUnit()->getId() <= unit->getId())
+			{
+				_AISecondMove = true;
 			}
 		}
 	}
@@ -609,7 +662,7 @@ void BattlescapeGame::endTurn()
 	_triggerProcessed.reset();
 	_endTurnProcessed.reset();
 
-	if (_save->getSide() == FACTION_PLAYER)
+	if ((_save->getSide() == FACTION_PLAYER) || (_save->getSide() == FACTION_ALIEN_PLAYER))
 	{
 		setupCursor();
 	}
@@ -617,6 +670,24 @@ void BattlescapeGame::endTurn()
 	{
 		getMap()->setCursorType(CT_NONE);
 	}
+	// JOPER HOST 
+	//if ((_save->getSide() == FACTION_PLAYER) || (_save->getSide() == FACTION_ALIEN_PLAYER))
+	//{
+	//	setupCursor();
+	//}
+	//else
+	//{
+	//	getMap()->setCursorType(CT_NONE);
+	//}
+	// Joper CLIENT
+	//if (_save->getSide() == FACTION_ALIEN_PLAYER)
+	//{
+	//	setupCursor();
+	//}
+	//else
+	//{
+	//	getMap()->setCursorType(CT_NONE);
+	//}
 
 	checkForCasualties(nullptr, BattleActionAttack{ }, false, false);
 
@@ -780,7 +851,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 						if (!victim->isCosmetic())
 						{
 							(*i)->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
-							if (victim->getFaction() == FACTION_HOSTILE)
+							if (victim->getFaction() == FACTION_HOSTILE || victim->getFaction() == FACTION_ALIEN_PLAYER)
 							{
 								(*i)->getStatistics()->slaveKills++;
 							}
@@ -815,7 +886,9 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 
 					// if there is a known murderer, he will get a morale bonus if he is of a different faction (what with neutral?)
 					if ((victim->getOriginalFaction() == FACTION_PLAYER && murderer->getFaction() == FACTION_HOSTILE) ||
-						(victim->getOriginalFaction() == FACTION_HOSTILE && murderer->getFaction() == FACTION_PLAYER))
+						(victim->getOriginalFaction() == FACTION_HOSTILE && murderer->getFaction() == FACTION_PLAYER) ||
+						(victim->getOriginalFaction() == FACTION_PLAYER && murderer->getFaction() == FACTION_ALIEN_PLAYER) ||
+						(victim->getOriginalFaction() == FACTION_ALIEN_PLAYER && murderer->getFaction() == FACTION_PLAYER))
 					{
 						murderer->moraleChange(20 * modifier / 100);
 					}
@@ -842,8 +915,8 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 				if (victim->getFaction() != FACTION_NEUTRAL)
 				{
 					int modifier = _save->getUnitMoraleModifier(victim);
-					int loserMod =  _save->getFactionMoraleModifier(victim->getOriginalFaction() != FACTION_HOSTILE);
-					int winnerMod = _save->getFactionMoraleModifier(victim->getOriginalFaction() == FACTION_HOSTILE);
+					int loserMod = _save->getFactionMoraleModifier(victim->getOriginalFaction() != FACTION_HOSTILE & victim->getOriginalFaction() != FACTION_ALIEN_PLAYER);
+					int winnerMod = _save->getFactionMoraleModifier(victim->getOriginalFaction() == FACTION_HOSTILE || victim->getOriginalFaction() == FACTION_ALIEN_PLAYER);
 					for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 					{
 						if (!(*i)->isOut() && (*i)->getArmor()->getSize() == 1)
@@ -913,7 +986,9 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 				if (getMod()->getStunningImprovesMorale() && murderer && !victim->getStatistics()->wasUnconcious)
 				{
 					if ((victim->getOriginalFaction() == FACTION_PLAYER && murderer->getFaction() == FACTION_HOSTILE) ||
-						(victim->getOriginalFaction() == FACTION_HOSTILE && murderer->getFaction() == FACTION_PLAYER))
+						(victim->getOriginalFaction() == FACTION_HOSTILE && murderer->getFaction() == FACTION_PLAYER) ||
+						(victim->getOriginalFaction() == FACTION_PLAYER && murderer->getFaction() == FACTION_ALIEN_PLAYER) ||
+						(victim->getOriginalFaction() == FACTION_ALIEN_PLAYER && murderer->getFaction() == FACTION_PLAYER))
 					{
 						// the murderer gets a morale bonus if he is of a different faction (excluding neutrals)
 						murderer->moraleChange(20);
@@ -938,6 +1013,15 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 
 	BattleUnit *bu = _save->getSelectedUnit();
 	if (_save->getSide() == FACTION_PLAYER)
+	{
+		_parentState->resetUiButton();
+
+		if (bu && !bu->isOut())
+		{
+			_parentState->updateUiButton(bu);
+		}
+	}
+	if (_save->getSide() == FACTION_ALIEN_PLAYER)
 	{
 		_parentState->resetUiButton();
 
@@ -1091,7 +1175,9 @@ void BattlescapeGame::setupCursor()
  */
 bool BattlescapeGame::playableUnitSelected() const
 {
-	return _save->getSelectedUnit() != 0 && (_save->getSide() == FACTION_PLAYER || _save->getDebugMode());
+	return _save->getSelectedUnit() != 0 && (_save->getSide() == FACTION_ALIEN_PLAYER || _save->getSide() == FACTION_PLAYER || _save->getDebugMode());
+	// JOPPER FOR CLIENT 
+	// return _save->getSelectedUnit() != 0 && (_save->getSide() == FACTION_ALIEN_PLAYER);
 }
 
 /**
@@ -1191,8 +1277,12 @@ void BattlescapeGame::popState()
 	auto first = _states.front();
 	BattleAction action = first->getAction();
 
-	if (action.actor && !action.result.empty() && action.actor->getFaction() == FACTION_PLAYER
-		&& _playerPanicHandled && (_save->getSide() == FACTION_PLAYER || _debugPlay))
+	if (
+		(action.actor && !action.result.empty() && action.actor->getFaction() == FACTION_PLAYER
+		&& _playerPanicHandled && (_save->getSide() == FACTION_PLAYER || _debugPlay)) || //jopper
+		(action.actor && !action.result.empty() && action.actor->getFaction() == FACTION_ALIEN_PLAYER
+		&& _playerPanicHandled && (_save->getSide() == FACTION_ALIEN_PLAYER || _debugPlay))
+		) 
 	{
 		_parentState->warning(action.result);
 		actionFailed = true;
@@ -1204,9 +1294,9 @@ void BattlescapeGame::popState()
 	// handle the end of this unit's actions
 	if (action.actor && noActionsPending(action.actor))
 	{
-		if (action.actor->getFaction() == FACTION_PLAYER)
+		if ((action.actor->getFaction() == FACTION_PLAYER)||(action.actor->getFaction() == FACTION_ALIEN_PLAYER))
 		{
-			if (_save->getSide() == FACTION_PLAYER)
+			if ((_save->getSide() == FACTION_PLAYER)||(_save->getSide() == FACTION_ALIEN_PLAYER))
 			{
 				// after throwing the cursor returns to default cursor, after shooting it stays in targeting mode and the player can shoot again in the same mode (autoshot,snap,aimed)
 				if ((action.type == BA_THROW || action.type == BA_LAUNCH) && !actionFailed)
@@ -1225,7 +1315,7 @@ void BattlescapeGame::popState()
 		}
 		else
 		{
-			if (_save->getSide() != FACTION_PLAYER && !_debugPlay)
+			if (_save->getSide() != FACTION_PLAYER && _save->getSide() != FACTION_ALIEN_PLAYER && !_debugPlay)
 			{
 				// AI does three things per unit, before switching to the next, or it got killed before doing the second thing
 				if (_AIActionCounter > 2 || _save->getSelectedUnit() == 0 || _save->getSelectedUnit()->isOut())
@@ -1290,7 +1380,7 @@ void BattlescapeGame::popState()
 		cancelCurrentAction();
 		getMap()->setCursorType(CT_NORMAL, 1);
 		_parentState->getGame()->getCursor()->setVisible(true);
-		if (_save->getSide() == FACTION_PLAYER)
+		if (_save->getSide() == FACTION_PLAYER || _save->getSide() == FACTION_ALIEN_PLAYER)
 			_save->setSelectedUnit(0);
 		else
 			_save->selectNextPlayerUnit(true, true);
@@ -1443,7 +1533,7 @@ bool BattlescapeGame::handlePanickingPlayer()
 {
 	for (std::vector<BattleUnit*>::iterator j = _save->getUnits()->begin(); j != _save->getUnits()->end(); ++j)
 	{
-		if ((*j)->getFaction() == FACTION_PLAYER && (*j)->getOriginalFaction() == FACTION_PLAYER && handlePanickingUnit(*j))
+		if ((((*j)->getFaction() == FACTION_PLAYER && (*j)->getOriginalFaction() == FACTION_PLAYER) || ((*j)->getFaction() == FACTION_ALIEN_PLAYER && (*j)->getOriginalFaction() == FACTION_ALIEN_PLAYER)) && handlePanickingUnit(*j))
 			return false;
 	}
 	return true;
@@ -1762,7 +1852,7 @@ void BattlescapeGame::primaryAction(Position pos)
 			if (targetUnit && targetUnit->getFaction() != _save->getSelectedUnit()->getFaction() && targetUnit->getVisible())
 			{
 				if (!_currentAction.weapon->getRules()->isLOSRequired() ||
-					(_currentAction.actor->getFaction() == FACTION_PLAYER && targetUnit->getFaction() != FACTION_HOSTILE) ||
+					(_currentAction.actor->getFaction() == FACTION_PLAYER && targetUnit->getFaction() != FACTION_HOSTILE && targetUnit->getFaction() != FACTION_ALIEN_PLAYER) ||
 					std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
 				{
 					std::string error;
@@ -1790,7 +1880,8 @@ void BattlescapeGame::primaryAction(Position pos)
 			{
 				auto targetFaction = targetUnit->getFaction();
 				bool psiTargetAllowed = _currentAction.weapon->getRules()->isTargetAllowed(targetFaction);
-				if (_currentAction.type == BA_MINDCONTROL && targetFaction == FACTION_PLAYER)
+				if ((_currentAction.actor->getFaction() == FACTION_PLAYER && _currentAction.type == BA_MINDCONTROL && targetFaction == FACTION_PLAYER)
+					|| (_currentAction.actor->getFaction() == FACTION_ALIEN_PLAYER && _currentAction.type == BA_MINDCONTROL && targetFaction == FACTION_ALIEN_PLAYER)) // JOPER DOUBLE CHECK IF ALINS/x-com UNIT MIND CONTROL THEIR OWN UNITS BUG
 				{
 					// no mind controlling allies, unwanted side effects
 					psiTargetAllowed = false;
@@ -1808,7 +1899,11 @@ void BattlescapeGame::primaryAction(Position pos)
 					_currentAction.updateTU();
 					_currentAction.target = pos;
 					if (!_currentAction.weapon->getRules()->isLOSRequired() ||
-						(_currentAction.actor->getFaction() == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) ||
+						// old line for controllnig AI units
+						// (_currentAction.actor->getFaction() == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) || // Joper. No idea WTF is this. Related to PSIONICKS BUG. A later note. Should allow player factions to mind control eacho other
+						// new lines begin
+						((_currentAction.actor->getFaction() == FACTION_PLAYER && targetFaction != FACTION_ALIEN_PLAYER) ||
+						(_currentAction.actor->getFaction() == FACTION_ALIEN_PLAYER && targetFaction != FACTION_PLAYER)) ||
 						std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
 					{
 						// get the sound/animation started
@@ -1959,7 +2054,11 @@ void BattlescapeGame::psiButtonAction()
 		return;
 	BattleItem *item = _save->getSelectedUnit()->getSpecialWeapon(BT_PSIAMP);
 	_currentAction.type = BA_NONE;
-	if (item->getRules()->getCostPanic().Time > 0)
+    if ((item->getRules()->getCostMind().Time > 0) & _save->isCtrlPressed(true))
+	{
+		_currentAction.type = BA_MINDCONTROL;
+	}
+	else if (item->getRules()->getCostPanic().Time > 0)
 	{
 		_currentAction.type = BA_PANIC;
 	}
@@ -1984,11 +2083,13 @@ void BattlescapeGame::psiAttackMessage(BattleActionAttack attack, BattleUnit *vi
 	if (victim)
 	{
 		Game *game = getSave()->getBattleState()->getGame();
-		if (attack.attacker->getFaction() == FACTION_HOSTILE)
+		if (attack.attacker->getFaction() == FACTION_HOSTILE || attack.attacker->getFaction() == FACTION_ALIEN_PLAYER)
 		{
 			// show a little infobox with the name of the unit and "... is under alien control"
 			if (attack.type == BA_MINDCONTROL)
 				game->pushState(new InfoboxState(game->getLanguage()->getString("STR_IS_UNDER_ALIEN_CONTROL", victim->getGender()).arg(victim->getName(game->getLanguage()))));
+			else if (attack.type == BA_PANIC)
+				game->pushState(new InfoboxState(game->getLanguage()->getString("STR_MORALE_ATTACK_SUCCESSFUL")));
 		}
 		else
 		{
@@ -2140,13 +2241,13 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 				faction = FACTION_PLAYER;
 				break;
 			case 1:
-				faction = FACTION_HOSTILE;
+				faction = FACTION_ALIEN_PLAYER; // Was FACTION_HOSTILE
 				break;
 			case 2:
 				faction = FACTION_NEUTRAL;
 				break;
 			default:
-				faction = FACTION_HOSTILE;
+				faction = FACTION_ALIEN_PLAYER; // was FACTION_HOSTILE (old note)Joper. No need to touch this yet, won't be used in vanilla.Except for zombification perhabs...
 				break;
 		}
 	}
@@ -2825,7 +2926,7 @@ BattlescapeTally BattlescapeGame::tallyUnits()
 		//TODO: add handling of stunned units for display purposes in AbortMissionState
 		if (!(*j)->isOut() && (!(*j)->isOutThresholdExceed() || ((*j)->getUnitRules() && (*j)->getUnitRules()->getSpawnUnit())))
 		{
-			if ((*j)->getOriginalFaction() == FACTION_HOSTILE)
+			if (((*j)->getOriginalFaction() == FACTION_HOSTILE) || (*j)->getOriginalFaction() == FACTION_ALIEN_PLAYER) // JOPER. POSSIBLY A BUG. THIS LINE SHOULD NOT WORK BUT IT WORKS.
 			{
 				if (Options::allowPsionicCapture && (*j)->getFaction() == FACTION_PLAYER && (*j)->getCapturable())
 				{
@@ -3179,8 +3280,11 @@ void BattlescapeGame::autoEndBattle()
 			end = (tally.liveAliens == 0 || tally.liveSoldiers == 0);
 			if (tally.liveAliens == 0)
 			{
+				if (tally.liveSentientAliens == 0)
+				{
 				_allEnemiesNeutralized = true; // remember that all aliens were neutralized (and the battle should end no matter what)
 				askForConfirmation = true;
+				}
 			}
 		}
 		if (end)

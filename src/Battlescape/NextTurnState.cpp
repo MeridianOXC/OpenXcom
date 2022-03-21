@@ -213,7 +213,7 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 			bool anyoneStanding = false;
 			for (std::vector<BattleUnit*>::iterator j = _battleGame->getUnits()->begin(); j != _battleGame->getUnits()->end(); ++j)
 			{
-				if ((*j)->getOriginalFaction() == FACTION_HOSTILE && !(*j)->isOut())
+				if (((*j)->getOriginalFaction() == FACTION_HOSTILE || (*j)->getOriginalFaction() == FACTION_ALIEN_PLAYER) && !(*j)->isOut())
 				{
 					anyoneStanding = true;
 				}
@@ -225,7 +225,7 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 				EnvironmentalCondition neutral = sc->getEnvironmetalCondition("STR_NEUTRAL");
 
 				bool showMessage = false;
-				if (applyEnvironmentalConditionToFaction(FACTION_HOSTILE, hostile))
+				if ((applyEnvironmentalConditionToFaction(FACTION_HOSTILE, hostile) || applyEnvironmentalConditionToFaction(FACTION_ALIEN_PLAYER, hostile)))
 				{
 					_txtMessage2->setColor(hostile.color);
 					_txtMessage2->setText(tr(hostile.message));
@@ -264,7 +264,7 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 	}
 
 	std::string messageReinforcements;
-	bool allowReinforcements = _battleGame->getSide() == FACTION_HOSTILE && _battleGame->getTurn() > 0;
+	bool allowReinforcements = (_battleGame->getSide() == FACTION_HOSTILE || _battleGame->getSide() == FACTION_ALIEN_PLAYER) && _battleGame->getTurn() > 0; //Bug double reinforcements
 	if (_battleGame->getSide() == FACTION_PLAYER && _battleGame->getTurn() == 0)
 	{
 		allowReinforcements = true;
@@ -304,7 +304,7 @@ void NextTurnState::init()
 		_battleGame->getBattleGame()->cleanupDeleted();
 		_game->popState();
 
-		if (_battleGame->getSide() == FACTION_HOSTILE)
+		if (_battleGame->getSide() == FACTION_ALIEN_PLAYER)
 		{
 			// end preview
 			_state->finishBattle(false, 42);
@@ -315,10 +315,15 @@ void NextTurnState::init()
 			_state->btnCenterClick(0);
 
 			// Try to reactivate the touch buttons at the start of the player's turn
-			if (_battleGame->getSide() == FACTION_PLAYER)
+			if ((_battleGame->getSide() == FACTION_PLAYER) || (_battleGame->getSide() == FACTION_ALIEN_PLAYER) || (_battleGame->getSide() == FACTION_NEUTRAL)) // bug neural terror skip turn abort
 			{
 				_state->toggleTouchButtons(false, true);
 			}
+			// Try to reactivate the touch buttons at the start of the player's turn THE CLIENT
+			//if (_battleGame->getSide() == FACTION_ALIEN_PLAYER)
+			//{
+			//	_state->toggleTouchButtons(false, true);
+			//}
 		}
 	}
 }
@@ -490,7 +495,7 @@ void NextTurnState::close()
 
 	auto tally = _state->getBattleGame()->tallyUnits();
 
-	if (_battleGame->getBattleGame()->areAllEnemiesNeutralized())
+	if (_battleGame->getBattleGame()->areAllEnemiesNeutralized()) // DELETE THIS AND OTHER THING TO MIND CONTROL EVERYTHING
 	{
 		// we don't care if someone was revived in the meantime, the decision to end the battle was already made!
 		tally.liveAliens = 0;
@@ -498,7 +503,7 @@ void NextTurnState::close()
 		// mind control anyone who was revived (needed for correct recovery in the debriefing)
 		for (auto bu : *_battleGame->getUnits())
 		{
-			if (bu->getOriginalFaction() == FACTION_HOSTILE && !bu->isOut())
+			if ((bu->getOriginalFaction() == FACTION_HOSTILE || bu->getOriginalFaction() == FACTION_ALIEN_PLAYER) && !bu->isOut()) // ALSO DELETE THIS AND OTHER THI
 			{
 				bu->convertToFaction(FACTION_PLAYER);
 			}
@@ -507,7 +512,23 @@ void NextTurnState::close()
 		// reset needed because of the potential next stage in multi-stage missions
 		_battleGame->getBattleGame()->resetAllEnemiesNeutralized();
 	}
+	 // DELETE THIS AND OTHER THING TO MIND CONTROL EVERYTHING
+	{
+		// we don't care if someone was revived in the meantime, the decision to end the battle was already made!
+		//tally.liveAliens = 0;
 
+		// mind control anyone who was revived (needed for correct recovery in the debriefing)
+		//for (auto bu : *_battleGame->getUnits())
+		//{
+		//	if (bu->getOriginalFaction() == FACTION_HOSTILE) // ALSO DELETE THIS AND OTHER THI
+		//	{
+		//		bu->convertToFaction(FACTION_ALIEN_PLAYER);
+		//	}
+		//}
+
+		// reset needed because of the potential next stage in multi-stage missions
+		// _battleGame->getBattleGame()->resetAllEnemiesNeutralized();
+	}
 	// not "escort the VIPs" missions, not the final mission and all aliens dead.
 	bool killingAllAliensIsNotEnough = _battleGame->getObjectiveType() == MUST_DESTROY || (_battleGame->getVIPSurvivalPercentage() > 0 && _battleGame->getVIPEscapeType() != ESCAPE_NONE);
 	if ((!killingAllAliensIsNotEnough && tally.liveAliens == 0) || tally.liveSoldiers == 0)
@@ -517,13 +538,27 @@ void NextTurnState::close()
 	else
 	{
 		_state->btnCenterClick(0);
-
-		// Try to reactivate the touch buttons at the start of the player's turn
-		if (_battleGame->getSide() == FACTION_PLAYER)
+		// Try to reactivate the touch buttons at the start of the player's turn HOST
+		if ((_battleGame->getSide() == FACTION_PLAYER) || (_battleGame->getSide() == FACTION_ALIEN_PLAYER) || (_battleGame->getSide() == FACTION_NEUTRAL)) // bug neural terror skip turn abort 
 		{
 			_state->toggleTouchButtons(false, true);
 		}
-
+		// Try to reactivate the touch buttons at the start of the player's turn HOST
+		//if (_battleGame->getSide() == FACTION_PLAYER)
+		//{
+		//	_state->toggleTouchButtons(false, true);
+		//}
+		// Try to reactivate the touch buttons at the start of the player's turn THE CLIENT
+		//if (_battleGame->getSide() == FACTION_ALIEN_PLAYER)
+		//{
+		//	_state->toggleTouchButtons(false, true);
+		//}
+		// Try to reactivate the touch buttons at the start of the player's turn NEUTRAL
+		//if (_battleGame->getSide() == FACTION_NEUTRAL)
+		//{
+		//	_state->toggleTouchButtons(false, true);
+		//}
+		//
 		// Autosave every set amount of turns
 		if ((_currentTurn == 1 || _currentTurn % Options::autosaveFrequency == 0) && _battleGame->getSide() == FACTION_PLAYER)
 		{
@@ -929,7 +964,7 @@ bool NextTurnState::deployReinforcements(const ReinforcementsData &wave)
  */
 BattleUnit* NextTurnState::addReinforcement(const ReinforcementsData &wave, Unit *rules, int alienRank, bool civilian)
 {
-	BattleUnit* unit = _battleGame->createTempUnit(rules, civilian ? FACTION_NEUTRAL : FACTION_HOSTILE);
+	BattleUnit* unit = _battleGame->createTempUnit(rules, civilian ? FACTION_NEUTRAL : FACTION_ALIEN_PLAYER);
 
 	// 1. try nodes first
 	bool unitPlaced = false;

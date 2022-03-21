@@ -108,7 +108,8 @@ struct BattlescapeTally
 	int liveAliens = 0;
 	/// number of live soldiers (only ones that are not MC'ed, including tanks, but not summoned units)
 	int liveSoldiers = 0;
-
+	/// number of live soldiers (only ones that are not MC'ed, including tanks, but not summoned units) under ALien player control
+	int liveSentientAliens = 0;
 	/// number of live soldiers on entrance tiles
 	int inEntrance = 0;
 	/// number of live soldiers on exit tiles.

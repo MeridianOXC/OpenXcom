@@ -25,7 +25,6 @@
 #include "../Mod/Armor.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Engine/Options.h"
-#include "../fmath.h"
 #include "BattlescapeGame.h"
 #include "TileEngine.h"
 
@@ -259,7 +258,6 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	int maskOfPartsHoleUp = 0x0;
 	int maskOfPartsGoingDown = 0x0;
 	int maskOfPartsFalling = 0x0;
-	int maskOfPartsFlying = 0x0;
 	int maskOfPartsGround = 0x0;
 	int maskArmor = size ? 0xF : 0x1;
 
@@ -332,22 +330,13 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		{
 			maskOfPartsFalling |= maskCurrentPart;
 		}
-		if (movementType == MT_FLY && (canFallDown(startTile[i]) || canFallDown(destinationTile[i])))
-		{
-			maskOfPartsFlying |= maskCurrentPart;
-		}
 		if (direction != DIR_DOWN && !canFallDown(destinationTile[i]))
 		{
 			maskOfPartsGround |= maskCurrentPart;
 		}
 	}
 
-	bool triedStairs = (maskOfPartsGoingUp != 0 && ((maskOfPartsGoingUp | maskOfPartsHoleUp) == maskArmor));
-	bool triedStairsDown = (maskOfPartsGround == 0 && ((maskOfPartsGoingDown | maskOfPartsFalling) == maskArmor));
-	bool fallingDown = (maskOfPartsFalling == maskArmor);
-	bool flying =  (maskOfPartsFlying == maskArmor);
-
-	if (movementType != MT_FLY && fallingDown)
+	if (movementType != MT_FLY && (maskOfPartsFalling == maskArmor))
 	{
 		if (direction != DIR_DOWN)
 		{
@@ -355,13 +344,16 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		}
 	}
 
+	bool triedStairs = (maskOfPartsGoingUp != 0 && ((maskOfPartsGoingUp | maskOfPartsHoleUp) == maskArmor));
+	bool fellDown = (maskOfPartsGround == 0 && ((maskOfPartsGoingDown | maskOfPartsFalling) == maskArmor));
+
 	for (int i = 0; i < numberOfParts; ++i)
 	{
 		if (triedStairs)
 		{
 			destinationTile[i] = aboveDestination[i];
 		}
-		else if (direction != DIR_DOWN && triedStairsDown)
+		else if (direction != DIR_DOWN && fellDown)
 		{
 			destinationTile[i] = belowDestination[i];
 		}
@@ -387,6 +379,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	// pre-calculate fire penalty (to make it consistent for 2x2 units)
 	auto firePenaltyCost = 0;
 	if (unit->getFaction() != FACTION_PLAYER &&
+		unit->getFaction() != FACTION_ALIEN_PLAYER &&
 		unit->getSpecialAbility() < SPECAB_BURNFLOOR)
 	{
 		for (int i = 0; i < numberOfParts; ++i)
@@ -413,7 +406,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			if (startTile[i]->getTerrainLevel() - destinationTile[i]->getTerrainLevel() > 8)
 				return {{INVALID_MOVE_COST, 0}};
 		}
-		else if (direction >= DIR_UP && !triedStairsDown)
+		else if (direction >= DIR_UP && !fellDown)
 		{
 			// check if we can go up or down through gravlift or fly
 			if (validateUpDown(unit, startTile[i]->getPosition(), direction, (bam == BAM_MISSILE)))
@@ -444,9 +437,9 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 						// as there is no wall blocking us.
 		if (direction == 0 || direction == 7 || direction == 1)
 			wallcost += startTile[i]->getTUCost(O_NORTHWALL, movementType);
-		if (!triedStairsDown && (direction == 2 || direction == 1 || direction == 3))
+		if (!fellDown && (direction == 2 || direction == 1 || direction == 3))
 			wallcost += destinationTile[i]->getTUCost(O_WESTWALL, movementType);
-		if (!triedStairsDown && (direction == 4 || direction == 3 || direction == 5))
+		if (!fellDown && (direction == 4 || direction == 3 || direction == 5))
 			wallcost += destinationTile[i]->getTUCost(O_NORTHWALL, movementType);
 		if (direction == 6 || direction == 5 || direction == 7)
 			wallcost += startTile[i]->getTUCost(O_WESTWALL, movementType);
@@ -458,7 +451,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		}
 
 		// if we don't want to fall down and there is no floor, we can't know the TUs so it's default to 4
-		if (direction < DIR_UP && !triedStairsDown && destinationTile[i]->hasNoFloor(0))
+		if (direction < DIR_UP && !fellDown && destinationTile[i]->hasNoFloor(0))
 		{
 			cost = DEFAULT_MOVE_COST;
 		}
@@ -467,7 +460,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		if (direction < DIR_UP)
 		{
 			cost += destinationTile[i]->getTUCost(O_FLOOR, movementType);
-			if (!triedStairsDown && !triedStairs && destinationTile[i]->getMapData(O_OBJECT))
+			if (!fellDown && !triedStairs && destinationTile[i]->getMapData(O_OBJECT))
 			{
 				cost += destinationTile[i]->getTUCost(O_OBJECT, movementType);
 			}
@@ -519,9 +512,13 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	{
 		pos.z++;
 	}
-	else if (direction != DIR_DOWN && triedStairsDown)
+	else if (direction != DIR_DOWN && fellDown)
 	{
 		pos.z--;
+	}
+	else if (direction == DIR_DOWN && maskOfPartsFalling == maskArmor)
+	{
+		totalCost = 0;
 	}
 
 	// for bigger sized units, check the path between parts in an X shape at the end position
@@ -533,66 +530,41 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		int tmpDirection = 7;
 		if (isBlockedDirection(unit, originTile, tmpDirection, missileTarget))
 			return {{INVALID_MOVE_COST, 0}};
-		if (!triedStairsDown && abs(originTile->getTerrainLevel() - finalTile->getTerrainLevel()) > 10)
+		if (!fellDown && abs(originTile->getTerrainLevel() - finalTile->getTerrainLevel()) > 10)
 			return {{INVALID_MOVE_COST, 0}};
 		originTile = _save->getTile(pos + Position(1,0,0));
 		finalTile = _save->getTile(pos + Position(0,1,0));
 		tmpDirection = 5;
 		if (isBlockedDirection(unit, originTile, tmpDirection, missileTarget))
 			return {{INVALID_MOVE_COST, 0}};
-		if (!triedStairsDown && abs(originTile->getTerrainLevel() - finalTile->getTerrainLevel()) > 10)
+		if (!fellDown && abs(originTile->getTerrainLevel() - finalTile->getTerrainLevel()) > 10)
 			return {{INVALID_MOVE_COST, 0}};
 	}
 
 
 	if (bam == BAM_MISSILE)
 	{
-		return { { }, { }, pos };
-	}
-
-	if (direction == DIR_DOWN && fallingDown)
-	{
-		return { { }, { firePenaltyCost, 0 }, pos };
-	}
-
-	const auto costDiv = 100 * 100;
-	auto timeCost =  totalCost * unit->getMoveTimeCostPercent();
-	auto energyCost = totalCost * unit->getMoveEnergyCostPercent();
-
-	if (direction >= Pathfinding::DIR_UP)
-	{
-		if (flying)
-		{
-			//unit fly up
-			timeCost *= 100;
-			energyCost *= 0;
-		}
-		else
-		{
-			//unit use GravLift
-			timeCost *= 100;
-			energyCost *= 0;
-		}
-	}
-	else if (bam == BAM_RUN)
-	{
-		timeCost *= 75;
-		energyCost *= 75;
-	}
-	else if (bam == BAM_NORMAL || bam == BAM_STRAFE)
-	{
-		timeCost *= 100;
-		energyCost *= 50;
+		totalCost = 0;
 	}
 	else
 	{
-		assert(false && "Unreachable code in pathfinding cost");
+		totalCost = std::min(totalCost, INVALID_MOVE_COST - 1);
 	}
 
-	timeCost = (timeCost + costDiv / 2) / costDiv;
-	energyCost = energyCost / costDiv;
+	auto timeCost = totalCost;
+	auto energyCost = totalCost / 2;
 
-	return { { Clamp(timeCost, 1, INVALID_MOVE_COST - 1), Clamp(energyCost, 0, INVALID_MOVE_COST) }, { firePenaltyCost, 0 }, pos };
+	if (direction >= Pathfinding::DIR_UP)
+	{
+		energyCost = 0;
+	}
+	else if (bam == BAM_RUN)
+	{
+		timeCost *= 0.75;
+		energyCost *= 1.5;
+	}
+
+	return { { timeCost, energyCost }, { firePenaltyCost, 0 }, pos };
 }
 
 /**
@@ -704,8 +676,11 @@ bool Pathfinding::isBlocked(const BattleUnit *unit, const Tile *tile, const int 
 			if (unit)
 			{
 				if (unit->getFaction() == FACTION_PLAYER && u->getVisible()) return true;		// player know all visible units
+				if (unit->getFaction() == FACTION_ALIEN_PLAYER && u->getVisible()) return true; // Poissible future Bug. Duno why i did this.
 				if (unit->getFaction() == u->getFaction()) return true;
 				if (unit->getFaction() == FACTION_HOSTILE &&
+					std::find(unit->getUnitsSpottedThisTurn().begin(), unit->getUnitsSpottedThisTurn().end(), u) != unit->getUnitsSpottedThisTurn().end()) return true;
+				if (unit->getFaction() == FACTION_ALIEN_PLAYER &&
 					std::find(unit->getUnitsSpottedThisTurn().begin(), unit->getUnitsSpottedThisTurn().end(), u) != unit->getUnitsSpottedThisTurn().end()) return true;
 			}
 		}
@@ -1058,7 +1033,6 @@ bool Pathfinding::previewPath(bool bRemove)
 					if ((x && y) || size == 0)
 					{
 						tile->setTUMarker(std::max(0,tus));
-						tile->setEnergyMarker(std::max(0,energy));
 					}
 					if (tileAbove && tileAbove->getPreview() == 0 && r.cost.time == 0 && movementType != MT_FLY) //unit fell down, retroactively make the tile above's direction marker to DOWN
 					{
@@ -1069,7 +1043,6 @@ bool Pathfinding::previewPath(bool bRemove)
 				{
 					tile->setPreview(-1);
 					tile->setTUMarker(-1);
-					tile->setEnergyMarker(-1);
 				}
 				tile->setMarkerColor(bRemove?0:((tus>=0 && energy>=0)?(reserve?Pathfinding::green : Pathfinding::yellow) : Pathfinding::red));
 			}

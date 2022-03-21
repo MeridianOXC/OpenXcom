@@ -1009,25 +1009,6 @@ int Tile::getTUMarker() const
 }
 
 /**
- * set the number to be displayed for pathfinding preview.
- * @param energy
- */
-void Tile::setEnergyMarker(int energy)
-{
-       _EnergyMarker = energy;
-}
-
-/**
- * get the number to be displayed for pathfinding preview.
- * @return marker
- */
-int Tile::getEnergyMarker() const
-{
-       return _EnergyMarker;
-}
-
-
-/**
  * get the overlap value of this tile.
  * @return overlap
  */

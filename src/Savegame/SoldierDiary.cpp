@@ -130,7 +130,7 @@ YAML::Node SoldierDiary::save() const
 			node["commendations"].push_back((*i)->save());
 	for (std::vector<BattleUnitKills*>::const_iterator i = _killList.begin(); i != _killList.end(); ++i)
 			node["killList"].push_back((*i)->save());
-	if (!_missionIdList.empty()) { YAML::Node t; t = _missionIdList; t.SetStyle(YAML::EmitterStyle::Flow); node["missionIdList"] = t; }
+	if (!_missionIdList.empty()) node["missionIdList"] = _missionIdList;
 	if (_daysWoundedTotal) node["daysWoundedTotal"] = _daysWoundedTotal;
 	if (_totalShotByFriendlyCounter) node["totalShotByFriendlyCounter"] = _totalShotByFriendlyCounter;
 	if (_totalShotFriendlyCounter) node["totalShotFriendlyCounter"] = _totalShotFriendlyCounter;
@@ -641,7 +641,7 @@ std::map<std::string, int> SoldierDiary::getWeaponTotal()
 	std::map<std::string, int> list;
 	for(std::vector<BattleUnitKills*>::const_iterator kill = _killList.begin(); kill != _killList.end(); ++kill)
 	{
-		if ((*kill)->faction == FACTION_HOSTILE)
+		if (((*kill)->faction == FACTION_HOSTILE || (*kill)->faction == FACTION_ALIEN_PLAYER))
 			list[(*kill)->weapon]++;
 	}
 	return list;
@@ -655,7 +655,7 @@ std::map<std::string, int> SoldierDiary::getWeaponAmmoTotal()
 	std::map<std::string, int> list;
 	for(std::vector<BattleUnitKills*>::const_iterator kill = _killList.begin(); kill != _killList.end(); ++kill)
 	{
-		if ((*kill)->faction == FACTION_HOSTILE)
+		if (((*kill)->faction == FACTION_HOSTILE || (*kill)->faction == FACTION_ALIEN_PLAYER))
 			list[(*kill)->weaponAmmo]++;
 	}
 	return list;
@@ -758,7 +758,7 @@ int SoldierDiary::getKillTotal() const
 
 	for (std::vector<BattleUnitKills*>::const_iterator i = _killList.begin(); i != _killList.end(); ++i)
 	{
-		if ((*i)->status == STATUS_DEAD && (*i)->faction == FACTION_HOSTILE)
+		if ((*i)->status == STATUS_DEAD && ((*i)->faction == FACTION_HOSTILE || (*i)->faction == FACTION_ALIEN_PLAYER))
 		{
 			killTotal++;
 		}
@@ -854,7 +854,7 @@ int SoldierDiary::getStunTotal() const
 
 	for (std::vector<BattleUnitKills*>::const_iterator i = _killList.begin(); i != _killList.end(); ++i)
 	{
-		if ((*i)->status == STATUS_UNCONSCIOUS && (*i)->faction == FACTION_HOSTILE)
+		if ((*i)->status == STATUS_UNCONSCIOUS && ((*i)->faction == FACTION_HOSTILE || (*i)->faction == FACTION_ALIEN_PLAYER))
 		{
 			stunTotal++;
 		}
@@ -872,7 +872,7 @@ int SoldierDiary::getPanickTotal() const
 
 	for (std::vector<BattleUnitKills*>::const_iterator i = _killList.begin(); i != _killList.end(); ++i)
 	{
-		if ((*i)->status == STATUS_PANICKING && (*i)->faction == FACTION_HOSTILE)
+		if ((*i)->status == STATUS_PANICKING && ((*i)->faction == FACTION_HOSTILE || (*i)->faction == FACTION_ALIEN_PLAYER))
 		{
 			panickTotal++;
 		}
@@ -890,7 +890,7 @@ int SoldierDiary::getControlTotal() const
 
 	for (std::vector<BattleUnitKills*>::const_iterator i = _killList.begin(); i != _killList.end(); ++i)
 	{
-		if ((*i)->status == STATUS_TURNING && (*i)->faction == FACTION_HOSTILE)
+		if ((*i)->status == STATUS_TURNING && ((*i)->faction == FACTION_HOSTILE || (*i)->faction == FACTION_ALIEN_PLAYER))
 		{
 			controlTotal++;
 		}
@@ -1281,7 +1281,6 @@ void SoldierCommendations::load(const YAML::Node &node)
 YAML::Node SoldierCommendations::save() const
 {
 	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
 	node["commendationName"] = _type;
 	if (_noun != "noNoun") node["noun"] = _noun;
 	node["decorationLevel"] = _decorationLevel;

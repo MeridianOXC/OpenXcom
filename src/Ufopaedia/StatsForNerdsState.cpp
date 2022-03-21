@@ -1490,7 +1490,7 @@ void StatsForNerdsState::addItemTargets(std::ostringstream& ss, const RuleItem* 
 	// FIXME: make translatable one day, when some better default names are suggested
 	if (value->isTargetAllowed(FACTION_PLAYER))
 		ss << "friend" << ", ";
-	if (value->isTargetAllowed(FACTION_HOSTILE))
+	if (value->isTargetAllowed(FACTION_HOSTILE) || value->isTargetAllowed(FACTION_ALIEN_PLAYER))
 		ss << "hostile" << ", ";
 	if (value->isTargetAllowed(FACTION_NEUTRAL))
 		ss << "neutral" << ", ";

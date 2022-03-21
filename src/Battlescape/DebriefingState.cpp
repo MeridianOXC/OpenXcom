@@ -628,7 +628,7 @@ void DebriefingState::init()
 		{
 			for(std::vector<BattleUnitKills*>::iterator deadUnitKill = (*deadUnit)->getStatistics()->kills.begin(); deadUnitKill != (*deadUnit)->getStatistics()->kills.end(); ++deadUnitKill)
 			{
-				if ((*deadUnitKill)->turn > killTurn && (*deadUnitKill)->faction == FACTION_HOSTILE)
+				if ((*deadUnitKill)->turn > killTurn && (*deadUnitKill)->faction == FACTION_HOSTILE || (*deadUnitKill)->faction == FACTION_ALIEN_PLAYER)
 				{
 					postMortemKills++;
 				}
@@ -692,11 +692,11 @@ void DebriefingState::init()
 			int soldierAlienStuns = 0;
 			for (std::vector<BattleUnitKills*>::const_iterator k = (*j)->getStatistics()->kills.begin(); k != (*j)->getStatistics()->kills.end(); ++k)
 			{
-				if ((*k)->faction == FACTION_HOSTILE && (*k)->status == STATUS_DEAD)
+				if (((*k)->faction == FACTION_HOSTILE || (*k)->faction == FACTION_ALIEN_PLAYER) && (*k)->status == STATUS_DEAD)
 				{
 					soldierAlienKills++;
 				}
-				if ((*k)->faction == FACTION_HOSTILE && (*k)->status == STATUS_UNCONSCIOUS)
+				if (((*k)->faction == FACTION_HOSTILE || (*k)->faction == FACTION_ALIEN_PLAYER) && (*k)->status == STATUS_UNCONSCIOUS)
 				{
 					soldierAlienStuns++;
 				}
@@ -733,7 +733,7 @@ void DebriefingState::init()
 				}
 				for (std::vector<BattleUnitKills*>::iterator unitKill = (*j)->getStatistics()->kills.begin(); unitKill != (*j)->getStatistics()->kills.end(); ++unitKill)
 				{
-					if ((*unitKill)->turn == martyrTurn && (*unitKill)->faction == FACTION_HOSTILE)
+					if ((*unitKill)->turn == martyrTurn && (((*unitKill)->faction == FACTION_HOSTILE) || (*unitKill)->faction == FACTION_ALIEN_PLAYER))
 					{
 						martyrKills++;
 					}
@@ -1241,7 +1241,7 @@ void DebriefingState::prepareDebriefing()
 	{
 		if ((*j)->getOriginalFaction() == FACTION_PLAYER && (*j)->getStatus() != STATUS_DEAD)
 		{
-			if ((*j)->getStatus() == STATUS_UNCONSCIOUS || (*j)->getFaction() == FACTION_HOSTILE)
+			if ((*j)->getStatus() == STATUS_UNCONSCIOUS || (*j)->getFaction() == FACTION_HOSTILE || (*j)->getFaction() == FACTION_ALIEN_PLAYER)
 			{
 				playersUnconscious++;
 			}
@@ -1276,7 +1276,7 @@ void DebriefingState::prepareDebriefing()
 		{
 			if ((*j)->getOriginalFaction() == FACTION_PLAYER && (*j)->getStatus() != STATUS_DEAD)
 			{
-				if ((*j)->getStatus() == STATUS_UNCONSCIOUS || (*j)->getFaction() == FACTION_HOSTILE)
+				if ((*j)->getStatus() == STATUS_UNCONSCIOUS || (*j)->getFaction() == FACTION_HOSTILE || (*j)->getFaction() == FACTION_ALIEN_PLAYER)
 				{
 					(*j)->instaKill();
 				}
@@ -1406,7 +1406,7 @@ void DebriefingState::prepareDebriefing()
 	{
 		if (u->getSpawnUnit() && (!u->isOut() || u->isIgnored()))
 		{
-			if (u->getOriginalFaction() == FACTION_HOSTILE)
+			if (u->getOriginalFaction() == FACTION_HOSTILE || u->getOriginalFaction() == FACTION_ALIEN_PLAYER)
 			{
 				waitingTransformations.push_back(u);
 			}
@@ -1436,7 +1436,9 @@ void DebriefingState::prepareDebriefing()
 			BattleUnit *newUnit = battle->convertUnit(u);
 			newUnit->convertToFaction(faction);
 		}
-		u->killedBy(FACTION_HOSTILE); //skip counting as kill
+		// original line
+		//u->killedBy(FACTION_HOSTILE); //skip counting as kill
+		u->killedBy(FACTION_ALIEN_PLAYER); //skip counting as kill
 	}
 
 	// time to care for units.
@@ -1474,7 +1476,7 @@ void DebriefingState::prepareDebriefing()
 
 		if (status == STATUS_DEAD)
 		{ // so this is a dead unit
-			if (oldFaction == FACTION_HOSTILE && (*j)->killedBy() == FACTION_PLAYER)
+			if ((oldFaction == FACTION_HOSTILE || oldFaction == FACTION_ALIEN_PLAYER) && (*j)->killedBy() == FACTION_PLAYER)
 			{
 				addStat("STR_ALIENS_KILLED", 1, value);
 			}
@@ -1599,7 +1601,7 @@ void DebriefingState::prepareDebriefing()
 					}
 				}
 			}
-			else if (oldFaction == FACTION_HOSTILE && (!aborted || (*j)->isInExitArea(START_POINT)) && !_destroyBase
+			else if ((oldFaction == FACTION_HOSTILE || oldFaction == FACTION_ALIEN_PLAYER) && (!aborted || (*j)->isInExitArea(START_POINT)) && !_destroyBase
 				// mind controlled units may as well count as unconscious
 				&& faction == FACTION_PLAYER && (!(*j)->isOut() || (*j)->isIgnored()))
 			{
@@ -1616,7 +1618,7 @@ void DebriefingState::prepareDebriefing()
 					}
 				}
 			}
-			else if (oldFaction == FACTION_HOSTILE && !aborted && !_destroyBase
+			else if ((oldFaction == FACTION_HOSTILE || oldFaction == FACTION_ALIEN_PLAYER) && !aborted && !_destroyBase
 				// surrendered units may as well count as unconscious too
 				&& playersSurvived > 0 && faction != FACTION_PLAYER && (!(*j)->isOut() || (*j)->isIgnored())
 				&& ((*j)->isSurrendering() || battle->getChronoTrigger() == FORCE_WIN_SURRENDER))
@@ -2383,7 +2385,7 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base)
 							corpseUnit->getHealth() > 0 &&
 							corpseUnit->getHealth() < corpseUnit->getStunlevel()))
 					{
-						if (corpseUnit->getOriginalFaction() == FACTION_HOSTILE)
+						if (corpseUnit->getOriginalFaction() == FACTION_HOSTILE || corpseUnit->getOriginalFaction() == FACTION_ALIEN_PLAYER)
 						{
 							recoverAlien(corpseUnit, base);
 						}

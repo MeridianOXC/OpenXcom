@@ -348,6 +348,7 @@ void ActionMenuState::handleAction()
 						continue;
 					}
 					if ((weapon->getAllowTargetFriendGround() && (*i)->getOriginalFaction() == FACTION_PLAYER) ||
+						(weapon->getAllowTargetFriendGround() && (*i)->getOriginalFaction() == FACTION_ALIEN_PLAYER) ||
 						(weapon->getAllowTargetNeutralGround() && (*i)->getOriginalFaction() == FACTION_NEUTRAL) ||
 						(weapon->getAllowTargetHostileGround() && (*i)->getOriginalFaction() == FACTION_HOSTILE))
 					{
@@ -367,6 +368,7 @@ void ActionMenuState::handleAction()
 					if (tile != 0 && tile->getUnit() && (tile->getUnit()->isWoundable() || weapon->getAllowTargetImmune()))
 					{
 						if ((weapon->getAllowTargetFriendStanding() && tile->getUnit()->getOriginalFaction() == FACTION_PLAYER) ||
+							(weapon->getAllowTargetFriendStanding() && tile->getUnit()->getOriginalFaction() == FACTION_ALIEN_PLAYER) ||
 							(weapon->getAllowTargetNeutralStanding() && tile->getUnit()->getOriginalFaction() == FACTION_NEUTRAL) ||
 							(weapon->getAllowTargetHostileStanding() && tile->getUnit()->getOriginalFaction() == FACTION_HOSTILE))
 						{
@@ -511,7 +513,7 @@ void ActionMenuState::handleAction()
 
 		if (newHitLog)
 		{
-			_game->getSavedGame()->getSavedBattle()->appendToHitLog(HITLOG_PLAYER_FIRING, FACTION_PLAYER, tr(weapon->getType()));
+			_game->getSavedGame()->getSavedBattle()->appendToHitLog(HITLOG_PLAYER_FIRING, FACTION_PLAYER, tr(weapon->getType())); // Joper HITLOG
 		}
 	}
 }

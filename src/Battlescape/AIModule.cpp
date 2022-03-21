@@ -63,7 +63,8 @@ AIModule::AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node) :
 	_targetFaction = FACTION_PLAYER;
 	if (_unit->getOriginalFaction() == FACTION_NEUTRAL)
 	{
-		_targetFaction = FACTION_HOSTILE;
+		_targetFaction = FACTION_ALIEN_PLAYER;
+		// _targetFaction = FACTION_HOSTILE;
 	}
 }
 

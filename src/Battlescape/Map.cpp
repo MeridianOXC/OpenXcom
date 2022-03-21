@@ -268,7 +268,13 @@ void Map::draw()
 	if (_projectile)
 	{
 		t = _save->getTile(_projectile->getPosition(0).toTile());
+		// HOST
 		if (_save->getSide() == FACTION_PLAYER || (t && t->getVisible()))
+		{
+			_projectileInFOV = true;
+		}
+		//CLIENT
+		if (_save->getSide() == FACTION_ALIEN_PLAYER || (t && t->getVisible()))
 		{
 			_projectileInFOV = true;
 		}
@@ -286,8 +292,13 @@ void Map::draw()
 			}
 		}
 	}
-
+	//HOST
 	if ((_save->getSelectedUnit() && _save->getSelectedUnit()->getVisible()) || _unitDying || _save->getSide() == FACTION_PLAYER || _save->getDebugMode() || _projectileInFOV || _explosionInFOV)
+	{
+		drawTerrain(this);
+	}
+	//CLIENT
+	else if ((_save->getSelectedUnit() && _save->getSelectedUnit()->getVisible()) || _unitDying || _save->getSide() == FACTION_ALIEN_PLAYER || _save->getDebugMode() || _projectileInFOV || _explosionInFOV)
 	{
 		drawTerrain(this);
 	}
@@ -1519,42 +1530,11 @@ void Map::drawTerrain(Surface *surface)
 							_numWaypid->draw();
 							if ( !(_previewSetting & PATH_ARROWS) )
 							{
-								// TU only
 								_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (29-adjustment), 0, false, tile->getMarkerColor() );
 							}
 							else
 							{
-								// Arrows + TUs
-								if (Options::oxceShowEnergyInPathReview)
-								{
-									if (tile->getTUMarker() == 0)
-									{
-										// 3 = red
-										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (15-adjustment), 0, false, 3);
-									}
-									else
-									{
-										// 5 = lime green
-										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (15-adjustment), 0, false, 5);
-									}
-
-									_numWaypid->setValue(tile->getEnergyMarker());
-									_numWaypid->draw();
-									if (tile->getEnergyMarker() == 0)
-									{
-										// 3 = red
-										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0, false, 3);
-									}
-									else
-									{
-										// 10 = yellow
-										_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0, false, 10);
-									}
-								}
-								else
-								{
-									_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0);
-								}
+								_numWaypid->blitNShade(surface, screenPosition.x + 16 - off, screenPosition.y + (22-adjustment), 0);
 							}
 						}
 					}
@@ -1566,9 +1546,9 @@ void Map::drawTerrain(Surface *surface)
 			_numWaypid->setBordered(false); // make sure we remove the border in case it's being used for missile waypoints.
 		}
 	}
-
+	// HOST AND CLIENT (BUG. Arrow might be visible for the other side in mutliplayer, can't check right now, no multiplayer code.)
 	auto selectedUnit = _save->getSelectedUnit();
-	if (selectedUnit && (_save->getSide() == FACTION_PLAYER || _save->getDebugMode()) && selectedUnit->getPosition().z <= _camera->getViewLevel())
+	if (selectedUnit && (_save->getSide() == FACTION_PLAYER || _save->getSide() == FACTION_ALIEN_PLAYER || _save->getDebugMode()) && selectedUnit->getPosition().z <= _camera->getViewLevel())
 	{
 		_camera->convertMapToScreen(selectedUnit->getPosition(), &screenPosition);
 		screenPosition += _camera->getMapOffset();
@@ -1586,9 +1566,9 @@ void Map::drawTerrain(Surface *surface)
 		{
 			_arrow->blitNShade(surface, screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2), screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame), 0);
 		}
-	}
-
+	}	
 	// Draw motion scanner arrows
+	// HOST
 	if (_isAltPressed && _save->getSide() == FACTION_PLAYER && this->getCursorType() != CT_NONE)
 	{
 		for (auto myUnit : *_save->getUnits())
@@ -1619,7 +1599,36 @@ void Map::drawTerrain(Surface *surface)
 		}
 	}
 	delete _numWaypid;
-
+	// CLIENT
+	if (_isAltPressed && _save->getSide() == FACTION_ALIEN_PLAYER && this->getCursorType() != CT_NONE)
+	{
+		for (auto myUnit : *_save->getUnits())
+		{
+			if (myUnit->getScannedTurn() == _save->getTurn() && myUnit->getFaction() != FACTION_ALIEN_PLAYER && !myUnit->isOut())
+			{
+				Position temp = myUnit->getPosition();
+				temp.z = _camera->getViewLevel();
+				_camera->convertMapToScreen(temp, &screenPosition);
+				screenPosition += _camera->getMapOffset();
+				Position offset;
+				//calculateWalkingOffset(myUnit, &offset);
+				if (myUnit->getArmor()->getSize() > 1)
+				{
+					offset.y += 4;
+				}
+				offset.y += 24 - myUnit->getHeight();
+				if (myUnit->isKneeled())
+				{
+					offset.y -= 2;
+				}
+				_arrow->blitNShade(
+					surface,
+					screenPosition.x + offset.x + (_spriteWidth / 2) - (_arrow->getWidth() / 2),
+					screenPosition.y + offset.y - _arrow->getHeight() + getArrowBobForFrame(_animFrame),
+					0);
+			}
+		}
+	}
 	// Draw craft deployment preview arrows
 	if (_isAltPressed && _save->isPreview() && this->getCursorType() != CT_NONE)
 	{
@@ -1770,6 +1779,7 @@ int Map::reShade(Tile *tile)
 	}
 
 	// hybrid night vision (local)
+	// HOST
 	for (std::vector<BattleUnit*>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
 	{
 		if ((*i)->getFaction() == FACTION_PLAYER && !(*i)->isOut())
@@ -1780,7 +1790,17 @@ int Map::reShade(Tile *tile)
 			}
 		}
 	}
-
+	// Client
+	for (std::vector<BattleUnit *>::iterator i = _save->getUnits()->begin(); i != _save->getUnits()->end(); ++i)
+	{
+		if ((*i)->getFaction() == FACTION_ALIEN_PLAYER && !(*i)->isOut())
+		{
+			if (Position::distance2dSq(tile->getPosition(), (*i)->getPosition()) <= (*i)->getMaxViewDistanceAtDarkSquared())
+			{
+				return tile->getShade() > _fadeShade ? _fadeShade : tile->getShade();
+			}
+		}
+	}
 	// hybrid night vision (global)
 	return std::min(+NIGHT_VISION_MAX_SHADE, tile->getShade());
 }

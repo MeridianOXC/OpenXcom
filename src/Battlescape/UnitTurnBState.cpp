@@ -60,7 +60,7 @@ void UnitTurnBState::init()
 		return;
 	}
 	_action.clearTU();
-	if (_unit->getFaction() == FACTION_PLAYER)
+	if (_unit->getFaction() == FACTION_PLAYER || _unit->getFaction() == FACTION_ALIEN_PLAYER)
 		_parent->setStateInterval(Options::battleXcomSpeed);
 	else
 		_parent->setStateInterval(Options::battleAlienSpeed);

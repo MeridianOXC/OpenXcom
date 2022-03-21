@@ -442,10 +442,14 @@ void UnitWalkBState::think()
  * Aborts unit walking.
  */
 void UnitWalkBState::cancel()
-{
-	if (_parent->getSave()->getSide() == FACTION_PLAYER && _parent->getPanicHandled())
+{ //host
+	if ((_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getSide() == FACTION_ALIEN_PLAYER) && _parent->getPanicHandled())
 	_pf->abortPath();
 }
+// Client{ 
+// Client	if (_parent->getSave()->getSide() == FACTION_ALIEN_PLAYER && _parent->getPanicHandled())
+// Client		_pf->abortPath();
+// Client}
 
 /**
  * Handles some calculations when the path is finished.
@@ -453,7 +457,7 @@ void UnitWalkBState::cancel()
 void UnitWalkBState::postPathProcedures()
 {
 	_action.clearTU();
-	if (_unit->getFaction() != FACTION_PLAYER)
+	if (_unit->getFaction() != FACTION_PLAYER || _unit->getFaction() != FACTION_ALIEN_PLAYER) //Possible bug.Copypasted without thinknig
 	{
 		int dir = _action.finalFacing;
 		if (_action.finalAction)
@@ -514,6 +518,8 @@ void UnitWalkBState::postPathProcedures()
 void UnitWalkBState::setNormalWalkSpeed()
 {
 	if (_unit->getFaction() == FACTION_PLAYER)
+		_parent->setStateInterval(Options::battleXcomSpeed);
+	else if (_unit->getFaction() == FACTION_ALIEN_PLAYER)
 		_parent->setStateInterval(Options::battleXcomSpeed);
 	else
 		_parent->setStateInterval(Options::battleAlienSpeed);

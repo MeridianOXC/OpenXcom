@@ -224,7 +224,6 @@ void create()
 	_info.push_back(OptionInfo("oxceAutoSell", &oxceAutoSell, false, "STR_AUTO_SELL", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceRememberDisabledCraftWeapons", &oxceRememberDisabledCraftWeapons, false, "STR_REMEMBER_DISABLED_CRAFT_WEAPONS", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceEnableOffCentreShooting", &oxceEnableOffCentreShooting, false, "STR_OFF_CENTRE_SHOOTING", "STR_OXCE"));
-	_info.push_back(OptionInfo("oxceShowEnergyInPathReview", &oxceShowEnergyInPathReview, false, "STR_SHOW_ENERGY_PATH_REVIEW", "STR_OXCE"));
 
 	// OXCE hidden
 #ifdef __MOBILE__

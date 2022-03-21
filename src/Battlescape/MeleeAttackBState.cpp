@@ -129,7 +129,7 @@ void MeleeAttackBState::init()
 	AIModule *ai = _unit->getAIModule();
 
 	if (_unit->getFaction() == _parent->getSave()->getSide() &&
-		_unit->getFaction() != FACTION_PLAYER &&
+		_unit->getFaction() != FACTION_PLAYER && _unit->getFaction() != FACTION_ALIEN_PLAYER &&
 		_parent->_debugPlay == false &&
 		ai && ai->getTarget())
 	{
@@ -207,7 +207,7 @@ void MeleeAttackBState::think()
 			_parent->getCurrentAction()->type = BA_NONE; // do this to restore cursor
 		}
 
-		if (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getDebugMode())
+		if (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getSide() == FACTION_ALIEN_PLAYER || _parent->getSave()->getDebugMode())
 		{
 			_parent->setupCursor();
 		}

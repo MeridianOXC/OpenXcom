@@ -168,7 +168,6 @@ void EquipmentLayoutItem::load(const YAML::Node &node)
 YAML::Node EquipmentLayoutItem::save() const
 {
 	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
 	node["itemType"] = _itemType;
 	node["slot"] = _slot;
 	// only save this info if it's needed, reduce clutter in saves

@@ -119,7 +119,7 @@ void PsiAttackBState::think()
 		_parent->getMap()->getCamera()->setMapOffset(_action.cameraPosition);
 		_parent->getMap()->invalidate();
 	}
-	if (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getDebugMode())
+	if (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getSide() == FACTION_ALIEN_PLAYER || _parent->getSave()->getDebugMode())
 	{
 		_parent->setupCursor();
 	}

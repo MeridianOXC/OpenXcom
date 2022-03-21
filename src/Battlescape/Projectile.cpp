@@ -132,7 +132,7 @@ int Projectile::calculateTrajectory(double accuracy, const Position& originVoxel
 
 	if (test != V_EMPTY &&
 		!_trajectory.empty() &&
-		_action.actor->getFaction() == FACTION_PLAYER &&
+		(_action.actor->getFaction() == FACTION_PLAYER || _action.actor->getFaction() == FACTION_ALIEN_PLAYER) &&
 		_action.autoShotCounter == 1 &&
 		(!_save->isCtrlPressed(true) || !Options::forceFire) &&
 		_save->getBattleGame()->getPanicHandled() &&
@@ -184,11 +184,11 @@ int Projectile::calculateTrajectory(double accuracy, const Position& originVoxel
 	_trajectory.clear();
 
 	bool extendLine = true;
-	// even guided missiles drift, but how much is based on
+	// even guided missiles drift, but how much is based on 
 	// the shooter's faction, rather than accuracy.
-	if (_action.type == BA_LAUNCH)
+	if (_action.type == BA_LAUNCH) // BLASTER LAUCNHER ACCURACY
 	{
-		if (_action.actor->getFaction() == FACTION_PLAYER)
+		if (_action.actor->getFaction() == FACTION_PLAYER || _action.actor->getFaction() == FACTION_ALIEN_PLAYER)
 		{
 			accuracy = 0.60;
 		}
@@ -231,12 +231,12 @@ int Projectile::calculateThrow(double accuracy)
 	else
 	{
 		BattleUnit *tu = targetTile->getOverlappingUnit(_save);
-		if (Options::forceFire && _save->isCtrlPressed(true) && _save->getSide() == FACTION_PLAYER)
+		if (Options::forceFire && _save->isCtrlPressed(true) && ((_save->getSide() == FACTION_PLAYER) || _save->getSide() == FACTION_ALIEN_PLAYER))
 		{
 			targets.push_back(_action.target.toVoxel() + Position(0, 0, 12));
 			forced = true;
 		}
-		else if (tu && ((_action.actor->getFaction() != FACTION_PLAYER) ||
+		else if (tu && ((_action.actor->getFaction() != FACTION_PLAYER && _action.actor->getFaction() != FACTION_ALIEN_PLAYER) ||
 			tu->getVisible()))
 		{ //unit
 			targetVoxel.z += tu->getFloatHeight(); //ground level is the base

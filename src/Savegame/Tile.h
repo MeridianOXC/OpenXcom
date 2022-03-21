@@ -127,7 +127,6 @@ protected:
 	Sint16 _explosive = 0;
 	Sint16 _visible = 0;
 	Sint16 _TUMarker = -1;
-	Sint16 _EnergyMarker = -1;
 	Sint8 _preview = -1;
 	Uint8 _overlaps = 0;
 
@@ -381,10 +380,6 @@ public:
 	void setTUMarker(int tu);
 	/// get the number to be displayed for pathfinding preview.
 	int getTUMarker() const;
-    /// set the number to be displayed for pathfinding preview.
-    void setEnergyMarker(int tu);
-    /// get the number to be displayed for pathfinding preview.
-    int getEnergyMarker() const;
 	/// how many times has this tile been overlapped with smoke/fire (runtime only)
 	int getOverlaps() const;
 	/// increment the overlap value on this tile.

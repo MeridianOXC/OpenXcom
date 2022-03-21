@@ -132,7 +132,7 @@ void ProjectileFlyBState::init()
 
 	Tile *endTile = _parent->getSave()->getTile(_action.target);
 	int distanceSq = _action.actor->distance3dToPositionSq(_action.target);
-	bool isPlayer = _parent->getSave()->getSide() == FACTION_PLAYER;
+	bool isPlayer = (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getSide() == FACTION_ALIEN_PLAYER );
 	if (isPlayer) _parent->getMap()->resetObstacles();
 	switch (_action.type)
 	{
@@ -203,7 +203,7 @@ void ProjectileFlyBState::init()
 				{
 					if (RNG::percent(_parent->getMod()->getCloseQuartersSneakUpGlobal()))
 					{
-						if (_unit->getFaction() == FACTION_HOSTILE) // alien attacker (including mind-controlled xcom)
+						if (_unit->getFaction() == FACTION_HOSTILE || _unit->getFaction() == FACTION_ALIEN_PLAYER) // alien attacker (including mind-controlled xcom)
 						{
 							if (!closeQuartersTarget->hasVisibleUnit(_unit))
 							{
@@ -245,7 +245,7 @@ void ProjectileFlyBState::init()
 				if (!_parent->getTileEngine()->meleeAttack(attack, (*bu)))
 				{
 					// Failed the check, roll again to see result
-					if (_parent->getSave()->getSide() == FACTION_PLAYER) // Only show message during player's turn
+					if (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getSide() == FACTION_ALIEN_PLAYER) // Only show message during player's turn or ALIEN PLAYER turn
 					{
 						_action.result = "STR_FAILED_CQB_CHECK";
 					}
@@ -314,7 +314,7 @@ void ProjectileFlyBState::init()
 		Tile *targetTile = _parent->getSave()->getTile(_action.target);
 		Position originVoxel = _parent->getTileEngine()->getOriginVoxel(_action, _parent->getSave()->getTile(_origin));
 		if (targetTile->getUnit() &&
-			((_unit->getFaction() != FACTION_PLAYER) ||
+				((_unit->getFaction() != FACTION_PLAYER && _unit->getFaction() != FACTION_ALIEN_PLAYER) || // POSSIBLE BUG GRANADE LAUNCHER ARCING SHOT
 			targetTile->getUnit()->getVisible()))
 		{
 			if (_origin == _action.target || targetTile->getUnit() == _unit)
@@ -474,7 +474,7 @@ bool ProjectileFlyBState::createNewProjectile()
 		const RuleItem *ruleItem = _action.weapon->getRules();
 		if (_projectileImpact == V_FLOOR || _projectileImpact == V_UNIT || _projectileImpact == V_OBJECT)
 		{
-			if (_unit->getFaction() != FACTION_PLAYER && ruleItem->getBattleType() == BT_GRENADE)
+			if (_unit->getFaction() != FACTION_PLAYER && _unit->getFaction() != FACTION_ALIEN_PLAYER && ruleItem->getBattleType() == BT_GRENADE)
 			{
 				_action.weapon->setFuseTimer(ruleItem->getFuseTimerDefault());
 			}
@@ -633,7 +633,7 @@ void ProjectileFlyBState::think()
 			{
 				_unit->abortTurn();
 			}
-			if (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getDebugMode())
+			if (_parent->getSave()->getSide() == FACTION_PLAYER || _parent->getSave()->getSide() == FACTION_ALIEN_PLAYER || _parent->getSave()->getDebugMode())
 			{
 				_parent->setupCursor();
 			}
@@ -682,7 +682,7 @@ void ProjectileFlyBState::think()
 				else
 				{
 					_parent->dropItem(pos, _action.weapon);
-					if (_unit->getFaction() != FACTION_PLAYER && ruleItem->getBattleType() == BT_GRENADE)
+					if (_unit->getFaction() != FACTION_PLAYER && _unit->getFaction() != FACTION_ALIEN_PLAYER && ruleItem->getBattleType() == BT_GRENADE)
 					{
 						_parent->getTileEngine()->setDangerZone(pos, ruleItem->getExplosionRadius(attack), _action.actor);
 					}
@@ -978,7 +978,7 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 				_unit->getStatistics()->lowAccuracyHitCounter++;
 			}
 		}
-		if (victim->getFaction() == FACTION_HOSTILE)
+		if (victim->getFaction() == FACTION_HOSTILE || victim->getFaction() == FACTION_ALIEN_PLAYER)
 		{
 			AIModule *ai = victim->getAIModule();
 			if (ai != 0)

@@ -303,7 +303,7 @@ void BattlescapeGenerator::nextStage()
 			&& !isInExit((*i)))                                                     // and they're not on the exit
 			|| (*i)->getOriginalFaction() != FACTION_PLAYER))               // or they're not a soldier
 		{
-			if ((*i)->getOriginalFaction() == FACTION_HOSTILE && !(*i)->isOut())
+			if (((*i)->getOriginalFaction() == FACTION_HOSTILE && !(*i)->isOut())||((*i)->getOriginalFaction() == FACTION_ALIEN_PLAYER && !(*i)->isOut()))
 			{
 				if ((*i)->getOriginalFaction() == (*i)->getFaction())
 				{
@@ -1651,7 +1651,7 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
  */
 BattleUnit *BattlescapeGenerator::addAlien(Unit *rules, int alienRank, bool outside)
 {
-	BattleUnit *unit = _save->createTempUnit(rules, FACTION_HOSTILE, _unitSequence++);
+	BattleUnit *unit = _save->createTempUnit(rules, FACTION_ALIEN_PLAYER, _unitSequence++); /// jopper DETERMINES WHICH FACTION STARTING ALIENS WILL BELONG TO.
 	Node *node = 0;
 
 	// safety to avoid index out of bounds errors

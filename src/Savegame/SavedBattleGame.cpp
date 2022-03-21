@@ -258,7 +258,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 		// Handling of special built-in weapons will be done during and after the load of items
 		// unit->setSpecialWeapon(this, true);
 		_units.push_back(unit);
-		if (faction == FACTION_PLAYER)
+		if ((faction == FACTION_PLAYER) || (faction == FACTION_ALIEN_PLAYER))
 		{
 			if ((unit->getId() == selectedUnit) || (_selectedUnit == 0 && !unit->isOut()))
 				_selectedUnit = unit;
@@ -268,7 +268,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 			if (const YAML::Node &ai = (*i)["AI"])
 			{
 				AIModule *aiModule;
-				if (faction != FACTION_PLAYER)
+				if ((faction != FACTION_PLAYER) && (faction != FACTION_ALIEN_PLAYER))
 				{
 					aiModule = new AIModule(this, unit, 0);
 				}
@@ -772,6 +772,10 @@ bool SavedBattleGame::getEnvironmentalConditionsEnabled(UnitFaction faction) con
 	{
 		return _ecEnabledFriendly;
 	}
+	else if (faction == FACTION_ALIEN_PLAYER)
+	{
+		return _ecEnabledHostile;
+	}
 	else if (faction == FACTION_HOSTILE)
 	{
 		return _ecEnabledHostile;
@@ -1168,7 +1172,7 @@ bool SavedBattleGame::canUseWeapon(const BattleItem* weapon, const BattleUnit* u
 			return false;
 		}
 	}
-	if (rule->isBlockingBothHands() && unit->getFaction() == FACTION_PLAYER && !isBerserking && unit->getLeftHandWeapon() != 0 && unit->getRightHandWeapon() != 0)
+	if (rule->isBlockingBothHands() && unit->getFaction() == FACTION_PLAYER && !isBerserking && unit->getLeftHandWeapon() != 0 && unit->getRightHandWeapon() != 0) // Jopper Two-handed possible bug  Aliens,
 	{
 		if (message) *message = "STR_MUST_USE_BOTH_HANDS";
 		return false;
@@ -1473,41 +1477,51 @@ const RuleCraftDeployment& SavedBattleGame::getCustomDeployment(const RuleCraft*
 /**
  * Ends the current turn and progresses to the next one.
  */
-void SavedBattleGame::endTurn()
+void SavedBattleGame::endTurn() //JOPER THIS HANDLES WHO"S TURN IT IS.
 {
 	// reset turret direction for all hostile and neutral units (as it may have been changed during reaction fire)
-	for (std::vector<BattleUnit*>::iterator i = _units.begin(); i != _units.end(); ++i)
+	for (std::vector<BattleUnit *>::iterator i = _units.begin(); i != _units.end(); ++i)
 	{
-		if ((*i)->getOriginalFaction() != FACTION_PLAYER)
+		if ((*i)->getOriginalFaction() != FACTION_PLAYER && (*i)->getOriginalFaction() != FACTION_ALIEN_PLAYER) // Possible future Bug
 		{
 			(*i)->setDirection((*i)->getDirection()); // this is not pointless, the method sets more than just the direction
 		}
 	}
 
-	if (_side == FACTION_PLAYER)
+	if (_side == FACTION_PLAYER) // BEGIN JOPER DO NOT ADD "||" HERE
 	{
 		if (_selectedUnit && _selectedUnit->getOriginalFaction() == FACTION_PLAYER)
 			_lastSelectedUnit = _selectedUnit;
 		_selectedUnit =  0;
-		_side = FACTION_HOSTILE;
+		//_side = FACTION_HOSTILE;
+		_side = FACTION_ALIEN_PLAYER;
+		resetTiles();
 	}
-	else if (_side == FACTION_HOSTILE)
+	//else if (_side == FACTION_HOSTILE)
+	//{
+	//	if (_selectedUnit && _selectedUnit->getOriginalFaction() == FACTION_HOSTILE)
+	//		_lastSelectedUnit = _selectedUnit;
+	//	_selectedUnit = 0;
+	//	_side = FACTION_ALIEN_PLAYER;
+	//}
+	else if (_side == FACTION_ALIEN_PLAYER) // END JOPER DO NOT ADD "||" HERE
 	{
-		_selectedUnit =  0;
+		_selectedUnit = 0;
 		_side = FACTION_NEUTRAL;
+		resetTiles(); // Bug Neutral. Possibly no need for this line.
 		// if there is no neutral team, we skip this and instantly prepare the new turn for the player
-//		if (selectNextPlayerUnit() == 0)
-//		{
-//			prepareNewTurn();
-//			_turn++;
-//			_side = FACTION_PLAYER;
-//			if (_lastSelectedUnit && _lastSelectedUnit->isSelectable(FACTION_PLAYER, false, false))
-//				_selectedUnit = _lastSelectedUnit;
-//			else
-//				selectNextPlayerUnit();
-//			while (_selectedUnit && _selectedUnit->getFaction() != FACTION_PLAYER)
-//				selectNextPlayerUnit();
-//		}
+		//		if (selectNextPlayerUnit() == 0)
+		//		{
+		//			prepareNewTurn();
+		//			_turn++;
+		//			_side = FACTION_PLAYER
+		//			if (_lastSelectedUnit && _lastSelectedUnit->isSelectable(FACTION_PLAYER||FACTION_ALIEN_PLAYER, false, false))
+		//				_selectedUnit = _lastSelectedUnit;
+		//			else
+		//				selectNextPlayerUnit();
+		//			while (_selectedUnit && _selectedUnit->getFaction() != FACTION_PLAYER)
+		//				selectNextPlayerUnit();
+		//		}
 	}
 	else if (_side == FACTION_NEUTRAL)
 	{
@@ -1520,6 +1534,7 @@ void SavedBattleGame::endTurn()
 			selectNextPlayerUnit();
 		while (_selectedUnit && _selectedUnit->getFaction() != FACTION_PLAYER)
 			selectNextPlayerUnit();
+		resetTiles();
 	}
 
 	auto tally = _battleState->getBattleGame()->tallyUnits();
@@ -1570,7 +1585,7 @@ void SavedBattleGame::endTurn()
 		{
 			(*i)->updateUnitStats(false, true);
 		}
-		if ((*i)->getFaction() != FACTION_PLAYER)
+		if ((*i)->getFaction() != FACTION_PLAYER || (*i)->getFaction() != FACTION_ALIEN_PLAYER) // Joper Possible bug, no idea what this will do
 		{
 			(*i)->setVisible(false);
 		}
@@ -1581,7 +1596,7 @@ void SavedBattleGame::endTurn()
 
 	//fov check will be done by `BattlescapeGame::endTurn`
 
-	if (_side != FACTION_PLAYER)
+	if (_side != FACTION_PLAYER || _side != FACTION_ALIEN_PLAYER)
 		selectNextPlayerUnit();
 }
 
@@ -1739,7 +1754,7 @@ void SavedBattleGame::resetUnitTiles()
 		{
 			(*i)->setTile(getTile((*i)->getPosition()), this);
 		}
-		if ((*i)->getFaction() == FACTION_PLAYER)
+		if ((*i)->getFaction() == FACTION_PLAYER || (*i)->getFaction() == FACTION_PLAYER)
 		{
 			(*i)->setVisible(true);
 		}
@@ -2024,7 +2039,7 @@ BattleUnit *SavedBattleGame::createTempUnit(const Unit *rules, UnitFaction facti
 		nextUnitId > 0 ? nextUnitId : getUnits()->back()->getId() + 1,
 		getEnviroEffects(),
 		rules->getArmor(),
-		faction == FACTION_HOSTILE ? _rule->getStatAdjustment(getGeoscapeSave()->getDifficulty()) : nullptr,
+		(faction == FACTION_HOSTILE || faction == FACTION_ALIEN_PLAYER) ? _rule->getStatAdjustment(getGeoscapeSave()->getDifficulty()) : nullptr,
 		getDepth());
 
 	if (faction == FACTION_PLAYER)
@@ -2794,7 +2809,7 @@ int SavedBattleGame::getFactionMoraleModifier(bool player)
 		int number = 0;
 		for (std::vector<BattleUnit*>::iterator j = _units.begin(); j != _units.end(); ++j)
 		{
-			if ((*j)->getOriginalFaction() == FACTION_HOSTILE && !(*j)->isOut())
+			if (((*j)->getOriginalFaction() == FACTION_HOSTILE || (*j)->getOriginalFaction() == FACTION_ALIEN_PLAYER) && !(*j)->isOut())
 			{
 				++number;
 			}
@@ -3336,7 +3351,7 @@ std::string SavedBattleGame::getHiddenMovementBackground() const
  */
 void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction)
 {
-	if (_side != FACTION_PLAYER) return;
+	if (_side != FACTION_PLAYER && _side != FACTION_PLAYER)	return;
 	_hitLog->appendToHitLog(type, faction);
 }
 
@@ -3345,7 +3360,7 @@ void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction)
  */
 void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction, const std::string &text)
 {
-	if (_side != FACTION_PLAYER) return;
+	if (_side != FACTION_PLAYER && _side != FACTION_PLAYER)	return;
 	_hitLog->appendToHitLog(type, faction, text);
 }
 
@@ -3554,6 +3569,7 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.addCustomConst("FACTION_PLAYER", FACTION_PLAYER);
 	sbg.addCustomConst("FACTION_HOSTILE", FACTION_HOSTILE);
 	sbg.addCustomConst("FACTION_NEUTRAL", FACTION_NEUTRAL);
+	sbg.addCustomConst("FACTION_HOSTILE(PLAYER)", FACTION_ALIEN_PLAYER);
 
 	sbg.add<&tryConcealUnitScript>("tryConcealUnit");
 

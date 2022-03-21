@@ -216,7 +216,7 @@ void ExtendedBattlescapeLinksState::btnKillAllClick(Action *)
 		_parent->debug("Influenza bacterium dispersed");
 		for (auto unit : *_save->getUnits())
 		{
-			if (unit->getOriginalFaction() == FACTION_HOSTILE && !unit->isOut())
+			if ((unit->getOriginalFaction() == FACTION_HOSTILE || unit->getOriginalFaction() == FACTION_ALIEN_PLAYER) && !unit->isOut())
 			{
 				unit->damage(Position(0, 0, 0), 1000, _game->getMod()->getDamageType(DT_AP), _save, { });
 			}
