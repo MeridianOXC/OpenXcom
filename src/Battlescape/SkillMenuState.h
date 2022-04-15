@@ -41,7 +41,7 @@ public:
 	/// Cleans up the Skill Menu state.
 	~SkillMenuState();
 	/// Handler for clicking a skill menu item.
-	void btnActionMenuItemClick(Action *action);
+	void btnActionMenuItemClick(Action *action) override;
 };
 
 }

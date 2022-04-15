@@ -3139,7 +3139,7 @@ void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& gro
 ScriptParserEventsBase::ScriptParserEventsBase(ScriptGlobal* shared, const std::string& name) : ScriptParserBase(shared, name)
 {
 	_events.reserve(EventsMax);
-	_eventsData.push_back({ 0, {} });
+	_eventsData.push_back({ 0, {}, {} });
 }
 
 /**

@@ -534,10 +534,10 @@ bool SoldierDiary::manageCommendations(Mod *mod, std::vector<MissionStatistics*>
 							else if ((*j).first == "killsWithCriteriaCareer")
 							{
 								currentTotalCounters = 0;
-								for (std::size_t i = 0; i < currentBlockCounters.size(); i++)
+								for (std::size_t i2 = 0; i2 < currentBlockCounters.size(); i2++)
 								{
-									currentBlockCounters[i] += referenceBlockCounters[i];
-									currentTotalCounters += std::max(currentBlockCounters[i], 0);
+									currentBlockCounters[i2] += referenceBlockCounters[i2];
+									currentTotalCounters += std::max(currentBlockCounters[i2], 0);
 								}
 							}
 						}
