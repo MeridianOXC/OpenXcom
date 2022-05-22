@@ -3060,7 +3060,7 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 		{
 			if (getBaseStats()->strength >= weight) // weight is always considered 0 for aliens
 			{
-				// this is `n*(log(n) + log(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
+				// this is `n*(XComLog(n) + XComLog(n))` code, it could be `n` but we would lose predefined order, as `RuleItem` have them in effective in random order (depending on global memory allocations)
 				for (const std::string &s : mod->getInvsList())
 				{
 					RuleInventory *slot = mod->getInventory(s);
@@ -4940,7 +4940,7 @@ void BattleUnit::addLoadedSpecialWeapon(BattleItem* item)
 			return;
 		}
 	}
-	Log(LOG_ERROR) << "Failed to add special built-in item '" << item->getRules()->getType() << "' (id " << item->getId() << ") to unit '" << getType() << "' (id " << getId() << ")";
+	XComLog(LOG_ERROR) << "Failed to add special built-in item '" << item->getRules()->getType() << "' (id " << item->getId() << ") to unit '" << getType() << "' (id " << getId() << ")";
 }
 
 /**

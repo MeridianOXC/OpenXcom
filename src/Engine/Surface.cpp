@@ -366,7 +366,7 @@ void Surface::loadImage(const std::string &filename)
 	_alignedBuffer = nullptr;
 	_surface = nullptr;
 
-	Log(LOG_VERBOSE) << "Loading image: " << filename;
+	XComLog(LOG_VERBOSE) << "Loading image: " << filename;
 	auto rw = FileMap::getRWops(filename);
 	if (!rw) { return; } // relevant message gets logged in FileMap.
 
@@ -416,11 +416,11 @@ void Surface::loadImage(const std::string &filename)
 					FixTransparent(_surface, transparent);
 					if (transparent != 0)
 					{
-						Log(LOG_WARNING) << "Image " << filename << " (from lodepng) has incorrect transparent color index " << transparent << " (instead of 0).";
+						XComLog(LOG_WARNING) << "Image " << filename << " (from lodepng) has incorrect transparent color index " << transparent << " (instead of 0).";
 					}
 				}
 			} else {
-				Log(LOG_ERROR) << "Image " << filename << " lodepng failed:" << lodepng_error_text(error);
+				XComLog(LOG_ERROR) << "Image " << filename << " lodepng failed:" << lodepng_error_text(error);
 			}
 		}
 		if (data) { SDL_free(data); }
@@ -450,7 +450,7 @@ void Surface::loadImage(const std::string &filename)
 		FixTransparent(_surface, surface->format->colorkey);
 		if (surface->format->colorkey != 0)
 		{
-			Log(LOG_WARNING) << "Image " << filename << " (from SDL) has incorrect transparent color index " << surface->format->colorkey << " (instead of 0).";
+			XComLog(LOG_WARNING) << "Image " << filename << " (from SDL) has incorrect transparent color index " << surface->format->colorkey << " (instead of 0).";
 		}
 	}
 }

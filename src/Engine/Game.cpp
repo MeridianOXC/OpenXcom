@@ -64,11 +64,11 @@ Game::Game(const std::string &title) : _screen(0), _cursor(0), _lang(0), _save(0
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		Log(LOG_ERROR) << SDL_GetError();
-		Log(LOG_WARNING) << "No video detected, quit.";
+		XComLog(LOG_ERROR) << SDL_GetError();
+		XComLog(LOG_WARNING) << "No video detected, quit.";
 		throw Exception(SDL_GetError());
 	}
-	Log(LOG_INFO) << "SDL initialized successfully.";
+	XComLog(LOG_INFO) << "SDL initialized successfully.";
 
 	// Initialize SDL_mixer
 	initAudio();
@@ -647,8 +647,8 @@ void Game::initAudio()
 {
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
 	{
-		Log(LOG_ERROR) << SDL_GetError();
-		Log(LOG_WARNING) << "No sound device detected, audio disabled.";
+		XComLog(LOG_ERROR) << SDL_GetError();
+		XComLog(LOG_WARNING) << "No sound device detected, audio disabled.";
 		Options::mute = true;
 		return;
 	}
@@ -659,16 +659,16 @@ void Game::initAudio()
 
 	if (Options::audioSampleRate % 11025 != 0)
 	{
-		Log(LOG_WARNING) << "Custom sample rate " << Options::audioSampleRate << "Hz, audio that doesn't match will be distorted!";
-		Log(LOG_WARNING) << "SDL_mixer only supports multiples of 11025Hz.";
+		XComLog(LOG_WARNING) << "Custom sample rate " << Options::audioSampleRate << "Hz, audio that doesn't match will be distorted!";
+		XComLog(LOG_WARNING) << "SDL_mixer only supports multiples of 11025Hz.";
 	}
 	int minChunk = Options::audioSampleRate / 11025 * 512;
 	Options::audioChunkSize = std::max(minChunk, Options::audioChunkSize);
 
 	if (Mix_OpenAudio(Options::audioSampleRate, format, MIX_DEFAULT_CHANNELS, Options::audioChunkSize) != 0)
 	{
-		Log(LOG_ERROR) << Mix_GetError();
-		Log(LOG_WARNING) << "Sound device failed, audio disabled.";
+		XComLog(LOG_ERROR) << Mix_GetError();
+		XComLog(LOG_WARNING) << "Sound device failed, audio disabled.";
 		Options::mute = true;
 	}
 	else
@@ -681,7 +681,7 @@ void Game::initAudio()
 		// 4 = unit responses (OXCE only)
 		Mix_ReserveChannels(5);
 		Mix_GroupChannels(1, 2, 0);
-		Log(LOG_INFO) << "SDL_mixer initialized successfully.";
+		XComLog(LOG_INFO) << "SDL_mixer initialized successfully.";
 		setVolume(Options::soundVolume, Options::musicVolume, Options::uiVolume);
 	}
 }

@@ -345,10 +345,10 @@ void StatsForNerdsState::btnOkClick(Action *)
 {
 	if (_game->isCtrlPressed())
 	{
-		Log(LOG_INFO) << _txtArticle->getText();
+		XComLog(LOG_INFO) << _txtArticle->getText();
 		for (size_t row = 0; row < _lstRawData->getTexts(); ++row)
 		{
-			Log(LOG_INFO) << _lstRawData->getCellText(row, 0) << "\t\t" << _lstRawData->getCellText(row, 1);
+			XComLog(LOG_INFO) << _lstRawData->getCellText(row, 0) << "\t\t" << _lstRawData->getCellText(row, 1);
 		}
 		return;
 	}

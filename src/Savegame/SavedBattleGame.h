@@ -608,10 +608,10 @@ public:
 	void setRandomHiddenMovementBackground(const Mod *mod);
 	/// Gets the hidden movement background ID.
 	std::string getHiddenMovementBackground() const;
-	/// Appends a given entry to the hit log. Works only during the player's turn.
+	/// Appends a given entry to the hit XComLog. Works only during the player's turn.
 	void appendToHitLog(HitLogEntryType type, UnitFaction faction);
 	void appendToHitLog(HitLogEntryType type, UnitFaction faction, const std::string &text);
-	/// Gets the hit log.
+	/// Gets the hit XComLog.
 	const HitLog *getHitLog() const;
 	/// Reset all the unit hit state flags.
 	void resetUnitHitStates();

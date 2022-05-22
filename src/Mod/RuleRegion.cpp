@@ -85,7 +85,7 @@ void RuleRegion::load(const YAML::Node &node)
 		{
 			if (z.areas.size() < 1)
 			{
-				Log(LOG_WARNING) << "Empty zone, region: " << _type << ", zone: " << zn;
+				XComLog(LOG_WARNING) << "Empty zone, region: " << _type << ", zone: " << zn;
 				continue;
 			}
 			int an = 0;
@@ -94,13 +94,13 @@ void RuleRegion::load(const YAML::Node &node)
 			{
 				if (a.isPoint() != firstAreaType)
 				{
-					Log(LOG_WARNING) << "Mixed area types (point vs non-point), region: " << _type << ", zone: " << zn << ", area: " << an;
+					XComLog(LOG_WARNING) << "Mixed area types (point vs non-point), region: " << _type << ", zone: " << zn << ", area: " << an;
 				}
 				if (a.lonMin > a.lonMax)
 				{
-					Log(LOG_ERROR) << "Crossing the prime meridian in mission zones requires a different syntax, region: " << _type << ", zone: " << zn << ", area: " << an << ", lonMin: " << Rad2Deg(a.lonMin) << ", lonMax: " << Rad2Deg(a.lonMax);
-					Log(LOG_INFO) << "  Wrong example: [350,   8, 20, 30]";
-					Log(LOG_INFO) << "Correct example: [350, 368, 20, 30]";
+					XComLog(LOG_ERROR) << "Crossing the prime meridian in mission zones requires a different syntax, region: " << _type << ", zone: " << zn << ", area: " << an << ", lonMin: " << Rad2Deg(a.lonMin) << ", lonMax: " << Rad2Deg(a.lonMax);
+					XComLog(LOG_INFO) << "  Wrong example: [350,   8, 20, 30]";
+					XComLog(LOG_INFO) << "Correct example: [350, 368, 20, 30]";
 				}
 				++an;
 			}

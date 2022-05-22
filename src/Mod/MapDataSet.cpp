@@ -229,15 +229,15 @@ void MapDataSet::loadData(MCDPatch *patch, bool validate)
 		{
 			if ((size_t)_objects[i]->getDieMCD() >= _objects.size())
 			{
-				Log(LOG_INFO) << "MCD " << _name << " object " << i << " has invalid DieMCD: " << _objects[i]->getDieMCD();
+				XComLog(LOG_INFO) << "MCD " << _name << " object " << i << " has invalid DieMCD: " << _objects[i]->getDieMCD();
 			}
 			if ((size_t)_objects[i]->getAltMCD() >= _objects.size())
 			{
-				Log(LOG_INFO) << "MCD " << _name << " object " << i << " has invalid AltMCD: " << _objects[i]->getAltMCD();
+				XComLog(LOG_INFO) << "MCD " << _name << " object " << i << " has invalid AltMCD: " << _objects[i]->getAltMCD();
 			}
 			if (_objects[i]->getArmor() == 0)
 			{
-				Log(LOG_INFO) << "MCD " << _name << " object " << i << " has 0 armor";
+				XComLog(LOG_INFO) << "MCD " << _name << " object " << i << " has 0 armor";
 			}
 		}
 	}

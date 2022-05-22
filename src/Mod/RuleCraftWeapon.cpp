@@ -107,11 +107,11 @@ void RuleCraftWeapon::afterLoad(const Mod* mod)
 		}
 		else if (_projectileSpeed <= 4 && _range > 10)
 		{
-			Log(LOG_WARNING) << "Missile speed for " << _type << " is very low! Depending on craft approach speed, the missile may seem not moving, or even moving backwards. Speed: " << _projectileSpeed << "; range: " << _range;
+			XComLog(LOG_WARNING) << "Missile speed for " << _type << " is very low! Depending on craft approach speed, the missile may seem not moving, or even moving backwards. Speed: " << _projectileSpeed << "; range: " << _range;
 		}
 		else if (_projectileSpeed <= 5 && _range > 20)
 		{
-			Log(LOG_INFO) << "Missile speed for " << _type << " is quite low. Depending on craft approach speed, the missile may seem moving very slowly. Speed: " << _projectileSpeed << "; range: " << _range;
+			XComLog(LOG_INFO) << "Missile speed for " << _type << " is quite low. Depending on craft approach speed, the missile may seem moving very slowly. Speed: " << _projectileSpeed << "; range: " << _range;
 		}
 	}
 	if (_launcher == nullptr)

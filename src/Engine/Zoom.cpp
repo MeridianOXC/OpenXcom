@@ -84,7 +84,7 @@ static int zoomSurface2X_64bit(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using somewhat fast 2X zoom routine.";
+		XComLog(LOG_INFO) << "Using somewhat fast 2X zoom routine.";
 	}
 
 	for (sy = 0; sy < src->h; ++sy, pixelDstRow += dst->pitch*2)
@@ -159,7 +159,7 @@ static int zoomSurface2X_32bit(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using 32-bit 2X zoom routine.";
+		XComLog(LOG_INFO) << "Using 32-bit 2X zoom routine.";
 	}
 
 
@@ -222,7 +222,7 @@ static int zoomSurface4X_64bit(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using modestly fast 4X zoom routine.";
+		XComLog(LOG_INFO) << "Using modestly fast 4X zoom routine.";
 	}
 
 	for (sy = 0; sy < src->h; ++sy, pixelDstRow += dst->pitch*4)
@@ -290,7 +290,7 @@ static int zoomSurface4X_32bit(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using 32-bit 4X zoom routine.";
+		XComLog(LOG_INFO) << "Using 32-bit 4X zoom routine.";
 	}
 
 	for (sy = 0; sy < src->h; ++sy, pixelDstRow += dst->pitch*4)
@@ -357,7 +357,7 @@ static int zoomSurface2X_XAxis_32bit(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using mediocre scaling routine due to screen height.";
+		XComLog(LOG_INFO) << "Using mediocre scaling routine due to screen height.";
 	}
 
 	if ((say = (Uint32 *) realloc(say, (dst->h + 1) * sizeof(Uint32))) == NULL) {
@@ -445,7 +445,7 @@ static int zoomSurface4X_XAxis_32bit(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using mediocre scaling routine due to screen height.";
+		XComLog(LOG_INFO) << "Using mediocre scaling routine due to screen height.";
 	}
 
 	if ((say = (Uint32 *) realloc(say, (dst->h + 1) * sizeof(Uint32))) == NULL) {
@@ -528,7 +528,7 @@ static int zoomSurface4X_SSE2(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using SSE2 4X zoom routine.";
+		XComLog(LOG_INFO) << "Using SSE2 4X zoom routine.";
 	}
 
 	for (sy = 0; sy < src->h; ++sy, pixelDstRow += dst->pitch*4)
@@ -544,7 +544,7 @@ static int zoomSurface4X_SSE2(SDL_Surface *src, SDL_Surface *dst)
 			__m128i halfDone = _mm_unpacklo_epi8(dataSrc, dataSrc);
 			dataDst = _mm_unpacklo_epi8(halfDone, halfDone);
  */
-/* #define WRITE_DST if ((char*)pixelDst4 + 128 > (char*)dst->pixels+(dst->w*dst->pitch)) { Log(LOG_ERROR) << "HELL"; exit(0); } \ */
+/* #define WRITE_DST if ((char*)pixelDst4 + 128 > (char*)dst->pixels+(dst->w*dst->pitch)) { XComLog(LOG_ERROR) << "HELL"; exit(0); } \ */
 #define WRITE_DST			*(pixelDst++) = dataDst; \
 			*(pixelDst2++) = dataDst; \
 			*(pixelDst3++) = dataDst; \
@@ -596,7 +596,7 @@ static int zoomSurface2X_SSE2(SDL_Surface *src, SDL_Surface *dst)
 	if (!proclaimed)
 	{
 		proclaimed = true;
-		Log(LOG_INFO) << "Using SSE2 2X zoom routine.";
+		XComLog(LOG_INFO) << "Using SSE2 2X zoom routine.";
 	}
 
 	for (sy = 0; sy < src->h; ++sy, pixelDstRow += dst->pitch*2)
@@ -810,7 +810,7 @@ int Zoom::_zoomSurfaceY(SDL_Surface * src, SDL_Surface * dst, int flipx, int fli
 			if (!complained)
 			{
 				complained = true;
-				Log(LOG_ERROR) << "Misaligned surface buffers.";
+				XComLog(LOG_ERROR) << "Misaligned surface buffers.";
 			}
 		}
 #endif
@@ -839,7 +839,7 @@ int Zoom::_zoomSurfaceY(SDL_Surface * src, SDL_Surface * dst, int flipx, int fli
 	*/
 	if (!proclaimed)
 	{
-		Log(LOG_INFO) << "Using software scaling routine. For best results, try an OpenGL filter.";
+		XComLog(LOG_INFO) << "Using software scaling routine. For best results, try an OpenGL filter.";
 		proclaimed = true;
 	}
 

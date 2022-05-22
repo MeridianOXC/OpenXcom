@@ -404,7 +404,7 @@ void NewBattleState::load(const std::string &filename)
 		}
 		catch (YAML::Exception &e)
 		{
-			Log(LOG_WARNING) << e.what();
+			XComLog(LOG_WARNING) << e.what();
 			initSave();
 		}
 	}
@@ -431,7 +431,7 @@ void NewBattleState::save(const std::string &filename)
 	std::string filepath = Options::getMasterUserFolder() + filename + ".cfg";
 	if (!CrossPlatform::writeFile(filepath, out.c_str()))
 	{
-		Log(LOG_WARNING) << "Failed to save " << filepath;
+		XComLog(LOG_WARNING) << "Failed to save " << filepath;
 		return;
 	}
 }

@@ -73,7 +73,7 @@ void RuleStartingCondition::load(const YAML::Node& node, Mod *mod)
 	if (node["environmentalConditions"] || node["paletteTransformations"] || node["armorTransformations"]
 		|| node["mapBackgroundColor"] || node["inventoryShockIndicator"] || node["mapShockIndicator"])
 	{
-		Log(LOG_ERROR) << "There are invalid/obsolete attributes in starting condition " << _type << ". Please review the ruleset.";
+		XComLog(LOG_ERROR) << "There are invalid/obsolete attributes in starting condition " << _type << ". Please review the ruleset.";
 	}
 }
 

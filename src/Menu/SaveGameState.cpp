@@ -210,7 +210,7 @@ void SaveGameState::think()
  */
 void SaveGameState::error(const std::string &msg)
 {
-	Log(LOG_ERROR) << msg;
+	XComLog(LOG_ERROR) << msg;
 	std::ostringstream error;
 	error << tr("STR_SAVE_UNSUCCESSFUL") << Unicode::TOK_NL_SMALL << msg;
 	if (_origin != OPT_BATTLESCAPE)

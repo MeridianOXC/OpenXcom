@@ -99,7 +99,7 @@ OptionsVideoState::OptionsVideoState(OptionsOrigin origin) : OptionsBaseState(or
 		_resAmount = 0;
 		_btnDisplayResolutionDown->setVisible(false);
 		_btnDisplayResolutionUp->setVisible(false);
-		Log(LOG_WARNING) << "Couldn't get display resolutions";
+		XComLog(LOG_WARNING) << "Couldn't get display resolutions";
 	}
 
 	add(_displaySurface);

@@ -83,12 +83,12 @@ SoundSet *ExtraSounds::loadSoundSet(SoundSet *set) const
 {
 	if (set == 0)
 	{
-		Log(LOG_WARNING) << "Creating new sound set: " << _type << ", this will likely have no in-game use.";
+		XComLog(LOG_WARNING) << "Creating new sound set: " << _type << ", this will likely have no in-game use.";
 		set = new SoundSet();
 	}
 	else
 	{
-		Log(LOG_VERBOSE) << "Adding/Replacing items in sound set: " << _type;
+		XComLog(LOG_VERBOSE) << "Adding/Replacing items in sound set: " << _type;
 	}
 	for (std::map<int, std::string>::const_iterator j = _sounds.begin(); j != _sounds.end(); ++j)
 	{
@@ -96,7 +96,7 @@ SoundSet *ExtraSounds::loadSoundSet(SoundSet *set) const
 		std::string fileName = j->second;
 		if (fileName[fileName.length() - 1] == '/')
 		{
-			Log(LOG_VERBOSE) << "Loading sound set from folder: " << fileName << " starting at index: " << startSound;
+			XComLog(LOG_VERBOSE) << "Loading sound set from folder: " << fileName << " starting at index: " << startSound;
 			int offset = startSound;
 			std::vector<std::string> contents;
 			for (auto f: FileMap::getVFolderContents(fileName)) { contents.push_back(f); }
@@ -110,7 +110,7 @@ SoundSet *ExtraSounds::loadSoundSet(SoundSet *set) const
 				}
 				catch (Exception &e)
 				{
-					Log(LOG_WARNING) << e.what();
+					XComLog(LOG_WARNING) << e.what();
 				}
 			}
 		}
@@ -139,11 +139,11 @@ void ExtraSounds::loadSound(SoundSet *set, int index, const std::string &fileNam
 	Sound *sound = set->getSound(indexWithOffset);
 	if (sound)
 	{
-		Log(LOG_VERBOSE) << "Replacing sound: " << index << ", using index: " << indexWithOffset;
+		XComLog(LOG_VERBOSE) << "Replacing sound: " << index << ", using index: " << indexWithOffset;
 	}
 	else
 	{
-		Log(LOG_VERBOSE) << "Adding sound: " << index << ", using index: " << indexWithOffset;
+		XComLog(LOG_VERBOSE) << "Adding sound: " << index << ", using index: " << indexWithOffset;
 		sound = set->addSound(indexWithOffset);
 	}
 	sound->load(fileName);

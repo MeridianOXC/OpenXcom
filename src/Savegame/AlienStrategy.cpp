@@ -93,7 +93,7 @@ void AlienStrategy::load(const YAML::Node &node, const Mod* mod)
 		}
 		else
 		{
-			Log(LOG_WARNING) << "Corrupted save: Alien strategy contains an invalid region: " << region << ", skipping...";
+			XComLog(LOG_WARNING) << "Corrupted save: Alien strategy contains an invalid region: " << region << ", skipping...";
 		}
 	}
 	_missionLocations = node["missionLocations"].as< std::map<std::string, std::vector<std::pair<std::string, int> > > >(_missionLocations);

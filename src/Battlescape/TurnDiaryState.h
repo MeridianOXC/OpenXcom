@@ -29,7 +29,7 @@ class TextList;
 class HitLog;
 
 /**
- * Turn Diary window that displays the hit log history (for the current turn).
+ * Turn Diary window that displays the hit XComLog history (for the current turn).
  */
 class TurnDiaryState : public State
 {

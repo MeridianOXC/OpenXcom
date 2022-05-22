@@ -262,7 +262,7 @@ struct ParserWriter
 
 
 
-	/// Dump to log error info about ref.
+	/// Dump to XComLog error info about ref.
 	void logDump(const ScriptRefData&) const;
 
 }; //struct ParserWriter
@@ -369,7 +369,7 @@ struct Arg<A1, A2...> : public Arg<A2...>
 	{
 		if (*begin == end)
 		{
-			Log(LOG_ERROR) << "Not enough args in operation";
+			XComLog(LOG_ERROR) << "Not enough args in operation";
 			return -1;
 		}
 		else
@@ -538,7 +538,7 @@ struct ArgColection<MaxSize>
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Too many args in operation";
+			XComLog(LOG_ERROR) << "Too many args in operation";
 			return -1;
 		}
 	}

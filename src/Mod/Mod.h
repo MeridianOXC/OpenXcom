@@ -455,7 +455,7 @@ public:
 			auto ex = LoadRuleException(parent, node, error);
 			if (Options::oxceModValidationLevel < level)
 			{
-				Log(level) << "Supressed " << ex.what();
+				XComLog(level) << "Supressed " << ex.what();
 				return true;
 			}
 			else
@@ -474,7 +474,7 @@ public:
 			auto ex = LoadRuleException(parent, error);
 			if (Options::oxceModValidationLevel < level)
 			{
-				Log(level) << "Supressed " << ex.what();
+				XComLog(level) << "Supressed " << ex.what();
 				return true;
 			}
 			else

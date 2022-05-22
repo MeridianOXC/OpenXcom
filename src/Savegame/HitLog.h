@@ -52,16 +52,16 @@ private:
 	UnitFaction _lastFaction;
 	std::string _lastPlayerWeapon;
 
-	/// Clears the hit log. And updates the turn diary.
+	/// Clears the hit XComLog. And updates the turn diary.
 	void clearHitLog(bool resetTurnDiary, bool ignoreLastEntry = false);
 
 public:
-	/// Creates a new hit log.
+	/// Creates a new hit XComLog.
 	HitLog(Language *lang);
-	/// Appends the given text to the hit log.
+	/// Appends the given text to the hit XComLog.
 	void appendToHitLog(HitLogEntryType type, UnitFaction faction);
 	void appendToHitLog(HitLogEntryType type, UnitFaction faction, const std::string &text);
-	/// Gets the hit log text.
+	/// Gets the hit XComLog text.
 	std::string getHitLogText(bool convert = false) const;
 	/// Gets the turn diary.
 	const std::vector<std::string> &getTurnDiary() const { return _turnDiary; }

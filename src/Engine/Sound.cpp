@@ -48,7 +48,7 @@ void Sound::load(const std::string &filename) {
 	auto s = NewSound(Mix_LoadWAV_RW(rw, SDL_TRUE));
 	if (!s)
 	{
-		Log(LOG_ERROR) << "Sound::load(" << filename << "): mix error=" << Mix_GetError();
+		XComLog(LOG_ERROR) << "Sound::load(" << filename << "): mix error=" << Mix_GetError();
 	}
 
 	//always overwrite
@@ -63,7 +63,7 @@ void Sound::load(SDL_RWops *rw) {
 	auto s = NewSound(Mix_LoadWAV_RW(rw, SDL_TRUE));
 	if (!s)
 	{
-		Log(LOG_ERROR) << "Sound::load(data): mix error=" << Mix_GetError();
+		XComLog(LOG_ERROR) << "Sound::load(data): mix error=" << Mix_GetError();
 	}
 
 	//always overwrite
@@ -81,13 +81,13 @@ void Sound::play(int channel, int angle, int distance) const
 		int chan = Mix_PlayChannel(channel, _sound.get(), 0);
 		if (chan == -1)
 		{
-			Log(LOG_WARNING) << Mix_GetError();
+			XComLog(LOG_WARNING) << Mix_GetError();
 		}
 		else if (Options::StereoSound)
 		{
 			if (!Mix_SetPosition(chan, angle, distance))
 			{
-				Log(LOG_WARNING) << Mix_GetError();
+				XComLog(LOG_WARNING) << Mix_GetError();
 			}
 		}
 	}
@@ -114,7 +114,7 @@ void Sound::loop()
 		int chan = Mix_PlayChannel(3, _sound.get(), -1);
 		if (chan == -1)
 		{
-			Log(LOG_WARNING) << Mix_GetError();
+			XComLog(LOG_WARNING) << Mix_GetError();
 		}
 	}
 }

@@ -175,7 +175,7 @@ void SoundSet::loadCatByIndex(CatFile &catFile, int index, bool tftd)
 	_sounds[set_index] = Sound(); // in case everything else fails, an empty Sound.
 	auto rwops = catFile.getRWops(index);
 	if (!rwops) {
-		Log(LOG_VERBOSE) << "SoundSet::loadCatByIndex(" << catFile.fileName() << ", " << index << "): got NULL.";
+		XComLog(LOG_VERBOSE) << "SoundSet::loadCatByIndex(" << catFile.fileName() << ", " << index << "): got NULL.";
 		return;
 	}
 	int namesize = SDL_ReadU8(rwops);
@@ -193,7 +193,7 @@ void SoundSet::loadCatByIndex(CatFile &catFile, int index, bool tftd)
 
 	// Skip short data
 	if (size < 12) {
-		Log(LOG_VERBOSE) << "SoundSet::loadCatByIndex(" << catFile.fileName() << ", " << index << ") size=" << size <<" , skipping.";
+		XComLog(LOG_VERBOSE) << "SoundSet::loadCatByIndex(" << catFile.fileName() << ", " << index << ") size=" << size <<" , skipping.";
 		SDL_free(sound);
 		return;
 	}

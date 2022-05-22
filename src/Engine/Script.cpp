@@ -435,7 +435,7 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 	static int bugCount = 0;
 	if (++bugCount < 100)
 	{
-		Log(LOG_ERROR) << "Invalid script operation for OpId: " << std::hex << std::showbase << (int)proc[(int)curr] <<" at "<< (int)curr;
+		XComLog(LOG_ERROR) << "Invalid script operation for OpId: " << std::hex << std::showbase << (int)proc[(int)curr] <<" at "<< (int)curr;
 	}
 
 	endLabel:
@@ -545,7 +545,7 @@ constexpr int log_buffer_limit_max = 500;
 static int log_buffer_limit_count = 0;
 
 /**
- * Add text to log buffer.
+ * Add text to XComLog buffer.
  */
 void ScriptWorkerBase::log_buffer_add(FuncRef<std::string()> func)
 {
@@ -561,20 +561,20 @@ void ScriptWorkerBase::log_buffer_add(FuncRef<std::string()> func)
 }
 
 /**
- * Flush buffer to log file.
+ * Flush buffer to XComLog file.
  */
 void ScriptWorkerBase::log_buffer_flush(ProgPos& p)
 {
 	if (++log_buffer_limit_count < log_buffer_limit_max)
 	{
-		Logger log;
-		log.get(LOG_DEBUG) << "Script debug log: " << log_buffer;
+		Logger XComLog;
+		XComLog.get(LOG_DEBUG) << "Script debug XComLog: " << log_buffer;
 		log_buffer.clear();
 	}
 	else if (log_buffer_limit_count == log_buffer_limit_max)
 	{
-		Logger log;
-		log.get(LOG_DEBUG) << "Script debug log limit reach";
+		Logger XComLog;
+		XComLog.get(LOG_DEBUG) << "Script debug XComLog limit reach";
 		log_buffer.clear();
 	}
 }
@@ -741,7 +741,7 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 		{
 			if ((*bestValue)(ph, begin, end) == false)
 			{
-				Log(LOG_ERROR) << "Error in matching arguments for operator '" + proc.begin()->name.toString() + "'";
+				XComLog(LOG_ERROR) << "Error in matching arguments for operator '" + proc.begin()->name.toString() + "'";
 				return false;
 			}
 			else
@@ -751,14 +751,14 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Conflicting overloads for operator '" + proc.begin()->name.toString() + "' for:";
-			Log(LOG_ERROR) << "  " << displayArgs(&ph.parser, ScriptRange<ScriptRefData>{ begin, end }, [](const ScriptRefData& r){ return r.type; });
-			Log(LOG_ERROR) << "Expected:";
+			XComLog(LOG_ERROR) << "Conflicting overloads for operator '" + proc.begin()->name.toString() + "' for:";
+			XComLog(LOG_ERROR) << "  " << displayArgs(&ph.parser, ScriptRange<ScriptRefData>{ begin, end }, [](const ScriptRefData& r){ return r.type; });
+			XComLog(LOG_ERROR) << "Expected:";
 			for (auto& p : proc)
 			{
 				if (p.parserArg != nullptr && p.overloadArg)
 				{
-					Log(LOG_ERROR) << "  " << displayOverloadProc(&ph.parser, p.overloadArg);
+					XComLog(LOG_ERROR) << "  " << displayOverloadProc(&ph.parser, p.overloadArg);
 				}
 			}
 			return false;
@@ -766,14 +766,14 @@ bool callOverloadProc(ParserWriter& ph, const ScriptRange<ScriptProcData>& proc,
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Can't match overload for operator '" + proc.begin()->name.toString() + "' for:";
-		Log(LOG_ERROR) << "  " << displayArgs(&ph.parser, ScriptRange<ScriptRefData>{ begin, end }, [](const ScriptRefData& r){ return r.type; });
-		Log(LOG_ERROR) << "Expected:";
+		XComLog(LOG_ERROR) << "Can't match overload for operator '" + proc.begin()->name.toString() + "' for:";
+		XComLog(LOG_ERROR) << "  " << displayArgs(&ph.parser, ScriptRange<ScriptRefData>{ begin, end }, [](const ScriptRefData& r){ return r.type; });
+		XComLog(LOG_ERROR) << "Expected:";
 		for (auto& p : proc)
 		{
 			if (p.parserArg != nullptr && p.overloadArg)
 			{
-				Log(LOG_ERROR) << "  " << displayOverloadProc(&ph.parser, p.overloadArg);
+				XComLog(LOG_ERROR) << "  " << displayOverloadProc(&ph.parser, p.overloadArg);
 			}
 		}
 		return false;
@@ -877,7 +877,7 @@ bool parseConditionImpl(ParserWriter& ph, ScriptRefData truePos, ScriptRefData f
 
 	if (std::distance(begin, end) != 3)
 	{
-		Log(LOG_ERROR) << "Invalid length of condition arguments";
+		XComLog(LOG_ERROR) << "Invalid length of condition arguments";
 		return false;
 	}
 
@@ -903,14 +903,14 @@ bool parseConditionImpl(ParserWriter& ph, ScriptRefData truePos, ScriptRefData f
 	}
 	if (i == ConditionSize)
 	{
-		Log(LOG_ERROR) << "Unknown condition: '" + begin[0].name.toString() + "'";
+		XComLog(LOG_ERROR) << "Unknown condition: '" + begin[0].name.toString() + "'";
 		return false;
 	}
 
 	const auto proc = ph.parser.getProc(ScriptRef{ equalFunc ? "test_eq" : "test_le" });
 	if (callOverloadProc(ph, proc, std::begin(conditionArgs), std::end(conditionArgs)) == false)
 	{
-		Log(LOG_ERROR) << "Unsupported operator: '" + begin[0].name.toString() + "'";
+		XComLog(LOG_ERROR) << "Unsupported operator: '" + begin[0].name.toString() + "'";
 		return false;
 	}
 
@@ -924,7 +924,7 @@ bool parseFullConditionImpl(ParserWriter& ph, ScriptRefData falsePos, const Scri
 {
 	if (std::distance(begin, end) <= 1)
 	{
-		Log(LOG_ERROR) << "Invalid length of condition arguments";
+		XComLog(LOG_ERROR) << "Invalid length of condition arguments";
 		return false;
 	}
 
@@ -964,7 +964,7 @@ bool parseVariableImpl(ParserWriter& ph, ScriptRefData reg, ScriptRefData val = 
 {
 	if (!ArgIsReg(reg.type))
 	{
-		Log(LOG_ERROR) << "Invalid register";
+		XComLog(LOG_ERROR) << "Invalid register";
 		return false;
 	}
 
@@ -1008,7 +1008,7 @@ bool parseElse(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 {
 	if (ph.codeBlocks.back().type != BlockIf)
 	{
-		Log(LOG_ERROR) << "Unexpected 'else'";
+		XComLog(LOG_ERROR) << "Unexpected 'else'";
 		return false;
 	}
 
@@ -1039,7 +1039,7 @@ bool parseElse(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'else'";
+		XComLog(LOG_ERROR) << "Error in processing 'else'";
 		return false;
 	}
 }
@@ -1051,7 +1051,7 @@ bool parseBegin(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 {
 	if (std::distance(begin, end) != 0)
 	{
-		Log(LOG_ERROR) << "Unexpected symbols after 'begin'";
+		XComLog(LOG_ERROR) << "Unexpected symbols after 'begin'";
 		return false;
 	}
 
@@ -1067,12 +1067,12 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 {
 	if (std::distance(begin, end) != 3)
 	{
-		Log(LOG_ERROR) << "Unexpected symbols after 'loop'";
+		XComLog(LOG_ERROR) << "Unexpected symbols after 'loop'";
 		return false;
 	}
 	if (begin[0].name != ScriptRef{ "var" })
 	{
-		Log(LOG_ERROR) << "After 'loop' should be 'var'";
+		XComLog(LOG_ERROR) << "After 'loop' should be 'var'";
 		return false;
 	}
 
@@ -1120,7 +1120,7 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'loop'";
+		XComLog(LOG_ERROR) << "Error in processing 'loop'";
 		return false;
 	}
 }
@@ -1150,14 +1150,14 @@ bool parseBreak(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 {
 	if (std::distance(begin, end) != 0)
 	{
-		Log(LOG_ERROR) << "Unexpected symbols after 'break'";
+		XComLog(LOG_ERROR) << "Unexpected symbols after 'break'";
 		return false;
 	}
 
 	auto* loopBlock = getTopBlockOfType(ph, BlockLoop);
 	if (!loopBlock)
 	{
-		Log(LOG_ERROR) << "Operation 'break' outside 'loop'";
+		XComLog(LOG_ERROR) << "Operation 'break' outside 'loop'";
 		return false;
 	}
 
@@ -1176,7 +1176,7 @@ bool parseBreak(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'break'";
+		XComLog(LOG_ERROR) << "Error in processing 'break'";
 		return false;
 	}
 }
@@ -1188,14 +1188,14 @@ bool parseContinue(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefD
 {
 	if (std::distance(begin, end) != 0)
 	{
-		Log(LOG_ERROR) << "Unexpected symbols after 'continue'";
+		XComLog(LOG_ERROR) << "Unexpected symbols after 'continue'";
 		return false;
 	}
 
 	auto* loopBlock = getTopBlockOfType(ph, BlockLoop);
 	if (!loopBlock)
 	{
-		Log(LOG_ERROR) << "Operation 'continue' outside 'loop'";
+		XComLog(LOG_ERROR) << "Operation 'continue' outside 'loop'";
 		return false;
 	}
 
@@ -1214,7 +1214,7 @@ bool parseContinue(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefD
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'continue'";
+		XComLog(LOG_ERROR) << "Error in processing 'continue'";
 		return false;
 	}
 }
@@ -1226,12 +1226,12 @@ bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 {
 	if (ph.codeBlocks.back().type == BlockMain)
 	{
-		Log(LOG_ERROR) << "Unexpected 'end'";
+		XComLog(LOG_ERROR) << "Unexpected 'end'";
 		return false;
 	}
 	if (std::distance(begin, end) != 0)
 	{
-		Log(LOG_ERROR) << "Unexpected symbols after 'end'";
+		XComLog(LOG_ERROR) << "Unexpected symbols after 'end'";
 		return false;
 	}
 
@@ -1273,7 +1273,7 @@ bool parseEnd(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'end'";
+		XComLog(LOG_ERROR) << "Error in processing 'end'";
 		return false;
 	}
 }
@@ -1300,7 +1300,7 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	auto size = std::distance(begin, end);
 	if (size < 2 || 3 < size)
 	{
-		Log(LOG_ERROR) << "Invalid length of 'var' definition";
+		XComLog(LOG_ERROR) << "Invalid length of 'var' definition";
 		return false;
 	}
 
@@ -1308,27 +1308,27 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	auto type_curr = ph.parser.getType(begin[0].name);
 	if (!type_curr)
 	{
-		Log(LOG_ERROR) << "Invalid type '" << begin[0].name.toString() << "'";
+		XComLog(LOG_ERROR) << "Invalid type '" << begin[0].name.toString() << "'";
 		return false;
 	}
 
 	if (type_curr->meta.size == 0 && !(spec & ArgSpecPtr))
 	{
-		Log(LOG_ERROR) << "Can't create variable of type '" << begin[0].name.toString() << "'";
+		XComLog(LOG_ERROR) << "Can't create variable of type '" << begin[0].name.toString() << "'";
 		return false;
 	}
 
 	++begin;
 	if (begin[0].type != ArgInvalid || !begin[0].name || begin[0].name.find('.') != std::string::npos)
 	{
-		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "'";
+		XComLog(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "'";
 		return false;
 	}
 
 	auto reg = ph.addReg(begin[0].name, ArgSpecAdd(type_curr->type, spec));
 	if (!reg)
 	{
-		Log(LOG_ERROR) << "Invalid type for variable '" << begin[0].name.toString() << "'";
+		XComLog(LOG_ERROR) << "Invalid type for variable '" << begin[0].name.toString() << "'";
 		return false;
 	}
 
@@ -1351,7 +1351,7 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'end'";
+		XComLog(LOG_ERROR) << "Error in processing 'end'";
 		return false;
 	}
 }
@@ -1365,7 +1365,7 @@ bool parseReturn(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefDat
 	const auto returnSize = ph.parser.haveEmptyReturn() ? 0 : ph.parser.getParamSize();
 	if (returnSize != size)
 	{
-		Log(LOG_ERROR) << "Invalid length of returns arguments";
+		XComLog(LOG_ERROR) << "Invalid length of returns arguments";
 		return false;
 	}
 
@@ -1378,7 +1378,7 @@ bool parseReturn(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefDat
 		outputRegsData[i] = *ph.parser.getParamData(i);
 		if (begin[i].isValueType<RegEnum>() && !ArgCompatible(outputRegsData[i].type, begin[i].type, 1))
 		{
-			Log(LOG_ERROR) << "Invalid return argument '" + begin[i].name.toString() + "'";
+			XComLog(LOG_ERROR) << "Invalid return argument '" + begin[i].name.toString() + "'";
 			return false;
 		}
 		currValueIndex[i] = outputRegsData[i].getValue<RegEnum>();
@@ -1422,7 +1422,7 @@ bool parseReturn(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefDat
 				const auto proc = ph.parser.getProc(ScriptRef{ "set" });
 				if (!callOverloadProc(ph, proc, std::begin(temp), std::end(temp)))
 				{
-					Log(LOG_ERROR) << "Invalid return argument '" + begin[i].name.toString() + "'";
+					XComLog(LOG_ERROR) << "Invalid return argument '" + begin[i].name.toString() + "'";
 					return false;
 				}
 			}
@@ -1485,7 +1485,7 @@ bool parseDebugLog(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefD
 		const auto proc = ph.parser.getProc(ScriptRef{ "debug_impl" });
 		if (!callOverloadProc(ph, proc, i, std::next(i)))
 		{
-			Log(LOG_ERROR) << "Invalid debug argument '" + i->name.toString() + "'";
+			XComLog(LOG_ERROR) << "Invalid debug argument '" + i->name.toString() + "'";
 			return false;
 		}
 	}
@@ -1499,7 +1499,7 @@ bool parseDebugLog(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefD
  */
 bool parseDummy(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
 {
-	Log(LOG_ERROR) << "Reserved operation for future use";
+	XComLog(LOG_ERROR) << "Reserved operation for future use";
 	return false;
 }
 
@@ -2398,16 +2398,16 @@ ParserWriter::Block ParserWriter::popScopeBlock()
 	return prev;
 }
 
-/// Dump to log error info about ref.
+/// Dump to XComLog error info about ref.
 void ParserWriter::logDump(const ScriptRefData& ref) const
 {
 	if (ref)
 	{
-		Log(LOG_ERROR) << "Incorrect type of argument '"<< ref.name.toString() <<"' of type "<< displayType(&parser, ref.type);
+		XComLog(LOG_ERROR) << "Incorrect type of argument '"<< ref.name.toString() <<"' of type "<< displayType(&parser, ref.type);
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Unknown argument '"<< ref.name.toString() <<"'";
+		XComLog(LOG_ERROR) << "Unknown argument '"<< ref.name.toString() <<"'";
 	}
 }
 
@@ -2799,18 +2799,18 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 //			{
 //				if (i->type == ArgLabel && help.refLabels.getValue(i->value) == ProgPos::Unknown)
 //				{
-//					Log(LOG_ERROR) << err << "invalid use of label: '" << i->name.toString() << "' without declaration";
+//					XComLog(LOG_ERROR) << err << "invalid use of label: '" << i->name.toString() << "' without declaration";
 //					return false;
 //				}
 //			}
 			if (help.codeBlocks.size() > 1)
 			{
-				Log(LOG_ERROR) << err << "script have missed 'end;'";
+				XComLog(LOG_ERROR) << err << "script have missed 'end;'";
 				return false;
 			}
 			if (!haveLastReturn)
 			{
-				Log(LOG_ERROR) << err << "script need to end with return statement";
+				XComLog(LOG_ERROR) << err << "script need to end with return statement";
 				return false;
 			}
 			help.relese();
@@ -2836,7 +2836,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			auto first_dot = op.find('.');
 			if (first_dot == std::string::npos)
 			{
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				XComLog(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
 				return false;
 			}
 
@@ -2844,16 +2844,16 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			auto ref = help.getReferece(temp);
 			if (!ref)
 			{
-				Log(LOG_ERROR) << "Unknown variable name '" << temp.toString() << "'";
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				XComLog(LOG_ERROR) << "Unknown variable name '" << temp.toString() << "'";
+				XComLog(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
 				return false;
 			}
 
 			auto name = getTypeName(ref.type);
 			if (ref.type < ArgMax || !name)
 			{
-				Log(LOG_ERROR) << "Unsupported type for variable '" << ref.name.toString() << "'";
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				XComLog(LOG_ERROR) << "Unsupported type for variable '" << ref.name.toString() << "'";
+				XComLog(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
 				return false;
 			}
 
@@ -2861,8 +2861,8 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			op_curr = getProc(name, name_end);
 			if (!op_curr)
 			{
-				Log(LOG_ERROR) << "Unknown operation name '" << name.toString() << name_end.toString() << "' for variable '" << ref.name.toString() << "'";
-				Log(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
+				XComLog(LOG_ERROR) << "Unknown operation name '" << name.toString() << name_end.toString() << "' for variable '" << ref.name.toString() << "'";
+				XComLog(LOG_ERROR) << err << "invalid operation '" << op.toString() << "'";
 				return false;
 			}
 
@@ -2899,7 +2899,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 			if (args[ScriptMaxArg - 1].getType() != TokenNone)
 			{
-				Log(LOG_ERROR) << err << "too many arguments in line: '" << std::string(line_begin, line_end) << "'";
+				XComLog(LOG_ERROR) << err << "too many arguments in line: '" << std::string(line_begin, line_end) << "'";
 				return false;
 			}
 
@@ -2907,12 +2907,12 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 			{
 				if (args[i].getType() == TokenInvalid)
 				{
-					Log(LOG_ERROR) << err << "invalid argument '"<<  args[i].toString() <<"' in line: '" << std::string(line_begin, line_end) << "'";
+					XComLog(LOG_ERROR) << err << "invalid argument '"<<  args[i].toString() <<"' in line: '" << std::string(line_begin, line_end) << "'";
 					return false;
 				}
 			}
 
-			Log(LOG_ERROR) << err << "invalid line: '" << std::string(line_begin, line_end) << "'";
+			XComLog(LOG_ERROR) << err << "invalid line: '" << std::string(line_begin, line_end) << "'";
 			return false;
 		}
 
@@ -2928,17 +2928,17 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 		if (haveLastReturn && !isEnd)
 		{
-			Log(LOG_ERROR) << err << "unreachable line after return: '" << line.toString() << "'";
+			XComLog(LOG_ERROR) << err << "unreachable line after return: '" << line.toString() << "'";
 			return false;
 		}
 		if (haveCodeNormal && isVarDef)
 		{
-			Log(LOG_ERROR) << err << "invalid variable definition after other operations: '" << line.toString() << "'";
+			XComLog(LOG_ERROR) << err << "invalid variable definition after other operations: '" << line.toString() << "'";
 			return false;
 		}
 		if (label && isVarDef)
 		{
-			Log(LOG_ERROR) << err << "label can't be before variable definition: '" << line.toString() << "'";
+			XComLog(LOG_ERROR) << err << "label can't be before variable definition: '" << line.toString() << "'";
 			return false;
 		}
 
@@ -2956,14 +2956,14 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 		if (label && !help.setLabel(label.parse(help), help.getCurrPos()))
 		{
-			Log(LOG_ERROR) << err << "invalid label '"<< label.toString() <<"' in line: '" << line.toString() << "'";
+			XComLog(LOG_ERROR) << err << "invalid label '"<< label.toString() <<"' in line: '" << line.toString() << "'";
 			return false;
 		}
 
 		// create normal proc call
 		if (callOverloadProc(help, op_curr, argData, argData+i) == false)
 		{
-			Log(LOG_ERROR) << err << "invalid operation in line: '" << line.toString() << "'";
+			XComLog(LOG_ERROR) << err << "invalid operation in line: '" << line.toString() << "'";
 			return false;
 		}
 	}
@@ -3243,7 +3243,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 				}
 				else
 				{
-					Log(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(deleteNode);
+					XComLog(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(deleteNode);
 				}
 			}
 			else
@@ -3256,7 +3256,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 				if (offset == 0 || offset >= (int)OffsetMax || offset <= -(int)OffsetMax)
 				{
 					//TODO make it a exception
-					Log(LOG_ERROR) << "Invalid offset for '" << getName() << "' equal: '" << i["offset"].as<std::string>() << "'";
+					XComLog(LOG_ERROR) << "Invalid offset for '" << getName() << "' equal: '" << i["offset"].as<std::string>() << "'";
 					continue;
 				}
 
@@ -3278,7 +3278,7 @@ void ScriptParserEventsBase::load(const YAML::Node& scripts)
 					}
 					else
 					{
-						Log(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(updateNode);
+						XComLog(LOG_WARNING) << "Unknown script name '" + name  + "' for " + getDescriptionNode(updateNode);
 					}
 				}
 				else if (haveNode(overrideNode))
@@ -3343,7 +3343,7 @@ std::vector<ScriptContainerBase> ScriptParserEventsBase::releseEvents()
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Error in script parser '" << getName() << "': global script limit reach";
+			XComLog(LOG_ERROR) << "Error in script parser '" << getName() << "': global script limit reach";
 			if (reservedSpaceForZero)
 			{
 				_events.emplace_back();
@@ -3407,7 +3407,7 @@ void ScriptValuesBase::loadBase(const YAML::Node &node, const ScriptGlobal* shar
 				}
 				else
 				{
-					Log(LOG_ERROR) << "Error in tags: '" << pair.first << "' unknown tag name not defined in current file";
+					XComLog(LOG_ERROR) << "Error in tags: '" << pair.first << "' unknown tag name not defined in current file";
 				}
 			}
 		}
@@ -3678,7 +3678,7 @@ void ScriptGlobal::load(const YAML::Node& node)
 						auto ref = getRef(ScriptRef::tempFrom(namePrefix));
 						if (ref && ref->type != p.first)
 						{
-							Log(LOG_ERROR) << "Script variable '" + name + "' already used in '" + _tagNames[ref->type].name.toString() + "'.";
+							XComLog(LOG_ERROR) << "Script variable '" + name + "' already used in '" + _tagNames[ref->type].name.toString() + "'.";
 							continue;
 						}
 						auto tag = getTag(p.first, ScriptRef::tempFrom(namePrefix));
@@ -3687,20 +3687,20 @@ void ScriptGlobal::load(const YAML::Node& node)
 							auto data = getTagValueData(p.first, tag);
 							if (valueType != data.valueType)
 							{
-								Log(LOG_ERROR) << "Script variable '" + name + "' have wrong type '" << _tagValueTypes[valueType].name.toString() << "' instead of '" << _tagValueTypes[data.valueType].name.toString() << "' in '" + nodeName + "'.";
+								XComLog(LOG_ERROR) << "Script variable '" + name + "' have wrong type '" << _tagValueTypes[valueType].name.toString() << "' instead of '" << _tagValueTypes[data.valueType].name.toString() << "' in '" + nodeName + "'.";
 							}
 							continue;
 						}
 						tag = addTag(p.first, addNameRef(namePrefix), valueType);
 						if (!tag)
 						{
-							Log(LOG_ERROR) << "Script variable '" + name + "' exceeds limit of " << (int)p.second.limit << " available variables in '" + nodeName + "'.";
+							XComLog(LOG_ERROR) << "Script variable '" + name + "' exceeds limit of " << (int)p.second.limit << " available variables in '" + nodeName + "'.";
 							continue;
 						}
 					}
 					else
 					{
-						Log(LOG_ERROR) << "Invalid type def '" + type + "' for script variable '" + name + "' in '" + nodeName +"'.";
+						XComLog(LOG_ERROR) << "Invalid type def '" + type + "' for script variable '" + name + "' in '" + nodeName +"'.";
 					}
 				}
 			}

@@ -102,7 +102,7 @@ bool FlcPlayer::init(const char *filename, void(*frameCallBack)(), Game *game, b
 {
 	if (_fileBuf != 0)
 	{
-		Log(LOG_ERROR) << "Trying to init a video player that is already initialized";
+		XComLog(LOG_ERROR) << "Trying to init a video player that is already initialized";
 		return false;
 	}
 
@@ -141,11 +141,11 @@ bool FlcPlayer::init(const char *filename, void(*frameCallBack)(), Game *game, b
 		_screenHeight = _headerHeight;
 		_screenDepth = 8;
 
-		Log(LOG_INFO) << "Playing flx, " << _screenWidth << "x" << _screenHeight << ", " << _headerFrames << " frames";
+		XComLog(LOG_INFO) << "Playing flx, " << _screenWidth << "x" << _screenHeight << ", " << _headerFrames << " frames";
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Flx file failed header check.";
+		XComLog(LOG_ERROR) << "Flx file failed header check.";
 		return false;
 	}
 	if (_screenWidth > _realScreen->getSurface()->w && Options::displayWidth >= _screenWidth)
@@ -425,7 +425,7 @@ void FlcPlayer::playVideoFrame()
 			case 18:
 				break;
 			default:
-				Log(LOG_WARNING) << "Ieek an non implemented chunk type:" << _chunkType;
+				XComLog(LOG_WARNING) << "Ieek an non implemented chunk type:" << _chunkType;
 				break;
 		}
 
@@ -813,8 +813,8 @@ void FlcPlayer::initAudio(Uint16 format, Uint8 channels)
 		{
 			if (Mix_OpenAudio(_audioData.sampleRate, format, channels, _audioFrameSize * 2) != 0)
 			{
-				Log(LOG_ERROR) << Mix_GetError();
-				Log(LOG_WARNING) << "Failed to init cutscene audio";
+				XComLog(LOG_ERROR) << Mix_GetError();
+				XComLog(LOG_WARNING) << "Failed to init cutscene audio";
 				Options::mute = true;
 			}
 		}

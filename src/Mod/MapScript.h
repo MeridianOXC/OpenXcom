@@ -101,7 +101,7 @@ struct VerticalLevel
 		}
 		else
 		{
-			Log(LOG_WARNING) << "'" << type << "'" << " does not resolve into a valid verticalLevel type, loading as 'middle'.";
+			XComLog(LOG_WARNING) << "'" << type << "'" << " does not resolve into a valid verticalLevel type, loading as 'middle'.";
 			levelType = VLT_MIDDLE;
 		}
 

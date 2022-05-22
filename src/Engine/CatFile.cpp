@@ -75,7 +75,7 @@ CatFile::CatFile(const std::string& filename) : _data(0), _items()
 	SDL_RWseek(rwops, 0, RW_SEEK_SET);  // and again reset the rwops pointer back
 
 	if (offset0 >= filesize) {
-		Log(LOG_WARNING) << "Catfile(" << filename << "): first offset " << offset0 << ">= file size " << filesize << ", not parsing.";
+		XComLog(LOG_WARNING) << "Catfile(" << filename << "): first offset " << offset0 << ">= file size " << filesize << ", not parsing.";
 		SDL_RWclose(rwops);
 		return;
 	}
@@ -84,7 +84,7 @@ CatFile::CatFile(const std::string& filename) : _data(0), _items()
 		SDL_ReadLE32(rwops); // ignore size;
 		// reject bad data
 		if (offset >= filesize) {
-			Log(LOG_WARNING) << "Catfile("<<filename<<"): item "<<i<<" outside of the file: offset="<<offset<<" "<<" filesize="<<filesize;
+			XComLog(LOG_WARNING) << "Catfile("<<filename<<"): item "<<i<<" outside of the file: offset="<<offset<<" "<<" filesize="<<filesize;
 			continue;
 		}
 		_items.push_back(std::make_tuple(_data + offset, offset));
@@ -114,7 +114,7 @@ CatFile::~CatFile()
  */
 SDL_RWops *CatFile::getRWops(Uint32 i) {
 	if (i >= _items.size()) {
-		Log(LOG_ERROR) << "Catfile<" << _filename << ">::getRWops("<<i<<"): >= size " << _items.size();
+		XComLog(LOG_ERROR) << "Catfile<" << _filename << ">::getRWops("<<i<<"): >= size " << _items.size();
 		return NULL;
 	}
 	return SDL_RWFromConstMem(std::get<0>(_items[i]), std::get<1>(_items[i]));

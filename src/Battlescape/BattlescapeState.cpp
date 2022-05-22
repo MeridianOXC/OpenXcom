@@ -2603,7 +2603,7 @@ inline void BattlescapeState::handle(Action *action)
 				{
 					_game->pushState(new BriefingState(0, 0, true));
 				}
-				// "ctrl-h" - show hit log
+				// "ctrl-h" - show hit XComLog
 				else if (key == SDLK_h && ctrlPressed)
 				{
 					if (_save->getSide() == FACTION_PLAYER)
@@ -2619,7 +2619,7 @@ inline void BattlescapeState::handle(Action *action)
 						}
 						else
 						{
-							// hit log
+							// hit XComLog
 							std::string hitLogText = _save->getHitLog()->getHitLogText();
 							if (!hitLogText.empty())
 								_game->pushState(new InfoboxState(hitLogText));
@@ -2645,7 +2645,7 @@ inline void BattlescapeState::handle(Action *action)
 						Options::oxceEnableUnitResponseSounds = !Options::oxceEnableUnitResponseSounds;
 					}
 				}
-				// "ctrl-e" - experience log
+				// "ctrl-e" - experience XComLog
 				else if (key == SDLK_e && ctrlPressed)
 				{
 					std::ostringstream ss;
@@ -2860,7 +2860,7 @@ void BattlescapeState::saveAIMap()
 	int h = _save->getMapSizeY();
 
 	SDL_Surface *img = SDL_AllocSurface(0, w * 8, h * 8, 24, 0xff, 0xff00, 0xff0000, 0);
-	Log(LOG_INFO) << "unit = " << unit->getId();
+	XComLog(LOG_INFO) << "unit = " << unit->getId();
 	memset(img->pixels, 0, img->pitch * img->h);
 
 	Position tilePos(unit->getPosition());
@@ -2962,13 +2962,13 @@ void BattlescapeState::saveAIMap()
 	unsigned error = lodepng::encode(out, (const unsigned char*)img->pixels, img->w, img->h, LCT_RGB);
 	if (error)
 	{
-		Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
+		XComLog(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
 	}
 
 	SDL_FreeSurface(img);
 
 	CrossPlatform::writeFile(ss.str(), out);
-	Log(LOG_INFO) << "saveAIMap() completed in " << SDL_GetTicks() - start << "ms.";
+	XComLog(LOG_INFO) << "saveAIMap() completed in " << SDL_GetTicks() - start << "ms.";
 }
 
 /**
@@ -3091,7 +3091,7 @@ void BattlescapeState::saveVoxelView()
 	unsigned error = lodepng::encode(out, image, 512, 512, LCT_RGB);
 	if (error)
 	{
-		Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
+		XComLog(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
 	}
 	CrossPlatform::writeFile(ss.str(), out);
 	return;
@@ -3161,7 +3161,7 @@ void BattlescapeState::saveVoxelMap()
 		unsigned error = lodepng::encode(out, image, _save->getMapSizeX()*16, _save->getMapSizeY()*16, LCT_RGB);
 		if (error)
 		{
-			Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
+			XComLog(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
 		}
 		CrossPlatform::writeFile(ss.str(), out);
 	}

@@ -35,7 +35,7 @@ HitLog::HitLog(Language *lang) : _lastEventType(HITLOG_EMPTY), _lastFaction(FACT
 }
 
 /**
- * Clears the hit log. And updates the turn diary.
+ * Clears the hit XComLog. And updates the turn diary.
  */
 void HitLog::clearHitLog(bool resetTurnDiary, bool ignoreLastEntry)
 {
@@ -53,8 +53,8 @@ void HitLog::clearHitLog(bool resetTurnDiary, bool ignoreLastEntry)
 }
 
 /**
- * Appends a given entry to the hit log.
- * @param type Type of hit log entry.
+ * Appends a given entry to the hit XComLog.
+ * @param type Type of hit XComLog entry.
  * @param faction Faction of the actor.
  */
 void HitLog::appendToHitLog(HitLogEntryType type, UnitFaction faction)
@@ -101,8 +101,8 @@ void HitLog::appendToHitLog(HitLogEntryType type, UnitFaction faction)
 }
 
 /**
- * Appends a given entry to the hit log.
- * @param type Type of hit log entry.
+ * Appends a given entry to the hit XComLog.
+ * @param type Type of hit XComLog entry.
  * @param faction Faction of the actor.
  * @param text Text to append.
  */
@@ -129,9 +129,9 @@ void HitLog::appendToHitLog(HitLogEntryType type, UnitFaction faction, const std
 }
 
 /**
- * Gets the hit log text.
+ * Gets the hit XComLog text.
  * @param convert Convert line breaks to spaces?
- * @return hit log text.
+ * @return hit XComLog text.
  */
 std::string HitLog::getHitLogText(bool convert) const
 {

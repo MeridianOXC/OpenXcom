@@ -78,14 +78,14 @@ void getUtf8Locale()
 	// Try a UTF-8 locale (or default if none was found)
 	try
 	{
-		Log(LOG_INFO) << "Attempted locale: " << loc.c_str();
+		XComLog(LOG_INFO) << "Attempted locale: " << loc.c_str();
 		utf8 = std::locale(loc.c_str());
 	}
 	catch (const std::runtime_error &)
 	{
 		// Well we're stuck with the C locale, hope for the best
 	}
-	Log(LOG_INFO) << "Detected locale: " << utf8.name();
+	XComLog(LOG_INFO) << "Detected locale: " << utf8.name();
 }
 
 /**

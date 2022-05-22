@@ -112,7 +112,7 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 	RuleRegion* region = mod->getRegion(_region, false);
 	if (!region)
 	{
-		Log(LOG_ERROR) << "Corrupted save: Mission with uniqueID: " << _uniqueID << " has an invalid region: " << _region;
+		XComLog(LOG_ERROR) << "Corrupted save: Mission with uniqueID: " << _uniqueID << " has an invalid region: " << _region;
 		_interrupted = true;
 		if (_missionSiteZone > -1)
 		{
@@ -121,9 +121,9 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 		_region = mod->getRegionsList().front();
 		if (_liveUfos > 0)
 		{
-			Log(LOG_ERROR) << "Mission still has some live UFOs, please leave them be until they disappear.";
+			XComLog(LOG_ERROR) << "Mission still has some live UFOs, please leave them be until they disappear.";
 		}
-		Log(LOG_ERROR) << "Mission was interrupted! Temporarily assigned to a new region: " << _region;
+		XComLog(LOG_ERROR) << "Mission was interrupted! Temporarily assigned to a new region: " << _region;
 	}
 }
 
@@ -1202,10 +1202,10 @@ std::pair<double, double> AlienMission::getLandPoint(const Globe &globe, const R
 
 		if (tries == 100)
 		{
-			Log(LOG_WARNING) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " invalid zone: " << zone << " ufo forced to land on water (or invalid texture)!";
+			XComLog(LOG_WARNING) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " invalid zone: " << zone << " ufo forced to land on water (or invalid texture)!";
 			if (wantsToLandOnFakeWater)
 			{
-				Log(LOG_WARNING) << "UFO: " << ufo.getRules()->getType() << " wanted to land on fake water.";
+				XComLog(LOG_WARNING) << "UFO: " << ufo.getRules()->getType() << " wanted to land on fake water.";
 			}
 		}
 	}
@@ -1273,10 +1273,10 @@ std::pair<double, double> AlienMission::getLandPointForMissionSite(const Globe& 
 
 		if (tries == 100)
 		{
-			Log(LOG_WARNING) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " zone: " << zone << " area: " << area << " ufo forced to land on water (or invalid texture)!";
+			XComLog(LOG_WARNING) << "Region: " << region.getType() << " Longitude: " << pos.first << " Latitude: " << pos.second << " zone: " << zone << " area: " << area << " ufo forced to land on water (or invalid texture)!";
 			if (wantsToLandOnFakeWater)
 			{
-				Log(LOG_WARNING) << "UFO: " << ufo.getRules()->getType() << " wanted to land on fake water.";
+				XComLog(LOG_WARNING) << "UFO: " << ufo.getRules()->getType() << " wanted to land on fake water.";
 			}
 		}
 	}

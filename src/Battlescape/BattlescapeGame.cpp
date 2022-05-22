@@ -335,7 +335,7 @@ void BattlescapeGame::handleAI(BattleUnit *unit)
 	{
 		_playedAggroSound = false;
 		unit->setHiding(false);
-		if (Options::traceAI) { Log(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
+		if (Options::traceAI) { XComLog(LOG_INFO) << "#" << unit->getId() << "--" << unit->getType(); }
 	}
 
 	BattleAction action;
@@ -1190,7 +1190,7 @@ void BattlescapeGame::popState()
 {
 	if (Options::traceAI)
 	{
-		Log(LOG_INFO) << "BattlescapeGame::popState() #" << _AIActionCounter << " with " << (_save->getSelectedUnit() ? _save->getSelectedUnit()->getTimeUnits() : -9999) << " TU";
+		XComLog(LOG_INFO) << "BattlescapeGame::popState() #" << _AIActionCounter << " with " << (_save->getSelectedUnit() ? _save->getSelectedUnit()->getTimeUnits() : -9999) << " TU";
 	}
 	bool actionFailed = false;
 

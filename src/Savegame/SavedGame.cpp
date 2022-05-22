@@ -272,7 +272,7 @@ static bool _isCurrentGameType(const SaveInfo &saveInfo, const std::string &curM
 
 	if (!matchMasterMod)
 	{
-		Log(LOG_DEBUG) << "skipping save from inactive master: " << saveInfo.fileName;
+		XComLog(LOG_DEBUG) << "skipping save from inactive master: " << saveInfo.fileName;
 	}
 
 	return matchMasterMod;
@@ -309,12 +309,12 @@ std::vector<SaveInfo> SavedGame::getList(Language *lang, bool autoquick)
 		}
 		catch (Exception &e)
 		{
-			Log(LOG_ERROR) << filename << ": " << e.what();
+			XComLog(LOG_ERROR) << filename << ": " << e.what();
 			continue;
 		}
 		catch (YAML::Exception &e)
 		{
-			Log(LOG_ERROR) << filename << ": " << e.what();
+			XComLog(LOG_ERROR) << filename << ": " << e.what();
 			continue;
 		}
 	}
@@ -459,7 +459,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load country " << type;
+			XComLog(LOG_ERROR) << "Failed to load country " << type;
 		}
 	}
 
@@ -474,7 +474,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load region " << type;
+			XComLog(LOG_ERROR) << "Failed to load region " << type;
 		}
 	}
 
@@ -490,7 +490,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load deployment for alien base " << deployment;
+			XComLog(LOG_ERROR) << "Failed to load deployment for alien base " << deployment;
 		}
 	}
 
@@ -508,7 +508,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load mission " << missionType;
+			XComLog(LOG_ERROR) << "Failed to load mission " << missionType;
 		}
 	}
 
@@ -523,7 +523,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load UFO " << type;
+			XComLog(LOG_ERROR) << "Failed to load UFO " << type;
 		}
 	}
 
@@ -540,7 +540,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load geoscape event " << eventName;
+			XComLog(LOG_ERROR) << "Failed to load geoscape event " << eventName;
 		}
 	}
 
@@ -564,7 +564,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load mission " << type << " deployment " << deployment;
+			XComLog(LOG_ERROR) << "Failed to load mission " << type << " deployment " << deployment;
 		}
 	}
 
@@ -581,7 +581,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load mission " << type << " deployment " << deployment;
+			XComLog(LOG_ERROR) << "Failed to load mission " << type << " deployment " << deployment;
 		}
 	}
 
@@ -595,7 +595,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load research " << research;
+			XComLog(LOG_ERROR) << "Failed to load research " << research;
 		}
 	}
 	sortReserchVector(_discovered);
@@ -675,7 +675,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load research " << id;
+			XComLog(LOG_ERROR) << "Failed to load research " << id;
 		}
 	}
 	_alienStrategy->load(doc["alienStrategy"], mod);
@@ -691,7 +691,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load soldier " << type;
+			XComLog(LOG_ERROR) << "Failed to load soldier " << type;
 		}
 	}
 
@@ -2690,7 +2690,7 @@ Region *SavedGame::locateRegion(double lon, double lat) const
 	{
 		return *found;
 	}
-	Log(LOG_ERROR) << "Failed to find a region at location [" << lon << ", " << lat << "].";
+	XComLog(LOG_ERROR) << "Failed to find a region at location [" << lon << ", " << lat << "].";
 	return 0;
 }
 
@@ -2734,7 +2734,7 @@ Country* SavedGame::locateCountry(double lon, double lat) const
 	{
 		return *found;
 	}
-	//Log(LOG_DEBUG) << "Failed to find a country at location [" << lon << ", " << lat << "].";
+	//XComLog(LOG_DEBUG) << "Failed to find a country at location [" << lon << ", " << lat << "].";
 	return 0;
 }
 

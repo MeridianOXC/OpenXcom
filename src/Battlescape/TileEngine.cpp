@@ -2372,7 +2372,7 @@ bool TileEngine::hitUnit(BattleActionAttack attack, BattleUnit *target, const Po
 	const int healthDamage = healthOrig - target->getHealth();
 	const int stunDamage = target->getStunlevel() - stunLevelOrig;
 
-	// hit log
+	// hit XComLog
 	if (attack.attacker)
 	{
 		if (healthDamage > 0 || stunDamage > 0)
@@ -4098,7 +4098,7 @@ bool TileEngine::meleeAttack(BattleActionAttack attack, BattleUnit *victim, int 
 	}
 	if (attack.type != BA_CQB)
 	{
-		// hit log - new melee attack
+		// hit XComLog - new melee attack
 		_save->appendToHitLog(HITLOG_NEW_SHOT, attack.attacker->getFaction());
 
 		// to allow melee reactions when attacked from any side, not just from the front

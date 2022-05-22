@@ -53,7 +53,8 @@
 #include "../Interface/Text.h"
 #include "../fmath.h"
 #include "../fallthrough.h"
-
+#include "pbrt/pbrt.h"
+#include "pbrt/options.h"
 
 /*
   1) Map origin is top corner.
@@ -1691,6 +1692,10 @@ void Map::drawTerrain(Surface *surface)
 			}
 		}
 	}
+
+	struct pbrt::PBRTOptions blabla;
+	pbrt::InitPBRT( blabla );
+	pbrt::CleanupPBRT();
 
 	surface->unlock();
 }

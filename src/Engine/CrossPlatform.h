@@ -111,8 +111,8 @@ namespace CrossPlatform
 	/// Opens a URL.
 	bool openExplorer(const std::string &url);
 	/// Log something.
-	void log(int, const std::ostringstream& msg);
-	/// The log file name
+	void Log(int, const std::ostringstream& msg);
+	/// The Log file name
 	void setLogFileName(const std::string &path);
 	const std::string& getLogFileName();
 	/// Get an SDL_RWops to an embedded asset. NULL if not there.

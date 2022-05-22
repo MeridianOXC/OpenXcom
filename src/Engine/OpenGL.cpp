@@ -258,7 +258,7 @@ bool OpenGL::set_shader(const char *source_yaml_filename)
 		glprogram = glCreateProgram();
 		if (glprogram == 0)
 		{
-			Log(LOG_ERROR) << "Failed to create GLSL shader program";
+			XComLog(LOG_ERROR) << "Failed to create GLSL shader program";
 			return false;
 		}
 		{
@@ -280,7 +280,7 @@ bool OpenGL::set_shader(const char *source_yaml_filename)
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Unexpected shader language \"" <<
+				XComLog(LOG_ERROR) << "Unexpected shader language \"" <<
 					document["language"].as<std::string>() << "\"";
 			}
 		}
@@ -296,7 +296,7 @@ bool OpenGL::set_shader(const char *source_yaml_filename)
 			glErrorCheck();
 			if (infoLogLength == 0)
 			{
-				Log(LOG_ERROR) << "OpenGL shader link failed: No log returned from driver";
+				XComLog(LOG_ERROR) << "OpenGL shader link failed: No XComLog returned from driver";
 			}
 			else
 			{
@@ -304,7 +304,7 @@ bool OpenGL::set_shader(const char *source_yaml_filename)
 				glGetProgramInfoLog(glprogram, infoLogLength, NULL, infoLog);
 				glErrorCheck();
 
-				Log(LOG_ERROR) << "OpenGL shader link failed \"" << infoLog << "\"";
+				XComLog(LOG_ERROR) << "OpenGL shader link failed \"" << infoLog << "\"";
 
 				delete[] infoLog;
 			}
@@ -335,7 +335,7 @@ static GLuint createShader(GLenum type, const char *source)
 		glErrorCheck();
 		if (infoLogLength == 0)
 		{
-			Log(LOG_ERROR) << "OpenGL shader compilation failed: No log returned from driver";
+			XComLog(LOG_ERROR) << "OpenGL shader compilation failed: No XComLog returned from driver";
 		}
 		else
 		{
@@ -343,7 +343,7 @@ static GLuint createShader(GLenum type, const char *source)
 			glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
 			glErrorCheck();
 
-			Log(LOG_ERROR) << "OpenGL shader compilation failed: \"" << infoLog << "\"";
+			XComLog(LOG_ERROR) << "OpenGL shader compilation failed: \"" << infoLog << "\"";
 
 			delete[] infoLog;
 		}
@@ -460,13 +460,13 @@ void OpenGL::setVSync(bool sync)
 		if (drawable) {
 			glXSwapIntervalEXT(dpy, drawable, interval);
 			glErrorCheck();
-			// Log(LOG_INFO) << "Made an attempt to set vsync via GLX.";
+			// XComLog(LOG_INFO) << "Made an attempt to set vsync via GLX.";
 		}
 	} else if (wglSwapIntervalEXT)
 	{
 		wglSwapIntervalEXT(interval);
 		glErrorCheck();
-		// Log(LOG_INFO) << "Made an attempt to set vsync via WGL.";
+		// XComLog(LOG_INFO) << "Made an attempt to set vsync via WGL.";
 	}
 }
 

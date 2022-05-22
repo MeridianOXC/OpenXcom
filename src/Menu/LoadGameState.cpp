@@ -226,7 +226,7 @@ void LoadGameState::think()
 void LoadGameState::error(const std::string &msg, SavedGame *save)
 {
 
-	Log(LOG_ERROR) << msg;
+	XComLog(LOG_ERROR) << msg;
 	std::ostringstream error;
 	error << tr("STR_LOAD_UNSUCCESSFUL") << Unicode::TOK_NL_SMALL << msg;
 	if (_origin != OPT_BATTLESCAPE)

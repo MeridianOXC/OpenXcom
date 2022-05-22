@@ -195,7 +195,7 @@ void Screen::flip()
 	{
 		if (_screen->format->BitsPerPixel == 8 && SDL_SetColors(_screen, &(deferredPalette[_firstColor]), _firstColor, _numColors) == 0)
 		{
-			Log(LOG_DEBUG) << "Display palette doesn't match requested palette";
+			XComLog(LOG_DEBUG) << "Display palette doesn't match requested palette";
 		}
 		_numColors = 0;
 		_pushPalette = false;
@@ -215,7 +215,7 @@ void Screen::flip()
 	{
 		if (_screen->format->BitsPerPixel == 8 && SDL_SetColors(_screen, &(deferredPalette[_firstColor]), _firstColor, _numColors) == 0)
 		{
-			Log(LOG_DEBUG) << "Display palette doesn't match requested palette";
+			XComLog(LOG_DEBUG) << "Display palette doesn't match requested palette";
 		}
 		_numColors = 0;
 		_pushPalette = false;
@@ -267,7 +267,7 @@ void Screen::setPalette(const SDL_Color* colors, int firstcolor, int ncolors, bo
 	// defer actual update of screen until SDL_Flip()
 	if (immediately && _screen->format->BitsPerPixel == 8 && SDL_SetColors(_screen, const_cast<SDL_Color *>(colors), firstcolor, ncolors) == 0)
 	{
-		Log(LOG_DEBUG) << "Display palette doesn't match requested palette";
+		XComLog(LOG_DEBUG) << "Display palette doesn't match requested palette";
 	}
 
 	// Sanity check
@@ -275,13 +275,13 @@ void Screen::setPalette(const SDL_Color* colors, int firstcolor, int ncolors, bo
 	SDL_Color *newcolors = _screen->format->palette->colors;
 	for (int i = firstcolor, j = 0; i < firstcolor + ncolors; i++, j++)
 	{
-		Log(LOG_DEBUG) << (int)newcolors[i].r << " - " << (int)newcolors[i].g << " - " << (int)newcolors[i].b;
-		Log(LOG_DEBUG) << (int)colors[j].r << " + " << (int)colors[j].g << " + " << (int)colors[j].b;
+		XComLog(LOG_DEBUG) << (int)newcolors[i].r << " - " << (int)newcolors[i].g << " - " << (int)newcolors[i].b;
+		XComLog(LOG_DEBUG) << (int)colors[j].r << " + " << (int)colors[j].g << " + " << (int)colors[j].b;
 		if (newcolors[i].r != colors[j].r ||
 			newcolors[i].g != colors[j].g ||
 			newcolors[i].b != colors[j].b)
 		{
-			Log(LOG_ERROR) << "Display palette doesn't match requested palette";
+			XComLog(LOG_ERROR) << "Display palette doesn't match requested palette";
 			break;
 		}
 	}
@@ -367,12 +367,12 @@ void Screen::resetDisplay(bool resetVideo, bool noShaders)
 			SDL_SetCursor(SDL_CreateCursor(&cursor, &cursor, 1,1,0,0));
 		}
 #endif
-		Log(LOG_INFO) << "Attempting to set display to " << width << "x" << height << "x" << _bpp << "...";
+		XComLog(LOG_INFO) << "Attempting to set display to " << width << "x" << height << "x" << _bpp << "...";
 		_screen = SDL_SetVideoMode(width, height, _bpp, _flags);
 		if (_screen == 0)
 		{
-			Log(LOG_ERROR) << SDL_GetError();
-			Log(LOG_INFO) << "Attempting to set display to default resolution...";
+			XComLog(LOG_ERROR) << SDL_GetError();
+			XComLog(LOG_INFO) << "Attempting to set display to default resolution...";
 			_screen = SDL_SetVideoMode(640, 400, _bpp, _flags);
 			if (_screen == 0)
 			{
@@ -383,7 +383,7 @@ void Screen::resetDisplay(bool resetVideo, bool noShaders)
 				throw Exception(SDL_GetError());
 			}
 		}
-		Log(LOG_INFO) << "Display set to " << getWidth() << "x" << getHeight() << "x" << (int)_screen->format->BitsPerPixel << ".";
+		XComLog(LOG_INFO) << "Display set to " << getWidth() << "x" << getHeight() << "x" << (int)_screen->format->BitsPerPixel << ".";
 	}
 	else
 	{
@@ -573,7 +573,7 @@ void Screen::screenshot(const std::string &filename) const
 		unsigned error = lodepng::encode(out, (const unsigned char *)(_surface->pixels), _surface->w, _surface->h, state);
 		if (error)
 		{
-			Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
+			XComLog(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
 		}
 	}
 	else
@@ -581,7 +581,7 @@ void Screen::screenshot(const std::string &filename) const
 		unsigned error = lodepng::encode(out, (const unsigned char *)(screenshot->pixels), getWidth() - getWidth()%4, getHeight(), LCT_RGB);
 		if (error)
 		{
-			Log(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
+			XComLog(LOG_ERROR) << "Saving to PNG failed: " << lodepng_error_text(error);
 		}
 	}
 

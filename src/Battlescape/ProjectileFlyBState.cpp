@@ -578,7 +578,7 @@ bool ProjectileFlyBState::createNewProjectile()
 	if (_action.type != BA_THROW && _action.type != BA_LAUNCH)
 		_unit->getStatistics()->shotsFiredCounter++;
 
-	// hit log - new bullet
+	// hit XComLog - new bullet
 	if (_action.actor)
 	{
 		_parent->getSave()->appendToHitLog(HITLOG_NEW_SHOT, _action.actor->getFaction());

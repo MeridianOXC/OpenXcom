@@ -498,7 +498,7 @@ static void loadArgs()
 			if (argv.size() > i + 1)
 			{
 				++i; // we'll be consuming the next argument too
-				Log(LOG_DEBUG) << "loadArgs(): "<< argname <<" -> " << argv[i];
+				XComLog(LOG_DEBUG) << "loadArgs(): "<< argname <<" -> " << argv[i];
 				if (argname == "data")
 				{
 					_dataFolder = argv[i];
@@ -532,7 +532,7 @@ static void loadArgs()
 			}
 			else
 			{
-				Log(LOG_WARNING) << "Unknown option: " << argname;
+				XComLog(LOG_WARNING) << "Unknown option: " << argname;
 			}
 		}
 	}
@@ -629,33 +629,33 @@ bool init()
 	if (Options::verboseLogging)
 		Logger::reportingLevel() = LOG_VERBOSE;
 
-	// this enables writes to the log file and filters already emitted messages
-	CrossPlatform::setLogFileName(getUserFolder() + "openxcom.log");
+	// this enables writes to the XComLog file and filters already emitted messages
+	CrossPlatform::setLogFileName(getUserFolder() + "openxcom.XComLog");
 
-	Log(LOG_INFO) << "OpenXcom Version: " << OPENXCOM_VERSION_SHORT << OPENXCOM_VERSION_GIT;
+	XComLog(LOG_INFO) << "OpenXcom Version: " << OPENXCOM_VERSION_SHORT << OPENXCOM_VERSION_GIT;
 #ifdef _WIN64
-	Log(LOG_INFO) << "Platform: Windows 64 bit";
+	XComLog(LOG_INFO) << "Platform: Windows 64 bit";
 #elif _WIN32
-	Log(LOG_INFO) << "Platform: Windows 32 bit";
+	XComLog(LOG_INFO) << "Platform: Windows 32 bit";
 #elif __APPLE__
-	Log(LOG_INFO) << "Platform: OSX";
+	XComLog(LOG_INFO) << "Platform: OSX";
 #elif  __ANDROID_API__
-	Log(LOG_INFO) << "Platform: Android";
+	XComLog(LOG_INFO) << "Platform: Android";
 #elif __linux__
-	Log(LOG_INFO) << "Platform: Linux";
+	XComLog(LOG_INFO) << "Platform: Linux";
 #else
-	Log(LOG_INFO) << "Platform: Unix-like";
+	XComLog(LOG_INFO) << "Platform: Unix-like";
 #endif
 
-	Log(LOG_INFO) << "Data folder is: " << _dataFolder;
-	Log(LOG_INFO) << "Data search is: ";
+	XComLog(LOG_INFO) << "Data folder is: " << _dataFolder;
+	XComLog(LOG_INFO) << "Data search is: ";
 	for (std::vector<std::string>::iterator i = _dataList.begin(); i != _dataList.end(); ++i)
 	{
-		Log(LOG_INFO) << "- " << *i;
+		XComLog(LOG_INFO) << "- " << *i;
 	}
-	Log(LOG_INFO) << "User folder is: " << _userFolder;
-	Log(LOG_INFO) << "Config folder is: " << _configFolder;
-	Log(LOG_INFO) << "Options loaded successfully.";
+	XComLog(LOG_INFO) << "User folder is: " << _userFolder;
+	XComLog(LOG_INFO) << "Config folder is: " << _configFolder;
+	XComLog(LOG_INFO) << "Options loaded successfully.";
 
 	FileMap::clear(false, Options::oxceEmbeddedOnly);
 	return true;
@@ -672,25 +672,25 @@ void refreshMods()
 	_modInfos.clear();
 	SDL_RWops *rwops = CrossPlatform::getEmbeddedAsset("standard.zip");
 	if (rwops) {
-		Log(LOG_INFO) << "Scanning embedded standard mods...";
+		XComLog(LOG_INFO) << "Scanning embedded standard mods...";
 		FileMap::scanModZipRW(rwops, "exe:standard.zip");
 	}
 	if (Options::oxceEmbeddedOnly && rwops) {
-		Log(LOG_INFO) << "Modding embedded resources is disabled, set 'oxceEmbeddedOnly: false' in options.cfg to enable.";
+		XComLog(LOG_INFO) << "Modding embedded resources is disabled, set 'oxceEmbeddedOnly: false' in options.cfg to enable.";
 	} else {
-		Log(LOG_INFO) << "Scanning standard mods in '" << getDataFolder() << "'...";
+		XComLog(LOG_INFO) << "Scanning standard mods in '" << getDataFolder() << "'...";
 		FileMap::scanModDir(getDataFolder(), "standard", true);
 	}
-	Log(LOG_INFO) << "Scanning user mods in '" << getUserFolder() << "'...";
+	XComLog(LOG_INFO) << "Scanning user mods in '" << getUserFolder() << "'...";
 	FileMap::scanModDir(getUserFolder(), "mods", false);
 #ifdef __MOBILE__
 	if (getDataFolder() == getUserFolder())
 	{
-		Log(LOG_INFO) << "Skipped scanning user mods in the data folder, because it's the same folder as the user folder.";
+		XComLog(LOG_INFO) << "Skipped scanning user mods in the data folder, because it's the same folder as the user folder.";
 	}
 	else
 	{
-		Log(LOG_INFO) << "Scanning user mods in '" << getDataFolder() << "'...";
+		XComLog(LOG_INFO) << "Scanning user mods in '" << getDataFolder() << "'...";
 		FileMap::scanModDir(getDataFolder(), "mods", false);
 	}
 #endif
@@ -711,7 +711,7 @@ void refreshMods()
 		auto modIt = _modInfos.find(i->first);
 		if (_modInfos.end() == modIt)
 		{
-			Log(LOG_VERBOSE) << "removing references to missing mod: " << i->first;
+			XComLog(LOG_VERBOSE) << "removing references to missing mod: " << i->first;
 			i = mods.erase(i);
 			continue;
 		}
@@ -721,7 +721,7 @@ void refreshMods()
 			{
 				if (nonMasterModFound)
 				{
-					Log(LOG_ERROR) << "Removing master mod '" << i->first << "' from the list, because it is on a wrong position. It will be re-added automatically.";
+					XComLog(LOG_ERROR) << "Removing master mod '" << i->first << "' from the list, because it is on a wrong position. It will be re-added automatically.";
 					corruptedMasters[i->first] = i->second;
 					i = mods.erase(i);
 					continue;
@@ -763,7 +763,7 @@ void refreshMods()
 					{
 						if (!activeMaster.empty())
 						{
-							Log(LOG_WARNING) << "Too many active masters detected; turning off " << j->first;
+							XComLog(LOG_WARNING) << "Too many active masters detected; turning off " << j->first;
 							j->second = false;
 						}
 						else
@@ -813,12 +813,12 @@ void refreshMods()
 	{
 		if (inactiveMaster.empty())
 		{
-			Log(LOG_ERROR) << "no mod masters available";
+			XComLog(LOG_ERROR) << "no mod masters available";
 			throw Exception("No X-COM installations found");
 		}
 		else
 		{
-			Log(LOG_INFO) << "no master already active; activating " << inactiveMaster;
+			XComLog(LOG_INFO) << "no master already active; activating " << inactiveMaster;
 			std::find(mods.begin(), mods.end(), std::pair<std::string, bool>(inactiveMaster, false))->second = true;
 			_masterMod = inactiveMaster;
 		}
@@ -845,14 +845,14 @@ void updateMods()
 		if (!modInf->isEngineOk())
 		{
 			forceQuit = true;
-			Log(LOG_ERROR) << "- " << modInf->getId() << " v" << modInf->getVersion();
+			XComLog(LOG_ERROR) << "- " << modInf->getId() << " v" << modInf->getVersion();
 			if (modInf->getRequiredExtendedEngine() != OPENXCOM_VERSION_ENGINE)
 			{
-				Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' require OXC " << modInf->getRequiredExtendedEngine() << " engine to run";
+				XComLog(LOG_ERROR) << "Mod '" << modInf->getName() << "' require OXC " << modInf->getRequiredExtendedEngine() << " engine to run";
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Mod '" << modInf->getName() << "' enforces at least OXC " << OPENXCOM_VERSION_ENGINE << " v" << modInf->getRequiredExtendedVersion();
+				XComLog(LOG_ERROR) << "Mod '" << modInf->getName() << "' enforces at least OXC " << OPENXCOM_VERSION_ENGINE << " v" << modInf->getRequiredExtendedVersion();
 			}
 		}
 	}
@@ -864,11 +864,11 @@ void updateMods()
 	FileMap::setup(activeModsList, Options::oxceEmbeddedOnly);
 	userSplitMasters();
 
-	Log(LOG_INFO) << "Active mods:";
+	XComLog(LOG_INFO) << "Active mods:";
 	auto activeMods = getActiveMods();
 	for (auto modInf : activeMods)
 	{
-		Log(LOG_INFO) << "- " << modInf->getId() << " v" << modInf->getVersion();
+		XComLog(LOG_INFO) << "- " << modInf->getId() << " v" << modInf->getVersion();
 	}
 }
 
@@ -920,7 +920,7 @@ void setFolders()
 	if (!_dataFolder.empty())
 	{
 		_dataList.insert(_dataList.begin(), _dataFolder);
-		Log(LOG_DEBUG) << "setFolders(): inserting " << _dataFolder;
+		XComLog(LOG_DEBUG) << "setFolders(): inserting " << _dataFolder;
 	}
 	if (_userFolder.empty())
 	{
@@ -1037,7 +1037,7 @@ bool load(const std::string &filename)
 	}
 	catch (YAML::Exception &e)
 	{
-		Log(LOG_WARNING) << e.what();
+		XComLog(LOG_WARNING) << e.what();
 		return false;
 	}
 	return true;
@@ -1118,7 +1118,7 @@ bool save(const std::string &filename)
 	}
 	catch (YAML::Exception &e)
 	{
-		Log(LOG_WARNING) << e.what();
+		XComLog(LOG_WARNING) << e.what();
 		return false;
 	}
 	std::string filepath = _configFolder + filename + ".cfg";
@@ -1126,7 +1126,7 @@ bool save(const std::string &filename)
 
 	if (!CrossPlatform::writeFile(filepath, data + "\n" ))
 	{
-		Log(LOG_WARNING) << "Failed to save " << filepath;
+		XComLog(LOG_WARNING) << "Failed to save " << filepath;
 		return false;
 	}
 	return true;
@@ -1150,7 +1150,7 @@ std::string getDataFolder()
 void setDataFolder(const std::string &folder)
 {
 	_dataFolder = folder;
-	Log(LOG_DEBUG) << "setDataFolder(" << folder <<");";
+	XComLog(LOG_DEBUG) << "setDataFolder(" << folder <<");";
 }
 
 /**

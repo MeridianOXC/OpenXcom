@@ -356,7 +356,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Failed to load item " << type;
+				XComLog(LOG_ERROR) << "Failed to load item " << type;
 			}
 		}
 	}
@@ -2261,7 +2261,7 @@ Node *SavedBattleGame::getPatrolNode(bool scout, BattleUnit *unit, Node *fromNod
 
 	if (fromNode == 0)
 	{
-		if (Options::traceAI) { Log(LOG_INFO) << "This alien got lost. :("; }
+		if (Options::traceAI) { XComLog(LOG_INFO) << "This alien got lost. :("; }
 		fromNode = getNodes()->at(RNG::generate(0, getNodes()->size() - 1));
 		while (fromNode->isDummy())
 		{
@@ -2303,7 +2303,7 @@ Node *SavedBattleGame::getPatrolNode(bool scout, BattleUnit *unit, Node *fromNod
 
 	if (compliantNodes.empty())
 	{
-		if (Options::traceAI) { Log(LOG_INFO) << (scout ? "Scout " : "Guard") << " found on patrol node! XXX XXX XXX"; }
+		if (Options::traceAI) { XComLog(LOG_INFO) << (scout ? "Scout " : "Guard") << " found on patrol node! XXX XXX XXX"; }
 		if (unit->getArmor()->getSize() > 1 && !scout)
 		{
 			return getPatrolNode(true, unit, fromNode); // move dammit
@@ -2322,7 +2322,7 @@ Node *SavedBattleGame::getPatrolNode(bool scout, BattleUnit *unit, Node *fromNod
 		if (!preferred) return 0;
 
 		// non-scout patrols to highest value unoccupied node that's not fromNode
-		if (Options::traceAI) { Log(LOG_INFO) << "Choosing node flagged " << preferred->getFlags(); }
+		if (Options::traceAI) { XComLog(LOG_INFO) << "Choosing node flagged " << preferred->getFlags(); }
 		return preferred;
 	}
 }
@@ -3344,7 +3344,7 @@ std::string SavedBattleGame::getHiddenMovementBackground() const
 }
 
 /**
- * Appends a given entry to the hit log. Works only during the player's turn.
+ * Appends a given entry to the hit XComLog. Works only during the player's turn.
  */
 void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction)
 {
@@ -3353,7 +3353,7 @@ void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction)
 }
 
 /**
- * Appends a given entry to the hit log. Works only during the player's turn.
+ * Appends a given entry to the hit XComLog. Works only during the player's turn.
  */
 void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction, const std::string &text)
 {
@@ -3362,8 +3362,8 @@ void SavedBattleGame::appendToHitLog(HitLogEntryType type, UnitFaction faction, 
 }
 
 /**
- * Gets the hit log.
- * @return hit log
+ * Gets the hit XComLog.
+ * @return hit XComLog
  */
 const HitLog *SavedBattleGame::getHitLog() const
 {

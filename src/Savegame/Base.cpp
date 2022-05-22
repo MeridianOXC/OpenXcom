@@ -119,7 +119,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Failed to load facility " << type;
+				XComLog(LOG_ERROR) << "Failed to load facility " << type;
 			}
 		}
 	}
@@ -135,7 +135,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load craft " << type;
+			XComLog(LOG_ERROR) << "Failed to load craft " << type;
 		}
 	}
 
@@ -163,7 +163,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load soldier " << type;
+			XComLog(LOG_ERROR) << "Failed to load soldier " << type;
 		}
 	}
 
@@ -173,7 +173,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 	{
 		if (_mod->getItem(i->first) == 0)
 		{
-			Log(LOG_ERROR) << "Failed to load item " << i->first;
+			XComLog(LOG_ERROR) << "Failed to load item " << i->first;
 			_items->getContents()->erase(i++);
 		}
 		else
@@ -208,7 +208,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		else
 		{
 			_scientists += (*i)["assigned"].as<int>(0);
-			Log(LOG_ERROR) << "Failed to load research " << research;
+			XComLog(LOG_ERROR) << "Failed to load research " << research;
 		}
 	}
 
@@ -224,7 +224,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		else
 		{
 			_engineers += (*i)["assigned"].as<int>(0);
-			Log(LOG_ERROR) << "Failed to load manufacture " << item;
+			XComLog(LOG_ERROR) << "Failed to load manufacture " << item;
 		}
 	}
 
@@ -243,7 +243,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 	}
 	_fakeUnderwater = node["fakeUnderwater"].as<bool>(_fakeUnderwater);
 
-	isOverlappingOrOverflowing(); // don't crash, just report in the log file...
+	isOverlappingOrOverflowing(); // don't crash, just report in the XComLog file...
 }
 
 /**
@@ -275,7 +275,7 @@ void Base::finishLoading(const YAML::Node &node, SavedGame *save)
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load craft " << type;
+			XComLog(LOG_ERROR) << "Failed to load craft " << type;
 		}
 	}
 }
@@ -307,7 +307,7 @@ bool Base::isOverlappingOrOverflowing()
 
 		if (facilityX < 0 || facilityY < 0 || facilityX + (facilitySize - 1) >= BASE_SIZE || facilityY + (facilitySize - 1) >= BASE_SIZE)
 		{
-			Log(LOG_ERROR) << "Facility " << rules->getType() << " at [" << facilityX << ", " << facilityY << "] (size " << facilitySize << ") is outside of base boundaries.";
+			XComLog(LOG_ERROR) << "Facility " << rules->getType() << " at [" << facilityX << ", " << facilityY << "] (size " << facilitySize << ") is outside of base boundaries.";
 			result = true;
 			continue;
 		}
@@ -318,7 +318,7 @@ bool Base::isOverlappingOrOverflowing()
 			{
 				if (grid[x][y] != 0)
 				{
-					Log(LOG_ERROR) << "Facility " << rules->getType() << " at [" << facilityX << ", " << facilityY << "] (size " << facilitySize
+					XComLog(LOG_ERROR) << "Facility " << rules->getType() << " at [" << facilityX << ", " << facilityY << "] (size " << facilitySize
 						<< ") overlaps with " << grid[x][y]->getRules()->getType() << " at [" << x << ", " << y << "] (size " << grid[x][y]->getRules()->getSize() << ")";
 					result = true;
 				}

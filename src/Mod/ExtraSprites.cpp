@@ -181,11 +181,11 @@ Surface *ExtraSprites::loadSurface(Surface *surface)
 
 	if (surface == 0)
 	{
-		Log(LOG_VERBOSE) << "Creating new single image: " << _type;
+		XComLog(LOG_VERBOSE) << "Creating new single image: " << _type;
 	}
 	else
 	{
-		Log(LOG_VERBOSE) << "Adding/Replacing single image: " << _type;
+		XComLog(LOG_VERBOSE) << "Adding/Replacing single image: " << _type;
 		delete surface;
 	}
 	surface = new Surface(_width, _height);
@@ -209,15 +209,15 @@ SurfaceSet *ExtraSprites::loadSurfaceSet(SurfaceSet *set)
 	auto surfaceSetY = subdivision ? _subY : _height;
 	if (set == 0)
 	{
-		Log(LOG_VERBOSE) << "Creating new surface set: " << _type;
+		XComLog(LOG_VERBOSE) << "Creating new surface set: " << _type;
 		set = new SurfaceSet(surfaceSetX, surfaceSetY);
 	}
 	else
 	{
-		Log(LOG_VERBOSE) << "Adding/Replacing items in surface set: " << _type;
+		XComLog(LOG_VERBOSE) << "Adding/Replacing items in surface set: " << _type;
 		if (set->getTotalFrames() == 0 && (set->getWidth() != surfaceSetX || set->getHeight() != surfaceSetY))
 		{
-			Log(LOG_VERBOSE) << "Resize empty set to: " << surfaceSetX << " x " << surfaceSetY;
+			XComLog(LOG_VERBOSE) << "Resize empty set to: " << surfaceSetX << " x " << surfaceSetY;
 			auto shared = set->getMaxSharedFrames();
 			*set = SurfaceSet(surfaceSetX, surfaceSetY);
 			set->setMaxSharedFrames(shared);
@@ -230,7 +230,7 @@ SurfaceSet *ExtraSprites::loadSurfaceSet(SurfaceSet *set)
 		std::string fileName = j->second;
 		if (fileName[fileName.length() - 1] == '/')
 		{
-			Log(LOG_VERBOSE) << "Loading surface set from folder: " << fileName << " starting at frame: " << startFrame;
+			XComLog(LOG_VERBOSE) << "Loading surface set from folder: " << fileName << " starting at frame: " << startFrame;
 			int offset = startFrame;
 			std::vector<std::string> contents;
 			for (auto f: FileMap::getVFolderContents(fileName)) { contents.push_back(f); }
@@ -246,7 +246,7 @@ SurfaceSet *ExtraSprites::loadSurfaceSet(SurfaceSet *set)
 				}
 				catch (Exception &e)
 				{
-					Log(LOG_WARNING) << e.what();
+					XComLog(LOG_WARNING) << e.what();
 				}
 			}
 		}
@@ -263,7 +263,7 @@ SurfaceSet *ExtraSprites::loadSurfaceSet(SurfaceSet *set)
 				int xDivision = _width / _subX;
 				int yDivision = _height / _subY;
 				int frames = xDivision * yDivision;
-				Log(LOG_VERBOSE) << "Subdividing into " << frames << " frames.";
+				XComLog(LOG_VERBOSE) << "Subdividing into " << frames << " frames.";
 				int offset = startFrame;
 
 				for (int y = 0; y != yDivision; ++y)
@@ -305,12 +305,12 @@ Surface *ExtraSprites::getFrame(SurfaceSet *set, int index) const
 	Surface *frame = set->getFrame(indexWithOffset);
 	if (frame)
 	{
-		Log(LOG_VERBOSE) << "Replacing frame: " << index << ", using index: " << indexWithOffset;
+		XComLog(LOG_VERBOSE) << "Replacing frame: " << index << ", using index: " << indexWithOffset;
 		frame->clear();
 	}
 	else
 	{
-		Log(LOG_VERBOSE) << "Adding frame: " << index << ", using index: " << indexWithOffset;
+		XComLog(LOG_VERBOSE) << "Adding frame: " << index << ", using index: " << indexWithOffset;
 		frame = set->addFrame(indexWithOffset);
 	}
 	return frame;

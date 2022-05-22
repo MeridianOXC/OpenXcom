@@ -56,7 +56,7 @@ void Music::load(const std::string &filename)
 {
 #ifndef __NO_MUSIC
 	load(FileMap::getRWops(filename));
-	Log(LOG_VERBOSE)<<"Music::load('" << filename << "')";
+	XComLog(LOG_VERBOSE)<<"Music::load('" << filename << "')";
 #endif
 }
 
@@ -91,7 +91,7 @@ void Music::play(int loop) const
 			stop();
 			if (Mix_PlayMusic(_music, loop) == -1)
 			{
-				Log(LOG_WARNING) << Mix_GetError();
+				XComLog(LOG_WARNING) << Mix_GetError();
 			}
 		}
 	}

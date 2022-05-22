@@ -271,14 +271,14 @@ void TestState::testCase4()
 	terrainMap.erase("globeTerrain");
 
 	// 1. check terrain existence in ruleset
-	Log(LOG_INFO) << "----------------------------------------------1. check terrain existence in ruleset";
+	XComLog(LOG_INFO) << "----------------------------------------------1. check terrain existence in ruleset";
 	for (auto &pair : terrainMap)
 	{
 		RuleTerrain *tRule = _game->getMod()->getTerrain(pair.first);
 		if (!tRule)
 		{
 			++total;
-			Log(LOG_INFO) << "Terrain '" << pair.first << "' does not exist!";
+			XComLog(LOG_INFO) << "Terrain '" << pair.first << "' does not exist!";
 		}
 	}
 
@@ -331,7 +331,7 @@ void TestState::testCase4()
 	}
 
 	// 2. check for existence of mapblock MAP and RMP files
-	Log(LOG_INFO) << "----------------------------------------------2. check for existence of mapblock MAP and RMP files";
+	XComLog(LOG_INFO) << "----------------------------------------------2. check for existence of mapblock MAP and RMP files";
 
 	auto checkExistence = [](std::map<std::string, int> &mapRef, const std::string &dir, const std::string &ext, int &totalRef)
 	{
@@ -342,7 +342,7 @@ void TestState::testCase4()
 			if (!FileMap::fileExists(filename.str()))
 			{
 				++totalRef;
-				Log(LOG_INFO) << filename.str() << " not found";
+				XComLog(LOG_INFO) << filename.str() << " not found";
 			}
 		}
 	};
@@ -351,14 +351,14 @@ void TestState::testCase4()
 	checkExistence(blockMap, "ROUTES/", ".RMP", total);
 
 	// 3. check for existence of mapdataset MCD, PCK and TAB files
-	Log(LOG_INFO) << "----------------------------------------------3. check for existence of mapdataset MCD, PCK and TAB files";
+	XComLog(LOG_INFO) << "----------------------------------------------3. check for existence of mapdataset MCD, PCK and TAB files";
 
 	checkExistence(datasetMap, "TERRAIN/", ".MCD", total);
 	checkExistence(datasetMap, "TERRAIN/", ".PCK", total);
 	checkExistence(datasetMap, "TERRAIN/", ".TAB", total);
 
 	// 4. check for unused mapblock MAP and RMP files
-	Log(LOG_INFO) << "----------------------------------------------4. check for unused mapblock MAP and RMP files";
+	XComLog(LOG_INFO) << "----------------------------------------------4. check for unused mapblock MAP and RMP files";
 
 	auto findUnusedFiles = [](std::map<std::string, int> &mapRef, const std::string &dir, int &totalRef)
 	{
@@ -381,7 +381,7 @@ void TestState::testCase4()
 				if (fullpath.find("/TFTD/TERRAIN/") != std::string::npos) continue;
 
 				++totalRef;
-				Log(LOG_INFO) << fullpath << " not used anywhere.";
+				XComLog(LOG_INFO) << fullpath << " not used anywhere.";
 			}
 		}
 	};
@@ -390,7 +390,7 @@ void TestState::testCase4()
 	findUnusedFiles(blockMap, "ROUTES/", total);
 
 	// 5. check for unused mapdataset MCD, PCK and TAB files
-	Log(LOG_INFO) << "----------------------------------------------5. check for unused mapdataset MCD, PCK and TAB files";
+	XComLog(LOG_INFO) << "----------------------------------------------5. check for unused mapdataset MCD, PCK and TAB files";
 
 	findUnusedFiles(datasetMap, "TERRAIN/", total);
 
@@ -434,9 +434,9 @@ void TestState::testCase3()
 		}
 	}
 
-	Log(LOG_INFO) << "----------------------------------------------";
-	Log(LOG_INFO) << "Copy/paste into a CSV file";
-	Log(LOG_INFO) << "----------------------------------------------";
+	XComLog(LOG_INFO) << "----------------------------------------------";
+	XComLog(LOG_INFO) << "Copy/paste into a CSV file";
+	XComLog(LOG_INFO) << "----------------------------------------------";
 	{
 		std::ostringstream ssNames;
 		ssNames << ";Armor";
@@ -444,7 +444,7 @@ void TestState::testCase3()
 		{
 			ssNames << ";" << n.first;
 		}
-		Log(LOG_INFO) << ssNames.str();
+		XComLog(LOG_INFO) << ssNames.str();
 	}
 	for (auto armorName : _game->getMod()->getArmorsList())
 	{
@@ -461,11 +461,11 @@ void TestState::testCase3()
 				ss << (*findIt).second;
 			}
 		}
-		Log(LOG_INFO) << ss.str();
+		XComLog(LOG_INFO) << ss.str();
 	}
-	Log(LOG_INFO) << "----------------------------------------------";
-	Log(LOG_INFO) << "End of export";
-	Log(LOG_INFO) << "----------------------------------------------";
+	XComLog(LOG_INFO) << "----------------------------------------------";
+	XComLog(LOG_INFO) << "End of export";
+	XComLog(LOG_INFO) << "----------------------------------------------";
 
 	_lstOutput->addRow(1, tr("STR_TESTS_FINISHED").c_str());
 }
@@ -543,7 +543,7 @@ void TestState::testCase2()
 						}
 						catch (Exception &e)
 						{
-							Log(LOG_WARNING) << e.what();
+							XComLog(LOG_WARNING) << e.what();
 						}
 					}
 				}
@@ -584,7 +584,7 @@ int TestState::checkPalette(const std::string& fullPath, int width, int height)
 	SDL_Palette *palette = image->getSurface()->format->palette;
 	if (!palette)
 	{
-		Log(LOG_ERROR) << "Image doesn't have a palette at all! Full path: " << fullPath;
+		XComLog(LOG_ERROR) << "Image doesn't have a palette at all! Full path: " << fullPath;
 		delete image;
 		return 1;
 	}
@@ -592,7 +592,7 @@ int TestState::checkPalette(const std::string& fullPath, int width, int height)
 	int ncolors = image->getSurface()->format->palette->ncolors;
 	if (ncolors != 256)
 	{
-		Log(LOG_ERROR) << "Image palette doesn't have 256 colors! Full path: " << fullPath;
+		XComLog(LOG_ERROR) << "Image palette doesn't have 256 colors! Full path: " << fullPath;
 	}
 
 	int bestMatch = 0;
@@ -615,7 +615,7 @@ int TestState::checkPalette(const std::string& fullPath, int width, int height)
 
 	if (bestMatch < 100)
 	{
-		Log(LOG_INFO) << "Best match: " << bestMatch << "%; palette: " << _paletteMetadataMap[matchedPaletteIndex].paletteName << "; path: " << fullPath;
+		XComLog(LOG_INFO) << "Best match: " << bestMatch << "%; palette: " << _paletteMetadataMap[matchedPaletteIndex].paletteName << "; path: " << fullPath;
 		return 1;
 	}
 
@@ -707,9 +707,9 @@ void TestState::testCase1()
 	// summary (unique)
 	if (total > 0)
 	{
-		Log(LOG_INFO) << "----------";
-		Log(LOG_INFO) << "SUMMARY";
-		Log(LOG_INFO) << "----------";
+		XComLog(LOG_INFO) << "----------";
+		XComLog(LOG_INFO) << "SUMMARY";
+		XComLog(LOG_INFO) << "----------";
 		for (auto mapItem : uniqueResults)
 		{
 			std::ostringstream ss;
@@ -728,7 +728,7 @@ void TestState::testCase1()
 				ss << setItem;
 			}
 			std::string line = ss.str();
-			Log(LOG_INFO) << line;
+			XComLog(LOG_INFO) << line;
 		}
 	}
 	_lstOutput->addRow(1, tr("STR_TESTS_FINISHED").c_str());
@@ -750,7 +750,7 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 				std::ostringstream ss;
 				ss << "terrain: " << terrainRule->getName() << " dataset: " << myMapDataSet->getName() << " object " << index << " has armor: " << myMapData->getArmor();
 				std::string str = ss.str();
-				Log(LOG_ERROR) << "Error in " << str << ". Found using OXCE test cases.";
+				XComLog(LOG_ERROR) << "Error in " << str << ". Found using OXCE test cases.";
 				errors++;
 				uniqueResults[myMapDataSet->getName()].insert(index);
 			}
@@ -761,7 +761,7 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 				std::ostringstream ss;
 				ss << "terrain: " << terrainRule->getName() << " dataset: " << myMapDataSet->getName() << " object " << index << " has invalid DieMCD: " << myMapData->getDieMCD();
 				std::string str = ss.str();
-				Log(LOG_ERROR) << "Error in " << str << ". Found using OXCE test cases.";
+				XComLog(LOG_ERROR) << "Error in " << str << ". Found using OXCE test cases.";
 				errors++;
 				uniqueResults[myMapDataSet->getName()].insert(index);
 			}
@@ -770,7 +770,7 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 				std::ostringstream ss;
 				ss << "terrain: " << terrainRule->getName() << " dataset: " << myMapDataSet->getName() << " object " << index << " has invalid AltMCD: " << myMapData->getAltMCD();
 				std::string str = ss.str();
-				Log(LOG_ERROR) << "Error in " << str << ". Found using OXCE test cases.";
+				XComLog(LOG_ERROR) << "Error in " << str << ". Found using OXCE test cases.";
 				errors++;
 				uniqueResults[myMapDataSet->getName()].insert(index);
 			}
@@ -784,7 +784,7 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 					std::ostringstream ss;
 					ss << "terrain: " << terrainRule->getName() << " dataset: " << myMapDataSet->getName() << " object " << index << " is a walkable floor tile with 'No_Floor' flag set to true.";
 					std::string str = ss.str();
-					Log(LOG_WARNING) << "Potential issue in " << str << ". Found using OXCE test cases.";
+					XComLog(LOG_WARNING) << "Potential issue in " << str << ". Found using OXCE test cases.";
 					errors++;
 					uniqueResults[myMapDataSet->getName()].insert(index);
 				}
@@ -793,7 +793,7 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 					std::ostringstream ss;
 					ss << " walk:" << myMapData->getTUCost(MT_WALK) << " terrain:" << terrainRule->getName() << " dataset:" << myMapDataSet->getName() << " index:" << index;
 					std::string str = ss.str();
-					Log(LOG_INFO) << "Zero movement cost on floor object: " << str << ". Found using OXCE test cases.";
+					XComLog(LOG_INFO) << "Zero movement cost on floor object: " << str << ". Found using OXCE test cases.";
 					errors++;
 					uniqueResults[myMapDataSet->getName()].insert(index);
 				}
@@ -802,7 +802,7 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 					std::ostringstream ss;
 					ss << "  fly:" << myMapData->getTUCost(MT_FLY) << " terrain:" << terrainRule->getName() << " dataset:" << myMapDataSet->getName() << " index:" << index;
 					std::string str = ss.str();
-					Log(LOG_INFO) << "Zero movement cost on floor object: " << str << ". Found using OXCE test cases.";
+					XComLog(LOG_INFO) << "Zero movement cost on floor object: " << str << ". Found using OXCE test cases.";
 					errors++;
 					uniqueResults[myMapDataSet->getName()].insert(index);
 				}
@@ -811,7 +811,7 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 					std::ostringstream ss;
 					ss << "slide:" << myMapData->getTUCost(MT_SLIDE) << " terrain:" << terrainRule->getName() << " dataset:" << myMapDataSet->getName() << " index:" << index;
 					std::string str = ss.str();
-					Log(LOG_INFO) << "Zero movement cost on floor object: " << str << ". Found using OXCE test cases.";
+					XComLog(LOG_INFO) << "Zero movement cost on floor object: " << str << ". Found using OXCE test cases.";
 					errors++;
 					uniqueResults[myMapDataSet->getName()].insert(index);
 				}
@@ -903,7 +903,7 @@ int TestState::checkRMP(MapBlock *mapblock)
 		}
 		else
 		{
-			Log(LOG_INFO) << "Bad node in RMP file: " << filename.str() << " Node #" << nodesAdded << " is outside map boundaries at X:" << pos_x << " Y:" << pos_y << " Z:" << pos_z << ". Found using OXCE test cases.";
+			XComLog(LOG_INFO) << "Bad node in RMP file: " << filename.str() << " Node #" << nodesAdded << " is outside map boundaries at X:" << pos_x << " Y:" << pos_y << " Z:" << pos_z << ". Found using OXCE test cases.";
 			errors++;
 		}
 		nodesAdded++;

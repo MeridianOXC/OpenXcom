@@ -917,7 +917,7 @@ void Mod::playMusic(const std::string &name, int id)
 				}
 			}
 		}
-		Log(LOG_VERBOSE)<<"Mod::playMusic('" << name << "'): playing " << _playingMusic;
+		XComLog(LOG_VERBOSE)<<"Mod::playMusic('" << name << "'): playing " << _playingMusic;
 	}
 }
 
@@ -951,14 +951,14 @@ Sound *Mod::getSound(const std::string &set, int sound) const
 			Sound *s = ss->getSound(sound);
 			if (s == 0)
 			{
-				Log(LOG_ERROR) << "Sound " << sound << " in " << set << " not found";
+				XComLog(LOG_ERROR) << "Sound " << sound << " in " << set << " not found";
 				return _muteSound;
 			}
 			return s;
 		}
 		else
 		{
-			Log(LOG_ERROR) << "SoundSet " << set << " not found";
+			XComLog(LOG_ERROR) << "SoundSet " << set << " not found";
 			return _muteSound;
 		}
 	}
@@ -1931,14 +1931,14 @@ static void throwModOnErrorHelper(const std::string& modId, const std::string& e
 
 	if (!Options::debug)
 	{
-		Log(LOG_WARNING) << "disabling mod with invalid ruleset: " << modId;
+		XComLog(LOG_WARNING) << "disabling mod with invalid ruleset: " << modId;
 		std::vector<std::pair<std::string, bool> >::iterator it =
 			std::find(Options::mods.begin(), Options::mods.end(),
 				std::pair<std::string, bool>(modId, true));
 		if (it == Options::mods.end())
 		{
-			Log(LOG_ERROR) << "cannot find broken mod in mods list: " << modId;
-			Log(LOG_ERROR) << "clearing mods list";
+			XComLog(LOG_ERROR) << "cannot find broken mod in mods list: " << modId;
+			XComLog(LOG_ERROR) << "clearing mods list";
 			Options::mods.clear();
 		}
 		else
@@ -1964,14 +1964,14 @@ void Mod::loadAll()
 	ModScript parser{ _scriptGlobal, this };
 	auto mods = FileMap::getRulesets();
 
-	Log(LOG_INFO) << "Loading begins...";
+	XComLog(LOG_INFO) << "Loading begins...";
 	if (Options::oxceModValidationLevel < LOG_ERROR)
 	{
-		Log(LOG_ERROR) << "Validation of mod data disabled, game can crash when run";
+		XComLog(LOG_ERROR) << "Validation of mod data disabled, game can crash when run";
 	}
 	else if (Options::oxceModValidationLevel < LOG_WARNING)
 	{
-		Log(LOG_WARNING) << "Validation of mod data reduced, game can behave incorrectly";
+		XComLog(LOG_WARNING) << "Validation of mod data reduced, game can behave incorrectly";
 	}
 	_scriptGlobal->beginLoad();
 	_modData.clear();
@@ -2001,7 +2001,7 @@ void Mod::loadAll()
 		offset += size;
 	}
 
-	Log(LOG_INFO) << "Pre-loading rulesets...";
+	XComLog(LOG_INFO) << "Pre-loading rulesets...";
 	// load rulesets that can affect loading vanilla resources
 	for (size_t i = 0; _modData.size() > i; ++i)
 	{
@@ -2016,7 +2016,7 @@ void Mod::loadAll()
 		}
 	}
 
-	Log(LOG_INFO) << "Loading vanilla resources...";
+	XComLog(LOG_INFO) << "Loading vanilla resources...";
 	// vanilla resources load
 	_modCurrent = &_modData.at(0);
 	loadVanillaResources();
@@ -2030,7 +2030,7 @@ void Mod::loadAll()
 	_soundOffsetBattle = _sounds["BATTLE.CAT"]->getMaxSharedSounds();
 	_soundOffsetGeo = _sounds["GEO.CAT"]->getMaxSharedSounds();
 
-	Log(LOG_INFO) << "Loading rulesets...";
+	XComLog(LOG_INFO) << "Loading rulesets...";
 	// load rest rulesets
 	for (size_t i = 0; mods.size() > i; ++i)
 	{
@@ -2046,7 +2046,7 @@ void Mod::loadAll()
 			throwModOnErrorHelper(modId, e.what());
 		}
 	}
-	Log(LOG_INFO) << "Loading rulesets done.";
+	XComLog(LOG_INFO) << "Loading rulesets done.";
 
 	//back master
 	_modCurrent = &_modData.at(0);
@@ -2094,7 +2094,7 @@ void Mod::loadAll()
 	loadExtraResources();
 
 
-	Log(LOG_INFO) << "After load.";
+	XComLog(LOG_INFO) << "After load.";
 	// cross link rule objects
 
 	afterLoadHelper("research", this, _research, &RuleResearch::afterLoad);
@@ -2227,7 +2227,7 @@ void Mod::loadAll()
 		Options::save();
 	}
 
-	Log(LOG_INFO) << "Loading ended.";
+	XComLog(LOG_INFO) << "Loading ended.";
 
 	sortLists();
 	modResources();
@@ -2243,7 +2243,7 @@ void Mod::loadMod(const std::vector<FileMap::FileRecord> &rulesetFiles, ModScrip
 {
 	for (auto i = rulesetFiles.begin(); i != rulesetFiles.end(); ++i)
 	{
-		Log(LOG_VERBOSE) << "- " << i->fullpath;
+		XComLog(LOG_VERBOSE) << "- " << i->fullpath;
 		try
 		{
 			loadFile(*i, parsers);
@@ -2662,7 +2662,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			else
 			{
 				if (!(*i)["type_id"].IsDefined()) { // otherwise it throws and I wasted hours
-					Log(LOG_ERROR) << "ufopaedia item misses type_id attribute.";
+					XComLog(LOG_ERROR) << "ufopaedia item misses type_id attribute.";
 					continue;
 				}
 				UfopaediaTypeId type = (UfopaediaTypeId)(*i)["type_id"].as<int>();
@@ -3374,7 +3374,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 			int randomSoldiers = node.as<int>(0);
 			if (randomSoldiers > 0 && soldierTypes.empty())
 			{
-				Log(LOG_ERROR) << "Cannot generate soldiers for the starting base. There are no available soldier types. Maybe all of them are locked by research?";
+				XComLog(LOG_ERROR) << "Cannot generate soldiers for the starting base. There are no available soldier types. Maybe all of them are locked by research?";
 			}
 			else
 			{
@@ -5000,18 +5000,18 @@ void Mod::loadVanillaResources()
 					std::string fname = "SOUND/" + cats[j][i];
 					if (FileMap::fileExists(fname))
 					{
-						Log(LOG_VERBOSE) << catsId[i] << ": loading sound "<<fname;
+						XComLog(LOG_VERBOSE) << catsId[i] << ": loading sound "<<fname;
 						CatFile catfile(fname);
 						sound->loadCat(catfile);
 						Options::currentSound = (wav) ? SOUND_14 : SOUND_10;
 						break;
 					} else {
-						Log(LOG_VERBOSE) << catsId[i] << ": sound file not found: "<<fname;
+						XComLog(LOG_VERBOSE) << catsId[i] << ": sound file not found: "<<fname;
 					}
 				}
 				if (sound->getTotalSounds() == 0)
 				{
-					Log(LOG_ERROR) << catsId[i] << " not found: " << catsWin[i] + " or " + catsDos[i] + " required";
+					XComLog(LOG_ERROR) << catsId[i] << " not found: " << catsWin[i] + " or " + catsDos[i] + " required";
 				}
 			}
 		}
@@ -5024,7 +5024,7 @@ void Mod::loadVanillaResources()
 				if (_sounds.find(i.first) == _sounds.end())
 				{
 					_sounds[i.first] = new SoundSet();
-					Log(LOG_VERBOSE) << "TFTD: adding soundset" << i.first;
+					XComLog(LOG_VERBOSE) << "TFTD: adding soundset" << i.first;
 				}
 				std::string fname = "SOUND/" + i.second->getCATFile();
 				if (FileMap::fileExists(fname))
@@ -5033,12 +5033,12 @@ void Mod::loadVanillaResources()
 					for (auto j : i.second->getSoundList())
 					{
 						_sounds[i.first]->loadCatByIndex(catfile, j, true);
-						Log(LOG_VERBOSE) << "TFTD: adding sound " << j << " to " << i.first;
+						XComLog(LOG_VERBOSE) << "TFTD: adding sound " << j << " to " << i.first;
 					}
 				}
 				else
 				{
-					Log(LOG_ERROR) << "TFTD sound file not found:" << fname;
+					XComLog(LOG_ERROR) << "TFTD sound file not found:" << fname;
 				}
 			}
 		}
@@ -5085,7 +5085,7 @@ void Mod::loadVanillaResources()
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Surface set " << surfaceNames[i] << " not found.";
+				XComLog(LOG_ERROR) << "Surface set " << surfaceNames[i] << " not found.";
 				throw Exception("Surface set " + surfaceNames[i] + " not found.");
 			}
 		}
@@ -5179,7 +5179,7 @@ void Mod::loadBattlescapeResources()
 	// incomplete chryssalid set: 1.0 data: stop loading.
 	if (_sets.find("CHRYS.PCK") != _sets.end() && !_sets["CHRYS.PCK"]->getFrame(225))
 	{
-		Log(LOG_FATAL) << "Version 1.0 data detected";
+		XComLog(LOG_FATAL) << "Version 1.0 data detected";
 		throw Exception("Invalid CHRYS.PCK, please patch your X-COM data to the latest version");
 	}
 	// TFTD uses the loftemps dat from the terrain folder, but still has enemy unknown's version in the geodata folder, which is short by 2 entries.
@@ -5433,7 +5433,7 @@ void Mod::loadExtraResources()
 {
 	// Load fonts
 	YAML::Node doc = FileMap::getYAML("Language/" + _fontName);
-	Log(LOG_INFO) << "Loading fonts... " << _fontName;
+	XComLog(LOG_INFO) << "Loading fonts... " << _fontName;
 	for (YAML::const_iterator i = doc["fonts"].begin(); i != doc["fonts"].end(); ++i)
 	{
 		std::string id = (*i)["id"].as<std::string>();
@@ -5490,10 +5490,10 @@ void Mod::loadExtraResources()
 	}
 #endif
 
-	Log(LOG_INFO) << "Lazy loading: " << Options::lazyLoadResources;
+	XComLog(LOG_INFO) << "Lazy loading: " << Options::lazyLoadResources;
 	if (!Options::lazyLoadResources)
 	{
-		Log(LOG_INFO) << "Loading extra resources from ruleset...";
+		XComLog(LOG_INFO) << "Loading extra resources from ruleset...";
 		for (std::map<std::string, std::vector<ExtraSprites *> >::const_iterator i = _extraSprites.begin(); i != _extraSprites.end(); ++i)
 		{
 			for (std::vector<ExtraSprites*>::const_iterator j = i->second.begin(); j != i->second.end(); ++j)
@@ -5520,20 +5520,20 @@ void Mod::loadExtraResources()
 		}
 	}
 
-	Log(LOG_INFO) << "Loading custom palettes from ruleset...";
+	XComLog(LOG_INFO) << "Loading custom palettes from ruleset...";
 	for (std::map<std::string, CustomPalettes *>::const_iterator i = _customPalettes.begin(); i != _customPalettes.end(); ++i)
 	{
 		CustomPalettes *palDef = i->second;
 		std::string palTargetName = palDef->getTarget();
 		if (_palettes.find(palTargetName) == _palettes.end())
 		{
-			Log(LOG_INFO) << "Creating a new palette: " << palTargetName;
+			XComLog(LOG_INFO) << "Creating a new palette: " << palTargetName;
 			_palettes[palTargetName] = new Palette();
 			_palettes[palTargetName]->initBlack();
 		}
 		else
 		{
-			Log(LOG_VERBOSE) << "Replacing items in target palette: " << palTargetName;
+			XComLog(LOG_VERBOSE) << "Replacing items in target palette: " << palTargetName;
 		}
 
 		Palette *target = _palettes[palTargetName];
@@ -5571,8 +5571,8 @@ void Mod::loadExtraResources()
 	{
 		if (pal.first.find("PAL_") == 0)
 		{
-			if (!backup_logged) { Log(LOG_INFO) << "Making palette backups..."; backup_logged = true; }
-			Log(LOG_VERBOSE) << "Creating a backup for palette: " << pal.first;
+			if (!backup_logged) { XComLog(LOG_INFO) << "Making palette backups..."; backup_logged = true; }
+			XComLog(LOG_VERBOSE) << "Creating a backup for palette: " << pal.first;
 			std::string newName = "BACKUP_" + pal.first;
 			_palettes[newName] = new Palette();
 			_palettes[newName]->initBlack();
@@ -5585,14 +5585,14 @@ void Mod::loadExtraResources()
 	{
 		if (_palettes["PAL_BATTLESCAPE"])
 		{
-			Log(LOG_INFO) << "Creating transparency LUTs for PAL_BATTLESCAPE...";
+			XComLog(LOG_INFO) << "Creating transparency LUTs for PAL_BATTLESCAPE...";
 			createTransparencyLUT(_palettes["PAL_BATTLESCAPE"]);
 		}
 		if (_palettes["PAL_BATTLESCAPE_1"] &&
 			_palettes["PAL_BATTLESCAPE_2"] &&
 			_palettes["PAL_BATTLESCAPE_3"])
 		{
-			Log(LOG_INFO) << "Creating transparency LUTs for hybrid custom palettes...";
+			XComLog(LOG_INFO) << "Creating transparency LUTs for hybrid custom palettes...";
 			createTransparencyLUT(_palettes["PAL_BATTLESCAPE_1"]);
 			createTransparencyLUT(_palettes["PAL_BATTLESCAPE_2"]);
 			createTransparencyLUT(_palettes["PAL_BATTLESCAPE_3"]);
@@ -5831,7 +5831,7 @@ Music *Mod::loadMusic(MusicFormat fmt, const std::string &file, size_t track, fl
 	}
 	catch (Exception &e)
 	{
-		Log(LOG_INFO) << e.what();
+		XComLog(LOG_INFO) << e.what();
 		if (music) delete music;
 		music = 0;
 	}

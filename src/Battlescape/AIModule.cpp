@@ -142,7 +142,7 @@ void AIModule::dont_think(BattleAction *action)
 
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "LEEROY: Unit " << _unit->getId() << " of type " << _unit->getType() << " is Leeroy...";
+		XComLog(LOG_INFO) << "LEEROY: Unit " << _unit->getId() << " of type " << _unit->getType() << " is Leeroy...";
 	}
 	if (action->weapon)
 	{
@@ -163,13 +163,13 @@ void AIModule::dont_think(BattleAction *action)
 	int visibleEnemiesToAttack = selectNearestTargetLeeroy(canRun);
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "LEEROY: visibleEnemiesToAttack: " << visibleEnemiesToAttack << " _melee: " << _melee << (canRun ? " run" : "");
+		XComLog(LOG_INFO) << "LEEROY: visibleEnemiesToAttack: " << visibleEnemiesToAttack << " _melee: " << _melee << (canRun ? " run" : "");
 	}
 	if ((visibleEnemiesToAttack > 0) && _melee)
 	{
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "LEEROY: LEEROYIN' at someone!";
+			XComLog(LOG_INFO) << "LEEROY: LEEROYIN' at someone!";
 		}
 		meleeActionLeeroy(canRun);
 		action->type = _attackAction.type;
@@ -183,7 +183,7 @@ void AIModule::dont_think(BattleAction *action)
 	{
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "LEEROY: No one to LEEROY!, patrolling...";
+			XComLog(LOG_INFO) << "LEEROY: No one to LEEROY!, patrolling...";
 		}
 		setupPatrol();
 		_unit->setCharging(0);
@@ -227,11 +227,11 @@ void AIModule::think(BattleAction *action)
 	{
 		if (_unit->getFaction() == FACTION_HOSTILE)
 		{
-			Log(LOG_INFO) << "Unit has " << _visibleEnemies << "/" << _knownEnemies << " known enemies visible, " << _spottingEnemies << " of whom are spotting him. ";
+			XComLog(LOG_INFO) << "Unit has " << _visibleEnemies << "/" << _knownEnemies << " known enemies visible, " << _spottingEnemies << " of whom are spotting him. ";
 		}
 		else
 		{
-			Log(LOG_INFO) << "Civilian Unit has " << _visibleEnemies << " enemies visible, " << _spottingEnemies << " of whom are spotting him. ";
+			XComLog(LOG_INFO) << "Civilian Unit has " << _visibleEnemies << " enemies visible, " << _spottingEnemies << " of whom are spotting him. ";
 		}
 		std::string AIMode;
 		switch (_AIMode)
@@ -249,7 +249,7 @@ void AIModule::think(BattleAction *action)
 			AIMode = "Escape";
 			break;
 		}
-		Log(LOG_INFO) << "Currently using " << AIMode << " behaviour";
+		XComLog(LOG_INFO) << "Currently using " << AIMode << " behaviour";
 	}
 
 	if (_unit->isLeeroyJenkins())
@@ -384,7 +384,7 @@ void AIModule::think(BattleAction *action)
 				AIMode = "Escape";
 				break;
 			}
-			Log(LOG_INFO) << "Re-Evaluated, now using " << AIMode << " behaviour";
+			XComLog(LOG_INFO) << "Re-Evaluated, now using " << AIMode << " behaviour";
 		}
 	}
 
@@ -524,7 +524,7 @@ void AIModule::setupPatrol()
 	{
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Patrol destination reached!";
+			XComLog(LOG_INFO) << "Patrol destination reached!";
 		}
 		// destination reached
 		// head off to next patrol node
@@ -782,14 +782,14 @@ void AIModule::setupAmbush()
 			}
 			if (_traceAI)
 			{
-				Log(LOG_INFO) << "Ambush estimation will move to " << _ambushAction.target;
+				XComLog(LOG_INFO) << "Ambush estimation will move to " << _ambushAction.target;
 			}
 			return;
 		}
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "Ambush estimation failed";
+		XComLog(LOG_INFO) << "Ambush estimation failed";
 	}
 }
 
@@ -857,11 +857,11 @@ void AIModule::setupAttack()
 		{
 			if (_attackAction.type != BA_WALK)
 			{
-				Log(LOG_INFO) << "Attack estimation desires to shoot at " << _attackAction.target;
+				XComLog(LOG_INFO) << "Attack estimation desires to shoot at " << _attackAction.target;
 			}
 			else
 			{
-				Log(LOG_INFO) << "Attack estimation desires to move to " << _attackAction.target;
+				XComLog(LOG_INFO) << "Attack estimation desires to move to " << _attackAction.target;
 			}
 		}
 		return;
@@ -873,14 +873,14 @@ void AIModule::setupAttack()
 		{
 			if (_traceAI)
 			{
-				Log(LOG_INFO) << "Attack estimation desires to move to " << _attackAction.target;
+				XComLog(LOG_INFO) << "Attack estimation desires to move to " << _attackAction.target;
 			}
 			return;
 		}
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "Attack estimation failed";
+		XComLog(LOG_INFO) << "Attack estimation failed";
 	}
 }
 
@@ -965,7 +965,7 @@ void AIModule::setupEscape()
 			{
 				if (_traceAI)
 				{
-					Log(LOG_INFO) << "best score after systematic search was: " << bestTileScore;
+					XComLog(LOG_INFO) << "best score after systematic search was: " << bestTileScore;
 				}
 			}
 
@@ -1073,7 +1073,7 @@ void AIModule::setupEscape()
 	{
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Escape estimation failed.";
+			XComLog(LOG_INFO) << "Escape estimation failed.";
 		}
 		_escapeAction.type = BA_RETHINK; // do something, just don't look dumbstruck :P
 		return;
@@ -1082,7 +1082,7 @@ void AIModule::setupEscape()
 	{
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Escape estimation completed after " << tries << " tries, " << Position::distance2d(_unit->getPosition(), bestTile) << " squares or so away.";
+			XComLog(LOG_INFO) << "Escape estimation completed after " << tries << " tries, " << Position::distance2d(_unit->getPosition(), bestTile) << " squares or so away.";
 		}
 		_escapeAction.type = BA_WALK;
 	}
@@ -1890,13 +1890,13 @@ bool AIModule::findFirePoint()
 		_attackAction.type = BA_WALK;
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Firepoint found at " << _attackAction.target << ", with a score of: " << bestScore;
+			XComLog(LOG_INFO) << "Firepoint found at " << _attackAction.target << ", with a score of: " << bestScore;
 		}
 		return true;
 	}
 	if (_traceAI)
 	{
-		Log(LOG_INFO) << "Firepoint failed, best estimation was: " << _attackAction.target << ", with a score of: " << bestScore;
+		XComLog(LOG_INFO) << "Firepoint failed, best estimation was: " << _attackAction.target << ", with a score of: " << bestScore;
 	}
 
 	return false;
@@ -2060,8 +2060,8 @@ void AIModule::meleeAction()
 			meleeAttack();
 		}
 	}
-	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: "  << _attackAction.target; }
-	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "CHARGE!"; }
+	if (_traceAI && _aggroTarget) { XComLog(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: "  << _attackAction.target; }
+	if (_traceAI && _aggroTarget) { XComLog(LOG_INFO) << "CHARGE!"; }
 }
 
 /**
@@ -2107,8 +2107,8 @@ void AIModule::meleeActionLeeroy(bool canRun)
 			meleeAttack();
 		}
 	}
-	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: " << _attackAction.target; }
-	if (_traceAI && _aggroTarget) { Log(LOG_INFO) << "CHARGE!"; }
+	if (_traceAI && _aggroTarget) { XComLog(LOG_INFO) << "AIModule::meleeAction:" << " [target]: " << (_aggroTarget->getId()) << " at: " << _attackAction.target; }
+	if (_traceAI && _aggroTarget) { XComLog(LOG_INFO) << "CHARGE!"; }
 }
 
 /**
@@ -2202,17 +2202,17 @@ void AIModule::wayPointAction()
  */
 bool AIModule::sniperAction()
 {
-	if (_traceAI) { Log(LOG_INFO) << "Attempting sniper action..."; }
+	if (_traceAI) { XComLog(LOG_INFO) << "Attempting sniper action..."; }
 
 	if (selectSpottedUnitForSniper())
 	{
 		_visibleEnemies = std::max(_visibleEnemies, 1); // Make sure we count at least our target as visible, otherwise we might not shoot!
 
-		if (_traceAI) { Log(LOG_INFO) << "Target for sniper found at (" << _attackAction.target.x << "," << _attackAction.target.y << "," << _attackAction.target.z << ")."; }
+		if (_traceAI) { XComLog(LOG_INFO) << "Target for sniper found at (" << _attackAction.target.x << "," << _attackAction.target.y << "," << _attackAction.target.z << ")."; }
 		return true;
 	}
 
-	if (_traceAI) { Log(LOG_INFO) << "No valid target found or not enough TUs for sniper action."; }
+	if (_traceAI) { XComLog(LOG_INFO) << "No valid target found or not enough TUs for sniper action."; }
 	return false;
 }
 
@@ -2395,7 +2395,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "Evaluate option " << (int)i << ", score = " << newScore;
+			XComLog(LOG_INFO) << "Evaluate option " << (int)i << ", score = " << newScore;
 		}
 	}
 
@@ -2640,7 +2640,7 @@ bool AIModule::psiAction()
 
 		if (_traceAI)
 		{
-			Log(LOG_INFO) << "making a psionic attack this turn";
+			XComLog(LOG_INFO) << "making a psionic attack this turn";
 		}
 
 		_psiAction.type = typeToAttack;
@@ -2659,7 +2659,7 @@ void AIModule::meleeAttack()
 	_unit->lookAt(_aggroTarget->getPosition() + Position(_unit->getArmor()->getSize()-1, _unit->getArmor()->getSize()-1, 0), false);
 	while (_unit->getStatus() == STATUS_TURNING)
 		_unit->turn();
-	if (_traceAI) { Log(LOG_INFO) << "Attack unit: " << _aggroTarget->getId(); }
+	if (_traceAI) { XComLog(LOG_INFO) << "Attack unit: " << _aggroTarget->getId(); }
 	_attackAction.target = _aggroTarget->getPosition();
 	_attackAction.type = BA_HIT;
 	_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);

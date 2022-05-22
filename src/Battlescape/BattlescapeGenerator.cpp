@@ -743,7 +743,7 @@ void BattlescapeGenerator::run()
 			}
 			else // trouble: no texture and no deployment terrain, most likely scenario is a UFO landing on water: use the first available terrain
 			{
-				Log(LOG_WARNING) << "Trouble: no texture and no deployment terrain, most likely scenario is a UFO landing on water: using the first available terrain...";
+				XComLog(LOG_WARNING) << "Trouble: no texture and no deployment terrain, most likely scenario is a UFO landing on water: using the first available terrain...";
 				_terrain = _game->getMod()->getTerrain(_game->getMod()->getTerrainList().front(), true);
 			}
 		}
@@ -2000,8 +2000,8 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 		if (_save->getMissionType() == "STR_BASE_DEFENSE")
 		{
 			// we'll already have gone through _base->isOverlappingOrOverflowing() by the time we hit this, possibly multiple times
-			// let's just throw an exception and tell them to check the log, it'll have all the detail they'll need.
-			throw Exception("Something is wrong with your base, check your log file for additional information.");
+			// let's just throw an exception and tell them to check the XComLog, it'll have all the detail they'll need.
+			throw Exception("Something is wrong with your base, check your XComLog file for additional information.");
 		}
 		throw Exception("Something is wrong in your map definitions, craft/ufo map is too tall?");
 	}
@@ -2191,7 +2191,7 @@ void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int z
 			// that way, all the connections will still line up properly in the array.
 			node = new Node();
 			node->setDummy(true);
-			Log(LOG_INFO) << "Bad node in RMP file: " << filename << " Node #" << nodesAdded << " is outside map boundaries at X:" << pos_x << " Y:" << pos_y << " Z:" << pos_z << ". Culling Node.";
+			XComLog(LOG_INFO) << "Bad node in RMP file: " << filename << " Node #" << nodesAdded << " is outside map boundaries at X:" << pos_x << " Y:" << pos_y << " Z:" << pos_z << ". Culling Node.";
 			badNodes.push_back(nodesAdded);
 		}
 		_save->getNodes()->push_back(node);
@@ -2209,7 +2209,7 @@ void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int z
 				{
 					if (*k - nodeOffset == (unsigned)*i)
 					{
-						Log(LOG_INFO) << "RMP file: " << filename << " Node #" << nodeCounter - 1 << " is linked to Node #" << *i << ", which was culled. Terminating Link.";
+						XComLog(LOG_INFO) << "RMP file: " << filename << " Node #" << nodeCounter - 1 << " is linked to Node #" << *i << ", which was culled. Terminating Link.";
 						*k = -1;
 					}
 				}
@@ -2771,7 +2771,7 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 						{
 							if (command->canBeSkipped())
 							{
-								Log(LOG_INFO) << "Map generator encountered a recoverable problem: UFO (MapBlock: " << ufoMap->getName() << ") could not be placed on the map. Command skipped.";
+								XComLog(LOG_INFO) << "Map generator encountered a recoverable problem: UFO (MapBlock: " << ufoMap->getName() << ") could not be placed on the map. Command skipped.";
 								break;
 							}
 							else
@@ -3160,14 +3160,14 @@ void BattlescapeGenerator::generateBaseMap()
 						|| j->y < 0 || j->y / 10 > (*i)->getRules()->getSize()
 						|| j->z < 0 || j->z > _mapsize_z)
 					{
-						Log(LOG_ERROR) << "Tile position " << (*j) << " is outside the facility " << (*i)->getRules()->getType() << ", skipping placing items there.";
+						XComLog(LOG_ERROR) << "Tile position " << (*j) << " is outside the facility " << (*i)->getRules()->getType() << ", skipping placing items there.";
 						continue;
 					}
 
 					Position tilePos = Position((x * 10) + j->x, (y * 10) + j->y, j->z);
 					if (!_save->getTile(tilePos))
 					{
-						Log(LOG_ERROR) << "Tile position " << tilePos << ", from the facility " << (*i)->getRules()->getType() << ", is outside the map; skipping placing items there.";
+						XComLog(LOG_ERROR) << "Tile position " << tilePos << ", from the facility " << (*i)->getRules()->getType() << ", is outside the map; skipping placing items there.";
 						continue;
 					}
 
@@ -3234,7 +3234,7 @@ bool BattlescapeGenerator::populateVerticalLevels(MapScript *command)
 			}
 			else
 			{
-				Log(LOG_WARNING) << "Map generator encountered an error: a 'ground' verticalLevel can only be used once per command.";
+				XComLog(LOG_WARNING) << "Map generator encountered an error: a 'ground' verticalLevel can only be used once per command.";
 			}
 		}
 	}
@@ -3254,11 +3254,11 @@ bool BattlescapeGenerator::populateVerticalLevels(MapScript *command)
 				}
 				else if (command->getType() == MSC_ADDCRAFT || command->getType() == MSC_ADDUFO)
 				{
-					Log(LOG_WARNING) << "Map generator encountered an error: a 'craft' verticalLevel can only be used once per command.";
+					XComLog(LOG_WARNING) << "Map generator encountered an error: a 'craft' verticalLevel can only be used once per command.";
 				}
 				else
 				{
-					Log(LOG_WARNING) << "Map generator encountered an error: a 'craft' verticalLevel is only valid for addCraft and addUFO commands, skipping level.";
+					XComLog(LOG_WARNING) << "Map generator encountered an error: a 'craft' verticalLevel is only valid for addCraft and addUFO commands, skipping level.";
 				}
 
 				break;
@@ -3271,11 +3271,11 @@ bool BattlescapeGenerator::populateVerticalLevels(MapScript *command)
 				}
 				else if (command->getType() == MSC_ADDLINE)
 				{
-					Log(LOG_WARNING) << "Map generator encountered an error: a 'line' verticalLevel can only be used once per command.";
+					XComLog(LOG_WARNING) << "Map generator encountered an error: a 'line' verticalLevel can only be used once per command.";
 				}
 				else
 				{
-					Log(LOG_WARNING) << "Map generator encountered an error: a 'line' verticalLevel is only valid for addLine commands, skipping level.";
+					XComLog(LOG_WARNING) << "Map generator encountered an error: a 'line' verticalLevel is only valid for addLine commands, skipping level.";
 				}
 
 				break;
@@ -3306,7 +3306,7 @@ bool BattlescapeGenerator::populateVerticalLevels(MapScript *command)
 			}
 			else
 			{
-				Log(LOG_WARNING) << "Map generator encountered an error: a 'ceiling' verticalLevel can only be used once per command.";
+				XComLog(LOG_WARNING) << "Map generator encountered an error: a 'ceiling' verticalLevel can only be used once per command.";
 			}
 		}
 	}
@@ -3337,8 +3337,8 @@ RuleTerrain* BattlescapeGenerator::pickTerrain(std::string terrainName)
 		terrain = _game->getMod()->getTerrain(terrainName);
 		if (!terrain)
 		{
-			// make sure we get a terrain, and put an error in the log, continuing with generation
-			Log(LOG_ERROR) << "Map generator could not find alternate terrain " << terrainName << ", proceeding with terrain from alienDeployments or Geoscape texture.";
+			// make sure we get a terrain, and put an error in the XComLog, continuing with generation
+			XComLog(LOG_ERROR) << "Map generator could not find alternate terrain " << terrainName << ", proceeding with terrain from alienDeployments or Geoscape texture.";
 			terrain = _terrain;
 		}
 	}
@@ -3385,8 +3385,8 @@ void BattlescapeGenerator::loadVerticalLevels(MapScript *command, bool repopulat
 		}
 		else if (zLevelsLeft > _mapsize_z)
 		{
-			Log(LOG_WARNING) << "Battlescape Generator has encountered an error: a mapscript command has height " << command->getSizeZ() << " while the map is only " << _mapsize_z << " tiles tall.";
-			Log(LOG_WARNING) << "Reducing command size to map height";
+			XComLog(LOG_WARNING) << "Battlescape Generator has encountered an error: a mapscript command has height " << command->getSizeZ() << " while the map is only " << _mapsize_z << " tiles tall.";
+			XComLog(LOG_WARNING) << "Reducing command size to map height";
 
 			zLevelsLeft = _mapsize_z;
 		}
@@ -3409,7 +3409,7 @@ void BattlescapeGenerator::loadVerticalLevels(MapScript *command, bool repopulat
 			}
 			else
 			{
-				Log(LOG_WARNING) << "Battlescape Generator has encountered an error: an addLine mapscript command has vertical levels but a mapblock for the ground level could not be loaded.";
+				XComLog(LOG_WARNING) << "Battlescape Generator has encountered an error: an addLine mapscript command has vertical levels but a mapblock for the ground level could not be loaded.";
 			}
 		}
 
@@ -3453,7 +3453,7 @@ void BattlescapeGenerator::loadVerticalLevels(MapScript *command, bool repopulat
 		int tries = 0;
 		int maxTries = 20;
 
-		// If a addLine command for some reason can't fit in the line itself, note this in the log for the modder to fix
+		// If a addLine command for some reason can't fit in the line itself, note this in the XComLog for the modder to fix
 		bool lineAdded = false;
 
 		// Loop over the "filling" levels to build up the maps placed at this location
@@ -3561,7 +3561,7 @@ void BattlescapeGenerator::loadVerticalLevels(MapScript *command, bool repopulat
 
 		if (command->getType() == MSC_ADDLINE && !lineAdded)
 		{
-			Log(LOG_WARNING) << "Battlescape Generator has encountered an error: a addLine mapscript command with vertical levels did not load the line itself. The modder may want to reduce the number of levels before the line.";
+			XComLog(LOG_WARNING) << "Battlescape Generator has encountered an error: a addLine mapscript command with vertical levels did not load the line itself. The modder may want to reduce the number of levels before the line.";
 		}
 
 		// Now we can finally load the ceiling level

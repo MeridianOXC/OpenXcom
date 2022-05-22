@@ -165,7 +165,7 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 				_weapons[j] = 0;
 				if (type != "0")
 				{
-					Log(LOG_ERROR) << "Failed to load craft weapon " << type;
+					XComLog(LOG_ERROR) << "Failed to load craft weapon " << type;
 				}
 			}
 			j++;
@@ -178,7 +178,7 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 	{
 		if (mod->getItem(i->first) == 0)
 		{
-			Log(LOG_ERROR) << "Failed to load item " << i->first;
+			XComLog(LOG_ERROR) << "Failed to load item " << i->first;
 			_items->getContents()->erase(i++);
 		}
 		else
@@ -202,12 +202,12 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Failed to load vehicle " << type;
+				XComLog(LOG_ERROR) << "Failed to load vehicle " << type;
 			}
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load vehicles item " << type;
+			XComLog(LOG_ERROR) << "Failed to load vehicles item " << type;
 		}
 	}
 	_status = node["status"].as<std::string>(_status);

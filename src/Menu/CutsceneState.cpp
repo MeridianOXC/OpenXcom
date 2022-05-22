@@ -86,7 +86,7 @@ void CutsceneState::init()
 	}
 	else
 	{
-		Log(LOG_WARNING) << "cutscene definition empty: " << _cutsceneId;
+		XComLog(LOG_WARNING) << "cutscene definition empty: " << _cutsceneId;
 	}
 }
 

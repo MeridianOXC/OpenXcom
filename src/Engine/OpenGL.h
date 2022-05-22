@@ -36,7 +36,7 @@ std::string strGLError(GLenum glErr);
 		\
 		do \
 		{ \
-			Log(LOG_WARNING) << __FILE__ << ":" << __LINE__ << ": glGetError() complaint: " << strGLError(glErr);\
+			XComLog(LOG_WARNING) << __FILE__ << ":" << __LINE__ << ": glGetError() complaint: " << strGLError(glErr);\
 		} while (((glErr = glGetError()) != GL_NO_ERROR));\
 	}\
 }

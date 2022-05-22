@@ -178,13 +178,13 @@ MainMenuState::MainMenuState(bool updateCheck)
 						}
 						catch (YAML::Exception &e)
 						{
-							Log(LOG_ERROR) << e.what();
+							XComLog(LOG_ERROR) << e.what();
 						}
 					}
 				}
 			}
 		}
-		Log(LOG_INFO) << "Update check status: " << checkProgress << "; newVersion: v" << _newVersion << "; ";
+		XComLog(LOG_INFO) << "Update check status: " << checkProgress << "; newVersion: v" << _newVersion << "; ";
 	}
 #endif
 
@@ -201,7 +201,7 @@ void MainMenuState::init()
 	State::init();
 	if (Options::getLoadLastSave() && _game->getSavedGame()->getList(_game->getLanguage(), true).size() > 0)
 	{
-		Log(LOG_INFO) << "Loading last saved game";
+		XComLog(LOG_INFO) << "Loading last saved game";
 		btnLoadClick(NULL);
 	}
 }
@@ -318,7 +318,7 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(exeFilenameFullPath))
 	{
 		if (CrossPlatform::copyFile(exeFilenameFullPath, exeFilenameFullPath + "-" + now + ".bak"))
-			Log(LOG_INFO) << "Update step 0 done.";
+			XComLog(LOG_INFO) << "Update step 0 done.";
 		else return;
 	}
 
@@ -326,7 +326,7 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(commonDirFilename))
 	{
 		if (CrossPlatform::moveFile(commonDirFilename, commonDirFilename + "-" + now))
-			Log(LOG_INFO) << "Update step 1 done.";
+			XComLog(LOG_INFO) << "Update step 1 done.";
 		else return;
 	}
 
@@ -334,7 +334,7 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(commonZipFilename))
 	{
 		if (CrossPlatform::moveFile(commonZipFilename, commonZipFilename + "-" + now + ".bak"))
-			Log(LOG_INFO) << "Update step 2 done.";
+			XComLog(LOG_INFO) << "Update step 2 done.";
 		else return;
 	}
 
@@ -342,7 +342,7 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(standardDirFilename))
 	{
 		if (CrossPlatform::moveFile(standardDirFilename, standardDirFilename + "-" + now))
-			Log(LOG_INFO) << "Update step 3 done.";
+			XComLog(LOG_INFO) << "Update step 3 done.";
 		else return;
 	}
 
@@ -350,7 +350,7 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(standardZipFilename))
 	{
 		if (CrossPlatform::moveFile(standardZipFilename, standardZipFilename + "-" + now + ".bak"))
-			Log(LOG_INFO) << "Update step 4 done.";
+			XComLog(LOG_INFO) << "Update step 4 done.";
 		else return;
 	}
 
@@ -358,7 +358,7 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(exeZipFilename))
 	{
 		if (CrossPlatform::deleteFile(exeZipFilename))
-			Log(LOG_INFO) << "Update step 5 done.";
+			XComLog(LOG_INFO) << "Update step 5 done.";
 		else return;
 	}
 
@@ -366,28 +366,28 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(exeNewFilename))
 	{
 		if (CrossPlatform::deleteFile(exeNewFilename))
-			Log(LOG_INFO) << "Update step 6 done.";
+			XComLog(LOG_INFO) << "Update step 6 done.";
 		else return;
 	}
 
 	// 7. download common zip
 	if (CrossPlatform::downloadFile(commonZipUrl, commonZipFilename))
 	{
-		Log(LOG_INFO) << "Update step 7 done.";
+		XComLog(LOG_INFO) << "Update step 7 done.";
 	}
 	else return;
 
 	// 8. download standard zip
 	if (CrossPlatform::downloadFile(standardZipUrl, standardZipFilename))
 	{
-		Log(LOG_INFO) << "Update step 8 done.";
+		XComLog(LOG_INFO) << "Update step 8 done.";
 	}
 	else return;
 
 	// 9. download exe zip
 	if (CrossPlatform::downloadFile(exeZipUrl, exeZipFilename))
 	{
-		Log(LOG_INFO) << "Update step 9 done.";
+		XComLog(LOG_INFO) << "Update step 9 done.";
 	}
 	else return;
 
@@ -397,38 +397,38 @@ void MainMenuState::btnUpdateClick(Action*)
 		const std::string file_to_extract = "OpenXcomEx.exe.new";
 		SDL_RWops *rwo_read = FileMap::zipGetFileByName(relativeExeZipFileName, file_to_extract);
 		if (!rwo_read) {
-			Log(LOG_ERROR) << "Step 10a: failed to unzip file.";
+			XComLog(LOG_ERROR) << "Step 10a: failed to unzip file.";
 			return;
 		}
 		size_t size = 0;
 		auto data = SDL_LoadFile_RW(rwo_read, &size, SDL_TRUE);
 		if (!data) {
-			Log(LOG_ERROR) << "Step 10b: failed to unzip file." << SDL_GetError(); // out of memory for a copy ?
+			XComLog(LOG_ERROR) << "Step 10b: failed to unzip file." << SDL_GetError(); // out of memory for a copy ?
 			return;
 		}
 		SDL_RWops *rwo_write = SDL_RWFromFile(relativeExeNewFileName.c_str(), "wb");
 		if (!rwo_write) {
-			Log(LOG_ERROR) << "Step 10c: failed to open exe.new file for writing." << SDL_GetError();
+			XComLog(LOG_ERROR) << "Step 10c: failed to open exe.new file for writing." << SDL_GetError();
 			return;
 		}
 		auto wsize = SDL_RWwrite(rwo_write, data, size, 1);
 		if (wsize != 1) {
-			Log(LOG_ERROR) << "Step 10d: failed to write exe.new file." << SDL_GetError();
+			XComLog(LOG_ERROR) << "Step 10d: failed to write exe.new file." << SDL_GetError();
 			return;
 		}
 		if (SDL_RWclose(rwo_write)) {
-			Log(LOG_ERROR) << "Step 10e: failed to write exe.new file." << SDL_GetError();
+			XComLog(LOG_ERROR) << "Step 10e: failed to write exe.new file." << SDL_GetError();
 			return;
 		}
 	} else {
-		Log(LOG_ERROR) << "Update step 10 failed."; // exe dir and working dir not the same
+		XComLog(LOG_ERROR) << "Update step 10 failed."; // exe dir and working dir not the same
 		return;
 	}
 
 	// 11. check if extracted exe exists
 	if (!CrossPlatform::fileExists(exeNewFilename))
 	{
-		Log(LOG_ERROR) << "Update step 11 failed.";
+		XComLog(LOG_ERROR) << "Update step 11 failed.";
 		return;
 	}
 
@@ -436,7 +436,7 @@ void MainMenuState::btnUpdateClick(Action*)
 	if (CrossPlatform::fileExists(exeZipFilename))
 	{
 		if (CrossPlatform::deleteFile(exeZipFilename))
-			Log(LOG_INFO) << "Update step 12 done.";
+			XComLog(LOG_INFO) << "Update step 12 done.";
 		else return;
 	}
 
@@ -470,7 +470,7 @@ void MainMenuState::btnUpdateClick(Action*)
 		// do nothing
 	}
 
-	Log(LOG_INFO) << "Update prepared, restarting.";
+	XComLog(LOG_INFO) << "Update prepared, restarting.";
 	_game->setUpdateFlag(true);
 	_game->quit();
 #endif

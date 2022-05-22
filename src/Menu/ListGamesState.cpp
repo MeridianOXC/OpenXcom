@@ -185,7 +185,7 @@ void ListGamesState::init()
 	}
 	catch (Exception &e)
 	{
-		Log(LOG_ERROR) << e.what();
+		XComLog(LOG_ERROR) << e.what();
 	}
 }
 

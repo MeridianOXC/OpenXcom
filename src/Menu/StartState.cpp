@@ -173,7 +173,7 @@ void StartState::think()
 		break;
 	case LOADING_SUCCESSFUL:
 		CrossPlatform::flashWindow();
-		Log(LOG_INFO) << "OpenXcom started successfully!";
+		XComLog(LOG_INFO) << "OpenXcom started successfully!";
 		_game->setState(new GoToMainMenuState(true));
 		if (_oldMaster != Options::getActiveMaster() && Options::playIntro)
 		{
@@ -305,19 +305,19 @@ int StartState::load(void *game_ptr)
 	Game *game = (Game*)game_ptr;
 	try
 	{
-		Log(LOG_INFO) << "Loading data...";
+		XComLog(LOG_INFO) << "Loading data...";
 		Options::updateMods();
 		game->loadMods();
-		Log(LOG_INFO) << "Data loaded successfully.";
-		Log(LOG_INFO) << "Loading language...";
+		XComLog(LOG_INFO) << "Data loaded successfully.";
+		XComLog(LOG_INFO) << "Loading language...";
 		game->loadLanguages();
-		Log(LOG_INFO) << "Language loaded successfully.";
+		XComLog(LOG_INFO) << "Language loaded successfully.";
 		loading = LOADING_SUCCESSFUL;
 	}
 	catch (std::exception &e)
 	{
 		error = e.what();
-		Log(LOG_ERROR) << error;
+		XComLog(LOG_ERROR) << error;
 		loading = LOADING_FAILED;
 	}
 

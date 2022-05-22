@@ -24,6 +24,7 @@
 #include "Position.h"
 #include "Particle.h"
 #include <vector>
+#include "pbrt/pbrt.h"
 
 namespace OpenXcom
 {

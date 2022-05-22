@@ -315,7 +315,7 @@ LocalizedText Language::getString(const std::string &id, unsigned n) const
 		if (notFoundIds.end() == notFoundIds.find(id))
 		{
 			notFoundIds.insert(id);
-			Log(LOG_WARNING) << id << " not found in " << Options::language;
+			XComLog(LOG_WARNING) << id << " not found in " << Options::language;
 		}
 		return id;
 	}
@@ -324,7 +324,7 @@ LocalizedText Language::getString(const std::string &id, unsigned n) const
 		if (notFoundIds.end() == notFoundIds.find(id))
 		{
 			notFoundIds.insert(id);
-			Log(LOG_WARNING) << id << " has plural format in ``" << Options::language << "``. Code assumes singular format.";
+			XComLog(LOG_WARNING) << id << " has plural format in ``" << Options::language << "``. Code assumes singular format.";
 //		Hint: Change ``getstring(ID).arg(value)`` to ``getString(ID, value)`` in appropriate files.
 		}
 		return s->second;

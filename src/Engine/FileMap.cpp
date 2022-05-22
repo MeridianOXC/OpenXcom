@@ -215,7 +215,7 @@ SDL_RWops *FileRecord::getRWops() const
 	} else {
 		rv = SDL_RWFromFile(fullpath.c_str(), "rb");
 	}
-	if (!rv) { Log(LOG_ERROR) << "FileRecord::getRWops(): err=" << SDL_GetError(); }
+	if (!rv) { XComLog(LOG_ERROR) << "FileRecord::getRWops(): err=" << SDL_GetError(); }
 	return rv;
 }
 
@@ -258,7 +258,7 @@ SDL_RWops *FileRecord::getRWopsReadAll() const
 			}
 		}
 	}
-	if (!rv) { Log(LOG_ERROR) << "FileRecord::getRWopsReadAll(): err=" << SDL_GetError(); }
+	if (!rv) { XComLog(LOG_ERROR) << "FileRecord::getRWopsReadAll(): err=" << SDL_GetError(); }
 	return rv;
 }
 
@@ -270,7 +270,7 @@ std::unique_ptr<std::istream> FileRecord::getIStream() const
 		if (data == NULL) {
 			auto err = "FileRecord::getIStream(): failed to decompress " + fullpath + ": ";
 			err += mz_zip_get_error_string(mz_zip_get_last_error((mz_zip_archive *)zip));
-			Log(LOG_FATAL) << err;
+			XComLog(LOG_FATAL) << err;
 			throw Exception(err);
 		}
 		std::string a_string((char *)data, size);
@@ -290,7 +290,7 @@ YAML::Node FileRecord::getYAML() const
 	}
 	catch(...)
 	{
-		Log(LOG_FATAL) << "Error loading file '" << fullpath << "'";
+		XComLog(LOG_FATAL) << "Error loading file '" << fullpath << "'";
 		throw;
 	}
 }
@@ -303,7 +303,7 @@ std::vector<YAML::Node> FileRecord::getAllYAML() const
 	}
 	catch(...)
 	{
-		Log(LOG_FATAL) << "Error loading file '" << fullpath << "'";
+		XComLog(LOG_FATAL) << "Error loading file '" << fullpath << "'";
 		throw;
 	}
 }
@@ -332,7 +332,7 @@ typedef std::vector<std::pair<std::string, std::string>> dirlist_t; // <dirname,
 static bool ls_r(const std::string &basePath, const std::string &relPath, dirlist_t& dlist) {
 	auto fullDir = concatOptionalPaths(basePath, relPath);
 	auto files = CrossPlatform::getFolderContents(fullDir);
-	//Log(LOG_VERBOSE) << "ls_r: listing "<<fullDir<<" count="<<files.size();
+	//XComLog(LOG_VERBOSE) << "ls_r: listing "<<fullDir<<" count="<<files.size();
 	for (auto i = files.begin(); i != files.end(); ++i) {
 		if (std::get<1>(*i)) { // it's a subfolder
 			auto fullpath = concatPaths(fullDir, std::get<0>(*i));
@@ -420,7 +420,7 @@ struct VFSLayer {
 		std::string log_ctx = "mapZipFile(" + zippath + ",  '" + prefix + "',  '" + (ignore_ruls ? "true" : "false") + "'): ";
 		SDL_RWops *rwops = SDL_RWFromFile(zippath.c_str(), "r");
 		if (!rwops) {
-			Log(LOG_WARNING) << log_ctx << "Ignoring zip '" << zippath << "': " << SDL_GetError();
+			XComLog(LOG_WARNING) << log_ctx << "Ignoring zip '" << zippath << "': " << SDL_GetError();
 			return false;
 		}
 		return mapZipFileRW(rwops, zippath, prefix, ignore_ruls);
@@ -449,13 +449,13 @@ struct VFSLayer {
 		std::string log_ctx = "mapZip(zip, '" + zippath + "', '" + prefix + "',  '" + (ignore_ruls ? "true" : "false") + "'): ";
 		if (mapped) {
 			auto err=  log_ctx + "Fatal: already mapped.";
-			Log(LOG_FATAL) << err;
+			XComLog(LOG_FATAL) << err;
 			throw Exception(err);
 		}
 		auto prefixlen = prefix.size();
 		if ((prefixlen) > 0 && (prefix[prefixlen-1] != '/')) {
 			auto err = log_ctx + "Bogus prefix of '" + prefix;
-			Log(LOG_FATAL) << err;
+			XComLog(LOG_FATAL) << err;
 			throw Exception(err);
 		}
 		mapped = true;
@@ -472,7 +472,7 @@ struct VFSLayer {
 
 			std::string fname = fistat.m_filename;
 			if (!sanitizeZipEntryName(fname)) {
-				Log(LOG_WARNING) << "Bogus filename " << hexDumpBogusData(fname) << " in " << zippath << ", ignoring.";
+				XComLog(LOG_WARNING) << "Bogus filename " << hexDumpBogusData(fname) << " in " << zippath << ", ignoring.";
 				continue;
 			}
 			std::string relfname = fname;
@@ -491,14 +491,14 @@ struct VFSLayer {
 			insert(relfname, frec);
 			mapped_count ++;
 		}
-		Log(LOG_VERBOSE) << log_ctx << "mapped_count=" << mapped_count;
+		XComLog(LOG_VERBOSE) << log_ctx << "mapped_count=" << mapped_count;
 		return mapped_count > 1;
 	}
 	bool mapPlainDir(const std::string& dirpath, bool ignore_ruls = false) {
 		std::string log_ctx = "mapPlainDir(" + dirpath + ", " + (ignore_ruls ? "true" : "false") + "): ";
 		if (mapped) {
 			auto err = log_ctx + "fatal: already mapped.";
-			Log(LOG_FATAL) << err;
+			XComLog(LOG_FATAL) << err;
 			throw Exception(err);
 		}
 		dirlist_t dlist;
@@ -661,7 +661,7 @@ struct VFS {
 	void map_common(bool embeddedOnly) {
 		auto mrec = new ModRecord("common");
 		if (!mapExtResources(mrec, "common", embeddedOnly)) {
-			Log(LOG_ERROR) << "VFS::map_common(): failed to map 'common'";
+			XComLog(LOG_ERROR) << "VFS::map_common(): failed to map 'common'";
 			delete mrec;
 			return;
 		}
@@ -692,12 +692,12 @@ const RSOrder &getRulesets() { return TheVFS.get_rulesets(); }
 static mz_zip_archive *newZipContext(const std::string& log_ctx, SDL_RWops *rwops) {
 	mz_zip_archive *zip = (mz_zip_archive *) SDL_malloc(sizeof(mz_zip_archive));
 	if (!zip) {
-		Log(LOG_FATAL) << log_ctx << ": " << SDL_GetError();
+		XComLog(LOG_FATAL) << log_ctx << ": " << SDL_GetError();
 		throw Exception("Out of memory");
 	}
 	if (!mz_zip_reader_init_rwops(zip, rwops)) {
 		// whoa, no opening the file
-		Log(LOG_WARNING) << log_ctx << "Ignoring zip: " << mz_zip_get_error_string(mz_zip_get_last_error(zip));
+		XComLog(LOG_WARNING) << log_ctx << "Ignoring zip: " << mz_zip_get_error_string(mz_zip_get_last_error(zip));
 		SDL_RWclose(rwops);
 		SDL_free(zip);
 		return NULL;
@@ -716,7 +716,7 @@ void clear(bool clearOnly, bool embeddedOnly) {
 	ZipContexts.clear();
 	if (!clearOnly)
 	{
-		Log(LOG_VERBOSE) << "FileMap::clear(): mapping 'common'";
+		XComLog(LOG_VERBOSE) << "FileMap::clear(): mapping 'common'";
 		TheVFS.map_common(embeddedOnly);
 		if (LOG_VERBOSE <= Logger::reportingLevel()) {
 			TheVFS.dump(Logger().get(LOG_VERBOSE), "\nFileMap::clear():", Options::oxceListVFSContents);
@@ -737,9 +737,9 @@ void setup(const std::vector<const ModInfo* >& active, bool embeddedOnly)
 	TheVFS.map_common(embeddedOnly);
 	std::string log_ctx = "FileMap::setup(): ";
 
-	Log(LOG_VERBOSE) << log_ctx << "Active mods per options:";
+	XComLog(LOG_VERBOSE) << log_ctx << "Active mods per options:";
 	for(auto i = active.cbegin(); i != active.cend(); ++i) {
-		Log(LOG_VERBOSE) << log_ctx << "    " << (*i)->getId();
+		XComLog(LOG_VERBOSE) << log_ctx << "    " << (*i)->getId();
 	}
 	// expand the mod list into map order
 	// listing all the mod dependencies
@@ -763,7 +763,7 @@ void setup(const std::vector<const ModInfo* >& active, bool embeddedOnly)
 		mods_seen.insert(*i);
 		TheVFS.push_back( ModsAvailable.at(*i));
 	}
-	Log(LOG_VERBOSE) << log_ctx << "Active VFS stack:";
+	XComLog(LOG_VERBOSE) << log_ctx << "Active VFS stack:";
 	if (LOG_VERBOSE <= Logger::reportingLevel()) {
 		TheVFS.dump(Logger().get(LOG_VERBOSE), "\n" + log_ctx, Options::oxceListVFSContents);
 	}
@@ -800,7 +800,7 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 			fullname = CrossPlatform::searchDataFolder(basename);
 		}
 		if (CrossPlatform::folderExists(fullname)) {
-			Log(LOG_VERBOSE) << log_ctx << "found dir ("<<fullname<<")";
+			XComLog(LOG_VERBOSE) << log_ctx << "found dir ("<<fullname<<")";
 			auto layer = new VFSLayer(fullname);
 			if (layer->mapPlainDir(fullname, true)) {
 				mrec->push_front(layer);
@@ -810,7 +810,7 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 				delete layer;
 			}
 		} else {
-			Log(LOG_VERBOSE) << log_ctx << "dir not found ("<<fullname<<")";
+			XComLog(LOG_VERBOSE) << log_ctx << "dir not found ("<<fullname<<")";
 		}
 	}
 	// then try finding a zipfile
@@ -820,7 +820,7 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 			fullname = CrossPlatform::searchDataFile(zipname);
 		}
 		if (CrossPlatform::fileExists(fullname)) {
-			Log(LOG_VERBOSE) << log_ctx << "found zip ("<<fullname<<")";
+			XComLog(LOG_VERBOSE) << log_ctx << "found zip ("<<fullname<<")";
 			auto layer = new VFSLayer(fullname);
 			if (layer->mapZipFile(fullname, "", true)) {
 				mrec->push_front(layer);
@@ -830,13 +830,13 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 				delete layer;
 			}
 		} else {
-			Log(LOG_VERBOSE) << log_ctx << "zip not found ("<<fullname<<")";
+			XComLog(LOG_VERBOSE) << log_ctx << "zip not found ("<<fullname<<")";
 		}
 	}
 	// now try the embedded zip
 	{
 		if (embedded_rwops) {
-			Log(LOG_VERBOSE) << log_ctx << "found embedded asset ("<<zipname<<")";
+			XComLog(LOG_VERBOSE) << log_ctx << "found embedded asset ("<<zipname<<")";
 			std::string ezipname = "exe:" + zipname;
 			auto layer = new VFSLayer(ezipname);
 			if (layer->mapZipFileRW(embedded_rwops, ezipname, "", true)) {
@@ -847,11 +847,11 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 				delete layer;
 			}
 		} else {
-			Log(LOG_VERBOSE) << log_ctx << "embedded asset not found ("<<zipname<<")";
+			XComLog(LOG_VERBOSE) << log_ctx << "embedded asset not found ("<<zipname<<")";
 		}
 	}
 	if (!mapped_anything) { // well, nothing found. say so.
-		Log(LOG_ERROR) << log_ctx << "external resources not found.";
+		XComLog(LOG_ERROR) << log_ctx << "external resources not found.";
 	}
 	return mapped_anything;
 }
@@ -863,20 +863,20 @@ static void mapZippedMod(mz_zip_archive *zip, const std::string& zipfname, const
 	std::string log_ctx = "mapZippedMod(" + zipfname + ", '" + prefix + "'): ";
 	auto layer = new VFSLayer(concatPaths(zipfname, prefix));
 	if (!layer->mapZip(zip, zipfname, prefix)) {
-		Log(LOG_WARNING) << log_ctx << "Failed to map, skipping.";
+		XComLog(LOG_WARNING) << log_ctx << "Failed to map, skipping.";
 		delete layer;
 		return;
 	}
 	auto frec = layer->at("metadata.yml");
 	if (frec == NULL) { // whoa, no metadata
-		Log(LOG_WARNING) << log_ctx << "No metadata.yml found, skipping.";
+		XComLog(LOG_WARNING) << log_ctx << "No metadata.yml found, skipping.";
 		delete layer;
 		return;
 	}
 	auto modpath = concatOptionalPaths(zipfname, prefix);
 	auto doc = frec->getYAML();
 	if (!doc.IsMap()) {
-		Log(LOG_WARNING) << log_ctx << "Bad metadata.yml found, skipping.";
+		XComLog(LOG_WARNING) << log_ctx << "Bad metadata.yml found, skipping.";
 		delete layer;
 		return;
 	}
@@ -884,12 +884,12 @@ static void mapZippedMod(mz_zip_archive *zip, const std::string& zipfname, const
 	mrec->modInfo.load(doc);
 	auto mri = ModsAvailable.find(mrec->modInfo.getId());
 	if (mri != ModsAvailable.end()) {
-		Log(LOG_ERROR) << log_ctx << "modId " << mrec->modInfo.getId() << " already mapped in, skipping " << modpath;
+		XComLog(LOG_ERROR) << log_ctx << "modId " << mrec->modInfo.getId() << " already mapped in, skipping " << modpath;
 		delete mrec;
 		delete layer;
 		return;
 	}
-	Log(LOG_VERBOSE) << log_ctx << "mapped mod '" << mrec->modInfo.getId() << "' from " << modpath
+	XComLog(LOG_VERBOSE) << log_ctx << "mapped mod '" << mrec->modInfo.getId() << "' from " << modpath
 					 << " master=" << mrec->modInfo.getMaster() << " version=" << mrec->modInfo.getVersion();
 	MappedVFSLayers.insert(layer);
 	mrec->push_back(layer);
@@ -906,7 +906,7 @@ void scanModZipRW(SDL_RWops *rwops, const std::string& fullpath) {
 	if (!mzip) { return; }
 	// check if this is maybe a zip of a single mod (metadata.yml at the top level)
 	if (mz_zip_reader_locate_file_v2(mzip, "metadata.yml", NULL, 0, NULL)) {
-		Log(LOG_VERBOSE) << log_ctx << "retrying as a single-mod .zip";
+		XComLog(LOG_VERBOSE) << log_ctx << "retrying as a single-mod .zip";
 		mapZippedMod(mzip, fullpath, "");
 		return;
 	}
@@ -916,7 +916,7 @@ void scanModZipRW(SDL_RWops *rwops, const std::string& fullpath) {
 		mz_zip_reader_file_stat(mzip, fi, &fistat);
 		std::string prefix = fistat.m_filename;
 		if (!sanitizeZipEntryName(prefix)) {
-			Log(LOG_WARNING) << "Bogus dirname " << hexDumpBogusData(prefix) << " in " << fullpath << ", ignoring.";
+			XComLog(LOG_WARNING) << "Bogus dirname " << hexDumpBogusData(prefix) << " in " << fullpath << ", ignoring.";
 			continue;
 		}
 		if (fistat.m_is_encrypted || !fistat.m_is_supported) { continue; }
@@ -933,7 +933,7 @@ void scanModZip(const std::string& fullpath) {
 	std::string log_ctx = "scanModZip(" + fullpath + "): ";
 	SDL_RWops *rwops = SDL_RWFromFile(fullpath.c_str(), "r");
 	if (!rwops) {
-		Log(LOG_WARNING) << log_ctx << "Ignoring zip: " << SDL_GetError();
+		XComLog(LOG_WARNING) << log_ctx << "Ignoring zip: " << SDL_GetError();
 		return;
 	}
 	scanModZipRW(rwops, fullpath);
@@ -947,22 +947,22 @@ SDL_RWops *zipGetFileByName(const std::string& zipfile, const std::string& fullp
 	std::string log_ctx = "zipGetFileByName(rwops, " + zipfile + ", " + fullpath + "): ";
 	std::string sanpath = fullpath;
 	if (!sanitizeZipEntryName(sanpath)) {
-		Log(LOG_ERROR) << log_ctx << "Bogus fullpath given: '" << fullpath << "': " << hexDumpBogusData(sanpath);
+		XComLog(LOG_ERROR) << log_ctx << "Bogus fullpath given: '" << fullpath << "': " << hexDumpBogusData(sanpath);
 		return NULL;
 	}
 	Unicode::lowerCase(sanpath);
 	SDL_RWops *rwops = SDL_RWFromFile(zipfile.c_str(), "rb");
 	if (!rwops) {
-		Log(LOG_ERROR) << log_ctx << "SDL_RWFromFile(): " << SDL_GetError();
+		XComLog(LOG_ERROR) << log_ctx << "SDL_RWFromFile(): " << SDL_GetError();
 		return NULL;
 	}
 	mz_zip_archive *mzip = (mz_zip_archive *) SDL_malloc(sizeof(mz_zip_archive));
 	if (!mzip) {
-		Log(LOG_FATAL) << log_ctx << ": " << SDL_GetError();
+		XComLog(LOG_FATAL) << log_ctx << ": " << SDL_GetError();
 		throw Exception("Out of memory");
 	}
 	if (!mz_zip_reader_init_rwops(mzip, rwops)) {
-		Log(LOG_ERROR) << log_ctx << "Bad zip: " << mz_zip_get_error_string(mz_zip_get_last_error(mzip));
+		XComLog(LOG_ERROR) << log_ctx << "Bad zip: " << mz_zip_get_error_string(mz_zip_get_last_error(mzip));
 		SDL_RWclose(rwops);
 		SDL_free(mzip);
 		return NULL;
@@ -979,7 +979,7 @@ SDL_RWops *zipGetFileByName(const std::string& zipfile, const std::string& fullp
 		}
 		std::string somepath = fistat.m_filename;
 		if ( !sanitizeZipEntryName ( somepath ) ) {
-			Log(LOG_WARNING) << "Bogus filename '" << somepath << "' "
+			XComLog(LOG_WARNING) << "Bogus filename '" << somepath << "' "
 							 << hexDumpBogusData(somepath) << " in the .zip, ignoring.";
 			continue;
 		}
@@ -987,7 +987,7 @@ SDL_RWops *zipGetFileByName(const std::string& zipfile, const std::string& fullp
 		if (sanpath == somepath) { // gotcha
 			SDL_RWops *rv = SDL_RWFromMZ(mzip, fi);
 			if (!rv) {
-				Log(LOG_ERROR) << log_ctx << "Unzip failed: " << SDL_GetError();
+				XComLog(LOG_ERROR) << log_ctx << "Unzip failed: " << SDL_GetError();
 			}
 			mz_zip_reader_end(mzip);
 			SDL_RWclose(rwops);
@@ -995,7 +995,7 @@ SDL_RWops *zipGetFileByName(const std::string& zipfile, const std::string& fullp
 			return rv;
 		}
 	}
-	Log ( LOG_ERROR ) << log_ctx << "File not found in the .zip";
+	XComLog ( LOG_ERROR ) << log_ctx << "File not found in the .zip";
 	mz_zip_reader_end(mzip);
 	SDL_RWclose(rwops);
 	SDL_free(mzip);
@@ -1068,18 +1068,18 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
  	// first check for a .zip
 	std::string fullname = dirname + basename + ".zip";
 	if (CrossPlatform::fileExists(fullname)) {
-		Log(LOG_VERBOSE) << log_ctx << "scanning zip " << fullname;
+		XComLog(LOG_VERBOSE) << log_ctx << "scanning zip " << fullname;
 		scanModZip(fullname);
 	} else {
-		Log(LOG_VERBOSE) << log_ctx << "no zip " << fullname;
+		XComLog(LOG_VERBOSE) << log_ctx << "no zip " << fullname;
 	}
 	// then check for a dir
 	fullname = dirname  + basename;
 	if (!CrossPlatform::folderExists(fullname)) {
-		Log(LOG_VERBOSE) << log_ctx << "no dir " << fullname;
+		XComLog(LOG_VERBOSE) << log_ctx << "no dir " << fullname;
 		return;
 	}
-	Log(LOG_VERBOSE) << log_ctx << "scanning dir " << fullname;
+	XComLog(LOG_VERBOSE) << log_ctx << "scanning dir " << fullname;
 
 	// now this dir can contain both moddirs and modzips.
 	// first scan for modzips : that is, anything but a directory
@@ -1092,7 +1092,7 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 			{
 				if (standardMods.find(std::get<0>(*zi)) == standardMods.end())
 				{
-					Log(LOG_ERROR) << "Invalid standard mod '" << std::get<0>(*zi) << "', skipping.";
+					XComLog(LOG_ERROR) << "Invalid standard mod '" << std::get<0>(*zi) << "', skipping.";
 					continue;
 				}
 			}
@@ -1101,7 +1101,7 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 		}
 		if (protectedLocation)
 		{
-			Log(LOG_ERROR) << "Invalid standard mod '" << std::get<0>(*zi) << "', skipping.";
+			XComLog(LOG_ERROR) << "Invalid standard mod '" << std::get<0>(*zi) << "', skipping.";
 			continue;
 		}
 		auto subpath = concatPaths(fullname, std::get<0>(*zi));
@@ -1113,19 +1113,19 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 		// map dat dir! (if it has metadata.yml, naturally)
 		auto layer = new VFSLayer(modpath);
 		if (!layer->mapPlainDir(modpath)) {
-			Log(LOG_WARNING) << log_ctx << "Can't scan " << mp_basename << ", skipping.";
+			XComLog(LOG_WARNING) << log_ctx << "Can't scan " << mp_basename << ", skipping.";
 			delete layer;
 			continue;
 		}
 		auto frec = layer->at("metadata.yml");
 		if (frec == NULL) { // whoa, no metadata
-			Log(LOG_WARNING) << log_ctx << "No metadata.yml in " << mp_basename << ", skipping.";
+			XComLog(LOG_WARNING) << log_ctx << "No metadata.yml in " << mp_basename << ", skipping.";
 			delete layer;
 			continue;
 		}
 		auto doc = frec->getYAML();
 		if (!doc.IsMap()) {
-			Log(LOG_WARNING) << log_ctx << "Bad metadata.yml " << mp_basename << ", skipping.";
+			XComLog(LOG_WARNING) << log_ctx << "Bad metadata.yml " << mp_basename << ", skipping.";
 			delete layer;
 			return;
 		}
@@ -1133,12 +1133,12 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 		mrec->modInfo.load(doc);
 		auto mri = ModsAvailable.find(mrec->modInfo.getId());
 		if (mri != ModsAvailable.end()) {
-			Log(LOG_ERROR) << log_ctx << "modId " << mrec->modInfo.getId() << " already mapped in, skipping " << mp_basename;
+			XComLog(LOG_ERROR) << log_ctx << "modId " << mrec->modInfo.getId() << " already mapped in, skipping " << mp_basename;
 			delete layer;
 			delete mrec;
 			continue;
 		}
-		Log(LOG_VERBOSE) << log_ctx << "modId " << mrec->modInfo.getId() << " mapped in from " << mp_basename;
+		XComLog(LOG_VERBOSE) << log_ctx << "modId " << mrec->modInfo.getId() << " mapped in from " << mp_basename;
 		MappedVFSLayers.insert(layer);
 		mrec->push_back(layer);
 		ModsAvailable.insert(std::make_pair(mrec->modInfo.getId(), mrec));
@@ -1161,7 +1161,7 @@ static void drop_mods(const std::string& log_ctx, std::unordered_set<std::string
 			}
 			auto masterId = mrec->modInfo.getMaster();
 			if (drop_list.find(masterId) != drop_list.end()) {
-				Log(LOG_DEBUG) << log_ctx << "Dropping mod " << modId << ": depends " << masterId;
+				XComLog(LOG_DEBUG) << log_ctx << "Dropping mod " << modId << ": depends " << masterId;
 				drop_list.insert(modId);
 				dropped_something = true;
 			}
@@ -1180,7 +1180,7 @@ static void drop_mods(const std::string& log_ctx, std::unordered_set<std::string
  */
 void checkModsDependencies() {
 	std::string log_ctx = "checkModsDependencies(): ";
-	Log(LOG_VERBOSE) << log_ctx << "called.";
+	XComLog(LOG_VERBOSE) << log_ctx << "called.";
 	std::unordered_set<std::string> drop_list;
 
 	// break circular dependency loops.
@@ -1192,12 +1192,12 @@ void checkModsDependencies() {
 			if (masterId.empty()) { break; } 							// no loop here, move along.
 			if (drop_list.find(masterId) != drop_list.end()) { break; } // this loop is already broken
 			if ( ModsAvailable.find(masterId) == ModsAvailable.end()) {				// master missing
-				Log(LOG_WARNING) << log_ctx << current << ": missing master mod " << masterId;
+				XComLog(LOG_WARNING) << log_ctx << current << ": missing master mod " << masterId;
 				drop_list.insert(started_at);
 				break;
 			}
 			if (masterId == started_at) { 								// whoa, loop detected
-				Log(LOG_WARNING) << log_ctx << current << ": dependency loop detected for " << masterId;
+				XComLog(LOG_WARNING) << log_ctx << current << ": dependency loop detected for " << masterId;
 				drop_list.insert(started_at);
 				break;
 			}
@@ -1216,7 +1216,7 @@ void checkModsDependencies() {
 		auto resdirs = mrec->modInfo.getExternalResourceDirs();
 		for (auto eri = resdirs.begin(); eri != resdirs.end(); ++eri) {
 			if (!mapExtResources(mrec, *eri, false)) {
-				Log(LOG_DEBUG) << log_ctx << "dropping mod " << modId << ": extResources '" << *eri << "' not found.";
+				XComLog(LOG_DEBUG) << log_ctx << "dropping mod " << modId << ": extResources '" << *eri << "' not found.";
 				drop_list.insert(modId);
 				break;
 			}
@@ -1245,7 +1245,7 @@ const FileRecord* getModRuleFile(const ModInfo* modInfo, const std::string& relp
 				return &r;
 			}
 		}
-		Log(LOG_WARNING) << "mod " << modInfo->getId() << ": unknown rulefile '" << relpath <<"'.";
+		XComLog(LOG_WARNING) << "mod " << modInfo->getId() << ": unknown rulefile '" << relpath <<"'.";
 	}
 	return nullptr;
 }
@@ -1263,7 +1263,7 @@ const FileRecord *at(const std::string &relativeFilePath) {
 	auto frec = TheVFS.at(relativeFilePath);
 	if (frec == NULL) {
 		std::string fail = "FileRecord::at(" + relativeFilePath + "): requested file not found.";
-		Log(LOG_FATAL) << fail;
+		XComLog(LOG_FATAL) << fail;
 		throw Exception(fail);
 	}
 	return frec;

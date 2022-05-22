@@ -201,7 +201,7 @@ void showError(const std::string &error)
 			std::cerr << error << std::endl;
 	}
 #endif
-	Log(LOG_FATAL) << error;
+	XComLog(LOG_FATAL) << error;
 }
 
 #ifndef _WIN32
@@ -243,7 +243,7 @@ std::vector<std::string> findDataFolders()
 	{
 		PathAppendW(pathW, oxconst.c_str());
 		auto path = pathFromWindows(pathW);
-		Log(LOG_DEBUG) << "findDataFolders(): SHGetSpecialFolderPathW: " << path;
+		XComLog(LOG_DEBUG) << "findDataFolders(): SHGetSpecialFolderPathW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
 
@@ -253,7 +253,7 @@ std::vector<std::string> findDataFolders()
 		PathRemoveFileSpecW(pathW);
 		auto path = pathFromWindows(pathW);
 		path.push_back('/');
-		Log(LOG_DEBUG) << "findDataFolders(): GetModuleFileNameW/PathRemoveFileSpecW: " << path;
+		XComLog(LOG_DEBUG) << "findDataFolders(): GetModuleFileNameW/PathRemoveFileSpecW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
 
@@ -262,7 +262,7 @@ std::vector<std::string> findDataFolders()
 	{
 		auto path = pathFromWindows(pathW);
 		path.push_back('/');
-		Log(LOG_DEBUG) << "findDataFolders(): GetCurrentDirectoryW: " << path;
+		XComLog(LOG_DEBUG) << "findDataFolders(): GetCurrentDirectoryW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
 #else
@@ -346,7 +346,7 @@ std::vector<std::string> findUserFolders()
 	{
 		PathAppendW(pathW, oxconst.c_str());
 		auto path = pathFromWindows(pathW);
-		Log(LOG_DEBUG) << "findUserFolders(): SHGetSpecialFolderPathW: " << path;
+		XComLog(LOG_DEBUG) << "findUserFolders(): SHGetSpecialFolderPathW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
 
@@ -356,7 +356,7 @@ std::vector<std::string> findUserFolders()
 		PathRemoveFileSpecW(pathW);
 		PathAppendW(pathW, usconst.c_str());
 		auto path = pathFromWindows(pathW);
-		Log(LOG_DEBUG) << "findUserFolders(): GetModuleFileNameW/PathRemoveFileSpecW: " << path;
+		XComLog(LOG_DEBUG) << "findUserFolders(): GetModuleFileNameW/PathRemoveFileSpecW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
 
@@ -365,7 +365,7 @@ std::vector<std::string> findUserFolders()
 	{
 		PathAppendW(pathW, usconst.c_str());
 		auto path = pathFromWindows(pathW);
-		Log(LOG_DEBUG) << "findUserFolders(): GetCurrentDirectoryW: " << path;
+		XComLog(LOG_DEBUG) << "findUserFolders(): GetCurrentDirectoryW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
 #else
@@ -555,12 +555,12 @@ std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::
 #ifdef _WIN32
 	auto search_path = path + "/*";
 	if (!ext.empty()) { search_path += "." + ext; }
-	Log(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<") -> " << search_path;
+	XComLog(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<") -> " << search_path;
 	auto pathW = pathToWindows(search_path);
 	WIN32_FIND_DATAW ffd;
 	auto handle = FindFirstFileW(pathW.c_str(), &ffd);
 	if (handle == INVALID_HANDLE_VALUE) {
-		Log(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<"): fail outright.";
+		XComLog(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<"): fail outright.";
 		return files;
 	}
 	do  {
@@ -569,10 +569,10 @@ std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::
 		time_t mtime = FILETIME2mtime(ffd.ftLastWriteTime);
 		bool is_folder = ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 		files.push_back(std::make_tuple(filename, is_folder, mtime));
-		Log(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<"): got '"<<filename<<"'";
+		XComLog(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<"): got '"<<filename<<"'";
 	} while (FindNextFileW(handle, &ffd) != 0);
 	FindClose(handle);
-	Log(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<"): total "<<files.size();
+	XComLog(LOG_VERBOSE) << "getFolderContents("<<path<<", "<<ext<<"): total "<<files.size();
 #else
 	DIR *dp = opendir(path.c_str());
 
@@ -620,7 +620,7 @@ bool folderExists(const std::string &path)
 #ifdef _WIN32
 	auto pathW = pathToWindows(path);
 	bool rv = (PathIsDirectoryW(pathW.c_str()) != FALSE);
-	Log(LOG_VERBOSE) << "folderExists("<<path<<")? " << (rv ? "yeah" : "nope");
+	XComLog(LOG_VERBOSE) << "folderExists("<<path<<")? " << (rv ? "yeah" : "nope");
 	return rv;
 #elif __MORPHOS__
 	BPTR l = Lock( path.c_str(), SHARED_LOCK );
@@ -646,7 +646,7 @@ bool fileExists(const std::string &path)
 #ifdef _WIN32
 	auto pathW = pathToWindows(path);
 	bool rv = (PathFileExistsW(pathW.c_str()) != FALSE);
-	Log(LOG_VERBOSE) << "fileExists("<<path<<")? " << (rv?"yeah":"nope");
+	XComLog(LOG_VERBOSE) << "fileExists("<<path<<")? " << (rv?"yeah":"nope");
 	return rv;
 #elif __MORPHOS__
 	BPTR l = Lock( path.c_str(), SHARED_LOCK );
@@ -977,11 +977,11 @@ bool writeFile(const std::string& filename, const std::string& data) {
 	// Even SDL1 file IO accepts UTF-8 file names on windows.
 	SDL_RWops *rwops = SDL_RWFromFile(filename.c_str(), "w");
 	if (!rwops) {
-		Log(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
+		XComLog(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
 		return false;
 	}
 	if (1 != SDL_RWwrite(rwops, data.c_str(), data.size(), 1)) {
-		Log(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
+		XComLog(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
 		SDL_RWclose(rwops);
 		return false;
 	}
@@ -999,11 +999,11 @@ bool writeFile(const std::string& filename, const std::vector<unsigned char>& da
 	// Even SDL1 file IO accepts UTF-8 file names on windows.
 	SDL_RWops *rwops = SDL_RWFromFile(filename.c_str(), "wb");
 	if (!rwops) {
-		Log(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
+		XComLog(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
 		return false;
 	}
 	if (1 != SDL_RWwrite(rwops, data.data(), data.size(), 1)) {
-		Log(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
+		XComLog(LOG_ERROR) << "Failed to write " << filename << ": " << SDL_GetError();
 		SDL_RWclose(rwops);
 		return false;
 	}
@@ -1020,14 +1020,14 @@ std::unique_ptr<std::istream> readFile(const std::string& filename) {
 	SDL_RWops *rwops = SDL_RWFromFile(filename.c_str(), "r");
 	if (!rwops) {
 		std::string err = "Failed to read " + filename + ": " + SDL_GetError();
-		Log(LOG_ERROR) << err;
+		XComLog(LOG_ERROR) << err;
 		throw Exception(err);
 	}
 	size_t size;
 	char *data = (char *)SDL_LoadFile_RW(rwops, &size, SDL_TRUE);
 	if (data == NULL) {
 		std::string err = "Failed to read " + filename + ": " + SDL_GetError();
-		Log(LOG_ERROR) << err;
+		XComLog(LOG_ERROR) << err;
 		throw Exception(err);
 	}
 	std::string datastr(data, size);
@@ -1045,7 +1045,7 @@ std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename) {
 	SDL_RWops *rwops = SDL_RWFromFile(filename.c_str(), "r");
 	if (!rwops) {
 		std::string err = "Failed to read " + filename + ": " + SDL_GetError();
-		Log(LOG_ERROR) << err;
+		XComLog(LOG_ERROR) << err;
 		throw Exception(err);
 	}
 	const size_t chunksize = 4096;
@@ -1054,7 +1054,7 @@ std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename) {
 	char *data = (char *)SDL_malloc(chunksize + 1);
 	if (data == NULL) {
 		std::string err(SDL_GetError());
-		Log(LOG_ERROR) << err;
+		XComLog(LOG_ERROR) << err;
 		throw Exception(err);
 	}
 	while(true) {
@@ -1071,7 +1071,7 @@ std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename) {
 		char *newdata = (char *)SDL_realloc(data, size+chunksize+1);
 		if (newdata == NULL) {
 			std::string err(SDL_GetError());
-			Log(LOG_ERROR) << err;
+			XComLog(LOG_ERROR) << err;
 			throw Exception(err);
 		}
 		data = newdata;
@@ -1251,7 +1251,7 @@ void stackTrace(void *ctx)
 	frame.AddrStack.Offset = context.IntSp;
 	frame.AddrStack.Mode = AddrModeFlat;
 #  else
-	Log(LOG_FATAL) << "Unfortunately, no stack trace information is available";
+	XComLog(LOG_FATAL) << "Unfortunately, no stack trace information is available";
 	return;
 #  endif
 	SYMBOL_INFO *symbol = (SYMBOL_INFO *)malloc(sizeof(SYMBOL_INFO) + (MAX_SYMBOL_LENGTH - 1) * sizeof(TCHAR));
@@ -1290,29 +1290,29 @@ void stackTrace(void *ctx)
 				{
 					filename = filename.substr(n + 1);
 				}
-				Log(LOG_FATAL) << "0x" << std::hex << symbol->Address << std::dec << " " << symname << " (" << filename << ":" << line->LineNumber << ")";
+				XComLog(LOG_FATAL) << "0x" << std::hex << symbol->Address << std::dec << " " << symname << " (" << filename << ":" << line->LineNumber << ")";
 			}
 			else
 			{
-				Log(LOG_FATAL) << "0x" << std::hex << symbol->Address << std::dec << " " << symname;
+				XComLog(LOG_FATAL) << "0x" << std::hex << symbol->Address << std::dec << " " << symname;
 			}
 		}
 		else
 		{
-			Log(LOG_FATAL) << "??";
+			XComLog(LOG_FATAL) << "??";
 		}
 	}
 	DWORD err = GetLastError();
 	if (err)
 	{
-		Log(LOG_FATAL) << "Unfortunately, no stack trace information is available";
+		XComLog(LOG_FATAL) << "Unfortunately, no stack trace information is available";
 	}
 	SymCleanup(process);
 # else /* __NO_DBGHELP */
-	Log(LOG_FATAL) << "Unfortunately, no stack trace information is available";
+	XComLog(LOG_FATAL) << "Unfortunately, no stack trace information is available";
 # endif
 #elif __CYGWIN__
-	Log(LOG_FATAL) << "Unfortunately, no stack trace information is available";
+	XComLog(LOG_FATAL) << "Unfortunately, no stack trace information is available";
 #else    /* not _WIN32 or __CYGWIN__ */
 	void *frames[32];
 	char buf[1024];
@@ -1339,10 +1339,10 @@ void stackTrace(void *ctx)
 				snprintf(buf, sizeof(buf), "%s(+0x%zx) [%p]", dl_info.dli_fname, sym_offset, frames[i]);
 			}
 			free(demangled);
-			Log(LOG_FATAL) << buf;
+			XComLog(LOG_FATAL) << buf;
 		} else { // object not found
 			snprintf(buf, sizeof(buf), "? ? [%p]", frames[i]);
-			Log(LOG_FATAL) << buf;
+			XComLog(LOG_FATAL) << buf;
 		}
 	}
 #endif
@@ -1400,7 +1400,7 @@ void crashDump(void *ex, const std::string &err)
 		error << "code 0x" << std::hex << exception->ExceptionRecord->ExceptionCode;
 		break;
 	}
-	Log(LOG_FATAL) << "A fatal error has occurred: " << error.str();
+	XComLog(LOG_FATAL) << "A fatal error has occurred: " << error.str();
 	if (ex)
 	{
 		stackTrace(exception->ContextRecord);
@@ -1414,11 +1414,11 @@ void crashDump(void *ex, const std::string &err)
 	exceptionInformation.ClientPointers = FALSE;
 	if (MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), dumpFile, MiniDumpNormal, exception ? &exceptionInformation : NULL, NULL, NULL))
 	{
-		Log(LOG_FATAL) << "Crash dump generated at " << dumpName;
+		XComLog(LOG_FATAL) << "Crash dump generated at " << dumpName;
 	}
 	else
 	{
-		Log(LOG_FATAL) << "No crash dump generated: " << GetLastError();
+		XComLog(LOG_FATAL) << "No crash dump generated: " << GetLastError();
 	}
 #else
 	if (ex == 0)
@@ -1438,17 +1438,17 @@ void crashDump(void *ex, const std::string &err)
 			break;
 		}
 	}
-	Log(LOG_FATAL) << "A fatal error has occurred: " << error.str();
+	XComLog(LOG_FATAL) << "A fatal error has occurred: " << error.str();
 	stackTrace(0);
 #endif
 	std::ostringstream msg;
 	msg << "OpenXcom has crashed: " << error.str() << std::endl;
-	msg << "Log file: " << getLogFileName() << std::endl;
+	msg << "XComLog file: " << getLogFileName() << std::endl;
 	msg << "If this error was unexpected, please report it on OpenXcom forum or discord." << std::endl;
 	msg << "The following can help us solve the problem:" << std::endl;
 	msg << "1. a saved game from just before the crash (helps 98%)" << std::endl;
 	msg << "2. a detailed description how to reproduce the crash (helps 80%)" << std::endl;
-	msg << "3. a log file (helps 10%)" << std::endl;
+	msg << "3. a XComLog file (helps 10%)" << std::endl;
 	msg << "4. a screenshot of this error message (helps 5%)";
 	showError(msg.str());
 }
@@ -1497,17 +1497,17 @@ static std::string logFileName;
 const std::string& getLogFileName() { return logFileName; }
 
 /**
- * Setting the log file name and setting the effective reportingLevel
- * to not LOG_UNCENSORED turns off buffering of the log messages,
- * and turns on writing them to the actual log (and flushes the buffer).
+ * Setting the XComLog file name and setting the effective reportingLevel
+ * to not LOG_UNCENSORED turns off buffering of the XComLog messages,
+ * and turns on writing them to the actual XComLog (and flushes the buffer).
  */
 void setLogFileName(const std::string& name) {
 	deleteFile(name);
 	size_t sz = logBuffer.size();
-	Log(LOG_DEBUG) << "setLogFileName("<<name<<") was '"<<logFileName<<"'; "<<sz<<" in buffer";
+	XComLog(LOG_DEBUG) << "setLogFileName("<<name<<") was '"<<logFileName<<"'; "<<sz<<" in buffer";
 	logFileName = name;
 }
-void log(int level, const std::ostringstream& baremsgstream) {
+void Log(int level, const std::ostringstream& baremsgstream) {
 	std::ostringstream msgstream;
 	msgstream << "[" << CrossPlatform::now() << "]" << "\t"
 			  << "[" << Logger::toString(level) << "]" << "\t"
@@ -1522,7 +1522,7 @@ void log(int level, const std::ostringstream& baremsgstream) {
 	if (logBuffer.size() > LOG_BUFFER_LIMIT) { // drop earliest message so as to not eat all memory
 		logBuffer.pop_front();
 	}
-	if (logFileName.empty() || effectiveLevel == LOG_UNCENSORED) { // no log file; accumulate.
+	if (logFileName.empty() || effectiveLevel == LOG_UNCENSORED) { // no XComLog file; accumulate.
 		logBuffer.push_back(std::make_pair(level, msg));
 		return;
 	}
@@ -1575,7 +1575,7 @@ extern "C" {
 SDL_RWops *getEmbeddedAsset(const std::string& assetName) {
 	std::string log_ctx = "getEmbeddedAsset('" + assetName + "'): ";
 	if (assetName.size() == 0 || assetName[0] == '/') {
-		Log(LOG_WARNING) << log_ctx << "ignoring bogus asset name";
+		XComLog(LOG_WARNING) << log_ctx << "ignoring bogus asset name";
 		return NULL;
 	}
 #if defined(EMBED_ASSETS)
@@ -1606,12 +1606,12 @@ SDL_RWops *getEmbeddedAsset(const std::string& assetName) {
 	}
 # endif
 	if (rv == NULL) {
-		Log(LOG_ERROR) << log_ctx << "embedded asset not found: "<< SDL_GetError();
+		XComLog(LOG_ERROR) << log_ctx << "embedded asset not found: "<< SDL_GetError();
 	}
 	return rv;
 #else
 	/* Asset embedding disabled. */
-	Log(LOG_DEBUG) << log_ctx << "assets were not embedded.";
+	XComLog(LOG_DEBUG) << log_ctx << "assets were not embedded.";
 	return NULL;
 #endif
 }

@@ -252,7 +252,7 @@ void RuleItem::loadAmmoSlotChecked(int& result, const YAML::Node& node, const st
 		auto s = node.as<int>(result);
 		if (s < AmmoSlotSelfUse || s >= AmmoSlotMax)
 		{
-			Log(LOG_ERROR) << "ammoSlot outside of allowed range in '" << parentName << "'";
+			XComLog(LOG_ERROR) << "ammoSlot outside of allowed range in '" << parentName << "'";
 		}
 		else
 		{

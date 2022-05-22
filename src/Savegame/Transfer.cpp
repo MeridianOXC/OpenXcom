@@ -69,7 +69,7 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load soldier " << type;
+			XComLog(LOG_ERROR) << "Failed to load soldier " << type;
 			delete this;
 			return false;
 		}
@@ -84,7 +84,7 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
 		}
 		else
 		{
-			Log(LOG_ERROR) << "Failed to load craft " << type;
+			XComLog(LOG_ERROR) << "Failed to load craft " << type;
 			delete this;
 			return false;
 		}
@@ -95,7 +95,7 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
 		_itemId = item.as<std::string>(_itemId);
 		if (mod->getItem(_itemId) == 0)
 		{
-			Log(LOG_ERROR) << "Failed to load item " << _itemId;
+			XComLog(LOG_ERROR) << "Failed to load item " << _itemId;
 			delete this;
 			return false;
 		}

@@ -723,9 +723,9 @@ public:
 		return ret;
 	}
 
-	/// Add text to log buffer.
+	/// Add text to XComLog buffer.
 	void log_buffer_add(FuncRef<std::string()> func);
-	/// Flush buffer to log file.
+	/// Flush buffer to XComLog file.
 	void log_buffer_flush(ProgPos& p);
 };
 
