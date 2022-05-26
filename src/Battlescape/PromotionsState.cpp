@@ -27,6 +27,7 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/Soldier.h"
+#include "../Savegame/Transfer.h"
 #include "../Engine/Options.h"
 
 namespace OpenXcom
@@ -90,6 +91,16 @@ PromotionsState::PromotionsState()
 			if ((*j)->isPromoted())
 			{
 				_lstSoldiers->addRow(3, (*j)->getName().c_str(), tr((*j)->getRankString()).c_str(), (*i)->getName().c_str());
+			}
+		}
+		for (std::vector<Transfer*>::iterator j = (*i)->getTransfers()->begin(); j != (*i)->getTransfers()->end(); ++j)
+		{
+			if ((*j)->getType() == TRANSFER_SOLDIER)
+			{
+				if ((*j)->getSoldier()->isPromoted())
+				{
+					_lstSoldiers->addRow(3, (*j)->getSoldier()->getName().c_str(), tr((*j)->getSoldier()->getRankString()).c_str(), (*i)->getName().c_str());
+				}
 			}
 		}
 	}
