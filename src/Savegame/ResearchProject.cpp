@@ -26,7 +26,7 @@ const float PROGRESS_LIMIT_POOR = 0.07f;
 const float PROGRESS_LIMIT_AVERAGE = 0.13f;
 const float PROGRESS_LIMIT_GOOD = 0.25f;
 
-ResearchProject::ResearchProject(RuleResearch * p, int c) : _project(p), _assigned(0), _spent(0), _cost(c)
+ResearchProject::ResearchProject(const RuleResearch * p, int c) : _project(p), _assigned(0), _spent(0), _cost(c)
 {
 }
 

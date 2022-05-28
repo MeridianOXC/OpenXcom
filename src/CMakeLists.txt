@@ -43,6 +43,7 @@ set ( basescape_src
   Basescape/PlaceLiftState.cpp
   Basescape/PlaceStartFacilityState.cpp
   Basescape/PurchaseState.cpp
+  Basescape/ResearchAllocateScientists.cpp
   Basescape/ResearchInfoState.cpp
   Basescape/ResearchInfoStateFtA.cpp
   Basescape/ResearchState.cpp

@@ -270,7 +270,7 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 	geobord->setY(_sidebar->getY());
 	_sidebar->copy(geobord);
 	_game->getMod()->getSurface("ALTGEOBORD.SCR")->blitNShade(_bg, 0, 0);
-	bool fta = _game->getMod()->getIsFTAGame();
+	_fta = _game->getMod()->getIsFTAGame();
 
 	_sideLine->drawRect(0, 0, _sideLine->getWidth(), _sideLine->getHeight(), 15);
 
@@ -293,9 +293,9 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 	_btnBases->setGeoscapeButton(true);
 
 	_btnGraphs->initText(_game->getMod()->getFont("FONT_GEO_BIG"), _game->getMod()->getFont("FONT_GEO_SMALL"), _game->getLanguage());
-	_btnGraphs->setText(fta ? tr("STR_DIPLOMACY_UC") : tr("STR_GRAPHS"));
+	_btnGraphs->setText(_fta ? tr("STR_DIPLOMACY_UC") : tr("STR_GRAPHS"));
 	_btnGraphs->onMouseClick((ActionHandler)&GeoscapeState::btnGraphsClick);
-	if (fta)
+	if (_fta)
 	{
 		_btnGraphs->onKeyboardPress((ActionHandler)&GeoscapeState::btnGraphsClick, Options::keyDiplomacy);
 	}
@@ -318,7 +318,7 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 	_btnOptions->setGeoscapeButton(true);
 
 	_btnFunding->initText(_game->getMod()->getFont("FONT_GEO_BIG"), _game->getMod()->getFont("FONT_GEO_SMALL"), _game->getLanguage());
-	if (Options::oxceLinks || fta)
+	if (Options::oxceLinks || _fta)
 	{
 		_btnFunding->setText(tr("STR_EXTENDED_UC"));
 	}
@@ -628,7 +628,7 @@ void GeoscapeState::handle(Action *action)
 			// "ctrl-6"
 			if (action->getDetails()->key.keysym.sym == SDLK_6)
 			{
-				if (!_game->getMod()->getIsFTAGame())
+				if (!_fta)
 				{
 					_txtDebug->setText("XCOM/ALIEN ACTIVITY FOR THIS MONTH RESET");
 					size_t invertedEntry = _game->getSavedGame()->getFundsList().size() - 1;
@@ -645,8 +645,8 @@ void GeoscapeState::handle(Action *action)
 				}
 				else
 				{
-					_txtDebug->setText("PEOPLE ARE LOYAL NOW: LOYALTY = 1000");
-					_game->getSavedGame()->setLoyalty(1000);
+					_txtDebug->setText("PEOPLE ARE LOYAL NOW: ADDED 1000 LOYALTY");
+					_game->getSavedGame()->setLoyalty(_game->getSavedGame()->getLoyalty() + 1000);
 				}
 				
 			}
@@ -2138,7 +2138,7 @@ void GeoscapeState::time30Minutes()
 void GeoscapeState::time1Hour()
 {
 	//Handle 1-hour research FtA process
-	if (_game->getMod()->getIsFTAGame())
+	if (_fta)
 	{
 		for (std::vector<Base*>::iterator i = _game->getSavedGame()->getBases()->begin(); i != _game->getSavedGame()->getBases()->end(); ++i)
 		{
@@ -2462,7 +2462,7 @@ void GeoscapeState::time1Day()
 		}
 
 		// Handle science project
-		if (!_game->getMod()->getIsFTAGame())
+		if (!_fta)
 		{
 			handleResearch(base);
 		}
@@ -2703,7 +2703,7 @@ void GeoscapeState::time1Day()
 	}
 
 	// pay attention to your maintenance player!
-	if (_game->getSavedGame()->getTime()->isLastDayOfMonth() && !_game->getMod()->getIsFTAGame()) //not for FtA for now, sorry #FINNIKTODO
+	if (_game->getSavedGame()->getTime()->isLastDayOfMonth() && !_fta) // not for FtA for now, sorry #FINNIKTODO
 	{
 		int month = _game->getSavedGame()->getMonthsPassed();
 		int currentScore = _game->getSavedGame()->getCurrentScore(month + 1);
@@ -2764,7 +2764,7 @@ void GeoscapeState::time1Month()
 
 	// Handle funding
 	timerReset();
-	if (_game->getMod()->getIsFTAGame())
+	if (_fta)
 	{
 		if (_game->getSavedGame()->getMonthsPassed() > _game->getMod()->getFTAGameLength())
 		{
@@ -2937,7 +2937,7 @@ void GeoscapeState::btnGlobalResearchClick(Action *)
  */
 void GeoscapeState::btnDogfightExperienceClick(Action *)
 {
-	if (!_game->getMod()->getIsFTAGame())
+	if (_fta)
 	{
 		_game->pushState(new DogfightExperienceState());
 	}
@@ -2974,7 +2974,7 @@ void GeoscapeState::btnGraphsClick(Action *)
 	{
 		return;
 	}
-	if (_game->getMod()->getIsFTAGame())
+	if (_fta)
 	{
 		_game->pushState(new DiplomacyStartState(0, true));
 	}
@@ -3025,7 +3025,7 @@ void GeoscapeState::btnFundingClick(Action *)
 	{
 		return;
 	}
-	if (Options::oxceLinks || _game->getMod()->getIsFTAGame())
+	if (Options::oxceLinks || _fta)
 	{
 		_game->pushState(new ExtendedGeoscapeLinksState(this));
 	}
@@ -4388,20 +4388,68 @@ void GeoscapeState::handleResearch(Base* base)
 	std::vector<ResearchProject*> finished;
 	for (ResearchProject* project : base->getResearch())
 	{
-		int rating = _game->getMasterMind()->getLoyaltyPerformanceBonus();
+		auto rules = project->getRules();
 		int bonus = 0;
-		if (rating > 100 && RNG::percent(rating - 100))
+		bool sharable = true;
+		if (_fta)
 		{
-			bonus = 1;
+			int rating = _game->getMasterMind()->getLoyaltyPerformanceBonus();
+			if (rules->destroyItem() || !rules->getGetOneFree().empty()
+				|| !rules->getSpawnedEvent().empty() || !rules->getSpawnedItem().empty() || !rules->getSpawnedItemList().empty())
+			{
+				sharable = false;
+			}
+			std::map<Soldier *, int> assignedScientists;
+			if (rating > 100 && RNG::percent(rating - 100))
+			{
+				bonus = 1;
+			}
+			else if (rating < 100 && RNG::percent(100 - rating))
+			{
+				bonus = -1;
+			}
+
+			for (auto b : *_game->getSavedGame()->getBases())
+			{
+				if (b == base) //case for base we are looking
+				{
+					for (auto s : *base->getSoldiers())
+					{
+						if (s->getResearchProject() == project)
+						{
+							assignedScientists.insert(std::make_pair(s, 100));
+						}
+					}
+				}
+				else if (sharable) // extra case for sharable projects
+				{
+					for (auto s : *b->getSoldiers())
+					{
+						if (s->getResearchProject()->getRules()->getName() == project->getRules()->getName()) //check by string id
+						{
+							assignedScientists.insert(std::make_pair(s, 50));
+						}
+					}
+				}
+			}
+
+			int progress = 0;
+			auto projectStats = project->getRules()->getStats();
+			for (auto s : assignedScientists)
+			{
+				auto stats = s.first->getStatsWithAllBonuses();
+
+
+			}
 		}
-		if (rating < 100 && RNG::percent(100 - rating))
+		else
 		{
-			bonus = -1;
+			if (project->step(bonus))
+			{
+				finished.push_back(project);
+			}
 		}
-		if (project->step(bonus))
-		{
-			finished.push_back(project);
-		}
+
 	}
 	// 2. remember available research before adding new finished research
 	std::vector<RuleResearch*> before;

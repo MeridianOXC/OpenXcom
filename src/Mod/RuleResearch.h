@@ -108,7 +108,7 @@ public:
 	/// Gets the base requirements for this ResearchProject.
 	RuleBaseFacilityFunctions getRequireBaseFunc() const { return _requiresBaseFunc; }
 	/// Get pointer to this ResearchProject's stats.
-	UnitStats *getStats() { return &_stats; };
+	UnitStats getStats() const { return _stats; };
 	/// Gets the list weight for this research item.
 	int getListOrder() const;
 	/// Gets the cutscene to play when this item is researched

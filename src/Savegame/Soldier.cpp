@@ -51,7 +51,10 @@ int Soldier::generateScienceStat(int min, int max)
 	{
 		return RNG::generate(min, max);
 	}
-	
+	else
+	{
+		return 0;
+	}
 	
 }
 int Soldier::improveStat(int exp, int &rate, bool bravary)
@@ -581,7 +584,7 @@ std::string Soldier::getCurrentDuty(Language *lang, const BaseSumDailyRecovery &
 	//std::string s;
 	isBusy = false;
 	isFree = false;
-	bool facility = (mode == LAB);
+	bool facility = (mode == LAB || mode == ASSIGN);
 	if (_death)
 	{
 		if (_death->getCause())
@@ -677,7 +680,10 @@ std::string Soldier::getCurrentDuty(Language *lang, const BaseSumDailyRecovery &
 		if (_craft->getStatus() == "STR_OUT")
 		{
 			isBusy = true;
-			return lang->getString("STR_OUT");
+			if (mode != INFO)
+			{
+				return lang->getString("STR_OUT");
+			}
 		}
 		return _craft->getName(lang);
 	}
@@ -2677,7 +2683,7 @@ void Soldier::ScriptRegister(ScriptParserBase* parser)
 
 	so.addScriptValue<BindBase::OnlyGet, &Soldier::_rules, &RuleSoldier::getScriptValuesRaw>();
 	so.addScriptValue<&Soldier::_scriptValues>();
-	so.addDebugDisplay<&debugDisplayScript>();
+	//so.addDebugDisplay<&debugDisplayScript>();
 }
 
 } // namespace OpenXcom

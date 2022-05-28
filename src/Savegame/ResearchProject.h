@@ -31,13 +31,13 @@ class Mod;
  */
 class ResearchProject
 {
-	RuleResearch * _project;
+	const RuleResearch * _project;
 	int _assigned;
 	int _spent;
 	int _cost;
 public:
-	ResearchProject(RuleResearch * p, int c = 0);
-	/// Game logic. Called every new day to compute time spent.
+	ResearchProject(const RuleResearch * p, int c = 0);
+	/// Game logic. Called every new day (every hour for FtA) to compute time spent.
 	bool step(int bonus = 100);
 	/// gets state of project.
 	bool isFinished();

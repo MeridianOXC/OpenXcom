@@ -76,7 +76,7 @@ private:
 	NumberText *_numTwoHandedIndicatorLeft, *_numTwoHandedIndicatorRight;
 	Uint8 _twoHandedRed, _twoHandedGreen;
 	Bar *_barTimeUnits, *_barEnergy, *_barHealth, *_barMorale, *_barMana;
-	bool _manaBarVisible;
+	bool _manaBarVisible, _ftaUI;
 	Timer *_animTimer, *_gameTimer;
 	SavedBattleGame *_save;
 	Text *_txtDebug, *_txtTooltip;

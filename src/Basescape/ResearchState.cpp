@@ -169,13 +169,14 @@ void ResearchState::btnScientistsClick(Action *action)
 void ResearchState::onSelectProject(Action *)
 {
 	const std::vector<ResearchProject *> & baseProjects(_base->getResearch());
+	auto project = baseProjects[_lstResearch->getSelectedRow()];
 	if (_ftaUi)
 	{
-		_game->pushState(new ResearchInfoStateFtA(_base, baseProjects[_lstResearch->getSelectedRow()]));
+		_game->pushState(new ResearchInfoStateFtA(_base, project));
 	}
 	else
 	{
-		_game->pushState(new ResearchInfoState(_base, baseProjects[_lstResearch->getSelectedRow()]));
+		_game->pushState(new ResearchInfoState(_base, project));
 	}
 }
 
@@ -272,17 +273,31 @@ void ResearchState::fillProjectList(size_t scrl)
 	for (std::vector<ResearchProject *>::const_iterator iter = baseProjects.begin(); iter != baseProjects.end(); ++iter)
 	{
 		std::ostringstream sstr;
-		sstr << (*iter)->getAssigned();
+		if (_ftaUi)
+		{
+			unsigned int n = 0;
+			for (auto s : *_base->getSoldiers())
+			{
+				if (s->getResearchProject() == (*iter))
+				{
+					n++;
+				}
+			}
+			sstr << n;
+		}
+		else
+		{
+			sstr << (*iter)->getAssigned();
+		}
 		const RuleResearch *r = (*iter)->getRules();
-
 		std::string wstr = tr(r->getName());
 		_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), tr((*iter)->getResearchProgress()).c_str());
 	}
 
 	if (_ftaUi)
 	{
-		unsigned int freeScientists = 0, busyScientists = 0;
 		auto recovery = _base->getSumRecoveryPerDay();
+		unsigned int freeScientists = 0, busyScientists = 0;
 		bool isBusy = false, isFree = false;
 		for (auto s : _base->getPersonnel(ROLE_SCIENTIST))
 		{

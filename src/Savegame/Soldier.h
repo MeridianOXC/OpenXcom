@@ -31,7 +31,7 @@ enum SoldierRank : char { RANK_ROOKIE, RANK_SQUADDIE, RANK_SERGEANT, RANK_CAPTAI
 enum SoldierGender : char { GENDER_MALE, GENDER_FEMALE };
 enum SoldierLook : char { LOOK_BLONDE, LOOK_BROWNHAIR, LOOK_ORIENTAL, LOOK_AFRICAN };
 enum ReturnToTrainings : char {NONE, MARTIAL_TRAINING, PSI_TRAINING, BOTH_TRAININGS};
-enum DutyMode: char { CRAFT, LAB, WORK};
+enum DutyMode: char { CRAFT, LAB, WORK, ASSIGN, INFO};
 
 class Craft;
 class CovertOperation;

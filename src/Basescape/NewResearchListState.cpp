@@ -398,41 +398,41 @@ void NewResearchListState::fillProjectList(bool markAllAsSeen)
 std::string NewResearchListState::getProjectCategory(RuleResearch *project)
 {
 	std::string cat = "";
-	UnitStats* stats = project->getStats();
+	auto stats = project->getStats();
 	std::map<int, std::string> statMap;
 
-	if (stats->physics > 0)
-		statMap.insert(std::make_pair(stats->physics, tr("STR_PHYSICS_LC")));
-	if (stats->chemistry > 0)
-		statMap.insert(std::make_pair(stats->chemistry, tr("STR_CHEMISTRY_LC")));
-	if (stats->biology > 0)
-		statMap.insert(std::make_pair(stats->biology, tr("STR_BIOLOGY_LC")));
-	if (stats->data > 0)
-		statMap.insert(std::make_pair(stats->data, tr("STR_DATA_ANALISYS_LC")));
-	if (stats->computers > 0)
-		statMap.insert(std::make_pair(stats->computers, tr("STR_COMPUTER_SCIENCE_LC")));
-	if (stats->materials > 0)
-		statMap.insert(std::make_pair(stats->materials, tr("STR_MATERIAL_SCIENCE_LC")));
-	if (stats->psychology > 0)
-		statMap.insert(std::make_pair(stats->psychology, tr("STR_PSYCHOLOGY_LC")));
-	if (stats->physics > 0)
-		statMap.insert(std::make_pair(stats->designing, tr("STR_DESIGNING_LC")));
-	if (stats->physics > 0)
-		statMap.insert(std::make_pair(stats->psionics, tr("STR_PSIONICS_LC")));
-	if (stats->physics > 0)
-		statMap.insert(std::make_pair(stats->xenolinguistics, tr("STR_XENOLINGUISTICS_LC")));
+	if (stats.physics > 0)
+		statMap.insert(std::make_pair(stats.physics, tr("STR_PHYSICS_LC")));
+	if (stats.chemistry > 0)
+		statMap.insert(std::make_pair(stats.chemistry, tr("STR_CHEMISTRY_LC")));
+	if (stats.biology > 0)
+		statMap.insert(std::make_pair(stats.biology, tr("STR_BIOLOGY_LC")));
+	if (stats.data > 0)
+		statMap.insert(std::make_pair(stats.data, tr("STR_DATA_ANALISYS_LC")));
+	if (stats.computers > 0)
+		statMap.insert(std::make_pair(stats.computers, tr("STR_COMPUTER_SCIENCE_LC")));
+	if (stats.materials > 0)
+		statMap.insert(std::make_pair(stats.materials, tr("STR_MATERIAL_SCIENCE_LC")));
+	if (stats.psychology > 0)
+		statMap.insert(std::make_pair(stats.psychology, tr("STR_PSYCHOLOGY_LC")));
+	if (stats.physics > 0)
+		statMap.insert(std::make_pair(stats.designing, tr("STR_DESIGNING_LC")));
+	if (stats.physics > 0)
+		statMap.insert(std::make_pair(stats.psionics, tr("STR_PSIONICS_LC")));
+	if (stats.physics > 0)
+		statMap.insert(std::make_pair(stats.xenolinguistics, tr("STR_XENOLINGUISTICS_LC")));
 
 	size_t i = 0;
 	std::ostringstream ss;
-	for (auto a : statMap)
+	for (auto it = statMap.rbegin(); it != statMap.rend(); ++it)
 	{
 		if (i > 0)
 		{
 			ss << ", ";
 		}
-		ss << a.second;
+		ss << (*it).second;
 		i++;
-		if (i > 2)
+		if (i > 1)
 		{
 			break;
 		}

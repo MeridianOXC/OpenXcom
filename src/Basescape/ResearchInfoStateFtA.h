@@ -26,6 +26,7 @@ class TextButton;
 class Text;
 class TextList;
 class Base;
+class Soldiers;
 class RuleResearch;
 class ResearchProject;
 
@@ -38,15 +39,18 @@ private:
 	Base *_base;
 	TextButton *_btnOk, *_btnCancel, *_btnAllocate, *_btnAbandon;
 	Window *_window;
-	Text *_txtTitle, *_txtAvailableScientist, *_txtAvailableSpace;
-	Text *_txtStat1, *_txtStat2;
+	Text *_txtTitle, *_txtAvailableScientist, *_txtAvailableSpace, *_txtGrade;
+	Text *_txtStat1, *_txtStat2, *_txtStat3, *_txtStat4, *_txtStat5, *_txtStat6, *_txtInsight;
+	TextList *_lstScientists;
 	ResearchProject *_project;
-	RuleResearch *_rule;
+	const RuleResearch *_rule;
 	std::vector<Soldier *> _scientists;
+	bool _newProject;
 
 	void getAssignedScientists();
 	void buildUi();
 	void setAssignedScientist();
+	std::pair<int, std::string> getStatString(size_t position);
 
 public:
 	/// Creates the ResearchProject state.
@@ -60,6 +64,18 @@ public:
 	void btnCancelClick(Action *action);
 	/// Handler for clicking the Abandon button.
 	void btnAbandonClick(Action *action);
+	/// Handler for clicking the Allocate button.
+	void btnAllocateClick(Action *action);
+	/// Fills the Scientists list with Assigned Scientists.
+	void fillScientistsList(size_t scrl);
+	/// Updates the research list.
+	void init() override;
+
+	const RuleResearch *getResearchRules() { return _rule; }
+	std::vector<Soldier *> getScientists() { return _scientists; };
+	void addScientist(Soldier *scientist) { _scientists.push_back(scientist); }
+	void removeScientist(Soldier *scientist);
+	void setScientists(std::vector<Soldier *> scientists) { _scientists = scientists; };
 };
 
 }

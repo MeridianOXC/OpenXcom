@@ -1,57 +1,55 @@
 /*
-* Copyright 2010-2020 OpenXcom Developers.
-*
-* This file is part of OpenXcom.
-*
-* OpenXcom is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* OpenXcom is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
-*/
-#include "CovertOperationSoldiersState.h"
-#include "CovertOperationStartState.h"
-#include <algorithm>
-#include <climits>
-#include <algorithm>
+ * Copyright 2010-2022 OpenXcom Developers.
+ *
+ * This file is part of OpenXcom.
+ *
+ * OpenXcom is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenXcom is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
-#include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
+#include "../Engine/Unicode.h"
 #include "../Interface/ComboBox.h"
-#include "../Interface/TextButton.h"
-#include "../Interface/Window.h"
 #include "../Interface/Text.h"
+#include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
+#include "../Interface/Window.h"
 #include "../Menu/ErrorMessageState.h"
-#include "../Savegame/Base.h"
-#include "../Savegame/Soldier.h"
-#include "../Savegame/Craft.h"
-#include "../Savegame/SavedGame.h"
-#include "SoldierInfoState.h"
 #include "../Mod/Armor.h"
+#include "../Mod/Mod.h"
 #include "../Mod/RuleCovertOperation.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleSoldier.h"
-#include "../Engine/Unicode.h"
+#include "../Savegame/Base.h"
+#include "../Savegame/Craft.h"
+#include "../Savegame/SavedGame.h"
+#include "../Savegame/Soldier.h"
+#include "ResearcAllocateScientists.h"
+#include "SoldierInfoState.h"
+#include <algorithm>
+#include <climits>
 
 namespace OpenXcom
 {
 
 /**
-* Initializes all the elements in the CovertOperation Soldiers screen.
-* @param base Pointer to the base to get info from.
-* @param operation Pointer to starting (not comitted) covert operation.
-*/
-CovertOperationSoldiersState::CovertOperationSoldiersState(Base* base, CovertOperationStartState* operation)
+ * Initializes all the elements in the CovertOperation Soldiers screen.
+ * @param base Pointer to the base to get info from.
+ * @param operation Pointer to starting (not comitted) covert operation.
+ */
+ResearcAllocateScientists::ResearcAllocateScientists(Base *base, CovertOperationStartState *operation)
 	: _base(base), _operation(operation), _otherCraftColor(0), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
 {
 	// Create objects
@@ -90,9 +88,9 @@ CovertOperationSoldiersState::CovertOperationSoldiersState(Base* base, CovertOpe
 	setWindowBackground(_window, "craftSoldiers");
 
 	_btnOk->setText(tr("STR_OK"));
-	_btnOk->onMouseClick((ActionHandler)&CovertOperationSoldiersState::btnOkClick);
-	_btnOk->onKeyboardPress((ActionHandler)&CovertOperationSoldiersState::btnOkClick, Options::keyCancel);
-	_btnOk->onKeyboardPress((ActionHandler)&CovertOperationSoldiersState::btnDeassignCraftSoldiersClick, Options::keyRemoveSoldiersFromCraft);
+	_btnOk->onMouseClick((ActionHandler)&ResearcAllocateScientists::btnOkClick);
+	_btnOk->onKeyboardPress((ActionHandler)&ResearcAllocateScientists::btnOkClick, Options::keyCancel);
+	_btnOk->onKeyboardPress((ActionHandler)&ResearcAllocateScientists::btnDeassignCraftSoldiersClick, Options::keyRemoveSoldiersFromCraft);
 
 	_txtTitle->setBig();
 	_txtTitle->setText(tr("STR_SELECT_SQUAD_FOR_OPERATION").arg(tr(operation->getRule()->getName())));
@@ -110,7 +108,7 @@ CovertOperationSoldiersState::CovertOperationSoldiersState(Base* base, CovertOpe
 	sortOptions.push_back(tr("STR_ORIGINAL_ORDER"));
 	_sortFunctors.push_back(NULL);
 
-	#define PUSH_IN(strId, functor) \
+#define PUSH_IN(strId, functor)       \
 	sortOptions.push_back(tr(strId)); \
 	_sortFunctors.push_back(new SortFunctor(_game, functor));
 
@@ -143,7 +141,7 @@ CovertOperationSoldiersState::CovertOperationSoldiersState(Base* base, CovertOpe
 	PUSH_IN("STR_PSIONIC_STRENGTH", psiStrengthStat);
 	PUSH_IN("STR_PSIONIC_SKILL", psiSkillStat);
 
-	#undef PUSH_IN
+#undef PUSH_IN
 
 	_cbxSortBy->setOptions(sortOptions);
 	_cbxSortBy->setSelected(0);
@@ -159,22 +157,22 @@ CovertOperationSoldiersState::CovertOperationSoldiersState(Base* base, CovertOpe
 }
 
 /**
-* cleans up dynamic state
-*/
-CovertOperationSoldiersState::~CovertOperationSoldiersState()
+ * cleans up dynamic state
+ */
+ResearcAllocateScientists::~ResearcAllocateScientists()
 {
-	for (std::vector<SortFunctor*>::iterator it = _sortFunctors.begin();
-		it != _sortFunctors.end(); ++it)
+	for (std::vector<SortFunctor *>::iterator it = _sortFunctors.begin();
+		 it != _sortFunctors.end(); ++it)
 	{
-		delete(*it);
+		delete (*it);
 	}
 }
 
 /**
-* Sorts the soldiers list by the selected criterion
-* @param action Pointer to an action.
-*/
-void CovertOperationSoldiersState::cbxSortByChange(Action*)
+ * Sorts the soldiers list by the selected criterion
+ * @param action Pointer to an action.
+ */
+void ResearcAllocateScientists::cbxSortByChange(Action *)
 {
 	bool ctrlPressed = _game->isCtrlPressed();
 	size_t selIdx = _cbxSortBy->getSelected();
@@ -183,7 +181,7 @@ void CovertOperationSoldiersState::cbxSortByChange(Action*)
 		return;
 	}
 
-	SortFunctor* compFunc = _sortFunctors[selIdx];
+	SortFunctor *compFunc = _sortFunctors[selIdx];
 	_dynGetter = NULL;
 	if (compFunc)
 	{
@@ -198,11 +196,10 @@ void CovertOperationSoldiersState::cbxSortByChange(Action*)
 			if (selIdx == 2)
 			{
 				std::stable_sort(_base->getSoldiers()->begin(), _base->getSoldiers()->end(),
-					[](const Soldier* a, const Soldier* b)
-					{
-						return Unicode::naturalCompare(a->getName(), b->getName());
-					}
-				);
+								 [](const Soldier *a, const Soldier *b)
+								 {
+									 return Unicode::naturalCompare(a->getName(), b->getName());
+								 });
 			}
 			else
 			{
@@ -218,14 +215,14 @@ void CovertOperationSoldiersState::cbxSortByChange(Action*)
 	{
 		// restore original ordering, ignoring (of course) those
 		// soldiers that have been sacked since this state started
-		for (std::vector<Soldier*>::const_iterator it = _origSoldierOrder.begin();
-			it != _origSoldierOrder.end(); ++it)
+		for (std::vector<Soldier *>::const_iterator it = _origSoldierOrder.begin();
+			 it != _origSoldierOrder.end(); ++it)
 		{
-			std::vector<Soldier*>::iterator soldierIt =
+			std::vector<Soldier *>::iterator soldierIt =
 				std::find(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *it);
 			if (soldierIt != _base->getSoldiers()->end())
 			{
-				Soldier* s = *soldierIt;
+				Soldier *s = *soldierIt;
 				_base->getSoldiers()->erase(soldierIt);
 				_base->getSoldiers()->insert(_base->getSoldiers()->end(), s);
 			}
@@ -237,18 +234,18 @@ void CovertOperationSoldiersState::cbxSortByChange(Action*)
 }
 
 /**
-* Returns to the previous screen.
-* @param action Pointer to an action.
-*/
-void CovertOperationSoldiersState::btnOkClick(Action*)
+ * Returns to the previous screen.
+ * @param action Pointer to an action.
+ */
+void ResearcAllocateScientists::btnOkClick(Action *)
 {
 	_game->popState();
 }
 
 /**
-* Shows the soldiers in a list at specified offset/scroll.
-*/
-void CovertOperationSoldiersState::initList(size_t scrl)
+ * Shows the soldiers in a list at specified offset/scroll.
+ */
+void ResearcAllocateScientists::initList(size_t scrl)
 {
 	int row = 0;
 	_lstSoldiers->clearList();
@@ -264,7 +261,7 @@ void CovertOperationSoldiersState::initList(size_t scrl)
 
 	auto recovery = _base->getSumRecoveryPerDay();
 	bool isBusy = false, isFree = false;
-	for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
+	for (std::vector<Soldier *>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
 	{
 		if ((*i)->getRoleRank(ROLE_SOLDIER) > 0) // let's make it simple for now
 		{
@@ -313,11 +310,6 @@ void CovertOperationSoldiersState::initList(size_t scrl)
 		_lstSoldiers->scrollTo(scrl);
 	_lstSoldiers->draw();
 
-	updateStrings();
-}
-
-void CovertOperationSoldiersState::updateStrings()
-{
 	if (_operation->getRule()->getOptionalSoldierSlots() > 0)
 	{
 		std::ostringstream ss;
@@ -335,22 +327,20 @@ void CovertOperationSoldiersState::updateStrings()
 }
 
 /**
-* Shows the soldiers in a list.
-*/
-void CovertOperationSoldiersState::init()
+ * Shows the soldiers in a list.
+ */
+void ResearcAllocateScientists::init()
 {
 	State::init();
 	_base->prepareSoldierStatsWithBonuses(); // refresh stats for sorting
 	initList(0);
-
 }
 
-
 /**
-* Shows the selected soldier's info.
-* @param action Pointer to an action.
-*/
-void CovertOperationSoldiersState::lstSoldiersClick(Action* action)
+ * Shows the selected soldier's info.
+ * @param action Pointer to an action.
+ */
+void ResearcAllocateScientists::lstSoldiersClick(Action *action)
 {
 	double mx = action->getAbsoluteXMouse();
 	if (mx >= _lstSoldiers->getArrowsLeftEdge() && mx < _lstSoldiers->getArrowsRightEdge())
@@ -360,14 +350,16 @@ void CovertOperationSoldiersState::lstSoldiersClick(Action* action)
 	int row = _lstSoldiers->getSelectedRow();
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
-		Soldier* s = _base->getSoldiers()->at(_lstSoldiers->getSelectedRow());
+		Soldier *s = _base->getSoldiers()->at(_lstSoldiers->getSelectedRow());
+		auto assigned = _operation->getSoldiers();
 		Uint8 color;
+
 		auto opSoldiers = _operation->getSoldiers();
 		bool matched = false;
+		auto iter = std::find(std::begin(opSoldiers), std::end(opSoldiers), s);
 		bool isBusy = false, isFree = false;
 		std::string duty = s->getCurrentDuty(_game->getLanguage(), _base->getSumRecoveryPerDay(), isBusy, isFree);
 
-		auto iter = std::find(std::begin(opSoldiers), std::end(opSoldiers), s);
 		if (iter != std::end(opSoldiers))
 		{
 			matched = true;
@@ -418,7 +410,9 @@ void CovertOperationSoldiersState::lstSoldiersClick(Action* action)
 		}
 		_lstSoldiers->setRowColor(row, color);
 
-		updateStrings();
+		_txtUsed->setText(tr("STR_SPACE_USED").arg(_operation->getSoldiers().size()));
+		bool mod = _game->getSavedGame()->getDebugMode();
+		_txtChances->setText(tr("STR_OPERATION_CHANCES_US").arg(tr(_operation->getOperationOddsString(mod))));
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 	{
@@ -427,14 +421,26 @@ void CovertOperationSoldiersState::lstSoldiersClick(Action* action)
 }
 
 /**
-* De-assign all soldiers from the current operation.
-* @param action Pointer to an action.
-*/
-void CovertOperationSoldiersState::btnDeassignCraftSoldiersClick(Action* action)
+ * De-assign all soldiers from the current craft.
+ * @param action Pointer to an action.
+ */
+void ResearcAllocateScientists::btnDeassignCraftSoldiersClick(Action *action)
 {
-	_operation->getSoldiers().clear();
-	updateStrings();
-	initList(0);
+	// Craft* c = _base->getCrafts()->at(0); //#FINNIKTODO
+	// int row = 0;
+	// for (auto s : *_base->getSoldiers())
+	//{
+	//	if (s->getCraft() == c)
+	//	{
+	//		s->setCraft(0);
+	//		_lstSoldiers->setCellText(row, 2, tr("STR_NONE_UC"));
+	//		_lstSoldiers->setRowColor(row, _lstSoldiers->getColor());
+	//	}
+	//	row++;
+	// }
+
+	//_txtAvailable->setText(tr("STR_SPACE_AVAILABLE").arg(c->getSpaceAvailable()));
+	//_txtUsed->setText(tr("STR_SPACE_USED").arg(c->getSpaceUsed()));
 }
 
 }

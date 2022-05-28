@@ -53,7 +53,7 @@ private:
 	InteractiveSurface *_btnRotateLeft, *_btnRotateRight, *_btnRotateUp, *_btnRotateDown, *_btnZoomIn, *_btnZoomOut;
 	Text *_txtFunds, *_txtHour, *_txtHourSep, *_txtMin, *_txtMinSep, *_txtSec, *_txtWeekday, *_txtDay, *_txtMonth, *_txtYear;
 	Timer *_gameTimer, *_zoomInEffectTimer, *_zoomOutEffectTimer, *_dogfightStartTimer, *_dogfightTimer;
-	bool _pause, _zoomInEffectDone, _zoomOutEffectDone;
+	bool _pause, _zoomInEffectDone, _zoomOutEffectDone, _fta;
 	Text *_txtDebug;
 	ComboBox *_cbxRegion, *_cbxZone, *_cbxArea, *_cbxCountry;
 	Text *_txtSlacking;

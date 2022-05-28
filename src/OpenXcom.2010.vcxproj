@@ -265,6 +265,7 @@
     <ClCompile Include="Basescape\ManufactureStartState.cpp" />
     <ClCompile Include="Basescape\PlaceStartFacilityState.cpp" />
     <ClCompile Include="Basescape\PurchaseState.cpp" />
+    <ClCompile Include="Basescape\ResearchAllocateScientists.cpp" />
     <ClCompile Include="Basescape\ResearchInfoState.cpp" />
     <ClCompile Include="Basescape\ResearchInfoStateFtA.cpp" />
     <ClCompile Include="Basescape\ResearchState.cpp" />
@@ -669,6 +670,7 @@
     <ClInclude Include="Basescape\ManufactureStartState.h" />
     <ClInclude Include="Basescape\PlaceStartFacilityState.h" />
     <ClInclude Include="Basescape\PurchaseState.h" />
+    <ClInclude Include="Basescape\ResearchAllocateScientists.h" />
     <ClInclude Include="Basescape\ResearchInfoState.h" />
     <ClInclude Include="Basescape\ResearchInfoStateFtA.h" />
     <ClInclude Include="Basescape\ResearchState.h" />

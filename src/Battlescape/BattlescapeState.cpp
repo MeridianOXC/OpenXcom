@@ -206,6 +206,8 @@ BattlescapeState::BattlescapeState() :
 	_btnSkills = new BattlescapeButton(32, 24, screenWidth - 32, 25); // we need screenWidth, because that is independent of the black bars on the screen
 	_btnSkills->setVisible(false);
 
+	_ftaUI = _game->getMod()->getIsFTAGame();
+
 	{
 		auto posX = (screenWidth - 32);
 		for (auto& pos :  _posSpecialActions)
@@ -2078,8 +2080,13 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 		else
 		{
 			// show tiny rank (modded)
+			SoldierRole role = soldier->getBestRole();
 			SurfaceSet *texture = _game->getMod()->getSurfaceSet("TinyRanks");
 			Surface *spr = texture->getFrame(soldier->getRankSpriteTiny());
+			if (_ftaUI)
+			{
+				spr = texture->getFrame(soldier->getRoleRankSpriteTiny(role));
+			}
 			if (spr)
 			{
 				spr->blitNShade(_rankTiny, 0, 0);
