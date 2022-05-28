@@ -2683,7 +2683,7 @@ void Soldier::ScriptRegister(ScriptParserBase* parser)
 
 	so.addScriptValue<BindBase::OnlyGet, &Soldier::_rules, &RuleSoldier::getScriptValuesRaw>();
 	so.addScriptValue<&Soldier::_scriptValues>();
-	//so.addDebugDisplay<&debugDisplayScript>();
+	so.addDebugDisplay<&debugDisplayScript>();
 }
 
 } // namespace OpenXcom
