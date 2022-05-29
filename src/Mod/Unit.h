@@ -98,7 +98,6 @@ struct UnitStats
 		insight += stats.insight;
 		data += stats.data;
 		materials += stats.materials;
-		gravity += stats.gravity;
 		psychology += stats.psychology;
 		designing += stats.designing;
 		psionics += stats.psionics;
@@ -163,7 +162,6 @@ struct UnitStats
 		insight -= stats.insight;
 		data -= stats.data;
 		materials -= stats.materials;
-		gravity -= stats.gravity;
 		psychology -= stats.psychology;
 		designing -= stats.designing;
 		psionics -= stats.psionics;

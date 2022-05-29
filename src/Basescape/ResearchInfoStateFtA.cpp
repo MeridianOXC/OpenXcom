@@ -297,7 +297,10 @@ void ResearchInfoStateFtA::btnOkClick(Action *)
 	for (auto s : _scientists)
 	{
 		s->setResearchProject(_project);
-		//FINNIKTODO - remove from other activities!!!
+		s->setPsiTraining(false);
+		s->setTraining(false);
+		s->setCraft(0);
+		s->setReturnToTrainingWhenHealed(false); //just in case
 	}
 
 	_game->popState();

@@ -1049,9 +1049,11 @@ struct BindValue
 template<typename T, std::string (*X)(const T*)>
 struct BindDebugDisplay
 {
-	static RetEnum func(ScriptWorkerBase& swb, const T* t)
+	static RetEnum func(ScriptWorkerBase &swb, const T *t)
 	{
-		auto f = [&]{ return X(t); };
+		auto x = X;
+		auto f = [&]
+		{ return x(t); };
 		swb.log_buffer_add(&f);
 		return RetContinue;
 	}

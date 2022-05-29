@@ -474,13 +474,13 @@ int MasterMind::getLoyaltyPerformanceBonus()
 	if (_game->getMod()->getIsFTAGame())
 	{
 		int loyalty = _game->getSavedGame()->getLoyalty();
-		if (loyalty > 100)
+		if (loyalty > 100) // function approximation goes weird on values from 0 to 100, so we just keep it bonusless there...
 		{
 			double ln = log(fabs(loyalty));
 			int bonus = ceil(-9.79 + (2.23 * ln));
 			performance += bonus;
 		}
-		if (loyalty < 0)
+		else if (loyalty < 0)
 		{
 			int penalty = ceil(0.271 * pow(-loyalty, 0.537));
 			performance -= penalty;

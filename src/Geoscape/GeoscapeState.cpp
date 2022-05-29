@@ -4389,13 +4389,18 @@ void GeoscapeState::handleResearch(Base* base)
 	for (ResearchProject* project : base->getResearch())
 	{
 		auto rules = project->getRules();
-		int bonus = 0;
+		int bonus = 0, progress = 0;
 		bool sharable = true;
 		if (_fta)
 		{
+			Log(LOG_INFO) << "Calculating hourly progress for research project: " << rules->getName() << "...";
+
 			int rating = _game->getMasterMind()->getLoyaltyPerformanceBonus();
-			if (rules->destroyItem() || !rules->getGetOneFree().empty()
-				|| !rules->getSpawnedEvent().empty() || !rules->getSpawnedItem().empty() || !rules->getSpawnedItemList().empty())
+			if (rules->destroyItem()
+				|| !rules->getGetOneFree().empty()
+				|| !rules->getSpawnedEvent().empty()
+				|| !rules->getSpawnedItem().empty()
+				|| !rules->getSpawnedItemList().empty())
 			{
 				sharable = false;
 			}
@@ -4407,49 +4412,136 @@ void GeoscapeState::handleResearch(Base* base)
 			else if (rating < 100 && RNG::percent(100 - rating))
 			{
 				bonus = -1;
+				Log(LOG_INFO) << "Woops, loyalty rating is really low!";
 			}
 
-			for (auto b : *_game->getSavedGame()->getBases())
+			if (bonus >= 0) //effort calculation is pointless if loyalty would drop it to 0 afterwards anyway
 			{
-				if (b == base) //case for base we are looking
+				for (auto b : *_game->getSavedGame()->getBases())
 				{
-					for (auto s : *base->getSoldiers())
+					if (b == base) // case for base we are looking
 					{
-						if (s->getResearchProject() == project)
+						for (auto s : *base->getSoldiers())
 						{
-							assignedScientists.insert(std::make_pair(s, 100));
+							if (s->getResearchProject() == project)
+							{
+								assignedScientists.insert(std::make_pair(s, 100));
+							}
+						}
+					}
+					else if (sharable) // extra case for sharable projects
+					{
+						for (auto s : *b->getSoldiers())
+						{
+							if (s->getResearchProject()->getRules()->getName() == project->getRules()->getName()) // check by string id
+							{
+								assignedScientists.insert(std::make_pair(s, 50));
+							}
 						}
 					}
 				}
-				else if (sharable) // extra case for sharable projects
+
+				if (assignedScientists.size() > 0)
 				{
-					for (auto s : *b->getSoldiers())
+					double effort = 0;
+					auto projStats = project->getRules()->getStats();
+					for (auto s : assignedScientists)
 					{
-						if (s->getResearchProject()->getRules()->getName() == project->getRules()->getName()) //check by string id
+						auto stats = s.first->getStatsWithAllBonuses();
+						unsigned int statsN = 0;
+						Log(LOG_INFO) << "Soldier " << s.first->getName() << " is calculating his/her effort for the project";
+
+						if (projStats.physics > 0)
 						{
-							assignedScientists.insert(std::make_pair(s, 50));
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
 						}
+						if (projStats.chemistry > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.biology > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.data > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.computers > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.materials > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.psychology > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.designing > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.psionics > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+						if (projStats.xenolinguistics > 0)
+						{
+							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							statsN++;
+						}
+
+						Log(LOG_INFO) << "Raw effort equals: " << effort;
+
+						if (RNG::percent(stats->insight))
+						{
+							effort *= 1.2;
+						}
+						else if (RNG::percent(50 - stats->insight))
+						{
+							effort *= 0.5;
+						}
+						Log(LOG_INFO) << "Effort after rolling insight bonus: " << effort;
+
+						if (statsN > 0)
+						{
+							effort /= statsN;
+						}
+
+						Log(LOG_INFO) << "Final effort value: " << effort;
 					}
+					// If one woman can carry a baby in nine months, nine women can't do it in a month...
+					Log(LOG_INFO) << " >>> Effectiveness coefficient is " << rules->getName() << ": " << progress << " and bonus: " << bonus;
+					effort *= 100 - (19 * log(assignedScientists.size()));
+					progress = static_cast<int>(ceil(effort));
+					Log(LOG_INFO) << " >>> Total hourly progress for project " << rules->getName() << ": " << progress << " and bonus: " << bonus;
+				}
+				else
+				{
+					Log(LOG_INFO) << "No scientists assigned to the project!";
 				}
 			}
-
-			int progress = 0;
-			auto projectStats = project->getRules()->getStats();
-			for (auto s : assignedScientists)
-			{
-				auto stats = s.first->getStatsWithAllBonuses();
-
-
-			}
+		}
+			
+		if (project->step(bonus, progress))
+		{
+			finished.push_back(project);
 		}
 		else
 		{
-			if (project->step(bonus))
-			{
-				finished.push_back(project);
-			}
+			Log(LOG_INFO) << "After loyalty roll and calculation we have  " << project->getCost() - project->getSpent() << " points left.";
 		}
-
 	}
 	// 2. remember available research before adding new finished research
 	std::vector<RuleResearch*> before;

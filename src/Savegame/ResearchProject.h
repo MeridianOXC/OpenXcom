@@ -38,7 +38,7 @@ class ResearchProject
 public:
 	ResearchProject(const RuleResearch * p, int c = 0);
 	/// Game logic. Called every new day (every hour for FtA) to compute time spent.
-	bool step(int bonus = 100);
+	bool step(int bonus = 0, int progress = 0);
 	/// gets state of project.
 	bool isFinished();
 	/// set the number of scientist assigned to this ResearchProject
