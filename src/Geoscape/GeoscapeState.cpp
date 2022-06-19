@@ -4385,7 +4385,8 @@ void GeoscapeState::handleResearch(Base* base)
 	Mod* mod = _game->getMod();
 
 	// 1. gather finished research
-	std::vector<ResearchProject*> finished;
+	std::map<Soldier*, int> assignedScientists;
+	std::vector<std::pair<std::map<Soldier*, int>*, ResearchProject*>> finished;
 	for (ResearchProject* project : base->getResearch())
 	{
 		auto rules = project->getRules();
@@ -4393,8 +4394,7 @@ void GeoscapeState::handleResearch(Base* base)
 		bool sharable = true;
 		if (_fta)
 		{
-			Log(LOG_INFO) << "Calculating hourly progress for research project: " << rules->getName() << "...";
-
+			Log(LOG_INFO) << "Calculating hourly progress for research project: " << rules->getName() << "..."; //#CLEARLOGS
 			int rating = _game->getMasterMind()->getLoyaltyPerformanceBonus();
 			if (rules->destroyItem()
 				|| !rules->getGetOneFree().empty()
@@ -4404,7 +4404,7 @@ void GeoscapeState::handleResearch(Base* base)
 			{
 				sharable = false;
 			}
-			std::map<Soldier *, int> assignedScientists;
+			
 			if (rating > 100 && RNG::percent(rating - 100))
 			{
 				bonus = 1;
@@ -4412,7 +4412,7 @@ void GeoscapeState::handleResearch(Base* base)
 			else if (rating < 100 && RNG::percent(100 - rating))
 			{
 				bonus = -1;
-				Log(LOG_INFO) << "Woops, loyalty rating is really low!";
+				Log(LOG_INFO) << "Woops, loyalty rating is really low!"; //#CLEARLOGS
 			}
 
 			if (bonus >= 0) //effort calculation is pointless if loyalty would drop it to 0 afterwards anyway
@@ -4448,12 +4448,19 @@ void GeoscapeState::handleResearch(Base* base)
 					for (auto s : assignedScientists)
 					{
 						auto stats = s.first->getStatsWithAllBonuses();
+						auto caps = s.first->getRules()->getStatCaps();
 						unsigned int statsN = 0;
 						Log(LOG_INFO) << "Soldier " << s.first->getName() << " is calculating his/her effort for the project";
 
 						if (projStats.physics > 0)
 						{
 							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							if (stats->physics < caps.physics
+								&& RNG::generate(0, caps.physics) > stats->physics
+								&& RNG::percent(_game->getMod()->getCustomTrainingFactor()))
+							{
+
+							}
 							statsN++;
 						}
 						if (projStats.chemistry > 0)
@@ -4536,7 +4543,7 @@ void GeoscapeState::handleResearch(Base* base)
 			
 		if (project->step(bonus, progress))
 		{
-			finished.push_back(project);
+			finished.push_back(std::make_pair(&assignedScientists, project));
 		}
 		else
 		{
@@ -4551,14 +4558,22 @@ void GeoscapeState::handleResearch(Base* base)
 	}
 
 	// 3. add finished research, including lookups and getonefrees (up to 4x)
-	for (ResearchProject *project : finished)
+	for (auto projectData : finished)
 	{
+		ResearchProject* project = projectData.second;
 		const RuleResearch *bonus = 0;
 		const RuleResearch *research = project->getRules();
 
 		// 3a. remove finished research from the base where it was researched
 		base->removeResearch(project);
 		project = nullptr;
+
+		// wait, if it's FtA, we need to promote people!
+		if (_game->getMod()->getIsFTAGame())
+		{
+			std::map<Soldier*, int> *assignedScientists = projectData.first;
+			
+		}
 
 		// 3b. handle interrogation
 		if (Options::retainCorpses && research->needItem() && research->destroyItem())
