@@ -223,6 +223,7 @@ private:
 	bool _aiExtendedFireModeChoice, _aiRespectMaxRange, _aiDestroyBaseFacilities;
 	bool _aiPickUpWeaponsMoreActively, _aiPickUpWeaponsMoreActivelyCiv;
 	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor, _minReactionAccuracy;
+	int _researchTrainingFactor, _engineeringTrainingFactor, _intelTrainingFactor;
 	int _chanceToStopRetaliation;
 	bool _lessAliensDuringBaseDefense;
 	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry;
@@ -814,6 +815,12 @@ public:
 	int getCustomTrainingFactor() const { return _customTrainingFactor; }
 	/// Gets the minimum firing accuracy for reaction fire (default = 0).
 	int getMinReactionAccuracy() const { return _minReactionAccuracy; }
+	/// Gets the custom scientist stats training factor in percent (default = 100).
+	int getResearchTrainingFactor() const { return _researchTrainingFactor; }
+	/// Gets the custom engineering stats training factor in percent (default = 100).
+	int getEngineerTrainingFactor() const { return _engineeringTrainingFactor; }
+	/// Gets the custom intelligence skills training factor in percent (default = 100).
+	int getIntelTrainingFactor() const { return _intelTrainingFactor; }
 	/// Gets the chance to stop retaliation after unsuccessful xcom base attack (default = 0).
 	int getChanceToStopRetaliation() const { return _chanceToStopRetaliation; }
 	/// Should a damaged UFO deploy less aliens during the base defense?

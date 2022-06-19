@@ -4445,6 +4445,7 @@ void GeoscapeState::handleResearch(Base* base)
 				{
 					double effort = 0;
 					auto projStats = project->getRules()->getStats();
+					int factor = _game->getMod()->getResearchTrainingFactor();
 					for (auto s : assignedScientists)
 					{
 						auto stats = s.first->getStatsWithAllBonuses();
@@ -4457,55 +4458,119 @@ void GeoscapeState::handleResearch(Base* base)
 							effort += ((stats->physics + 1) * projStats.physics) / (10000);
 							if (stats->physics < caps.physics
 								&& RNG::generate(0, caps.physics) > stats->physics
-								&& RNG::percent(_game->getMod()->getCustomTrainingFactor()))
+								&& RNG::percent(factor * (projStats.physics / 100))
+								&& RNG::percent(s.second))
 							{
-
+								s.first->getResearchExperience()->physics++;
 							}
 							statsN++;
 						}
 						if (projStats.chemistry > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->chemistry + 1) * projStats.chemistry) / (10000);
+							if (stats->chemistry < caps.chemistry
+								&& RNG::generate(0, caps.chemistry) > stats->chemistry
+								&& RNG::percent(factor * (projStats.chemistry / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->chemistry++;
+							}
 							statsN++;
 						}
 						if (projStats.biology > 0)
 						{
 							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							if (stats->biology < caps.biology
+								&& RNG::generate(0, caps.biology) > stats->biology
+								&& RNG::percent(factor * (projStats.biology / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->biology++;
+							}
 							statsN++;
 						}
 						if (projStats.data > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->data + 1) * projStats.data) / (10000);
+							if (stats->data < caps.data
+								&& RNG::generate(0, caps.data) > stats->data
+								&& RNG::percent(factor * (projStats.data / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->data++;
+							}
 							statsN++;
 						}
 						if (projStats.computers > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->computers + 1) * projStats.computers) / (10000);
+							if (stats->computers < caps.computers
+								&& RNG::generate(0, caps.computers) > stats->computers
+								&& RNG::percent(factor * (projStats.computers / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->computers++;
+							}
 							statsN++;
 						}
 						if (projStats.materials > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->materials + 1) * projStats.materials) / (10000);
+							if (stats->computers < caps.materials
+								&& RNG::generate(0, caps.materials) > stats->materials
+								&& RNG::percent(factor * (projStats.materials / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->materials++;
+							}
 							statsN++;
 						}
 						if (projStats.psychology > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->psychology + 1) * projStats.psychology) / (10000);
+							if (stats->psychology < caps.psychology
+								&& RNG::generate(0, caps.psychology) > stats->psychology
+								&& RNG::percent(factor * (projStats.psychology / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->psychology++;
+							}
 							statsN++;
 						}
 						if (projStats.designing > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->designing + 1) * projStats.designing) / (10000);
+							if (stats->designing < caps.designing
+								&& RNG::generate(0, caps.designing) > stats->designing
+								&& RNG::percent(factor * (projStats.designing / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->designing++;
+							}
 							statsN++;
 						}
 						if (projStats.psionics > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->psionics + 1) * projStats.psionics) / (10000);
+							if (stats->psionics < caps.psionics
+								&& RNG::generate(0, caps.psionics) > stats->psionics
+								&& RNG::percent(factor * (projStats.psionics / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->psionics++;
+							}
 							statsN++;
 						}
 						if (projStats.xenolinguistics > 0)
 						{
-							effort += ((stats->physics + 1) * projStats.physics) / (10000);
+							effort += ((stats->xenolinguistics + 1) * projStats.xenolinguistics) / (10000);
+							if (stats->psionics < caps.xenolinguistics
+								&& RNG::generate(0, caps.xenolinguistics) > stats->xenolinguistics
+								&& RNG::percent(factor * (projStats.xenolinguistics / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->xenolinguistics++;
+							}
 							statsN++;
 						}
 
@@ -4529,7 +4594,7 @@ void GeoscapeState::handleResearch(Base* base)
 						Log(LOG_INFO) << "Final effort value: " << effort;
 					}
 					// If one woman can carry a baby in nine months, nine women can't do it in a month...
-					Log(LOG_INFO) << " >>> Effectiveness coefficient is " << rules->getName() << ": " << progress << " and bonus: " << bonus;
+					Log(LOG_INFO) << " > Effectiveness coefficient is " << rules->getName() << ": " << progress << " and bonus: " << bonus;
 					effort *= 100 - (19 * log(assignedScientists.size()));
 					progress = static_cast<int>(ceil(effort));
 					Log(LOG_INFO) << " >>> Total hourly progress for project " << rules->getName() << ": " << progress << " and bonus: " << bonus;
@@ -4558,6 +4623,7 @@ void GeoscapeState::handleResearch(Base* base)
 	}
 
 	// 3. add finished research, including lookups and getonefrees (up to 4x)
+	std::vector<Soldier*> promotedSoldiers;
 	for (auto projectData : finished)
 	{
 		ResearchProject* project = projectData.second;
@@ -4568,11 +4634,18 @@ void GeoscapeState::handleResearch(Base* base)
 		base->removeResearch(project);
 		project = nullptr;
 
-		// wait, if it's FtA, we need to promote people!
+		// wait, if it's FtA, we need to train stats and promote people!
 		if (_game->getMod()->getIsFTAGame())
 		{
 			std::map<Soldier*, int> *assignedScientists = projectData.first;
-			
+			for (std::map<Soldier*, int>::iterator j = assignedScientists->begin(); j != assignedScientists->end(); ++j)
+			{
+				(*j).first->improvePrimaryStats((*j).first->getResearchExperience(), ROLE_SCIENTIST);
+				if ((*j).first->rolePromoteSoldier(ROLE_SCIENTIST))
+				{
+					promotedSoldiers.push_back((*j).first);
+				}
+			}
 		}
 
 		// 3b. handle interrogation
@@ -4636,6 +4709,7 @@ void GeoscapeState::handleResearch(Base* base)
 		popup(new ResearchCompleteState(newResearch, bonus, research));
 		// 3f. reset timer
 		timerReset();
+
 		// 3g. warning if weapon is researched before its clip
 		if (newResearch)
 		{
@@ -4721,6 +4795,12 @@ void GeoscapeState::handleResearch(Base* base)
 		// 2. handle items spawned by research
 		// 3. handle events spawned by research
 		saveGame->handlePrimaryResearchSideEffects(topicsToCheck, _game->getMod(), base);
+	}
+
+	//oh, dont forget about FtA promotions!
+	if (!promotedSoldiers.empty() && _game->getMod()->getIsFTAGame())
+	{
+		_game->pushState(new PromotionsState);
 	}
 }
 

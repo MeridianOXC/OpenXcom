@@ -233,6 +233,9 @@ void Soldier::load(const YAML::Node& node, const Mod *mod, SavedGame *save, cons
 	}
 	_dailyDogfightExperienceCache = node["dailyDogfightExperienceCache"].as<UnitStats>(_dailyDogfightExperienceCache);
 	_dogfightExperience = node["dogfightExperience"].as<UnitStats>(_dogfightExperience);
+	_researchExperience = node["researchExperience"].as<UnitStats>(_researchExperience);
+	_engineerExperience = node["engineerExperience"].as<UnitStats>(_engineerExperience);
+	_intelExperience = node["intelExperience"].as<UnitStats>(_intelExperience);
 
 	// re-roll mana stats when upgrading saves
 	if (_currentStats.mana == 0 && _rules->getMaxStats().mana > 0)
@@ -371,6 +374,23 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 		_dogfightExperience.tracking > 0 || _dogfightExperience.tactics > 0)
 	{
 		node["dogfightExperience"] = _dogfightExperience;
+	}
+	if (_researchExperience.physics > 0 || _researchExperience.chemistry > 0 || _researchExperience.biology > 0 ||
+		_researchExperience.insight > 0 || _researchExperience.data > 0 || _researchExperience.computers > 0 || _researchExperience.materials > 0 ||
+		_researchExperience.psychology > 0 || _researchExperience.designing > 0 || _researchExperience.psionics > 0 || _researchExperience.xenolinguistics > 0)
+	{
+		node["researchExperience"] = _researchExperience;
+	}
+	if (_engineerExperience.weaponry > 0 || _engineerExperience.explosives > 0 || _engineerExperience.efficiency > 0 || _engineerExperience.microelectronics > 0 ||
+		_engineerExperience.metallurgy > 0 || _engineerExperience.robotics > 0 || _engineerExperience.hacking > 0 || _engineerExperience.construction > 0 ||
+		_engineerExperience.diligence > 0 || _engineerExperience.alienTech > 0 || _engineerExperience.reverseEngineering > 0)
+	{
+		node["engineerExperience"] = _engineerExperience;
+	}
+	if (_intelExperience.stealth > 0 || _intelExperience.perseption > 0 || _intelExperience.charisma > 0 ||
+		_intelExperience.deception > 0 || _intelExperience.interrogation > 0)
+	{
+		node["intelExperience"] = _intelExperience;
 	}
 	node["rank"] = (int)_rank;
 	if (_craft != 0)
@@ -2349,22 +2369,6 @@ void Soldier::resetDailyDogfightExperienceCache()
 	_dailyDogfightExperienceCache = UnitStats::scalar(0);
 }
 
-/**
- * Gets a pointer to the dogfight experience (used for FtA mechanic).
- */
-UnitStats *Soldier::getDogfightExperience()
-{
-	return &_dogfightExperience;
-}
-
-/**
- *  Clears dogfight experience values (FtA mechanic).
- */
-void Soldier::clearDogfightExperience()
-{
-	_dogfightExperience = UnitStats::scalar(0);
-}
-
 void Soldier::improvePrimaryStats(UnitStats* exp, SoldierRole role)
 {
 	UnitStats *stats = getCurrentStats();
@@ -2537,7 +2541,7 @@ void Soldier::improvePrimaryStats(UnitStats* exp, SoldierRole role)
 	}
 }
 
-bool Soldier::rolePromoteSoldier()
+bool Soldier::rolePromoteSoldier(SoldierRole promotionRole)
 {
 	auto req = getRules()->getRoleExpRequirments();
 	bool promoted = false;
@@ -2545,7 +2549,7 @@ bool Soldier::rolePromoteSoldier()
 	{
 		for (auto roleReq : req)
 		{
-			if (role->role == roleReq->role)
+			if (role->role == roleReq->role && role->role == promotionRole)
 			{
 				std::map<int, int> expMap = roleReq->requirments;
 				if (role->role >= expMap.rbegin()->first + 1)

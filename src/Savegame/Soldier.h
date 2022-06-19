@@ -97,7 +97,7 @@ private:
 	std::vector<SoldierRoleRanks*> _roles;
 	RuleSoldier *_rules;
 	UnitStats _initialStats, _currentStats, _tmpStatsWithSoldierBonuses, _tmpStatsWithAllBonuses;
-	UnitStats _dailyDogfightExperienceCache, _dogfightExperience;
+	UnitStats _dailyDogfightExperienceCache, _dogfightExperience, _researchExperience, _engineerExperience, _intelExperience;
 	SoldierRank _rank;
 	Craft *_craft;
 	CovertOperation* _covertOperation;
@@ -354,13 +354,26 @@ private:
 	/// Gets the role with highest rank.
 	SoldierRole getBestRole() { return getBestRoleRank().first; };
 	/// Gets a pointer to the dogfight experience values (FtA mechanic).
-	UnitStats *getDogfightExperience();
+	UnitStats* getDogfightExperience() { return &_dogfightExperience; };
 	/// Clears dogfight experience values (FtA mechanic).
-	void clearDogfightExperience();
+	void clearDogfightExperience() { _dogfightExperience = UnitStats::scalar(0); };
+	/// Gets a pointer to the research experience values (FtA mechanic).
+	UnitStats* getResearchExperience() { return &_researchExperience; };
+	/// Clears research experience values (FtA mechanic).
+	void clearResearchExperience() { _researchExperience = UnitStats::scalar(0); };
+	/// Gets a pointer to the research experience values (FtA mechanic).
+	UnitStats* getEngineerExperience() { return &_engineerExperience; };
+	/// Clears engineer experience values (FtA mechanic).
+	void clearEngineerExperience() { _engineerExperience = UnitStats::scalar(0); };
+	/// Gets a pointer to the intel experience values (FtA mechanic).
+	UnitStats* getIntelExperience() { return &_intelExperience; };
+	/// Clears intel experience values (FtA mechanic).
+	void clearIntelExperience() { _intelExperience = UnitStats::scalar(0); };
+
 	/// Calculate soldier stats improvement.
 	void improvePrimaryStats(UnitStats* exp, SoldierRole role = ROLE_SOLDIER);
 	/// Process role ranks promotions for a soldier.
-	bool rolePromoteSoldier();
+	bool rolePromoteSoldier(SoldierRole role);
 	/// Gets a sprite version of the soldier for specific role. Used for BASEBITS.PCK.
 	int getRoleRankSprite(SoldierRole role);
 	/// Gets a sprite version of the soldier for specific role. Used for SMOKE.PCK.

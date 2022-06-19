@@ -844,7 +844,7 @@ void DebriefingState::init()
 	{
 		for (auto soldier : participants)
 		{
-			if (soldier->rolePromoteSoldier())
+			if (soldier->rolePromoteSoldier(ROLE_SOLDIER))
 			{
 				_promotions = true;
 			}
