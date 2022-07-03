@@ -3516,38 +3516,70 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 			if (soldier->getArmor()->getSize() > 1)
 			{
 				// "Large soldiers" just stay in the base
+				continue;
 			}
-			else if (soldier->getRules()->getAllowPiloting())
+			
+			if (_ftaGame)
 			{
-				Craft *found = 0;
-				for (auto& craft : *base->getCrafts())
+				if (soldier->getRoleRank(ROLE_PILOT) > 0)
 				{
-					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					for (auto& craft : *base->getCrafts())
 					{
-						// Remember transporter as fall-back, but search further for interceptors
-						found = craft;
-					}
-					if (!craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getPilots())
-					{
-						// Fill interceptors with minimum amount of pilots necessary
-						found = craft;
+						if (!craft->getRules()->getAllowLanding()
+							&& soldier->getRoleRank(craft->getRules()->getRequiredRole()) > 0
+							&& craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+						{
+							soldier->setCraft(craft);
+						}
 					}
 				}
-				soldier->setCraft(found);
-			}
-			else
-			{
-				Craft *found = 0;
-				for (auto& craft : *base->getCrafts())
+				else if (soldier->getRoleRank(ROLE_SOLDIER) > 0)
 				{
-					if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					for (auto& craft : *base->getCrafts())
 					{
-						// First available transporter will do
-						found = craft;
-						break;
+						if (craft->getRules()->getAllowLanding()
+							&& soldier->getRoleRank(craft->getRules()->getRequiredRole()) > 0
+							&& craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+						{
+							soldier->setCraft(craft);
+						}
 					}
 				}
-				soldier->setCraft(found);
+			}
+			else //OXC(E) logic
+			{
+				if (soldier->getRules()->getAllowPiloting())
+				{
+					Craft* found = 0;
+					for (auto& craft : *base->getCrafts())
+					{
+						if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+						{
+							// Remember transporter as fall-back, but search further for interceptors
+							found = craft;
+						}
+						if (!craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getPilots())
+						{
+							// Fill interceptors with minimum amount of pilots necessary
+							found = craft;
+						}
+					}
+					soldier->setCraft(found);
+				}
+				else
+				{
+					Craft* found = 0;
+					for (auto& craft : *base->getCrafts())
+					{
+						if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+						{
+							// First available transporter will do
+							found = craft;
+							break;
+						}
+					}
+					soldier->setCraft(found);
+				}
 			}
 		}
 	}
