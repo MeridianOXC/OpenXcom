@@ -82,13 +82,13 @@ void ResearchInfoStateFtA::buildUi()
 	_txtAvailableScientist = new Text(166, 9, 9, 52);
 	_txtAvailableSpace = new Text(166, 9, 9, 62);
 	_txtGrade = new Text(32, 9, 125, 80);
-	_txtStat1 = new Text(95, 9, 120, 80);
-	_txtStat2 = new Text(95, 9, 120, 80);
-	_txtStat3 = new Text(95, 9, 120, 80);
-	_txtStat4 = new Text(95, 9, 120, 80);
-	_txtStat5 = new Text(95, 9, 120, 80);
-	_txtStat6 = new Text(95, 9, 120, 80);
-	_txtInsight = new Text(95, 9, 120, 80); //x offset later
+	_txtStat1 = new Text(18, 9, 157, 80);
+	_txtStat2 = new Text(18, 9, 157, 80);
+	_txtStat3 = new Text(18, 9, 157, 80);
+	_txtStat4 = new Text(18, 9, 157, 80);
+	_txtStat5 = new Text(18, 9, 157, 80);
+	_txtStat6 = new Text(18, 9, 157, 80);
+	_txtInsight = new Text(18, 9, 157, 80); //x offset later
 
 	_btnOk = new TextButton(148, 16, 165, 153);
 	_btnCancel = new TextButton(148, 16, 9, 153);
@@ -107,8 +107,14 @@ void ResearchInfoStateFtA::buildUi()
 	add(_txtTitle, "text", "allocateResearch");
 	add(_txtAvailableScientist, "text", "allocateResearch");
 	add(_txtAvailableSpace, "text", "allocateResearch");
+	add(_txtGrade, "text", "allocateResearch");
 	add(_txtStat1, "text", "allocateResearch");
 	add(_txtStat2, "text", "allocateResearch");
+	add(_txtStat3, "text", "allocateResearch");
+	add(_txtStat4, "text", "allocateResearch");
+	add(_txtStat5, "text", "allocateResearch");
+	add(_txtStat6, "text", "allocateResearch");
+	add(_txtInsight, "text", "allocateResearch");
 	add(_lstScientists, "list", "allocateResearch");
 
 	centerAllSurfaces();
@@ -146,7 +152,9 @@ void ResearchInfoStateFtA::buildUi()
 	_btnAbandon->setText(tr("STR_ABANDON_PROJECT"));
 	_btnAbandon->onMouseClick((ActionHandler)&ResearchInfoStateFtA::btnAbandonClick);
 
-	unsigned int x = 95;
+	_txtGrade->setText(tr("GRADE"));
+
+	unsigned int x = 157;
 	unsigned int offset = 18;
 	int stat = getStatString(0).first;
 	if (stat > 0)
@@ -247,14 +255,48 @@ void ResearchInfoStateFtA::removeScientist(Soldier *scientist)
 	}
 }
 
+int ResearchInfoStateFtA::GetStatValue(Soldier &s, const std::string &desc)
+{
+	UnitStats *sStats = s.getCurrentStats();
+	if (desc == "STR_PHYSICS_SHORT")
+		return sStats->physics;
+	if (desc == "STR_CHEMISTRY_SHORT")
+		return sStats->chemistry;
+	if (desc == "STR_BIOLOGY_SHORT")
+		return sStats->biology;
+	if (desc == "STR_DATA_ANALISYS_SHORT")
+		return sStats->data;
+	if (desc == "STR_COMPUTER_SCIENCE_SHORT")
+		return sStats->computers;
+	if (desc == "STR_MATERIAL_SCIENCE_SHORT")
+		return sStats->materials;
+	if (desc == "STR_PSYCHOLOGY_SHORT")
+		return sStats->psychology;
+	if (desc == "STR_DESIGNING_SHORT")
+		return sStats->designing;
+	if (desc == "STR_PSIONICS_SHORT")
+		return sStats->psionics;
+	if (desc == "STR_XENOLINGUISTICS_SHORT")
+		return sStats->xenolinguistics;
+	return 0;
+}
+
 void ResearchInfoStateFtA::fillScientistsList(size_t scrl)
 {
 	_lstScientists->clearList();
+	std::vector<std::string> stats(7, "");
 	for (auto s : _scientists)
 	{
 		std::ostringstream ss;
 		ss << s->getRoleRank(ROLE_SCIENTIST);
-		_lstScientists->addRow(9, s->getName().c_str(), ss.str().c_str(), "", "", "", "", "", "", "");
+		size_t i = 0;
+		for (auto stat : ResearchStats)
+		{
+			stats[i++] = std::to_string(GetStatValue(*s, stat.second));
+		}
+		stats[i] = std::to_string(s->getCurrentStats()->insight);
+		_lstScientists->addRow(9, s->getName().c_str(), ss.str().c_str(), stats[0].c_str(), stats[1].c_str(), stats[2].c_str(),
+							   stats[3].c_str(), stats[4].c_str(), stats[5].c_str(), stats[6].c_str());
 	}
 }
 
@@ -374,25 +416,55 @@ std::pair<int, std::string> ResearchInfoStateFtA::getStatString(size_t position)
 	std::map<int, std::string> statMap;
 
 	if (stats.physics > 0)
+	{
 		statMap.insert(std::make_pair(stats.physics, tr("STR_PHYSICS_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.physics, "STR_PHYSICS_SHORT"));
+	}
 	if (stats.chemistry > 0)
+	{
 		statMap.insert(std::make_pair(stats.chemistry, tr("STR_CHEMISTRY_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.chemistry, "STR_CHEMISTRY_SHORT"));
+	}
 	if (stats.biology > 0)
+	{
 		statMap.insert(std::make_pair(stats.biology, tr("STR_BIOLOGY_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.biology, "STR_BIOLOGY_SHORT"));
+	}
 	if (stats.data > 0)
+	{
 		statMap.insert(std::make_pair(stats.data, tr("STR_DATA_ANALISYS_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.data, "STR_DATA_ANALISYS_SHORT"));
+	}
 	if (stats.computers > 0)
+	{
 		statMap.insert(std::make_pair(stats.computers, tr("STR_COMPUTER_SCIENCE_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.computers, "STR_COMPUTER_SCIENCE_SHORT"));
+	}
 	if (stats.materials > 0)
+	{
 		statMap.insert(std::make_pair(stats.materials, tr("STR_MATERIAL_SCIENCE_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.materials, "STR_MATERIAL_SCIENCE_SHORT"));
+	}
 	if (stats.psychology > 0)
+	{
 		statMap.insert(std::make_pair(stats.psychology, tr("STR_PSYCHOLOGY_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.psychology, "STR_PSYCHOLOGY_SHORT"));
+	}
 	if (stats.designing > 0)
+	{
 		statMap.insert(std::make_pair(stats.designing, tr("STR_DESIGNING_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.designing, "STR_DESIGNING_SHORT"));
+	}
 	if (stats.psionics > 0)
+	{
 		statMap.insert(std::make_pair(stats.psionics, tr("STR_PSIONICS_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.psionics, "STR_PSIONICS_SHORT"));
+	}
 	if (stats.xenolinguistics > 0)
+	{
 		statMap.insert(std::make_pair(stats.xenolinguistics, tr("STR_XENOLINGUISTICS_SHORT")));
+		ResearchStats.insert(std::make_pair(stats.xenolinguistics, "STR_XENOLINGUISTICS_SHORT"));
+	}
 
 	size_t pos = 0;
 	std::pair<int, std::string> result;
