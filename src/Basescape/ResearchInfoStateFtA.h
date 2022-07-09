@@ -51,6 +51,8 @@ private:
 	void buildUi();
 	void setAssignedScientist();
 	std::pair<int, std::string> getStatString(size_t position);
+	std::map<int, std::string, std::greater<int> > ResearchStats;
+	int GetStatValue(Soldier &s, const std::string &desc);
 
 public:
 	/// Creates the ResearchProject state.
