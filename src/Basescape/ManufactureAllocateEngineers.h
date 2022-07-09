@@ -32,46 +32,46 @@ class ComboBox;
 class Base;
 class Soldier;
 class RuleResearch;
-class ResearchInfoStateFtA;
+class ManufactureInfoState;
 struct SortFunctor;
 
 /**
-* Allocate Scientists screen that lets the player
+* Allocate Engineers screen that lets the player
 * pick the personnel to assign to the project.
- */
-class ResearchAllocateScientists : public State
+*/
+class ManufactureAllocateEngineers : public State
 {
 private:
-	TextButton *_btnOk;
-	Window *_window;
-	Text *_txtTitle, *_txtName, *_txtRank, *_txtCraft, *_txtUsed;
-	ComboBox *_cbxSortBy;
-	TextList *_lstScientists;
-	Base *_base;
-	ResearchInfoStateFtA *_planningProject;
+	TextButton* _btnOk;
+	Window* _window;
+	Text* _txtTitle, * _txtName, * _txtRank, * _txtCraft, * _txtUsed;
+	ComboBox* _cbxSortBy;
+	TextList* _lstEngineers;
+	Base* _base;
+	ManufactureInfoState* _planningProject;
 	Uint8 _otherCraftColor;
-	std::vector<Soldier*> _origScientistOrder;
+	std::vector<Soldier*> _origSoldierOrder;
 	std::vector<SortFunctor*> _sortFunctors;
 	std::vector<int> _scientistsNumbers;
 	getStatFn_t _dynGetter;
-	/// initializes the display list based on the project scientists list and the position to display
+	/// initializes the display list based on the project soldier's list and the position to display
 	void initList(size_t scrl);
 
 public:
 	/// Creates the Craft Soldiers state.
-	ResearchAllocateScientists(Base *base, ResearchInfoStateFtA *planningProject);
+	ManufactureAllocateEngineers(Base* base, ManufactureInfoState* planningProject);
 	/// Cleans up the Craft Soldiers state.
-	~ResearchAllocateScientists();
+	~ManufactureAllocateEngineers();
 	/// Handler for changing the sort by combo-box.
-	void cbxSortByChange(Action *action);
+	void cbxSortByChange(Action* action);
 	/// Handler for clicking the OK button.
-	void btnOkClick(Action *action);
+	void btnOkClick(Action* action);
 	/// Updates the soldiers list.
 	void init() override;
 	/// Handler for clicking the Soldiers list.
-	void lstScientistsClick(Action *action);
+	void lstEngineersClick(Action* action);
 	/// Handler for clicking the De-assign All Soldiers button.
-	void btnDeassignProjectScientistsClick(Action *action);
+	void btnDeassignProjectEngineersClick(Action* action);
 };
 
 }

@@ -252,6 +252,7 @@
     <ClCompile Include="Basescape\GlobalManufactureState.cpp" />
     <ClCompile Include="Basescape\GlobalResearchState.cpp" />
     <ClCompile Include="Basescape\ManageAlienContainmentState.cpp" />
+    <ClCompile Include="Basescape\ManufactureAllocateEngineers.cpp" />
     <ClCompile Include="Basescape\ManufactureDependenciesTreeState.cpp" />
     <ClCompile Include="Basescape\ManufactureState.cpp" />
     <ClCompile Include="Basescape\NewManufactureListState.cpp" />
@@ -656,6 +657,7 @@
     <ClInclude Include="Basescape\DisposeState.h" />
     <ClInclude Include="Basescape\GlobalManufactureState.h" />
     <ClInclude Include="Basescape\GlobalResearchState.h" />
+    <ClInclude Include="Basescape\ManufactureAllocateEngineers.h" />
     <ClInclude Include="Basescape\ManufactureDependenciesTreeState.h" />
     <ClInclude Include="Basescape\NewManufactureListState.h" />
     <ClInclude Include="Basescape\ManageAlienContainmentState.h" />

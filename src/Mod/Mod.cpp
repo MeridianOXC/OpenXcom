@@ -373,7 +373,7 @@ Mod::Mod() :
 	_escortRange(20), _drawEnemyRadarCircles(1), _escortsJoinFightAgainstHK(true), _hunterKillerFastRetarget(true),
 	_crewEmergencyEvacuationSurvivalChance(100), _pilotsEmergencyEvacuationSurvivalChance(100),
 	_soldiersPerSergeant(5), _soldiersPerCaptain(11), _soldiersPerColonel(23), _soldiersPerCommander(30),
-	_pilotAccuracyZeroPoint(55), _pilotAccuracyRange(40), _pilotReactionsZeroPoint(55), _pilotReactionsRange(60), _pilotTacticsZeroPoint(20), _pilotTacticsRange(20),_pilotTrackingZeroPoint(40), _pilotTrackingRange(50),
+	_pilotAccuracyZeroPoint(55), _pilotAccuracyRange(40), _pilotReactionsZeroPoint(55), _pilotReactionsRange(60), _pilotCooperationZeroPoint(20), _pilotCooperationRange(20),_pilotTrackingZeroPoint(40), _pilotTrackingRange(50),
 	_performanceBonusFactor(0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
 	_alienInventoryOffsetX(80), _alienInventoryOffsetBigUnit(32),
 	_hidePediaInfoButton(false), _extraNerdyPediaInfo(false),
@@ -2908,8 +2908,8 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_pilotAccuracyRange = doc["pilotAccuracyRange"].as<int>(_pilotAccuracyRange);
 	_pilotReactionsZeroPoint = doc["pilotReactionsZeroPoint"].as<int>(_pilotReactionsZeroPoint);
 	_pilotReactionsRange = doc["pilotReactionsRange"].as<int>(_pilotReactionsRange);
-	_pilotTacticsZeroPoint = doc["pilotTacticsZeroPoint"].as<int>(_pilotTacticsZeroPoint);
-	_pilotTacticsRange = doc["pilotTacticsRange"].as<int>(_pilotTacticsRange);
+	_pilotCooperationZeroPoint = doc["pilotCooperationZeroPoint"].as<int>(_pilotCooperationZeroPoint);
+	_pilotCooperationRange = doc["pilotCooperationRange"].as<int>(_pilotCooperationRange);
 	_pilotTrackingZeroPoint = doc["pilotTrackingZeroPoint"].as<int>(_pilotTrackingZeroPoint);
 	_pilotTrackingRange = doc["pilotTrackingRange"].as<int>(_pilotTrackingRange);
 	if (doc["pilotBraveryThresholds"])

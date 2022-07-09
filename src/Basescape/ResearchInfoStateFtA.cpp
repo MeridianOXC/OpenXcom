@@ -380,9 +380,11 @@ std::pair<int, std::string> ResearchInfoStateFtA::getStatString(size_t position)
 	if (stats.biology > 0)
 		statMap.insert(std::make_pair(stats.biology, tr("STR_BIOLOGY_SHORT")));
 	if (stats.data > 0)
-		statMap.insert(std::make_pair(stats.data, tr("STR_DATA_ANALISYS_SHORT")));
+		statMap.insert(std::make_pair(stats.data, tr("STR_DATA_ANALISIS_SHORT")));
 	if (stats.computers > 0)
 		statMap.insert(std::make_pair(stats.computers, tr("STR_COMPUTER_SCIENCE_SHORT")));
+	if (stats.tactics > 0)
+		statMap.insert(std::make_pair(stats.tactics, tr("STR_TACTICS_SHORT")));
 	if (stats.materials > 0)
 		statMap.insert(std::make_pair(stats.materials, tr("STR_MATERIAL_SCIENCE_SHORT")));
 	if (stats.psychology > 0)

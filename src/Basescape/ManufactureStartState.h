@@ -36,11 +36,14 @@ class ManufactureStartState : public State
 {
 private:
 	Base *_base;
+	bool _ftaUi;
 	RuleManufacture *_item;
 	Window *_window;
 	TextButton *_btnCancel, *_btnStart;
-	Text *_txtTitle, *_txtManHour, *_txtCost, *_txtWorkSpace, *_txtRequiredItemsTitle, *_txtItemNameColumn, *_txtUnitRequiredColumn, *_txtUnitAvailableColumn;
+	Text *_txtTitle, *_txtManHour, *_txtCost, *_txtWorkSpace, *_txtReqStatsHeader, *_txtReqStatsList;
+	Text *_txtRequiredItemsTitle, *_txtItemNameColumn, *_txtUnitRequiredColumn, *_txtUnitAvailableColumn;
 	TextList *_lstRequiredItems;
+	std::string generateStatsList();
 public:
 	/// Creates the State.
 	ManufactureStartState(Base *base, RuleManufacture *item);

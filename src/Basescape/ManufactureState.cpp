@@ -47,6 +47,7 @@ namespace OpenXcom
  */
 ManufactureState::ManufactureState(Base *base) : _base(base)
 {
+	_ftaUi = _game->getMod()->getIsFTAGame();
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
 	_btnNew = new TextButton(148, 16, 8, 176);
@@ -191,6 +192,7 @@ void ManufactureState::fillProductionList(size_t scrl)
 	_lstManufacture->clearList();
 	for (std::vector<Production *>::const_iterator iter = productions.begin(); iter != productions.end(); ++iter)
 	{
+		//тут нужен код для ролей!;
 		std::ostringstream s1;
 		s1 << (*iter)->getAssignedEngineers();
 		std::ostringstream s2;
@@ -222,8 +224,33 @@ void ManufactureState::fillProductionList(size_t scrl)
 		}
 		_lstManufacture->addRow(5, tr((*iter)->getRules()->getName()).c_str(), s1.str().c_str(), s2.str().c_str(), s3.str().c_str(), s4.str().c_str());
 	}
-	_txtAvailable->setText(tr("STR_ENGINEERS_AVAILABLE").arg(_base->getAvailableEngineers()));
-	_txtAllocated->setText(tr("STR_ENGINEERS_ALLOCATED").arg(_base->getAllocatedEngineers()));
+
+	if (_ftaUi)
+	{
+		auto recovery = _base->getSumRecoveryPerDay();
+		unsigned int freeEngineers = 0, busyEngineers = 0;
+		bool isBusy = false, isFree = false;
+		for (auto s : _base->getPersonnel(ROLE_SCIENTIST))
+		{
+			s->getCurrentDuty(_game->getLanguage(), recovery, isBusy, isFree, LAB);
+			if (!isBusy || isFree)
+			{
+				freeEngineers++;
+			}
+			if (s->getProductionProject())
+			{
+				busyEngineers++;
+			}
+		}
+		_txtAvailable->setText(tr("STR_ENGINEERS_AVAILABLE").arg(freeEngineers));
+		_txtAllocated->setText(tr("STR_ENGINEERS_ALLOCATED").arg(busyEngineers));
+	}
+	else
+	{
+		_txtAvailable->setText(tr("STR_ENGINEERS_AVAILABLE").arg(_base->getAvailableEngineers()));
+		_txtAllocated->setText(tr("STR_ENGINEERS_ALLOCATED").arg(_base->getAllocatedEngineers()));
+	}
+
 	_txtSpace->setText(tr("STR_WORKSHOP_SPACE_AVAILABLE").arg(_base->getFreeWorkshops()));
 
 	if (scrl)

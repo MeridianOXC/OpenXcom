@@ -319,7 +319,7 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 			{
 				if (craft->isInDogfight() && craft != _craft && !craft->isDestroyed() && !craft->getPilotList(false).empty())
 				{
-					_squadTacticBonus += craft->getPilotTacticsBonus(craft->getPilotList(false), _game->getMod());
+					_squadTacticBonus += craft->getPilotCoordinationBonus(craft->getPilotList(false), _game->getMod());
 				}
 				if (_squadTacticBonus > 0)
 				{

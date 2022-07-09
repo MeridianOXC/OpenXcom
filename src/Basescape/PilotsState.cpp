@@ -120,7 +120,7 @@ PilotsState::PilotsState(Base *base) : _base(base), _origPilotOrder(*_base->getS
 	PUSH_IN("STR_DOGFIGHT", dogfightStat);
 	PUSH_IN("STR_BRAVERY", braveryStat);
 	PUSH_IN("STR_TRACKING", trackingStat);
-	PUSH_IN("STR_TACTICS", tacticsStat);
+	PUSH_IN("STR_COOPERATION", cooperationStat);
 	if (_game->getSavedGame()->isResearched(_game->getMod()->getBeamOperationsUnlockResearch()))
 	{
 		PUSH_IN("STR_BEAMS_OPERATION", beamsStat);

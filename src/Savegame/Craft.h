@@ -274,8 +274,8 @@ public:
 	int getPilotDodgeBonus(const std::vector<Soldier*> &pilots, const Mod *mod) const;
 	/// Calculates the tracking bonus based on pilot skills.
 	int getPilotTrackingBonus(const std::vector<Soldier *> &pilots, const Mod *mod) const;
-	/// Calculates the tactics bonus based on pilot skills.
-	int getPilotTacticsBonus(const std::vector<Soldier *> &pilots, const Mod *mod) const;
+	/// Calculates the coordination bonus based on pilot skills.
+	int getPilotCoordinationBonus(const std::vector<Soldier *> &pilots, const Mod *mod) const;
 	/// Calculates the approach speed modifier based on pilot skills.
 	int getPilotApproachSpeedModifier(const std::vector<Soldier*> &pilots, const Mod *mod) const;
 	/// Gets the craft's vehicles of a certain type.

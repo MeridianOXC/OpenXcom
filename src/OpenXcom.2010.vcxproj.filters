@@ -1217,6 +1217,9 @@
     <ClCompile Include="Basescape\ResearchAllocateScientists.cpp">
       <Filter>Basescape</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\ManufactureAllocateEngineers.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2496,6 +2499,9 @@
       <Filter>Basescape</Filter>
     </ClInclude>
     <ClInclude Include="Basescape\ResearchAllocateScientists.h">
+      <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\ManufactureAllocateEngineers.h">
       <Filter>Basescape</Filter>
     </ClInclude>
   </ItemGroup>

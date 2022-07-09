@@ -28,6 +28,7 @@
 #include "Craft.h"
 #include "../Savegame/CovertOperation.h"
 #include "../Savegame/ResearchProject.h"
+#include "../Savegame/Production.h"
 #include "EquipmentLayoutItem.h"
 #include "SoldierDeath.h"
 #include "SoldierDiary.h"
@@ -100,7 +101,7 @@ int Soldier::improveStat(int exp, int &rate, bool bravary)
  */
 Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
 	_id(id), _nationality(0),
-	_improvement(0), _psiStrImprovement(0), _rules(rules), _rank(RANK_ROOKIE), _craft(0), _covertOperation(0), _researchProject(0),
+	_improvement(0), _psiStrImprovement(0), _rules(rules), _rank(RANK_ROOKIE), _craft(0), _covertOperation(0), _researchProject(0), _production(0),
 	_gender(GENDER_MALE), _look(LOOK_BLONDE), _lookVariant(0), _missions(0), _kills(0), _stuns(0), _justSaved(false),
 	_recentlyPromoted(false), _psiTraining(false), _training(false), _returnToTrainingWhenHealed(false),
 	_armor(armor), _replacedArmor(0), _transformedArmor(0), _personalEquipmentArmor(nullptr), _death(0), _diary(new SoldierDiary()),
@@ -127,7 +128,7 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
 		_initialStats.missiles = RNG::generate(minStats.missiles, maxStats.missiles);
 		_initialStats.dogfight = RNG::generate(minStats.dogfight, maxStats.dogfight);
 		_initialStats.tracking = RNG::generate(minStats.tracking, maxStats.tracking);
-		_initialStats.tactics = RNG::generate(minStats.tactics, maxStats.tactics);
+		_initialStats.cooperation = RNG::generate(minStats.cooperation, maxStats.cooperation);
 		_initialStats.beams = RNG::generate(minStats.beams, maxStats.beams);
 		_initialStats.synaptic = RNG::generate(minStats.synaptic, maxStats.synaptic);
 		_initialStats.gravity = RNG::generate(minStats.gravity, maxStats.gravity);
@@ -138,6 +139,7 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int id) :
 		_initialStats.insight = RNG::generate(minStats.insight, maxStats.insight);
 		_initialStats.data = generateScienceStat(minStats.data, maxStats.data);
 		_initialStats.computers = generateScienceStat(minStats.computers, maxStats.computers);
+		_initialStats.tactics = generateScienceStat(minStats.tactics, maxStats.tactics);
 		_initialStats.materials = generateScienceStat(minStats.materials, maxStats.materials);
 		_initialStats.psychology = generateScienceStat(minStats.psychology, maxStats.psychology);
 		_initialStats.designing = generateScienceStat(minStats.designing, maxStats.designing);
@@ -371,12 +373,12 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 		node["dailyDogfightExperienceCache"] = _dailyDogfightExperienceCache;
 	}
 	if (_dogfightExperience.maneuvering > 0 || _dogfightExperience.dogfight > 0 || _dogfightExperience.missiles > 0 ||
-		_dogfightExperience.tracking > 0 || _dogfightExperience.tactics > 0)
+		_dogfightExperience.tracking > 0 || _dogfightExperience.cooperation > 0)
 	{
 		node["dogfightExperience"] = _dogfightExperience;
 	}
 	if (_researchExperience.physics > 0 || _researchExperience.chemistry > 0 || _researchExperience.biology > 0 ||
-		_researchExperience.insight > 0 || _researchExperience.data > 0 || _researchExperience.computers > 0 || _researchExperience.materials > 0 ||
+		_researchExperience.insight > 0 || _researchExperience.data > 0 || _researchExperience.computers > 0 || _researchExperience.tactics > 0 || _researchExperience.materials > 0 ||
 		_researchExperience.psychology > 0 || _researchExperience.designing > 0 || _researchExperience.psionics > 0 || _researchExperience.xenolinguistics > 0)
 	{
 		node["researchExperience"] = _researchExperience;
@@ -404,6 +406,10 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 	if (_researchProject != 0)
 	{
 		node["researchProject"] = _researchProject->getRules()->getName();
+	}
+	if (_production != 0)
+	{
+		node["production"] = _production->getRules()->getName();
 	}
 	node["gender"] = (int)_gender;
 	node["look"] = (int)_look;
@@ -651,6 +657,18 @@ std::string Soldier::getCurrentDuty(Language *lang, const BaseSumDailyRecovery &
 		else
 		{
 			return lang->getString("STR_IN_LAB");
+		}
+	}
+
+	if (_production != 0)
+	{
+		if (mode == WORK)
+		{
+			return lang->getString(_production->getRules()->getName());
+		}
+		else
+		{
+			return lang->getString("STR_IN_WORKSHOP");
 		}
 	}
 
@@ -1565,6 +1583,7 @@ void Soldier::die(SoldierDeath *death)
 	_craft = 0;
 	_covertOperation = 0;
 	_researchProject = 0;
+	_production = 0;
 	_psiTraining = false;
 	_training = false;
 	_returnToTrainingWhenHealed = false;
@@ -1978,6 +1997,8 @@ void Soldier::postponeTransformation(RuleSoldierTransformation* transformationRu
 	_returnToTrainingWhenHealed = false;
 	_psiTraining = false;
 	_craft = 0;
+	_researchProject = 0;
+	_production = 0;
 
 	int time = transformationRule->getTransformationTime();
 	//time += RNG::generate(time * (-0.2), time * 0.2); // let's see how it goes first
@@ -2462,9 +2483,9 @@ void Soldier::improvePrimaryStats(UnitStats* exp, SoldierRole role)
 		int reducedRate = RNG::generate(0, rate); // non-combat skill
 		addExperience(ROLE_PILOT, reducedRate);
 	}
-	if (exp->tactics && stats->tactics < caps.tactics)
+	if (exp->cooperation && stats->cooperation < caps.cooperation)
 	{
-		stats->tactics += improveStat(exp->tactics, rate);
+		stats->cooperation += improveStat(exp->cooperation, rate);
 		addExperience(ROLE_PILOT, rate);
 	}
 	if (exp->beams && stats->beams < caps.beams)
@@ -2512,6 +2533,11 @@ void Soldier::improvePrimaryStats(UnitStats* exp, SoldierRole role)
 	if (exp->computers && stats->computers < caps.computers)
 	{
 		stats->computers += improveStat(exp->computers, rate);
+		addExperience(ROLE_SCIENTIST, rate);
+	}
+	if (exp->tactics && stats->tactics < caps.tactics)
+	{
+		stats->tactics += improveStat(exp->tactics, rate);
 		addExperience(ROLE_SCIENTIST, rate);
 	}
 	if (exp->materials && stats->materials < caps.materials)

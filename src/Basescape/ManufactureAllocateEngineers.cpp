@@ -34,8 +34,10 @@
 #include "../Savegame/Base.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Soldier.h"
-#include "../Basescape/ResearchInfoStateFtA.h"
-#include "ResearchAllocateScientists.h"
+#include "../Savegame/Production.h"
+#include "../Mod/RuleManufacture.h"
+#include "../Basescape/ManufactureInfoState.h"
+#include "ManufactureAllocateEngineers.h"
 #include "SoldierInfoState.h"
 #include <algorithm>
 #include <climits>
@@ -44,12 +46,12 @@ namespace OpenXcom
 {
 
 /**
- * Initializes all the elements in the CovertOperation Soldiers screen.
- * @param base Pointer to the base to get info from.
- * @param operation Pointer to starting (not committed) covert operation.
- */
-ResearchAllocateScientists::ResearchAllocateScientists(Base *base, ResearchInfoStateFtA *planningProject)
-	: _base(base), _planningProject(planningProject), _otherCraftColor(0), _origScientistOrder(*_base->getSoldiers()), _dynGetter(NULL)
+	* Initializes all the elements in the CovertOperation Soldiers screen.
+	* @param base Pointer to the base to get info from.
+	* @param operation Pointer to starting (not committed) covert operation.
+	*/
+ManufactureAllocateEngineers::ManufactureAllocateEngineers(Base* base, ManufactureInfoState* planningProject)
+	: _base(base), _planningProject(planningProject), _otherCraftColor(0), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
 {
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
@@ -60,7 +62,7 @@ ResearchAllocateScientists::ResearchAllocateScientists(Base *base, ResearchInfoS
 	_txtCraft = new Text(84, 9, 220, 32);
 	_txtUsed = new Text(95, 9, 122, 24);
 	_cbxSortBy = new ComboBox(this, 148, 16, 8, 176, true);
-	_lstScientists = new TextList(288, 128, 8, 40);
+	_lstEngineers = new TextList(288, 128, 8, 40);
 
 	// Set palette
 	setInterface("craftSoldiers");
@@ -72,7 +74,7 @@ ResearchAllocateScientists::ResearchAllocateScientists(Base *base, ResearchInfoS
 	add(_txtRank, "text", "craftSoldiers");
 	add(_txtCraft, "text", "craftSoldiers");
 	add(_txtUsed, "text", "craftSoldiers");
-	add(_lstScientists, "list", "craftSoldiers");
+	add(_lstEngineers, "list", "craftSoldiers");
 	add(_cbxSortBy, "button", "craftSoldiers");
 
 	_otherCraftColor = _game->getMod()->getInterface("craftSoldiers")->getElement("otherCraft")->color;
@@ -83,12 +85,12 @@ ResearchAllocateScientists::ResearchAllocateScientists(Base *base, ResearchInfoS
 	setWindowBackground(_window, "craftSoldiers");
 
 	_btnOk->setText(tr("STR_OK"));
-	_btnOk->onMouseClick((ActionHandler)&ResearchAllocateScientists::btnOkClick);
-	_btnOk->onKeyboardPress((ActionHandler)&ResearchAllocateScientists::btnOkClick, Options::keyCancel);
-	_btnOk->onKeyboardPress((ActionHandler)&ResearchAllocateScientists::btnDeassignProjectScientistsClick, Options::keyRemoveSoldiersFromCraft);
+	_btnOk->onMouseClick((ActionHandler)&ManufactureAllocateEngineers::btnOkClick);
+	_btnOk->onKeyboardPress((ActionHandler)&ManufactureAllocateEngineers::btnOkClick, Options::keyCancel);
+	_btnOk->onKeyboardPress((ActionHandler)&ManufactureAllocateEngineers::btnDeassignProjectEngineersClick, Options::keyRemoveSoldiersFromCraft);
 
 	_txtTitle->setBig();
-	_txtTitle->setText(tr(planningProject->getResearchRules()->getName()));
+	_txtTitle->setText(tr(planningProject->getManufactureRules()->getName()));
 	_txtTitle->setWordWrap(true);
 	_txtTitle->setVerticalAlign(ALIGN_MIDDLE);
 
@@ -104,8 +106,8 @@ ResearchAllocateScientists::ResearchAllocateScientists(Base *base, ResearchInfoS
 	_sortFunctors.push_back(NULL);
 
 #define PUSH_IN(strId, functor)       \
-	sortOptions.push_back(tr(strId)); \
-	_sortFunctors.push_back(new SortFunctor(_game, functor));
+sortOptions.push_back(tr(strId)); \
+_sortFunctors.push_back(new SortFunctor(_game, functor));
 
 	PUSH_IN("STR_ID", idStat);
 	PUSH_IN("STR_NAME_UC", nameStat);
@@ -140,34 +142,34 @@ ResearchAllocateScientists::ResearchAllocateScientists(Base *base, ResearchInfoS
 
 	_cbxSortBy->setOptions(sortOptions);
 	_cbxSortBy->setSelected(0);
-	_cbxSortBy->onChange((ActionHandler)&ResearchAllocateScientists::cbxSortByChange);
+	_cbxSortBy->onChange((ActionHandler)&ManufactureAllocateEngineers::cbxSortByChange);
 	_cbxSortBy->setText(tr("STR_SORT_BY"));
 
-	_lstScientists->setColumns(3, 106, 98, 76);
-	_lstScientists->setAlign(ALIGN_RIGHT, 3);
-	_lstScientists->setSelectable(true);
-	_lstScientists->setBackground(_window);
-	_lstScientists->setMargin(8);
-	_lstScientists->onMouseClick((ActionHandler)&ResearchAllocateScientists::lstScientistsClick, 0);
+	_lstEngineers->setColumns(3, 106, 98, 76);
+	_lstEngineers->setAlign(ALIGN_RIGHT, 3);
+	_lstEngineers->setSelectable(true);
+	_lstEngineers->setBackground(_window);
+	_lstEngineers->setMargin(8);
+	_lstEngineers->onMouseClick((ActionHandler)&ManufactureAllocateEngineers::lstEngineersClick, 0);
 }
 
 /**
- * cleans up dynamic state
- */
-ResearchAllocateScientists::~ResearchAllocateScientists()
+	* cleans up dynamic state
+	*/
+ManufactureAllocateEngineers::~ManufactureAllocateEngineers()
 {
-	for (std::vector<SortFunctor *>::iterator it = _sortFunctors.begin();
-		 it != _sortFunctors.end(); ++it)
+	for (std::vector<SortFunctor*>::iterator it = _sortFunctors.begin();
+		it != _sortFunctors.end(); ++it)
 	{
 		delete (*it);
 	}
 }
 
 /**
- * Sorts the soldiers list by the selected criterion
- * @param action Pointer to an action.
- */
-void ResearchAllocateScientists::cbxSortByChange(Action *)
+	* Sorts the soldiers list by the selected criterion
+	* @param action Pointer to an action.
+	*/
+void ManufactureAllocateEngineers::cbxSortByChange(Action*)
 {
 	bool ctrlPressed = _game->isCtrlPressed();
 	size_t selIdx = _cbxSortBy->getSelected();
@@ -176,7 +178,7 @@ void ResearchAllocateScientists::cbxSortByChange(Action *)
 		return;
 	}
 
-	SortFunctor *compFunc = _sortFunctors[selIdx];
+	SortFunctor* compFunc = _sortFunctors[selIdx];
 	_dynGetter = NULL;
 	if (compFunc)
 	{
@@ -191,10 +193,10 @@ void ResearchAllocateScientists::cbxSortByChange(Action *)
 			if (selIdx == 2)
 			{
 				std::stable_sort(_base->getSoldiers()->begin(), _base->getSoldiers()->end(),
-								 [](const Soldier *a, const Soldier *b)
-								 {
-									 return Unicode::naturalCompare(a->getName(), b->getName());
-								 });
+					[](const Soldier* a, const Soldier* b)
+					{
+						return Unicode::naturalCompare(a->getName(), b->getName());
+					});
 			}
 			else
 			{
@@ -210,56 +212,56 @@ void ResearchAllocateScientists::cbxSortByChange(Action *)
 	{
 		// restore original ordering, ignoring (of course) those
 		// soldiers that have been sacked since this state started
-		for (std::vector<Soldier *>::const_iterator it = _origScientistOrder.begin();
-			 it != _origScientistOrder.end(); ++it)
+		for (std::vector<Soldier*>::const_iterator it = _origSoldierOrder.begin();
+			it != _origSoldierOrder.end(); ++it)
 		{
-			std::vector<Soldier *>::iterator soldierIt =
+			std::vector<Soldier*>::iterator soldierIt =
 				std::find(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *it);
 			if (soldierIt != _base->getSoldiers()->end())
 			{
-				Soldier *s = *soldierIt;
+				Soldier* s = *soldierIt;
 				_base->getSoldiers()->erase(soldierIt);
 				_base->getSoldiers()->insert(_base->getSoldiers()->end(), s);
 			}
 		}
 	}
 
-	size_t originalScrollPos = _lstScientists->getScroll();
+	size_t originalScrollPos = _lstEngineers->getScroll();
 	initList(originalScrollPos);
 }
 
 /**
- * Returns to the previous screen.
- * @param action Pointer to an action.
- */
-void ResearchAllocateScientists::btnOkClick(Action *)
+	* Returns to the previous screen.
+	* @param action Pointer to an action.
+	*/
+void ManufactureAllocateEngineers::btnOkClick(Action*)
 {
 	_game->popState();
 }
 
 /**
- * Shows the soldiers in a list at specified offset/scroll.
- */
-void ResearchAllocateScientists::initList(size_t scrl)
+	* Shows the soldiers in a list at specified offset/scroll.
+	*/
+void ManufactureAllocateEngineers::initList(size_t scrl)
 {
 	int row = 0;
-	_lstScientists->clearList();
+	_lstEngineers->clearList();
 
 	if (_dynGetter != NULL)
 	{
-		_lstScientists->setColumns(4, 106, 98, 60, 16);
+		_lstEngineers->setColumns(4, 106, 98, 60, 16);
 	}
 	else
 	{
-		_lstScientists->setColumns(3, 106, 98, 76);
+		_lstEngineers->setColumns(3, 106, 98, 76);
 	}
 
 	auto recovery = _base->getSumRecoveryPerDay();
 	bool isBusy = false, isFree = false;
 	unsigned int it = 0;
-	for (std::vector<Soldier *>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
+	for (std::vector<Soldier*>::iterator i = _base->getSoldiers()->begin(); i != _base->getSoldiers()->end(); ++i)
 	{
-		if ((*i)->getRoleRank(ROLE_SCIENTIST) > 0)
+		if ((*i)->getRoleRank(ROLE_ENGINEER) > 0)
 		{
 			_scientistsNumbers.push_back(it); // don't forget soldier's number on the base!
 			std::string duty = (*i)->getCurrentDuty(_game->getLanguage(), recovery, isBusy, isFree);
@@ -269,26 +271,26 @@ void ResearchAllocateScientists::initList(size_t scrl)
 				int dynStat = (*_dynGetter)(_game, *i);
 				std::ostringstream ss;
 				ss << dynStat;
-				_lstScientists->addRow(4, (*i)->getName(true, 19).c_str(), tr((*i)->getRankString(true)).c_str(), duty.c_str(), ss.str().c_str());
+				_lstEngineers->addRow(4, (*i)->getName(true, 19).c_str(), tr((*i)->getRankString(true)).c_str(), duty.c_str(), ss.str().c_str());
 			}
 			else
 			{
-				_lstScientists->addRow(3, (*i)->getName(true, 19).c_str(), tr((*i)->getRankString(true)).c_str(), duty.c_str());
+				_lstEngineers->addRow(3, (*i)->getName(true, 19).c_str(), tr((*i)->getRankString(true)).c_str(), duty.c_str());
 			}
 
 			Uint8 color;
 			bool matched = false;
-			auto scientists = _planningProject->getScientists();
-			auto iter = std::find(std::begin(scientists), std::end(scientists), (*i));
-			if (iter != std::end(scientists))
+			auto engineers = _planningProject->getEngineers();
+			auto iter = std::find(std::begin(engineers), std::end(engineers), (*i));
+			if (iter != std::end(engineers))
 			{
 				matched = true;
 			}
 
 			if (matched)
 			{
-				color = _lstScientists->getSecondaryColor();
-				_lstScientists->setCellText(row, 2, tr("STR_ASSIGNED_UC"));
+				color = _lstEngineers->getSecondaryColor();
+				_lstEngineers->setCellText(row, 2, tr("STR_ASSIGNED_UC"));
 			}
 			else if (isBusy || !isFree)
 			{
@@ -296,24 +298,24 @@ void ResearchAllocateScientists::initList(size_t scrl)
 			}
 			else
 			{
-				color = _lstScientists->getColor();
+				color = _lstEngineers->getColor();
 			}
-			_lstScientists->setRowColor(row, color);
+			_lstEngineers->setRowColor(row, color);
 			row++;
 		}
 		it++;
 	}
 	if (scrl)
-		_lstScientists->scrollTo(scrl);
-	_lstScientists->draw();
+		_lstEngineers->scrollTo(scrl);
+	_lstEngineers->draw();
 
-	_txtUsed->setText(tr("STR_ALLOCATED_TO_PROJECT").arg(_planningProject->getScientists().size()));
+	_txtUsed->setText(tr("STR_ALLOCATED_TO_PROJECT").arg(_planningProject->getEngineers().size()));
 }
 
 /**
- * Shows the soldiers in a list.
- */
-void ResearchAllocateScientists::init()
+	* Shows the soldiers in a list.
+	*/
+void ManufactureAllocateEngineers::init()
 {
 	State::init();
 	_base->prepareSoldierStatsWithBonuses(); // refresh stats for sorting
@@ -321,56 +323,56 @@ void ResearchAllocateScientists::init()
 }
 
 /**
- * Shows the selected soldier's info.
- * @param action Pointer to an action.
- */
-void ResearchAllocateScientists::lstScientistsClick(Action *action)
+	* Shows the selected soldier's info.
+	* @param action Pointer to an action.
+	*/
+void ManufactureAllocateEngineers::lstEngineersClick(Action* action)
 {
 	double mx = action->getAbsoluteXMouse();
-	if (mx >= _lstScientists->getArrowsLeftEdge() && mx < _lstScientists->getArrowsRightEdge())
+	if (mx >= _lstEngineers->getArrowsLeftEdge() && mx < _lstEngineers->getArrowsRightEdge())
 	{
 		return;
 	}
-	int row = _lstScientists->getSelectedRow();
+	int row = _lstEngineers->getSelectedRow();
 	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
 	{
-		Soldier *s = _base->getSoldiers()->at(_scientistsNumbers.at(row));
-		Uint8 color;
+		Soldier* s = _base->getSoldiers()->at(_scientistsNumbers.at(row));
+		Uint8 color = _lstEngineers->getColor();
 		bool isBusy = false, isFree = false, matched = false;
-		std::string duty = s->getCurrentDuty(_game->getLanguage(), _base->getSumRecoveryPerDay(), isBusy, isFree, LAB);
-		auto scientists = _planningProject->getScientists();
-		auto iter = std::find(std::begin(scientists), std::end(scientists), s);
-		if (iter != std::end(scientists))
+		std::string duty = s->getCurrentDuty(_game->getLanguage(), _base->getSumRecoveryPerDay(), isBusy, isFree, WORK);
+		auto engineers = _planningProject->getEngineers();
+		auto iter = std::find(std::begin(engineers), std::end(engineers), s);
+		if (iter != std::end(engineers))
 		{
 			matched = true;
 		}
 		if (matched)
 		{
-			for (int k = 0; k < _planningProject->getScientists().size(); k++)
+			for (int k = 0; k < _planningProject->getEngineers().size(); k++)
 			{
-				_planningProject->removeScientist(s);
+				_planningProject->removeEngineer(s);
 			}
 
-			_lstScientists->setCellText(row, 2, duty);
+			_lstEngineers->setCellText(row, 2, duty);
 			if (isBusy || !isFree || s->getCraft() != 0)
 			{
 				color = _otherCraftColor;
-				
+
 			}
 			else
 			{
-				color = _lstScientists->getColor();
+				color = _lstEngineers->getColor();
 			}
 		}
 		else if (s->hasFullHealth() && !isBusy)
 		{
-			_lstScientists->setCellText(row, 2, tr("STR_ASSIGNED_UC"));
-			color = _lstScientists->getSecondaryColor();
-			_planningProject->addScientist(s);
+			_lstEngineers->setCellText(row, 2, tr("STR_ASSIGNED_UC"));
+			color = _lstEngineers->getSecondaryColor();
+			_planningProject->addEngineer(s);
 		}
 
-		_lstScientists->setRowColor(row, color);
-		_txtUsed->setText(tr("STR_ALLOCATED_TO_PROJECT").arg(_planningProject->getScientists().size()));
+		_lstEngineers->setRowColor(row, color);
+		_txtUsed->setText(tr("STR_ALLOCATED_TO_PROJECT").arg(_planningProject->getEngineers().size()));
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 	{
@@ -379,16 +381,16 @@ void ResearchAllocateScientists::lstScientistsClick(Action *action)
 }
 
 /**
- * De-assign all soldiers from the current craft.
- * @param action Pointer to an action.
- */
-void ResearchAllocateScientists::btnDeassignProjectScientistsClick(Action *action)
+	* De-assign all soldiers from the current craft.
+	* @param action Pointer to an action.
+	*/
+void ManufactureAllocateEngineers::btnDeassignProjectEngineersClick(Action* action)
 {
-	for (auto s : _planningProject->getScientists())
+	for (auto e : _planningProject->getEngineers())
 	{
-		_planningProject->removeScientist(s);
+		_planningProject->removeEngineer(e);
 	}
-	_txtUsed->setText(tr("STR_ALLOCATED_TO_PROJECT").arg(_planningProject->getScientists().size()));
+	_txtUsed->setText(tr("STR_ALLOCATED_TO_PROJECT").arg(_planningProject->getEngineers().size()));
 }
 
 }

@@ -18,13 +18,16 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../Engine/State.h"
+#include "../Savegame/Soldier.h"
 
 namespace OpenXcom
 {
 
 class Base;
+class Soldiers;
 class Window;
 class Text;
+class TextList;
 class ArrowButton;
 class TextButton;
 class ToggleTextButton;
@@ -42,14 +45,17 @@ private:
 	Base * _base;
 	RuleManufacture * _item;
 	Production * _production;
+	bool _ftaUi, _newProject;
+	std::vector<Soldier *> _engineers;
 	Window * _window;
 	ArrowButton * _btnUnitUp, * _btnUnitDown, * _btnEngineerUp, * _btnEngineerDown;
-	TextButton * _btnStop, * _btnOk;
-	Text * _txtTitle, * _txtAvailableEngineer, * _txtAvailableSpace, * _txtHoursPerUnit, * _txtMonthlyProfit;
+	TextButton * _btnStop, * _btnOk, *_btnAllocateEngineers;
+	Text * _txtTitle, * _txtAvailableEngineer, * _txtAvailableSpace, * _txtHoursPerUnit, * _txtMonthlyProfit, *_txtGrade, *_txtAvgEfficiency, * _txtAvgDiligence;
 	Text * _txtAllocatedEngineer, * _txtUnitToProduce, * _txtUnitUp, * _txtUnitDown, * _txtEngineerUp, * _txtEngineerDown, * _txtAllocated, * _txtTodo;
 	ToggleTextButton *_btnSell;
 	Timer * _timerMoreEngineer, * _timerMoreUnit, * _timerLessEngineer, * _timerLessUnit;
 	InteractiveSurface *_surfaceEngineers, *_surfaceUnits;
+	TextList * _lstEngineers;
 	int _producedItemsValue;
 	/// Caches static data for monthly profit calculations
 	void initProfitInfo ();
@@ -61,6 +67,8 @@ private:
 	void btnStopClick (Action * action);
 	/// Handler for the OK button.
 	void btnOkClick (Action * action);
+	/// Handler for the Allocate engineers button.
+	void btnAllocateClick(Action* action);
 	/// Adds given number of engineers to the project if possible.
 	void moreEngineer(int change);
 	/// Handler for pressing the more engineer button.
@@ -113,6 +121,8 @@ private:
 	void buildUi();
 	/// Helper to exit the State.
 	void exitState();
+	void getAssignedEngineers();
+	int calcAvgStat(bool check);
 public:
 	/// Creates the State (new production).
 	ManufactureInfoState(Base * base, RuleManufacture * _item);
@@ -120,6 +130,15 @@ public:
 	ManufactureInfoState(Base * base, Production * production);
 	/// Cleans up the state
 	~ManufactureInfoState();
+	/// Updates the state.
+	void init() override;
+	void fillEngineersList(size_t scrl);
+
+	const RuleManufacture* getManufactureRules();
+	std::vector<Soldier*> getEngineers() { return _engineers; };
+	void addEngineer(Soldier* engineer) { _engineers.push_back(engineer); }
+	void removeEngineer(Soldier* engineer);
+	void setEngineers(std::vector<Soldier*> engineers) { _engineers = engineers; };
 };
 
 }

@@ -61,6 +61,7 @@ void RuleManufacture::load(const YAML::Node &node, Mod* mod, int listOrder)
 	_space = node["space"].as<int>(_space);
 	_time = node["time"].as<int>(_time);
 	_cost = node["cost"].as<int>(_cost);
+	_stats.merge(node["stats"].as<UnitStats>(_stats));
 	_refund = node["refund"].as<bool>(_refund);
 	mod->loadUnorderedNamesToInt(_name, _requiredItemsNames, node["requiredItems"]);
 	mod->loadUnorderedNamesToInt(_name, _producedItemsNames, node["producedItems"]);

@@ -191,14 +191,26 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 					}
 				}
 			}
-			if (const YAML::Node &op = (*i)["researchProject"])
+			if (const YAML::Node &rp = (*i)["researchProject"])
 			{
-				std::string researchProject = op.as<std::string>();
+				std::string researchProject = rp.as<std::string>();
 				for (std::vector<ResearchProject *>::iterator j = _research.begin(); j != _research.end(); ++j)
 				{
 					if ((*j)->getRules()->getName() == researchProject)
 					{
 						s->setResearchProject((*j));
+						break;
+					}
+				}
+			}
+			if (const YAML::Node& pr = (*i)["production"])
+			{
+				std::string production = pr.as<std::string>();
+				for (std::vector<Production*>::iterator j = _productions.begin(); j != _productions.end(); ++j)
+				{
+					if ((*j)->getRules()->getName() == production)
+					{
+						s->setProductionProject((*j));
 						break;
 					}
 				}

@@ -49,14 +49,16 @@ namespace OpenXcom
 ManufactureStartState::ManufactureStartState(Base *base, RuleManufacture *item) :  _base(base), _item(item)
 {
 	_screen = false;
+	_ftaUi = _game->getMod()->getIsFTAGame();
 
 	_window = new Window(this, 320, 160, 0, 20);
 	_btnCancel = new TextButton(136, 16, 16, 155);
-	_txtTitle = new Text(320, 17, 0, 30);
+	_txtTitle = new Text(302, 17, 9, 30);
 	_txtManHour = new Text(290, 9, 16, 50);
 	_txtCost = new Text(290, 9, 16, 60);
 	_txtWorkSpace = new Text(290, 9, 16, 70);
-
+	_txtReqStatsHeader = new Text(138, 9, 168, 50);
+	_txtReqStatsList = new Text(138, 19, 168, 60);
 	_txtRequiredItemsTitle = new Text(290, 9, 16, 84);
 	_txtItemNameColumn = new Text(60, 16, 30, 92);
 	_txtUnitRequiredColumn = new Text(60, 16, 155, 92);
@@ -73,6 +75,8 @@ ManufactureStartState::ManufactureStartState(Base *base, RuleManufacture *item) 
 	add(_txtManHour, "text", "allocateManufacture");
 	add(_txtCost, "text", "allocateManufacture");
 	add(_txtWorkSpace, "text", "allocateManufacture");
+	add(_txtReqStatsHeader, "text", "allocateManufacture");
+	add(_txtReqStatsList, "text", "allocateManufacture");
 	add(_btnCancel, "button", "allocateManufacture");
 
 	add(_txtRequiredItemsTitle, "text", "allocateManufacture");
@@ -91,7 +95,26 @@ ManufactureStartState::ManufactureStartState(Base *base, RuleManufacture *item) 
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);
 
-	_txtManHour->setText(tr("STR_ENGINEER_HOURS_TO_PRODUCE_ONE_UNIT").arg(_item->getManufactureTime()));
+	auto time = _item->getManufactureTime();
+	auto statsListString = generateStatsList();
+
+	if (_ftaUi)
+	{
+		_txtManHour->setText(tr("STR_BASE_LABOR_COSTS").arg(time));
+		_txtReqStatsHeader->setText(tr("STR_REQUIRED_STATS"));
+		_txtReqStatsList->setText(statsListString);
+		_txtReqStatsList->setWordWrap(true);
+	}
+	else
+	{
+		_txtManHour->setText(tr("STR_ENGINEER_HOURS_TO_PRODUCE_ONE_UNIT").arg(time));
+	}
+
+	if (!_ftaUi || statsListString.empty())
+	{
+		_txtReqStatsHeader->setVisible(false);
+		_txtReqStatsList->setVisible(false);
+	}
 
 	_txtCost->setText(tr("STR_COST_PER_UNIT_").arg(Unicode::formatFunding(_item->getManufactureCost())));
 
@@ -102,9 +125,6 @@ ManufactureStartState::ManufactureStartState(Base *base, RuleManufacture *item) 
 	_btnCancel->onKeyboardPress((ActionHandler)&ManufactureStartState::btnCancelClick, Options::keyCancel);
 
 	bool productionPossible = _item->haveEnoughMoneyForOneMoreUnit(_game->getSavedGame()->getFunds());
-	// check available workspace later
-	//int availableWorkSpace = _base->getFreeWorkshops();
-	//productionPossible &= (availableWorkSpace > 0);
 
 	_txtRequiredItemsTitle->setText(tr("STR_SPECIAL_MATERIALS_REQUIRED"));
 	_txtRequiredItemsTitle->setAlign(ALIGN_CENTER);
@@ -252,6 +272,49 @@ void ManufactureStartState::btnStartClick(Action *)
 	{
 		_game->pushState(new ManufactureInfoState(_base, _item));
 	}
+}
+
+std::string ManufactureStartState::generateStatsList()
+{
+	std::ostringstream ss;
+
+	auto stats = _item->getStats();
+	std::map<int, std::string> statMap;
+
+	if (stats.weaponry > 0)
+		statMap.insert(std::make_pair(stats.weaponry, tr("STR_WEAPONRY_LC")));
+	if (stats.explosives > 0)
+		statMap.insert(std::make_pair(stats.explosives, tr("STR_EXPLOSIVES_LC")));
+	if (stats.microelectronics > 0)
+		statMap.insert(std::make_pair(stats.microelectronics, tr("STR_MICROELECTRONICS_LC")));
+	if (stats.metallurgy > 0)
+		statMap.insert(std::make_pair(stats.metallurgy, tr("STR_METALLURGY_LC")));
+	if (stats.robotics > 0)
+		statMap.insert(std::make_pair(stats.robotics, tr("STR_ROBOTICS_LC")));
+	if (stats.hacking > 0)
+		statMap.insert(std::make_pair(stats.hacking, tr("STR_HACKING_LC")));
+	if (stats.alienTech > 0)
+		statMap.insert(std::make_pair(stats.alienTech, tr("STR_ALIEN_TECH_LC")));
+	if (stats.reverseEngineering > 0)
+		statMap.insert(std::make_pair(stats.reverseEngineering, tr("STR_REVERSE_ENGINEERING_LC")));
+
+	if (!statMap.empty())
+	{
+		size_t pos = 0;
+		std::pair<int, std::string> result;
+		for (auto it = statMap.rbegin(); it != statMap.rend(); ++it)
+		{
+			if (pos > 0)
+			{
+				ss << ", ";
+			}
+			ss << (*it).second;
+			pos++;
+		}
+		ss << ".";
+	}
+
+	return ss.str();
 }
 
 }

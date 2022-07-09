@@ -22,6 +22,7 @@
 #include <yaml-cpp/yaml.h>
 #include <stdint.h>
 #include "RuleBaseFacilityFunctions.h"
+#include "../Mod/Unit.h"
 
 namespace OpenXcom
 {
@@ -54,6 +55,7 @@ private:
 	RuleBaseFacilityFunctions _requiresBaseFunc;
 	std::vector<const RuleResearch*> _requires;
 	int _space, _time, _cost;
+	UnitStats _stats;
 	bool _refund;
 	std::map<std::string, int> _requiredItemsNames, _producedItemsNames;
 	std::map<const RuleItem*, int> _requiredItems, _producedItems;
@@ -91,6 +93,8 @@ public:
 	int getManufactureTime() const;
 	/// Gets the cost of manufacturing one object.
 	int getManufactureCost() const;
+	/// Get pointer to this manufacture's stats.
+	UnitStats getStats() const { return _stats; };
 	/// Checks if there's enough funds to manufacture one object.
 	bool haveEnoughMoneyForOneMoreUnit(int64_t funds) const;
 	/// Should all resources of a cancelled project be refunded?

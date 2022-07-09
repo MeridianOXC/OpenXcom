@@ -22,6 +22,7 @@
 #include "../Interface/TextButton.h"
 #include "../Interface/ToggleTextButton.h"
 #include "../Interface/Text.h"
+#include "../Interface/TextList.h"
 #include "../Interface/ArrowButton.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
@@ -36,9 +37,11 @@
 #include "../Savegame/Production.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/ItemContainer.h"
+#include "../Savegame/Soldier.h"
 #include "../Engine/Timer.h"
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleInterface.h"
+#include "../Basescape/ManufactureAllocateEngineers.h"
 #include <climits>
 
 namespace OpenXcom
@@ -52,6 +55,7 @@ namespace OpenXcom
  */
 ManufactureInfoState::ManufactureInfoState (Base *base, RuleManufacture *item) : _base(base), _item(item), _production(0)
 {
+	_newProject = true;
 	buildUi();
 }
 
@@ -63,6 +67,8 @@ ManufactureInfoState::ManufactureInfoState (Base *base, RuleManufacture *item) :
  */
 ManufactureInfoState::ManufactureInfoState (Base *base, Production *production) : _base(base), _item(0), _production(production)
 {
+	getAssignedEngineers();
+	_newProject = false;
 	buildUi();
 }
 
@@ -72,9 +78,10 @@ ManufactureInfoState::ManufactureInfoState (Base *base, Production *production) 
 void ManufactureInfoState::buildUi()
 {
 	_screen = false;
+	_ftaUi = _game->getMod()->getIsFTAGame();
 
 	_window = new Window(this, 320, 160, 0, 20, POPUP_BOTH);
-	_txtTitle = new Text(320, 17, 0, 30);
+	_txtTitle = new Text(302, 17, 9, 30);
 	_btnOk = new TextButton(136, 16, 168, 155);
 	_btnStop = new TextButton(136, 16, 16, 155);
 	_btnSell = new ToggleTextButton(60, 16, 244, 61);
@@ -94,6 +101,12 @@ void ManufactureInfoState::buildUi()
 	_btnUnitDown = new ArrowButton(ARROW_BIG_DOWN, 13, 14, 284, 136);
 	_txtAllocated = new Text(40, 16, 128, 88);
 	_txtTodo = new Text(40, 16, 280, 88);
+
+	_txtAvgEfficiency = new Text(143, 9, 168, 50);
+	_txtAvgDiligence = new Text(143, 9, 168, 59);
+	_btnAllocateEngineers = new TextButton(110, 16, 16, 80);
+	_txtGrade = new Text(32, 9, 132, 88);
+	_lstEngineers = new TextList(148, 57, 16, 97);
 
 	_btnSell->setVisible(false);
 
@@ -129,6 +142,12 @@ void ManufactureInfoState::buildUi()
 	add(_btnOk, "button2", "manufactureInfo");
 	add(_btnStop, "button2", "manufactureInfo");
 	add(_btnSell, "button1", "manufactureInfo");
+
+	add(_txtAvgEfficiency, "text", "manufactureInfo");
+	add(_txtAvgDiligence, "text", "manufactureInfo");
+	add(_btnAllocateEngineers, "button2", "manufactureInfo");
+	add(_txtGrade, "text", "manufactureInfo");
+	add(_lstEngineers, "list", "manufactureInfo");
 
 	centerAllSurfaces();
 
@@ -207,10 +226,45 @@ void ManufactureInfoState::buildUi()
 	}
 	_btnSell->setPressed(_production->getSellItems());
 	_btnSell->setVisible(_production->getRules()->canAutoSell() && !_game->getMod()->getIsFTAGame());
-	initProfitInfo();
-	setAssignedEngineer();
 
-	_txtHoursPerUnit->setText(tr("STR_HOURS_PER_UNIT").arg(_production->getRules()->getManufactureTime()));
+	if (_ftaUi)
+	{
+		_txtAllocated->setVisible(false);
+		_txtAllocatedEngineer->setVisible(false);
+		_btnEngineerUp->setVisible(false);
+		_btnEngineerDown->setVisible(false);
+		_txtEngineerUp->setVisible(false);
+		_txtEngineerDown->setVisible(false);
+		_txtMonthlyProfit->setVisible(false);
+
+		_txtHoursPerUnit->setText(tr("STR_ENGINEERS_ALLOCATED_UC").arg(_engineers.size()));
+		if (_engineers.size() > 0)
+		{
+			_txtAvgDiligence->setText(tr("STR_AVERAGE_DILIGENCE_UC").arg(calcAvgStat(false)));
+			_txtAvgEfficiency->setText(tr("STR_AVERAGE_EFFICIENCY_UC").arg(calcAvgStat(true)));
+		}
+		_btnAllocateEngineers->setText(tr("STR_ALLOCATE_ENGINEERS"));
+		_btnAllocateEngineers->onMouseClick((ActionHandler)&ManufactureInfoState::btnAllocateClick, 0);
+		_txtGrade->setText(tr("STR_GRADE_UC"));
+	}
+	else
+	{
+		_txtAvgEfficiency->setVisible(false);
+		_txtAvgDiligence->setVisible(false);
+		_btnAllocateEngineers->setVisible(false);
+		_txtGrade->setVisible(false);
+		_lstEngineers->setVisible(false);
+		initProfitInfo();
+		_txtHoursPerUnit->setText(tr("STR_HOURS_PER_UNIT").arg(_production->getRules()->getManufactureTime()));
+	}
+
+	_lstEngineers->setColumns(2, 116, 32);
+	_lstEngineers->setAlign(ALIGN_LEFT, 0);
+	_lstEngineers->setBackground(_window);
+	//_lstScientists->setMargin(2);
+	_lstEngineers->setWordWrap(true);
+
+	setAssignedEngineer(); //only OXC(E) values
 
 	_timerMoreEngineer = new Timer(250);
 	_timerLessEngineer = new Timer(250);
@@ -280,6 +334,48 @@ ManufactureInfoState::~ManufactureInfoState()
 	delete _timerLessUnit;
 }
 
+void ManufactureInfoState::init()
+{
+	State::init();
+	fillEngineersList(0);
+}
+
+void ManufactureInfoState::fillEngineersList(size_t scrl)
+{
+	_lstEngineers->clearList();
+	for (auto e : _engineers)
+	{
+		std::ostringstream ss;
+		ss << e->getRoleRank(ROLE_ENGINEER);
+		_lstEngineers->addRow(2, e->getName().c_str(), ss.str().c_str());
+		//_lstEngineers->addRow(1, e->getName().c_str());
+	}
+}
+
+const RuleManufacture* ManufactureInfoState::getManufactureRules()
+{
+	if (_item != nullptr)
+	{
+		return _item;
+	}
+	else
+	{
+		return _production->getRules();
+	}
+}
+
+void ManufactureInfoState::removeEngineer(Soldier* engineer)
+{
+	auto iter = std::find(std::begin(_engineers), std::end(_engineers), engineer);
+	for (int k = 0; k < _engineers.size(); k++)
+	{
+		if (_engineers[k] == engineer)
+		{
+			_engineers.erase(_engineers.begin() + k);
+		}
+	}
+}
+
 /**
  * Refreshes profit values.
  * @param action A pointer to an Action.
@@ -299,6 +395,11 @@ void ManufactureInfoState::btnStopClick(Action *)
 	{
 		_production->refundItem(_base, _game->getSavedGame(), _game->getMod());
 	}
+
+	for (auto s : _engineers)
+	{
+		s->setProductionProject(0);
+	}
 	_base->removeProduction(_production);
 	exitState();
 }
@@ -313,8 +414,17 @@ void ManufactureInfoState::btnOkClick(Action *)
 	{
 		_production->startItem(_base, _game->getSavedGame(), _game->getMod());
 	}
+	for (auto s : _engineers)
+	{
+		s->setProductionProject(_production);
+	}
 	_production->setSellItems(_btnSell->getPressed());
 	exitState();
+}
+
+void ManufactureInfoState::btnAllocateClick(Action* action)
+{
+	_game->pushState(new ManufactureAllocateEngineers(_base, this));
 }
 
 /**
@@ -327,6 +437,40 @@ void ManufactureInfoState::exitState()
 	{
 		_game->popState();
 	}
+}
+
+void ManufactureInfoState::getAssignedEngineers()
+{
+	for (auto s : *_base->getSoldiers())
+	{
+		if (s->getProductionProject() == _production)
+		{
+			_engineers.push_back(s);
+		}
+	}
+}
+
+int ManufactureInfoState::calcAvgStat(bool check)
+{
+	double result = 0;
+	if (_engineers.size() > 0)
+	{
+		
+		for (auto s : _engineers)
+		{
+			if (check) //efficiency; im so sorry if you can see this =)
+			{
+				result += s->getStatsWithAllBonuses()->efficiency;
+			}
+			else
+			{
+				result += s->getStatsWithAllBonuses()->diligence;
+			}
+		}
+
+		result /= _engineers.size();
+	}
+	return static_cast<int>(result);
 }
 
 /**

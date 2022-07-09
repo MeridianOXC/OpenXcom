@@ -4513,10 +4513,22 @@ void GeoscapeState::handleResearch(Base* base)
 							}
 							statsN++;
 						}
+						if (projStats.tactics > 0)
+						{
+							effort += ((stats->tactics + 1) * projStats.tactics) / (10000);
+							if (stats->tactics < caps.tactics
+								&& RNG::generate(0, caps.tactics) > stats->tactics
+								&& RNG::percent(factor * (projStats.tactics / 100))
+								&& RNG::percent(s.second))
+							{
+								s.first->getResearchExperience()->tactics++;
+							}
+							statsN++;
+						}
 						if (projStats.materials > 0)
 						{
 							effort += ((stats->materials + 1) * projStats.materials) / (10000);
-							if (stats->computers < caps.materials
+							if (stats->materials < caps.materials
 								&& RNG::generate(0, caps.materials) > stats->materials
 								&& RNG::percent(factor * (projStats.materials / 100))
 								&& RNG::percent(s.second))

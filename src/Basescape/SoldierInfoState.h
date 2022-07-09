@@ -59,12 +59,12 @@ private:
 	Text *_txtTimeUnits, *_txtStamina, *_txtHealth, *_txtBravery, *_txtReactions, *_txtFiring, *_txtThrowing, *_txtMelee, *_txtStrength, *_txtPsiStrength, *_txtPsiSkill, *_txtMana;
 	Text *_numTimeUnits, *_numStamina, *_numHealth, *_numBravery, *_numReactions, *_numFiring, *_numThrowing, *_numMelee, *_numStrength, *_numPsiStrength, *_numPsiSkill, *_numMana;
 	Bar *_barTimeUnits, *_barStamina, *_barHealth, *_barBravery, *_barReactions, *_barFiring, *_barThrowing, *_barMelee, *_barStrength, *_barPsiStrength, *_barPsiSkill, *_barMana;
-	Text *_txtManeuvering, *_txtMissiles, *_txtDogfight, *_txtTracking, *_txtTactics, *_txtBeams, *_txtSynaptic, *_txtGravity;
-	Text *_numManeuvering, *_numMissiles, *_numDogfight, *_numTracking, *_numTactics, *_numBeams, *_numSynaptic, *_numGravity;
-	Bar *_barManeuvering, *_bartMissiles, *_barDogfight, *_barTracking, *_barTactics, *_barBeams, *_barSynaptic, *_barGravity;
-	Text *_txtPhysics, *_txtChemistry, *_txtBiology, *_txtInsight, *_txtData, *_txtComputers, *_txtMaterials, *_txtPsychology, *_txtDesigning, *_txtPsionics, *_txtXenolinguistics;
-	Text *_numPhysics, *_numChemistry, *_numBiology, *_numInsight, *_numData, *_numComputers, *_numMaterials, *_numPsychology, *_numDesigning, *_numPsionics, *_numXenolinguistics;
-	Bar *_barPhysics, *_barChemistry, *_barBiology, *_barInsight, *_barData, *_barComputers, *_barMaterials, *_barPsychology, *_barDesigning, *_barPsionics, *_barXenolinguistics;
+	Text *_txtManeuvering, *_txtMissiles, *_txtDogfight, *_txtTracking, *_txtCooperation, *_txtBeams, *_txtSynaptic, *_txtGravity;
+	Text *_numManeuvering, *_numMissiles, *_numDogfight, *_numTracking, *_numCooperation, *_numBeams, *_numSynaptic, *_numGravity;
+	Bar *_barManeuvering, *_bartMissiles, *_barDogfight, *_barTracking, *_barCooperation, *_barBeams, *_barSynaptic, *_barGravity;
+	Text *_txtPhysics, *_txtChemistry, *_txtBiology, *_txtInsight, *_txtData, *_txtComputers, *_txtTactics, *_txtMaterials, *_txtPsychology, *_txtDesigning, *_txtPsionics, *_txtXenolinguistics;
+	Text *_numPhysics, *_numChemistry, *_numBiology, *_numInsight, *_numData, *_numComputers, *_numTactics, *_numMaterials, *_numPsychology, *_numDesigning, *_numPsionics, *_numXenolinguistics;
+	Bar *_barPhysics, *_barChemistry, *_barBiology, *_barInsight, *_barData, *_barComputers, *_barTactics, *_barMaterials, *_barPsychology, *_barDesigning, *_barPsionics, *_barXenolinguistics;
 
 	void defineStatLines();
 	void addStatLines();

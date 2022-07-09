@@ -1657,26 +1657,26 @@ int Craft::getPilotTrackingBonus(const std::vector<Soldier *> &pilots, const Mod
 	}
 	tracking = tracking / pilots.size(); // average tracking of all pilots
 
-	return ((tracking - mod->getPilotTacticsZeroPoint()) * mod->getPilotTacticsRange()) / 100;
+	return ((tracking - mod->getPilotTrackingZeroPoint()) * mod->getPilotTrackingRange()) / 100;
 }
 
 /**
  * Calculates the dodge bonus based on pilot skills.
- * @return Tactics bonus.
+ * @return cooperation bonus.
  */
-int Craft::getPilotTacticsBonus(const std::vector<Soldier *> &pilots, const Mod *mod) const
+int Craft::getPilotCoordinationBonus(const std::vector<Soldier *> &pilots, const Mod *mod) const
 {
 	if (pilots.empty())
 		return 0;
 
-	int tactics = 0;
+	int cooperation = 0;
 	for (std::vector<Soldier *>::const_iterator i = pilots.begin(); i != pilots.end(); ++i)
 	{
-		tactics += (*i)->getCurrentStats()->tactics;
+		cooperation += (*i)->getCurrentStats()->cooperation;
 	}
-	tactics = tactics / pilots.size(); // average tactics of all pilots
+	cooperation = cooperation / pilots.size(); // average cooperation of all pilots
 
-	return ((tactics - mod->getPilotTacticsZeroPoint()) * mod->getPilotTacticsRange()) / 100;
+	return ((cooperation - mod->getPilotCoordinationZeroPoint()) * mod->getPilotCoordinationRange()) / 100;
 }
 
 /**

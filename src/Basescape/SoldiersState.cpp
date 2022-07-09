@@ -268,7 +268,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 		PUSH_IN("STR_MISSILE_OPERATION", missilesStat);
 		PUSH_IN("STR_DOGFIGHT", dogfightStat);
 		PUSH_IN("STR_TRACKING", trackingStat);
-		PUSH_IN("STR_TACTICS", tacticsStat);
+		PUSH_IN("STR_COOPERATION", cooperationStat);
 		if (_game->getSavedGame()->isResearched(_game->getMod()->getBeamOperationsUnlockResearch()))
 		{
 			PUSH_IN("STR_BEAMS_OPERATION", beamsStat);
@@ -287,8 +287,9 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 		PUSH_IN("STR_CHEMISTRY_UC", chemistryStat);
 		PUSH_IN("STR_BIOLOGY_UC", biologyStat);
 		PUSH_IN("STR_INSIGHT_UC", insightStat);
-		PUSH_IN("STR_DATA_ANALISYS_UC", dataStat);
+		PUSH_IN("STR_DATA_ANALISIS_UC", dataStat);
 		PUSH_IN("STR_COMPUTER_SCIENCE_UC", computersStat);
+		PUSH_IN("STR_TACTICS_UC", tacticsStat);
 		PUSH_IN("STR_MATERIAL_SCIENCE_UC", materialsStat);
 		PUSH_IN("STR_PSYCHOLOGY_UC", psychologyStat);
 		PUSH_IN("STR_DESIGNING_UC", designingStat);
