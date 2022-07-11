@@ -29,6 +29,7 @@
 #include "../Interface/TextList.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/SavedGame.h"
+#include "../Savegame/Soldier.h"
 #include "../Basescape/ScientistsState.h"
 #include "NewResearchListState.h"
 #include "GlobalResearchState.h"
@@ -104,6 +105,7 @@ ResearchState::ResearchState(Base *base) : _base(base)
 
 	_btnScientists->setText(tr("STR_SCIENTISTS_LC"));
 	_btnScientists->onMouseClick((ActionHandler)&ResearchState::btnScientistsClick);
+	_btnScientists->setVisible(_ftaUi);
 
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);
@@ -213,7 +215,7 @@ void ResearchState::lstResearchMousePress(Action *action)
 	if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
 	{
 		change = std::min(change, _base->getAvailableScientists());
-		change = std::min(change, _base->getFreeLaboratories());
+		change = std::min(change, _base->getFreeLaboratories(_ftaUi));
 		if (change > 0)
 		{
 			ResearchProject *selectedProject = _base->getResearch()[_lstResearch->getSelectedRow()];
@@ -272,7 +274,7 @@ void ResearchState::fillProjectList(size_t scrl)
 	_lstResearch->clearList();
 	for (std::vector<ResearchProject *>::const_iterator iter = baseProjects.begin(); iter != baseProjects.end(); ++iter)
 	{
-		std::ostringstream sstr;
+		std::ostringstream sstr, sspr;
 		if (_ftaUi)
 		{
 			unsigned int n = 0;
@@ -284,14 +286,41 @@ void ResearchState::fillProjectList(size_t scrl)
 				}
 			}
 			sstr << n;
+
+			float progress = static_cast<float>((*iter)->getSpent()) / (*iter)->getRules()->getCost();
+			if (n == 0)
+			{
+				sspr << tr("STR_NONE");
+			}
+			else if (progress <= 0.25f)
+			{
+				sspr << tr("STR_UNKNOWN");
+			}
+			else if (progress <= 0.40f)
+			{
+				sspr << tr("STR_POOR");
+			}
+			else if (progress <= 0.65f)
+			{
+				sspr << tr("STR_AVERAGE");
+			}
+			else if (progress <= 0.85f)
+			{
+				sspr << tr("STR_GOOD");
+			}
+			else
+			{
+				sspr << tr("STR_EXCELLENT");
+			}
 		}
 		else
 		{
 			sstr << (*iter)->getAssigned();
+			sspr << tr((*iter)->getResearchProgress());
 		}
 		const RuleResearch *r = (*iter)->getRules();
 		std::string wstr = tr(r->getName());
-		_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), tr((*iter)->getResearchProgress()).c_str());
+		_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), sspr.str().c_str());
 	}
 
 	if (_ftaUi)
@@ -320,7 +349,7 @@ void ResearchState::fillProjectList(size_t scrl)
 		_txtAllocated->setText(tr("STR_SCIENTISTS_ALLOCATED").arg(_base->getAllocatedScientists()));
 	}
 
-	_txtSpace->setText(tr("STR_LABORATORY_SPACE_AVAILABLE").arg(_base->getFreeLaboratories()));
+	_txtSpace->setText(tr("STR_LABORATORY_SPACE_AVAILABLE").arg(_base->getFreeLaboratories(_ftaUi)));
 
 	if (scrl)
 		_lstResearch->scrollTo(scrl);

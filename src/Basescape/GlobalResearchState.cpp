@@ -206,7 +206,7 @@ void GlobalResearchState::fillProjectList()
 
 		availableScientists += base->getAvailableScientists();
 		allocatedScientists += base->getAllocatedScientists();
-		freeLaboratories += base->getFreeLaboratories();
+		freeLaboratories += base->getFreeLaboratories(_game->getMod()->getIsFTAGame());
 	}
 
 	_txtAvailable->setText(tr("STR_SCIENTISTS_AVAILABLE").arg(availableScientists));

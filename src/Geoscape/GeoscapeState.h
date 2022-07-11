@@ -19,6 +19,7 @@
  */
 #include "../Engine/State.h"
 #include <list>
+#include <map>
 
 namespace OpenXcom
 {
@@ -35,6 +36,8 @@ class Craft;
 class Ufo;
 class MissionSite;
 class Base;
+class ResearchProject;
+class Soldier;
 class RuleMissionScript;
 
 /**
@@ -190,6 +193,7 @@ private:
 	bool buttonsDisabled();
 	void updateSlackingIndicator();
 	void handleResearch(Base *base);
+	int getResearchStepProgress(ResearchProject* project, std::map<Soldier*, int> &assignedScientists);
 };
 
 }

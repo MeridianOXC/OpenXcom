@@ -34,25 +34,9 @@ ResearchProject::ResearchProject(const RuleResearch * p, int c) : _project(p), _
  * Called every day to compute time spent on this ResearchProject
  * @return true if the ResearchProject is finished
  */
-bool ResearchProject::step(int bonus, int progress)
+bool ResearchProject::step(int progress)
 {
-	int step = _assigned;
-	if (progress > 0) // fta logic
-	{
-		step = progress; 
-	}
-
-	//check loaylty bonus
-	if (bonus > 0) 
-	{
-		step *= 2;
-	}
-	else if (bonus < 0)
-	{
-		step = 0;
-	}
-
-	_spent += step;
+	_spent += progress;
 	return isFinished();
 }
 

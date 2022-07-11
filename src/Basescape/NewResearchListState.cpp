@@ -148,7 +148,10 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	_lstResearch->setSelectable(true);
 	_lstResearch->setBackground(_window);
 	_lstResearch->setMargin(2);
-	//_lstResearch->setAlign(ALIGN_CENTER);
+	if (!_ftaUi)
+	{
+		_lstResearch->setAlign(ALIGN_CENTER);
+	}
 	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onSelectProject, SDL_BUTTON_LEFT);
 	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onToggleProjectStatus, SDL_BUTTON_RIGHT);
 	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onOpenTechTreeViewer, SDL_BUTTON_MIDDLE);
@@ -426,7 +429,7 @@ std::string NewResearchListState::getProjectCategory(RuleResearch *project)
 
 	size_t i = 0;
 	std::ostringstream ss;
-	for (auto it = statMap.rbegin(); it != statMap.rend(); ++it)
+	for (auto it = statMap.begin(); it != statMap.end(); ++it)
 	{
 		if (i > 0)
 		{

@@ -40,56 +40,7 @@ namespace OpenXcom
 {
 Production::Production(const RuleManufacture * rules, int amount) : _rules(rules), _amount(amount), _infinite(false), _timeSpent(0), _engineers(0), _sell(false)
 {
-}
-
-int Production::getAmountTotal() const
-{
-	return _amount;
-}
-
-void Production::setAmountTotal (int amount)
-{
-	_amount = amount;
-}
-
-bool Production::getInfiniteAmount() const
-{
-	return _infinite;
-}
-
-void Production::setInfiniteAmount (bool inf)
-{
-	_infinite = inf;
-}
-
-int Production::getTimeSpent() const
-{
-	return _timeSpent;
-}
-
-void Production::setTimeSpent (int done)
-{
-	_timeSpent = done;
-}
-
-int Production::getAssignedEngineers() const
-{
-	return _engineers;
-}
-
-void Production::setAssignedEngineers (int engineers)
-{
-	_engineers = engineers;
-}
-
-bool Production::getSellItems() const
-{
-	return _sell;
-}
-
-void Production::setSellItems (bool sell)
-{
-	_sell = sell;
+	_efficiency = 100;
 }
 
 bool Production::haveEnoughMoneyForOneMoreUnit(SavedGame * g) const
@@ -125,19 +76,198 @@ bool Production::haveEnoughMaterialsForOneMoreUnit(Base * b, const Mod *m) const
 	return true;
 }
 
-productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Language *lang, int bonus)
+int Production::getProgress(Base* b, SavedGame* g, const Mod* m, int loyaltyRating)
+{
+	if (!m->getIsFTAGame())
+	{
+		return _engineers;
+	}
+	else
+	{
+		int progress = 0;
+		std::vector<Soldier*> assignedEngineers;
+		for (auto s : *b->getSoldiers())
+		{
+			if (s->getProductionProject() == this)
+			{
+				assignedEngineers.push_back(s);
+			}
+		}
+
+		if (assignedEngineers.size() > 0)
+		{
+			double effort = 0;
+			auto projStats = _rules->getStats();
+			int factor = m->getEngineerTrainingFactor();
+			int summEfficiency = 0;
+			for (auto s : assignedEngineers)
+			{
+				auto stats = s->getStatsWithAllBonuses();
+				auto caps = s->getRules()->getStatCaps();
+				unsigned int statsN = 0;
+				Log(LOG_INFO) << "Soldier " << s->getName() << " is calculating his/her effort for the manufacturing project";
+
+				if (projStats.weaponry > 0)
+				{
+					effort += (stats->weaponry * projStats.weaponry) / (10000);
+					if (stats->weaponry < caps.weaponry
+						&& RNG::generate(0, caps.weaponry) > stats->weaponry
+						&& RNG::percent(factor * (projStats.weaponry / 100)))
+					{
+						s->getEngineerExperience()->weaponry++;
+					}
+					statsN++;
+				}
+
+				if (projStats.explosives > 0)
+				{
+					effort += (stats->explosives * projStats.explosives) / (10000);
+					if (stats->explosives < caps.explosives
+						&& RNG::generate(0, caps.explosives) > stats->explosives
+						&& RNG::percent(factor * (projStats.explosives / 100)))
+					{
+						s->getEngineerExperience()->explosives++;
+					}
+					statsN++;
+				}
+
+				if (projStats.microelectronics > 0)
+				{
+					effort += (stats->microelectronics * projStats.microelectronics) / (10000);
+					if (stats->microelectronics < caps.microelectronics
+						&& RNG::generate(0, caps.microelectronics) > stats->microelectronics
+						&& RNG::percent(factor * (projStats.microelectronics / 100)))
+					{
+						s->getEngineerExperience()->microelectronics++;
+					}
+					statsN++;
+				}
+
+				if (projStats.metallurgy > 0)
+				{
+					effort += (stats->metallurgy * projStats.metallurgy) / (10000);
+					if (stats->metallurgy < caps.metallurgy
+						&& RNG::generate(0, caps.metallurgy) > stats->metallurgy
+						&& RNG::percent(factor * (projStats.metallurgy / 100)))
+					{
+						s->getEngineerExperience()->metallurgy++;
+					}
+					statsN++;
+				}
+
+				if (projStats.processing > 0)
+				{
+					effort += (stats->processing * projStats.processing) / (10000);
+					if (stats->processing < caps.processing
+						&& RNG::generate(0, caps.processing) > stats->processing
+						&& RNG::percent(factor * (projStats.processing / 100)))
+					{
+						s->getEngineerExperience()->processing++;
+					}
+					statsN++;
+				}
+
+				if (projStats.robotics > 0)
+				{
+					effort += (stats->robotics * projStats.robotics) / (10000);
+					if (stats->robotics < caps.robotics
+						&& RNG::generate(0, caps.robotics) > stats->robotics
+						&& RNG::percent(factor * (projStats.robotics / 100)))
+					{
+						s->getEngineerExperience()->robotics++;
+					}
+					statsN++;
+				}
+
+				if (projStats.hacking > 0)
+				{
+					effort += (stats->hacking * projStats.hacking) / (10000);
+					if (stats->hacking < caps.hacking
+						&& RNG::generate(0, caps.hacking) > stats->hacking
+						&& RNG::percent(factor * (projStats.hacking / 100)))
+					{
+						s->getEngineerExperience()->hacking++;
+					}
+					statsN++;
+				}
+
+				if (projStats.construction > 0)
+				{
+					effort += (stats->construction * projStats.construction) / (10000);
+					if (stats->construction < caps.construction
+						&& RNG::generate(0, caps.construction) > stats->construction
+						&& RNG::percent(factor * (projStats.construction / 100)))
+					{
+						s->getEngineerExperience()->construction++;
+					}
+					statsN++;
+				}
+
+				if (projStats.alienTech > 0)
+				{
+					effort += (stats->alienTech * projStats.alienTech) / (10000);
+					if (stats->alienTech < caps.alienTech
+						&& RNG::generate(0, caps.alienTech) > stats->alienTech
+						&& RNG::percent(factor * (projStats.alienTech / 100)))
+					{
+						s->getEngineerExperience()->alienTech++;
+					}
+					statsN++;
+				}
+
+				if (projStats.reverseEngineering > 0)
+				{
+					effort += (stats->reverseEngineering * projStats.reverseEngineering) / (10000);
+					if (stats->reverseEngineering < caps.reverseEngineering
+						&& RNG::generate(0, caps.reverseEngineering) > stats->reverseEngineering
+						&& RNG::percent(factor * (projStats.reverseEngineering / 100)))
+					{
+						s->getEngineerExperience()->reverseEngineering++;
+					}
+					statsN++;
+				}
+
+				Log(LOG_INFO) << "Raw effort equals: " << effort;
+
+				int deliganceFactor = ceil((stats->diligence * 0.5) - 25);
+
+				effort = (effort * deliganceFactor) / 100;
+
+				Log(LOG_INFO) << "Effort with diligence bonus: " << effort;
+
+				if (statsN > 0)
+				{
+					effort /= statsN;
+				}
+
+				Log(LOG_INFO) << "Final effort value: " << effort;
+
+				summEfficiency += stats->efficiency;
+			}
+
+			_efficiency = summEfficiency / assignedEngineers.size();
+
+			// If one woman can carry a baby in nine months, nine women can't do it in a month...
+			effort *= 100 - (19 * log(assignedEngineers.size()));
+			Log(LOG_INFO) << "Progress after correction for size: " << effort;
+			effort = (effort * loyaltyRating) / 100;
+			progress = static_cast<int>(ceil(effort));
+			Log(LOG_INFO) << " >>> Total hourly progress for manufacturing project " << _rules->getName() << ": " << progress;
+		}
+		else
+		{
+			Log(LOG_INFO) << " >>> No assigned engineers for project: " << _rules->getName();
+			_efficiency = 100;
+		}
+
+		return progress;
+	}
+}
+
+productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Language *lang, int rating)
 {
 	int done = getAmountProduced();
-	int progress = _engineers;
-	if (bonus > 0)
-	{
-		progress *= 2;
-	}
-	else if (bonus < 0)
-	{
-		progress = 0;
-	}
-	_timeSpent += progress;
+	_timeSpent += getProgress(b, g, m, rating);
 
 	if (done < getAmountProduced())
 	{
@@ -292,6 +422,7 @@ const RuleManufacture * Production::getRules() const
 
 void Production::startItem(Base * b, SavedGame * g, const Mod *m) const
 {
+
 	g->setFunds(g->getFunds() - _rules->getManufactureCost());
 	for (auto& i : _rules->getRequiredItems())
 	{

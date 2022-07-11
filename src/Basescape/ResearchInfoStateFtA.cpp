@@ -46,10 +46,10 @@ namespace OpenXcom
  * @param base Pointer to the base to get info from.
  * @param rule A RuleResearch which will be used to create a new ResearchProject
  */
-ResearchInfoStateFtA::ResearchInfoStateFtA(Base *base, RuleResearch *rule) : _base(base), _rule(rule)
+ResearchInfoStateFtA::ResearchInfoStateFtA(Base *base, const RuleResearch *rule) : _base(base), _rule(rule)
 {
-	buildUi();
 	_newProject = true;
+	buildUi();
 
 }
 
@@ -63,7 +63,6 @@ ResearchInfoStateFtA::ResearchInfoStateFtA(Base *base, ResearchProject *project)
 {
 	getAssignedScientists();
 	_newProject = false;
-	_rule = _project->getRules();
 	buildUi();
 }
 
@@ -124,7 +123,7 @@ void ResearchInfoStateFtA::buildUi()
 
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);
-	_txtTitle->setText(tr(_rule->getName()));
+	_txtTitle->setText(tr(getResearchRules()->getName()));
 
 	setAssignedScientist();
 
@@ -219,9 +218,9 @@ void ResearchInfoStateFtA::buildUi()
 	if (_newProject)
 	{
 		// mark new as normal
-		if (_game->getSavedGame()->isResearchRuleStatusNew(_rule->getName()))
+		if (_game->getSavedGame()->isResearchRuleStatusNew(getResearchRules()->getName()))
 		{
-			_game->getSavedGame()->setResearchRuleStatus(_rule->getName(), RuleResearch::RESEARCH_STATUS_NORMAL);
+			_game->getSavedGame()->setResearchRuleStatus(getResearchRules()->getName(), RuleResearch::RESEARCH_STATUS_NORMAL);
 		}
 	}
 }
@@ -241,6 +240,18 @@ void ResearchInfoStateFtA::init()
 {
 	State::init();
 	fillScientistsList(0);
+}
+
+const RuleResearch* ResearchInfoStateFtA::getResearchRules()
+{
+	if (_newProject)
+	{
+		return _rule;
+	}
+	else
+	{
+		return _project->getRules();
+	}
 }
 
 void ResearchInfoStateFtA::removeScientist(Soldier *scientist)
@@ -323,16 +334,16 @@ void ResearchInfoStateFtA::btnOkClick(Action *)
 	if (_newProject)
 	{
 		int rng = RNG::generate(50, 150);
-		int randomizedCost = _rule->getCost() * rng / 100;
-		if (_rule->getCost() > 0)
+		int randomizedCost = getResearchRules()->getCost() * rng / 100;
+		if (getResearchRules()->getCost() > 0)
 		{
 			randomizedCost = std::max(1, randomizedCost);
 		}
-		_project = new ResearchProject(_rule, randomizedCost);
+		_project = new ResearchProject(getResearchRules(), randomizedCost);
 		_base->addResearch(_project);
-		if (_rule->needItem() && _rule->destroyItem())
+		if (getResearchRules()->needItem() && getResearchRules()->destroyItem())
 		{
-			_base->getStorageItems()->removeItem(_rule->getName(), 1);
+			_base->getStorageItems()->removeItem(getResearchRules()->getName(), 1);
 		}
 	}
 
@@ -399,20 +410,19 @@ void ResearchInfoStateFtA::setAssignedScientist()
 			freeScientists++;
 		}
 		// as we will set new scientists only on Ok button press, new assigned soldiers should be considerid with:
-		if (s->getResearchProject() == _project)
+		if (s->getResearchProject() == _project || std::find(_scientists.begin(), _scientists.end(), s) != _scientists.end())
 		{
 			involved++;
 		}
-		involved -= _scientists.size();
 		freeScientists -= involved;
 	}
 	_txtAvailableScientist->setText(tr("STR_SCIENTISTS_AVAILABLE_UC").arg(freeScientists));
-	_txtAvailableSpace->setText(tr("STR_LABORATORY_SPACE_AVAILABLE_UC").arg(_base->getFreeLaboratories()));
+	_txtAvailableSpace->setText(tr("STR_LABORATORY_SPACE_AVAILABLE_UC").arg(_base->getFreeLaboratories(true)));
 }
 
 std::pair<int, std::string> ResearchInfoStateFtA::getStatString(size_t position)
 {
-	auto stats = _rule->getStats();
+	auto stats = getResearchRules()->getStats();
 	std::map<int, std::string> statMap;
 
 	if (stats.physics > 0)

@@ -32,7 +32,7 @@ class ComboBox;
 class Base;
 class Soldier;
 class RuleResearch;
-class ManufactureInfoState;
+class ManufactureInfoStateFtA;
 struct SortFunctor;
 
 /**
@@ -48,7 +48,7 @@ private:
 	ComboBox* _cbxSortBy;
 	TextList* _lstEngineers;
 	Base* _base;
-	ManufactureInfoState* _planningProject;
+	ManufactureInfoStateFtA* _planningProject;
 	Uint8 _otherCraftColor;
 	std::vector<Soldier*> _origSoldierOrder;
 	std::vector<SortFunctor*> _sortFunctors;
@@ -59,7 +59,7 @@ private:
 
 public:
 	/// Creates the Craft Soldiers state.
-	ManufactureAllocateEngineers(Base* base, ManufactureInfoState* planningProject);
+	ManufactureAllocateEngineers(Base* base, ManufactureInfoStateFtA* planningProject);
 	/// Cleans up the Craft Soldiers state.
 	~ManufactureAllocateEngineers();
 	/// Handler for changing the sort by combo-box.

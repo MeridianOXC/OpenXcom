@@ -3526,7 +3526,6 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 					for (auto& craft : *base->getCrafts())
 					{
 						if (!craft->getRules()->getAllowLanding()
-							&& soldier->getRoleRank(craft->getRules()->getRequiredRole()) > 0
 							&& craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
 						{
 							soldier->setCraft(craft);
@@ -3538,7 +3537,6 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 					for (auto& craft : *base->getCrafts())
 					{
 						if (craft->getRules()->getAllowLanding()
-							&& soldier->getRoleRank(craft->getRules()->getRequiredRole()) > 0
 							&& craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
 						{
 							soldier->setCraft(craft);

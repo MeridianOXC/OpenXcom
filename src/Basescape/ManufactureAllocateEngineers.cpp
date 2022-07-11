@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "ManufactureAllocateEngineers.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
@@ -36,8 +37,7 @@
 #include "../Savegame/Soldier.h"
 #include "../Savegame/Production.h"
 #include "../Mod/RuleManufacture.h"
-#include "../Basescape/ManufactureInfoState.h"
-#include "ManufactureAllocateEngineers.h"
+#include "../Basescape/ManufactureInfoStateFtA.h"
 #include "SoldierInfoState.h"
 #include <algorithm>
 #include <climits>
@@ -50,7 +50,7 @@ namespace OpenXcom
 	* @param base Pointer to the base to get info from.
 	* @param operation Pointer to starting (not committed) covert operation.
 	*/
-ManufactureAllocateEngineers::ManufactureAllocateEngineers(Base* base, ManufactureInfoState* planningProject)
+ManufactureAllocateEngineers::ManufactureAllocateEngineers(Base* base, ManufactureInfoStateFtA* planningProject)
 	: _base(base), _planningProject(planningProject), _otherCraftColor(0), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
 {
 	// Create objects

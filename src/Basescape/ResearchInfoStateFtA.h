@@ -56,7 +56,7 @@ private:
 
 public:
 	/// Creates the ResearchProject state.
-	ResearchInfoStateFtA(Base *base, RuleResearch *rule);
+	ResearchInfoStateFtA(Base *base, const RuleResearch *rule);
 	ResearchInfoStateFtA(Base *base, ResearchProject *project);
 	/// Cleans up the ResearchInfo state
 	~ResearchInfoStateFtA();
@@ -73,7 +73,7 @@ public:
 	/// Updates the research list.
 	void init() override;
 
-	const RuleResearch *getResearchRules() { return _rule; }
+	const RuleResearch* getResearchRules();
 	std::vector<Soldier *> getScientists() { return _scientists; };
 	void addScientist(Soldier *scientist) { _scientists.push_back(scientist); }
 	void removeScientist(Soldier *scientist);

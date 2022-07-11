@@ -33,6 +33,7 @@
 #include "../Savegame/Base.h"
 #include "../Savegame/ItemContainer.h"
 #include "ManufactureInfoState.h"
+#include "../Basescape/ManufactureInfoStateFtA.h"
 #include "../Savegame/SavedGame.h"
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleInterface.h"
@@ -264,13 +265,20 @@ void ManufactureStartState::btnStartClick(Action *)
 	{
 		_game->pushState(new ErrorMessageState(tr("STR_NO_FREE_HANGARS_FOR_CRAFT_PRODUCTION"), _palette, _game->getMod()->getInterface("basescape")->getElement("errorMessage")->color, "BACK17.SCR", _game->getMod()->getInterface("basescape")->getElement("errorPalette")->color));
 	}
-	else if (_item->getRequiredSpace() > _base->getFreeWorkshops())
+	else if (_item->getRequiredSpace() > _base->getFreeWorkshops(_ftaUi))
 	{
 		_game->pushState(new ErrorMessageState(tr("STR_NOT_ENOUGH_WORK_SPACE"), _palette, _game->getMod()->getInterface("basescape")->getElement("errorMessage")->color, "BACK17.SCR", _game->getMod()->getInterface("basescape")->getElement("errorPalette")->color));
 	}
 	else
 	{
-		_game->pushState(new ManufactureInfoState(_base, _item));
+		if (_ftaUi)
+		{
+			_game->pushState(new ManufactureInfoStateFtA(_base, _item));
+		}
+		else
+		{
+			_game->pushState(new ManufactureInfoState(_base, _item));
+		}
 	}
 }
 
@@ -289,6 +297,8 @@ std::string ManufactureStartState::generateStatsList()
 		statMap.insert(std::make_pair(stats.microelectronics, tr("STR_MICROELECTRONICS_LC")));
 	if (stats.metallurgy > 0)
 		statMap.insert(std::make_pair(stats.metallurgy, tr("STR_METALLURGY_LC")));
+	if (stats.processing > 0)
+		statMap.insert(std::make_pair(stats.processing, tr("STR_PROCESSING_LC")));
 	if (stats.robotics > 0)
 		statMap.insert(std::make_pair(stats.robotics, tr("STR_ROBOTICS_LC")));
 	if (stats.hacking > 0)

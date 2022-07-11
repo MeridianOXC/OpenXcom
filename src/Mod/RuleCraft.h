@@ -22,7 +22,6 @@
 #include <yaml-cpp/yaml.h>
 #include "RuleBaseFacilityFunctions.h"
 #include "ModScript.h"
-#include "../Savegame/Soldier.h"
 
 namespace OpenXcom
 {
@@ -33,7 +32,6 @@ class RuleTerrain;
 class Mod;
 class ModScript;
 class ScriptParserBase;
-enum SoldierRole;
 
 /**
  * Battle statistic of craft type and bonus from craft weapons.
@@ -167,7 +165,6 @@ private:
 	std::string _type;
 	std::vector<std::string> _requires;
 	RuleBaseFacilityFunctions _requiresBuyBaseFunc;
-	SoldierRole _requiredRole;
 	int _sprite, _marker;
 	std::vector<int> _skinSprites;
 	int _weapons, _soldiers, _pilots, _vehicles;
@@ -250,7 +247,6 @@ public:
 	/// Gets the craft's maximum supported number of vehicles (small + large).
 	int getMaxVehicles() const { return _maxVehicles; }
 	/// Gets the craft's role requirments for piloting.
-	SoldierRole getRequiredRole() const { return _requiredRole; }
 	/// Gets the craft's cost.
 	int getBuyCost() const;
 	/// Gets the craft's rent for a month.

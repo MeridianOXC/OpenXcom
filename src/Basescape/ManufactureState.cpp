@@ -34,6 +34,7 @@
 #include "NewManufactureListState.h"
 #include "GlobalManufactureState.h"
 #include "ManufactureInfoState.h"
+#include "ManufactureInfoStateFtA.h"
 #include "TechTreeViewerState.h"
 #include <algorithm>
 
@@ -192,14 +193,42 @@ void ManufactureState::fillProductionList(size_t scrl)
 	_lstManufacture->clearList();
 	for (std::vector<Production *>::const_iterator iter = productions.begin(); iter != productions.end(); ++iter)
 	{
-		//тут нужен код для ролей!;
 		std::ostringstream s1;
-		s1 << (*iter)->getAssignedEngineers();
+		if (_ftaUi)
+		{
+			size_t count = 0;
+			for (auto e : *_base->getSoldiers())
+			{
+				if (e->getProductionProject())
+				{
+					if (e->getProductionProject() == (*iter))
+					{
+						count++;
+					}
+				}
+			}
+			s1 << count;
+		}
+		else
+		{
+			s1 << (*iter)->getAssignedEngineers();
+		}
 		std::ostringstream s2;
 		s2 << (*iter)->getAmountProduced() << "/";
-		if ((*iter)->getInfiniteAmount()) s2 << "∞";
-		else s2 << (*iter)->getAmountTotal();
-		if ((*iter)->getSellItems()) s2 << " $";
+		if ((*iter)->getInfiniteAmount())
+		{
+			s2 << "∞";
+		}
+		else
+		{
+			s2 << (*iter)->getAmountTotal();
+		}
+
+		if ((*iter)->getSellItems())
+		{
+			s2 << " $";
+		}
+
 		std::ostringstream s3;
 		s3 << Unicode::formatFunding((*iter)->getRules()->getManufactureCost());
 		std::ostringstream s4;
@@ -219,7 +248,6 @@ void ManufactureState::fillProductionList(size_t scrl)
 		}
 		else
 		{
-
 			s4 << "-";
 		}
 		_lstManufacture->addRow(5, tr((*iter)->getRules()->getName()).c_str(), s1.str().c_str(), s2.str().c_str(), s3.str().c_str(), s4.str().c_str());
@@ -251,7 +279,7 @@ void ManufactureState::fillProductionList(size_t scrl)
 		_txtAllocated->setText(tr("STR_ENGINEERS_ALLOCATED").arg(_base->getAllocatedEngineers()));
 	}
 
-	_txtSpace->setText(tr("STR_WORKSHOP_SPACE_AVAILABLE").arg(_base->getFreeWorkshops()));
+	_txtSpace->setText(tr("STR_WORKSHOP_SPACE_AVAILABLE").arg(_base->getFreeWorkshops(_ftaUi)));
 
 	if (scrl)
 		_lstManufacture->scrollTo(scrl);
@@ -264,7 +292,14 @@ void ManufactureState::fillProductionList(size_t scrl)
 void ManufactureState::lstManufactureClickLeft(Action *)
 {
 	const std::vector<Production*> productions(_base->getProductions());
-	_game->pushState(new ManufactureInfoState(_base, productions[_lstManufacture->getSelectedRow()]));
+	if (_ftaUi)
+	{
+		_game->pushState(new ManufactureInfoStateFtA(_base, productions[_lstManufacture->getSelectedRow()]));
+	}
+	else
+	{
+		_game->pushState(new ManufactureInfoState(_base, productions[_lstManufacture->getSelectedRow()]));
+	}
 }
 
 /**
@@ -275,7 +310,7 @@ void ManufactureState::lstManufactureClickMiddle(Action *)
 {
 	const std::vector<Production*> productions(_base->getProductions());
 	const RuleManufacture *selectedTopic = productions[_lstManufacture->getSelectedRow()]->getRules();
-	if (_game->getMod()->getIsResearchTreeDisabled() && !_game->getSavedGame()->getDebugMode())
+	if ((_game->getMod()->getIsResearchTreeDisabled() || _ftaUi) && !_game->getSavedGame()->getDebugMode())
 	{
 		return;
 	}
@@ -300,7 +335,7 @@ void ManufactureState::lstManufactureMousePress(Action *action)
 	if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
 	{
 		change = std::min(change, _base->getAvailableEngineers());
-		change = std::min(change, _base->getFreeWorkshops());
+		change = std::min(change, _base->getFreeWorkshops(_ftaUi));
 		if (change > 0)
 		{
 			Production *selectedProject = _base->getProductions()[_lstManufacture->getSelectedRow()];

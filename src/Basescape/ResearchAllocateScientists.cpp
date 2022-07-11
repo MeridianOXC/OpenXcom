@@ -44,7 +44,7 @@ namespace OpenXcom
 {
 
 /**
- * Initializes all the elements in the CovertOperation Soldiers screen.
+ * Initializes all the elements in the Soldiers screen.
  * @param base Pointer to the base to get info from.
  * @param operation Pointer to starting (not committed) covert operation.
  */

@@ -248,7 +248,7 @@ void GlobalManufactureState::fillProductionList()
 
 		availableEngineers += base->getAvailableEngineers();
 		allocatedEngineers += base->getAllocatedEngineers();
-		freeWorkshops += base->getFreeWorkshops();
+		freeWorkshops += base->getFreeWorkshops(_game->getMod()->getIsFTAGame());
 	}
 
 	_txtAvailable->setText(tr("STR_ENGINEERS_AVAILABLE").arg(availableEngineers));

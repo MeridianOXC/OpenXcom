@@ -32,6 +32,7 @@ set ( basescape_src
   Basescape/ManageAlienContainmentState.cpp
   Basescape/ManufactureDependenciesTreeState.cpp
   Basescape/ManufactureInfoState.cpp
+  Basescape/ManufactureInfoStateFtA.cpp
   Basescape/ManufactureStartState.cpp
   Basescape/ManufactureState.cpp
   Basescape/MiniBaseView.cpp

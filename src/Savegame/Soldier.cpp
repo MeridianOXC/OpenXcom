@@ -384,7 +384,7 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 		node["researchExperience"] = _researchExperience;
 	}
 	if (_engineerExperience.weaponry > 0 || _engineerExperience.explosives > 0 || _engineerExperience.efficiency > 0 || _engineerExperience.microelectronics > 0 ||
-		_engineerExperience.metallurgy > 0 || _engineerExperience.robotics > 0 || _engineerExperience.hacking > 0 || _engineerExperience.construction > 0 ||
+		_engineerExperience.metallurgy > 0 || _engineerExperience.processing > 0 || _engineerExperience.robotics > 0 || _engineerExperience.hacking > 0 || _engineerExperience.construction > 0 ||
 		_engineerExperience.diligence > 0 || _engineerExperience.alienTech > 0 || _engineerExperience.reverseEngineering > 0)
 	{
 		node["engineerExperience"] = _engineerExperience;
@@ -652,6 +652,7 @@ std::string Soldier::getCurrentDuty(Language *lang, const BaseSumDailyRecovery &
 	{
 		if (mode == LAB)
 		{
+			isBusy = true;
 			return lang->getString(_researchProject->getRules()->getName());
 		}
 		else
@@ -664,6 +665,7 @@ std::string Soldier::getCurrentDuty(Language *lang, const BaseSumDailyRecovery &
 	{
 		if (mode == WORK)
 		{
+			isBusy = true;
 			return lang->getString(_production->getRules()->getName());
 		}
 		else

@@ -598,7 +598,6 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 	{
 		Craft *c = _base->getCrafts()->at(_craft);
 		Soldier *s = _base->getSoldiers()->at(_lstSoldiers->getSelectedRow());
-		auto r = c->getRules()->getRequiredRole();
 		Uint8 color = _lstSoldiers->getColor();
 
 		bool isBusy = false, isFree = false;
@@ -609,15 +608,15 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 			s->setCraft(0);
 			_lstSoldiers->setCellText(row, 2, tr("STR_NONE_UC"));
 		}
-		else if (isBusy)
+		else if ((s->getCraft() && s->getCraft()->getStatus() == "STR_OUT") || s->getCovertOperation() != 0 || s->hasPendingTransformation())
 		{
 			return;
 		}
 		else if (s->hasFullHealth())
 		{
-			if (_isInterceptor && _ftaUI && s->getRoleRank(r) == 0)
+			if (_isInterceptor && _ftaUI && s->getRoleRank(ROLE_PILOT) < 1)
 			{
-				_game->pushState(new ErrorMessageState(tr("STR_ROLE_IS_NOT_ALLOWED_PILOTING"),
+				_game->pushState(new ErrorMessageState(tr("STR_IS_NOT_ALLOWED_PILOTING"),
 					_palette,
 					_game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color,
 					"BACK01.SCR",

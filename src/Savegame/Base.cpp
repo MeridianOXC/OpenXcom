@@ -670,9 +670,9 @@ int Base::getAvailableSoldiers(bool checkCombatReadiness, bool includeWounded) c
 	int total = 0;
 	for (std::vector<Soldier*>::const_iterator i = _soldiers.begin(); i != _soldiers.end(); ++i)
 	{
-		if ((*i)->getCovertOperation() != 0)
+		if ((*i)->getCovertOperation() != 0 || ((*i)->getRoleRank(ROLE_SOLDIER) == 0))
 		{
-			//we do not want to count soldiers that are on covert operation
+			//we do not want to count not real soldiers or that are on covert operation
 		}
 		else
 		{
@@ -984,16 +984,27 @@ int Base::getAvailableStores() const
  * by research projects in the base.
  * @return Laboratory space.
  */
-int Base::getUsedLaboratories() const
+int Base::getUsedLaboratories(bool fta) const
 {
-	const std::vector<ResearchProject *> & research (getResearch());
 	int usedLabSpace = 0;
-		for (std::vector<ResearchProject *>::const_iterator itResearch = research.begin();
-			 itResearch != research.end();
-			 ++itResearch)
+	for (std::vector<ResearchProject *>::const_iterator iter = _research.begin(); iter != _research.end(); ++iter)
+	{
+		if (fta)
 		{
-			usedLabSpace += (*itResearch)->getAssigned();
+			for (auto s : _soldiers)
+			{
+				if ((*iter) == s->getResearchProject())
+				{
+					usedLabSpace++;
+				}
+			}
 		}
+		else
+		{
+			usedLabSpace += (*iter)->getAssigned();
+		}
+	}
+
 	return usedLabSpace;
 }
 
@@ -1020,13 +1031,29 @@ int Base::getAvailableLaboratories() const
  * by manufacturing projects in the base.
  * @return Storage space.
  */
-int Base::getUsedWorkshops() const
+int Base::getUsedWorkshops(bool fta) const
 {
 	int usedWorkShop = 0;
-	for (std::vector<Production *>::const_iterator iter = _productions.begin(); iter != _productions.end(); ++iter)
+	for (std::vector<Production*>::const_iterator iter = _productions.begin(); iter != _productions.end(); ++iter)
 	{
-		usedWorkShop += ((*iter)->getAssignedEngineers() + (*iter)->getRules()->getRequiredSpace());
+		int assigned = 0;
+		if (fta)
+		{
+			for (auto s : _soldiers)
+			{
+				if ((*iter) == s->getProductionProject())
+				{
+					assigned++;
+				}
+			}
+		}
+		else
+		{
+			assigned = (*iter)->getAssignedEngineers();
+		}
+		usedWorkShop += (assigned + (*iter)->getRules()->getRequiredSpace());
 	}
+
 	return usedWorkShop;
 }
 
@@ -1096,18 +1123,18 @@ int Base::getAvailableHangars() const
  * Return laboratories space not used by a ResearchProject
  * @return laboratories space not used by a ResearchProject
  */
-int Base::getFreeLaboratories() const
+int Base::getFreeLaboratories(bool fta) const
 {
-	return getAvailableLaboratories() - getUsedLaboratories();
+	return getAvailableLaboratories() - getUsedLaboratories(fta);
 }
 
 /**
  * Return workshop space not used by a Production
  * @return workshop space not used by a Production
  */
-int Base::getFreeWorkshops() const
+int Base::getFreeWorkshops(bool fta) const
 {
-	return getAvailableWorkshops() - getUsedWorkshops();
+	return getAvailableWorkshops() - getUsedWorkshops(fta);
 }
 
 /**
@@ -2052,7 +2079,7 @@ void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
 	{
 		// lab destruction: enforce lab space limits. take scientists off projects until
 		// it all evens out. research is not cancelled.
-		int toRemove = (*facility)->getRules()->getLaboratories() - getFreeLaboratories();
+		int toRemove = (*facility)->getRules()->getLaboratories() - getFreeLaboratories(_mod->getIsFTAGame());
 		for (std::vector<ResearchProject*>::iterator i = _research.begin(); i != _research.end() && toRemove > 0;)
 		{
 			if ((*i)->getAssigned() >= toRemove)
@@ -2074,7 +2101,7 @@ void Base::destroyFacility(std::vector<BaseFacility*>::iterator facility)
 	{
 		// workshop destruction: similar to lab destruction, but we'll lay off engineers instead
 		// in this case, however, production IS cancelled, as it takes up space in the workshop.
-		int toRemove = (*facility)->getRules()->getWorkshops() - getFreeWorkshops();
+		int toRemove = (*facility)->getRules()->getWorkshops() - getFreeWorkshops(_mod->getIsFTAGame());
 		Collections::deleteIf(_productions, _productions.size(),
 			[&](Production* p)
 			{
@@ -2417,8 +2444,8 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 	return (
 		(removed.quarters > 0 && available.quarters < getUsedQuarters()) ||
 		(removed.stores > 0 && available.stores < getUsedStores()) ||
-		(removed.laboratories > 0 && available.laboratories < getUsedLaboratories()) ||
-		(removed.workshops > 0 && available.workshops < getUsedWorkshops()) ||
+		(removed.laboratories > 0 && available.laboratories < getUsedLaboratories(_mod->getIsFTAGame())) ||
+		(removed.workshops > 0 && available.workshops < getUsedWorkshops(_mod->getIsFTAGame())) ||
 		(removed.hangars > 0 && available.hangars < getUsedHangars()) ||
 		(removed.psiLaboratories > 0 && available.psiLaboratories < getUsedPsiLabs()) ||
 		(removed.training > 0 && available.training < getUsedTraining()) ||

@@ -1062,7 +1062,7 @@ void OpenXcom::SoldierInfoState::fillNumbers()
 	_barSynaptic->setValue2(std::min(withArmor.synaptic, initial->synaptic));
 	std::ostringstream ss38;
 	ss38 << withArmor.materials;
-	_numMaterials->setText(ss37.str());
+	_numMaterials->setText(ss38.str());
 	_barMaterials->setMax(current->materials);
 	_barMaterials->setValue(withArmor.materials);
 	_barMaterials->setValue2(std::min(withArmor.materials, initial->materials));
@@ -1082,10 +1082,10 @@ void OpenXcom::SoldierInfoState::fillNumbers()
 	_barGravity->setValue2(std::min(withArmor.gravity, initial->gravity));
 	std::ostringstream ss39;
 	ss39 << withArmor.psychology;
-	_numPsychology->setText(ss38.str());
+	_numPsychology->setText(ss39.str());
 	_barPsychology->setMax(current->psychology);
 	_barPsychology->setValue(withArmor.psychology);
-	_barPsychology->setValue2(std::min(withArmor.physics, initial->psychology));
+	_barPsychology->setValue2(std::min(withArmor.psychology, initial->psychology));
 
 
 	std::ostringstream ss10;
@@ -1096,11 +1096,10 @@ void OpenXcom::SoldierInfoState::fillNumbers()
 	_barMana->setValue2(std::min(withArmor.mana, initial->mana));
 	std::ostringstream ss310;
 	ss310 << withArmor.designing;
-	_numDesigning->setText(ss39.str());
+	_numDesigning->setText(ss310.str());
 	_barDesigning->setMax(current->designing);
 	_barDesigning->setValue(withArmor.designing);
 	_barDesigning->setValue2(std::min(withArmor.designing, initial->designing));
-	
 
 	std::ostringstream ss11;
 	ss11 << withArmor.psiStrength;
