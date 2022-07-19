@@ -55,7 +55,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
+SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _roleSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
 {
 	bool isPsiBtnVisible = Options::anytimePsiTraining && _base->getAvailablePsiLabs() > 0;
 	bool isTrnBtnVisible = _base->getAvailableTraining() > 0;
@@ -305,6 +305,12 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 
 #undef PUSH_IN
 
+	auto compareRole = [](const Soldier *lhs, const Soldier *rhs)
+	{
+		return lhs->getRoles()[0]->role < rhs->getRoles()[0]->role;
+	};
+	sort(_roleSoldierOrder.begin(), _roleSoldierOrder.end(), compareRole);
+
 	_cbxSortBy->setOptions(sortOptions);
 	_cbxSortBy->setSelected(0);
 	_cbxSortBy->onChange((ActionHandler)&SoldiersState::cbxSortByChange);
@@ -380,8 +386,8 @@ void SoldiersState::cbxSortByChange(Action *action)
 	{
 		// restore original ordering, ignoring (of course) those
 		// soldiers that have been sacked since this state started
-		for (std::vector<Soldier *>::const_iterator it = _origSoldierOrder.begin();
-		it != _origSoldierOrder.end(); ++it)
+		for (std::vector<Soldier *>::const_iterator it = _roleSoldierOrder.begin();
+			 it != _roleSoldierOrder.end(); ++it)
 		{
 			std::vector<Soldier *>::iterator soldierIt =
 			std::find(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *it);
