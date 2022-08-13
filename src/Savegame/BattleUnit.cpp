@@ -4676,12 +4676,12 @@ void BattleUnit::adjustStats(const StatAdjustment &adjustment)
 {
 	_stats += UnitStats::percent(_stats, adjustment.statGrowth, adjustment.growthMultiplier);
 
-	_stats.firing *= adjustment.aimAndArmorMultiplier;
-	_maxArmor[0] *= adjustment.aimAndArmorMultiplier;
-	_maxArmor[1] *= adjustment.aimAndArmorMultiplier;
-	_maxArmor[2] *= adjustment.aimAndArmorMultiplier;
-	_maxArmor[3] *= adjustment.aimAndArmorMultiplier;
-	_maxArmor[4] *= adjustment.aimAndArmorMultiplier;
+	_stats.firing *= adjustment.aimMultiplier;
+	_maxArmor[0] *= adjustment.armorMultiplier;
+	_maxArmor[1] *= adjustment.armorMultiplier;
+	_maxArmor[2] *= adjustment.armorMultiplier;
+	_maxArmor[3] *= adjustment.armorMultiplier;
+	_maxArmor[4] *= adjustment.armorMultiplier;
 }
 
 /**
