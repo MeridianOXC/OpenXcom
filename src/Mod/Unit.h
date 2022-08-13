@@ -400,7 +400,8 @@ struct StatAdjustment
 
 	UnitStats statGrowth;
 	int growthMultiplier;
-	double aimAndArmorMultiplier;
+	double aimMultiplier;
+	double armorMultiplier;
 };
 
 /**
