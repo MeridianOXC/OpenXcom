@@ -464,37 +464,46 @@ bool SoldierDiary::manageCommendations(Mod *mod, std::vector<MissionStatistics*>
 							// Loop over the DETAILs of one AND vector.
 							for (std::vector<std::string>::const_iterator detail = andCriteria->second.begin(); detail != andCriteria->second.end(); ++detail)
 							{
-								int battleType = 0;
-								for (; battleType != BATTLE_TYPES; ++battleType)
+								// Look if for match for this criteria.
+								// If we find a match, continue to the next criteria. (We must match all criteria in the list.)
+								// If we don't find a match, set foundMatch = false; then break.
+
+								if ( (*singleKill)->rank == (*detail) || (*singleKill)->race == (*detail) ||
+									 (*singleKill)->weapon == (*detail) || (*singleKill)->weaponAmmo == (*detail) ||
+									 (*singleKill)->getUnitStatusString() == (*detail) || (*singleKill)->getUnitFactionString() == (*detail) ||
+									 (*singleKill)->getUnitSideString() == (*detail) || (*singleKill)->getUnitBodyPartString() == (*detail) )
 								{
-									if ((*detail) == battleTypeArray[battleType])
-									{
-										break;
-									}
+									// Found match
+									continue;
 								}
 
-								int damageType = 0;
-								for (; damageType != DAMAGE_TYPES; ++damageType)
-								{
-									if ((*detail) == damageTypeArray[damageType])
-									{
-										break;
-									}
-								}
-
-								// See if we find _no_ matches with any criteria. If so, break and try the next kill.
+								// check the weapon's battle type and damage type
 								RuleItem *weapon = mod->getItem((*singleKill)->weapon);
-								RuleItem *weaponAmmo = mod->getItem((*singleKill)->weaponAmmo);
-								if (weapon == 0 || weaponAmmo == 0 ||
-									((*singleKill)->rank != (*detail) && (*singleKill)->race != (*detail) &&
-									 (*singleKill)->weapon != (*detail) && (*singleKill)->weaponAmmo != (*detail) &&
-									 (*singleKill)->getUnitStatusString() != (*detail) && (*singleKill)->getUnitFactionString() != (*detail) &&
-									 (*singleKill)->getUnitSideString() != (*detail) && (*singleKill)->getUnitBodyPartString() != (*detail) &&
-									 weaponAmmo->getDamageType()->ResistType != damageType && weapon->getBattleType() != battleType))
+								if (weapon != 0)
 								{
-									foundMatch = false;
-									break;
+									int battleType = weapon->getBattleType();
+
+									if (battleType >=0 && battleType < BATTLE_TYPES && battleTypeArray[battleType] == (*detail))
+									{
+										// the detail matched the weapon's battle type
+										continue;
+									}
+
+									// damage type. If no 'ammo' is listed, we assume that the gun's secondary melee attack was used.
+									// (i.e. weaponAmmo == "BA_HIT")
+									RuleItem *weaponAmmo = mod->getItem((*singleKill)->weaponAmmo);
+									int damageType = (weaponAmmo != 0) ? weaponAmmo->getDamageType()->ResistType : weapon->getMeleeType()->ResistType;
+
+									if (damageType >= 0 && damageType < DAMAGE_TYPES && damageTypeArray[damageType] == (*detail))
+									{
+										// the detail matched the damage type
+										continue;
+									}
 								}
+
+								// That's all we can check. We didn't find a match
+								foundMatch = false;
+								break;
 							} /// End of DETAIL loop.
 
 							if (foundMatch)
