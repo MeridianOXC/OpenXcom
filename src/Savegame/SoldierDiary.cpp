@@ -489,10 +489,20 @@ bool SoldierDiary::manageCommendations(Mod *mod, std::vector<MissionStatistics*>
 										continue;
 									}
 
-									// damage type. If no 'ammo' is listed, we assume that the gun's secondary melee attack was used.
-									// (i.e. weaponAmmo == "BA_HIT")
+
 									RuleItem *weaponAmmo = mod->getItem((*singleKill)->weaponAmmo);
-									int damageType = (weaponAmmo != 0) ? weaponAmmo->getDamageType()->ResistType : weapon->getMeleeType()->ResistType;
+									int damageType = -1;
+
+									if (weaponAmmo != 0)
+									{
+										damageType = weaponAmmo->getDamageType()->ResistType;
+									}
+									else if ((*singleKill)->weaponAmmo == "__GUNBUTT")
+									{
+										// If weaponAmmo == "__GUNBUTT", that means the gun's secondary melee attack was used.
+										damageType = weapon->getMeleeType()->ResistType;
+									}
+									// If we were unable to determine the damage type, leave it as -1.
 
 									if (damageType >= 0 && damageType < DAMAGE_TYPES && damageTypeArray[damageType] == (*detail))
 									{

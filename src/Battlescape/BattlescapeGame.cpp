@@ -716,12 +716,12 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 		}
 		if (attack.damage_item)
 		{
-			// If the secondary melee data is used, represent this by setting the ammo to "BA_HIT".
+			// If the secondary melee data is used, represent this by setting the ammo to "__GUNBUTT".
 			// Note: BT_MELEE items use their normal attack data rather than 'melee' data. So their 'ammo' should be the weapon itself.
 			// (The following condition should match what is used in ExplosionBState::init to choose the damage power and type.)
 			if (attack.type == BA_HIT && attack.damage_item->getRules()->getBattleType() != BT_MELEE)
 			{
-				tempAmmo = "BA_HIT";
+				tempAmmo = "__GUNBUTT";
 			}
 			else
 			{
