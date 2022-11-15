@@ -19,7 +19,6 @@
 #include "SoundSet.h"
 #include "CatFile.h"
 #include "Sound.h"
-#include "Exception.h"
 #include "Logger.h"
 #include "SDL2Helpers.h"
 #include <climits>

@@ -19,7 +19,6 @@
 #include "UfoDetectedState.h"
 #include <sstream>
 #include "../Engine/Game.h"
-#include "../Engine/Sound.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
 #include "../Interface/TextButton.h"

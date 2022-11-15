@@ -23,7 +23,6 @@
 #include "../Mod/Mod.h"
 #include "../Mod/RuleCraftWeapon.h"
 #include "../Engine/Game.h"
-#include "../Engine/Palette.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Unicode.h"
 #include "../Interface/TextButton.h"

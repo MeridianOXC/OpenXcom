@@ -26,10 +26,7 @@
 #include "../Savegame/SavedBattleGame.h"
 #include "../Mod/RuleInventory.h"
 #include "../Mod/Mod.h"
-#include "../Engine/ShaderDraw.h"
-#include "../Engine/ShaderMove.h"
 #include "../Engine/Exception.h"
-#include "../Engine/Options.h"
 
 namespace OpenXcom
 {

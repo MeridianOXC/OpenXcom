@@ -20,8 +20,6 @@
 #include "../Mod/ArticleDefinition.h"
 #include "ArticleStateText.h"
 #include "../Engine/Game.h"
-#include "../Engine/LocalizedText.h"
-#include "../Engine/Palette.h"
 #include "../Engine/Surface.h"
 #include "../Mod/Mod.h"
 #include "../Interface/Text.h"

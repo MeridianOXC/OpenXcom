@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 #include <istream>
-#include <unordered_map>
 #include <unordered_set>
 #include <yaml-cpp/yaml.h>
 #include <SDL_rwops.h>

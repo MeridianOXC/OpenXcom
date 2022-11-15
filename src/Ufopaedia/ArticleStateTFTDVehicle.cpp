@@ -22,7 +22,6 @@
 #include <sstream>
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
-#include "../Engine/Palette.h"
 #include "../Interface/TextList.h"
 #include "../Mod/Mod.h"
 #include "../Mod/Unit.h"

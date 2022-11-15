@@ -20,7 +20,6 @@
 #include "Unit.h"
 #include "RuleStatBonus.h"
 #include "RuleSkill.h"
-#include "../Engine/RNG.h"
 #include "../Engine/ScriptBind.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/BattleItem.h"

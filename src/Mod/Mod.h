@@ -21,7 +21,6 @@
 #include <vector>
 #include <string>
 #include <bitset>
-#include <type_traits>
 #include <SDL.h>
 #include <yaml-cpp/yaml.h>
 #include "../Engine/Options.h"

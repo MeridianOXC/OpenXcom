@@ -19,7 +19,6 @@
 #include "PlaceStartFacilityState.h"
 #include "../Engine/Game.h"
 #include "../Engine/Sound.h"
-#include "../Engine/LocalizedText.h"
 #include "../Interface/Text.h"
 #include "BaseView.h"
 #include "../Savegame/Base.h"

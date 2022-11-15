@@ -18,7 +18,6 @@
  */
 #include <cmath>
 #include "RuleDamageType.h"
-#include "../Engine/Options.h"
 #include "../Engine/RNG.h"
 #include "Mod.h"
 

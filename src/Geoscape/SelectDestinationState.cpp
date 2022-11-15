@@ -22,7 +22,6 @@
 #include "../Engine/Screen.h"
 #include "../Engine/Action.h"
 #include "../Mod/Mod.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Surface.h"
 #include "../Interface/Window.h"
 #include "Globe.h"

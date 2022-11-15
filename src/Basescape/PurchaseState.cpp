@@ -28,7 +28,6 @@
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Timer.h"
 #include "../Engine/Options.h"
-#include "../Engine/CrossPlatform.h"
 #include "../Engine/Unicode.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
@@ -46,7 +45,6 @@
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleSoldier.h"
-#include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/Armor.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Battlescape/CannotReequipState.h"
@@ -244,16 +242,16 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 		{
 			if ((*i).type == TRANSFER_ITEM)
 			{
-				RuleItem *rule = (RuleItem*)((*i).rule);
+				RuleItem *rule = (RuleItem*)(*i).rule;
 				if (rule->getCategories().empty())
 				{
 					hasUnassigned = true;
 				}
 				for (std::vector<std::string>::const_iterator j = rule->getCategories().begin(); j != rule->getCategories().end(); ++j)
 				{
-					if (std::find(tempCats.begin(), tempCats.end(), (*j)) == tempCats.end())
+					if (std::find(tempCats.begin(), tempCats.end(), *j) == tempCats.end())
 					{
-						tempCats.push_back((*j));
+						tempCats.push_back(*j);
 					}
 				}
 			}
@@ -273,9 +271,9 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 		const std::vector<std::string> &categories = _game->getMod()->getItemCategoriesList();
 		for (std::vector<std::string>::const_iterator k = categories.begin(); k != categories.end(); ++k)
 		{
-			if (std::find(tempCats.begin(), tempCats.end(), (*k)) != tempCats.end())
+			if (std::find(tempCats.begin(), tempCats.end(), *k) != tempCats.end())
 			{
-				_cats.push_back((*k));
+				_cats.push_back(*k);
 			}
 		}
 		if (hasUnassigned)
@@ -349,7 +347,7 @@ void PurchaseState::think()
  */
 std::string PurchaseState::getCategory(int sel) const
 {
-	RuleItem *rule = 0;
+	RuleItem *rule;
 	switch (_items[sel].type)
 	{
 	case TRANSFER_SOLDIER:
@@ -971,9 +969,9 @@ void PurchaseState::increaseByValue(int change)
 	}
 	else
 	{
-		RuleItem *rule = nullptr;
-		RuleSoldier* ruleS = nullptr;
-		RuleCraft* ruleC = nullptr;
+		RuleItem *rule;
+		RuleSoldier* ruleS;
+		RuleCraft* ruleC;
 		switch (getRow().type)
 		{
 		case TRANSFER_SOLDIER:
@@ -1143,7 +1141,7 @@ void PurchaseState::decreaseByValue(int change)
 	if (0 >= change || 0 >= getRow().amount) return;
 	change = std::min(getRow().amount, change);
 
-	RuleItem *rule = nullptr;
+	RuleItem *rule;
 	switch (getRow().type)
 	{
 	case TRANSFER_SOLDIER:

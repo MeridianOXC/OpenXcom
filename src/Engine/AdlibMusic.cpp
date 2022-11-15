@@ -18,7 +18,6 @@
  */
 #include "AdlibMusic.h"
 #include <algorithm>
-#include "Exception.h"
 #include "Options.h"
 #include "Logger.h"
 #include "Game.h"

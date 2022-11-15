@@ -20,7 +20,6 @@
 #include <yaml-cpp/yaml.h>
 #include <vector>
 #include <string>
-#include <map>
 #include "../Interface/Text.h"
 
 namespace OpenXcom

@@ -20,7 +20,6 @@
 #include <unordered_map>
 #include <vector>
 #include <utility>
-#include <string>
 #include <SDL.h>
 #include <yaml-cpp/yaml.h>
 #include "Unicode.h"

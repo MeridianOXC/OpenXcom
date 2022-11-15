@@ -31,7 +31,6 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Base.h"
 #include "PlaceFacilityState.h"
-#include "../Mod/Mod.h"
 #include "../Ufopaedia/Ufopaedia.h"
 
 namespace OpenXcom

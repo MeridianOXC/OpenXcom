@@ -19,7 +19,6 @@
 
 #include "RuleCommendations.h"
 #include "Mod.h"
-#include "../Engine/Collections.h"
 
 namespace OpenXcom
 {

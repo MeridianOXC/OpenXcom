@@ -18,7 +18,6 @@
  */
 #include "OptionsFoldersState.h"
 #include "../Engine/FileMap.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
 #include "../Interface/Text.h"
 

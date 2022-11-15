@@ -18,7 +18,6 @@
  */
 #include "Slider.h"
 #include "../fmath.h"
-#include <algorithm>
 #include "../Engine/Action.h"
 #include "TextButton.h"
 #include "Text.h"

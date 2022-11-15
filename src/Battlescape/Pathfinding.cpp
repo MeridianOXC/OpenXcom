@@ -27,7 +27,6 @@
 #include "../Engine/Options.h"
 #include "../fmath.h"
 #include "BattlescapeGame.h"
-#include "TileEngine.h"
 
 namespace OpenXcom
 {

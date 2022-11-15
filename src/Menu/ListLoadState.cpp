@@ -20,7 +20,6 @@
 #include "ListLoadState.h"
 #include <algorithm>
 #include "../Engine/Game.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Action.h"
 #include "../Engine/Options.h"
 #include "../Interface/Text.h"

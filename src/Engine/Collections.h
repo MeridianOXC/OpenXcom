@@ -18,7 +18,6 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <vector>
-#include <map>
 #include <list>
 #include <unordered_map>
 #include <algorithm>

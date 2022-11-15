@@ -20,7 +20,6 @@
 #include "../Engine/Game.h"
 #include "../Engine/Sound.h"
 #include "../Mod/Mod.h"
-#include "../Engine/Exception.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
 #include "../Interface/TextButton.h"
@@ -84,7 +83,7 @@ DismantleFacilityState::DismantleFacilityState(Base *base, BaseView *view, BaseF
 	_txtFacility->setAlign(ALIGN_CENTER);
 	_txtFacility->setText(tr(_fac->getRules()->getType()));
 
-	int refundValue = 0;
+	int refundValue;
 	if (_fac->getBuildTime() > _fac->getRules()->getBuildTime())
 	{
 		// if only queued... full refund (= build cost)

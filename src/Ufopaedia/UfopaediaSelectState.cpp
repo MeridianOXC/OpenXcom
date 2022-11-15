@@ -21,7 +21,6 @@
 #include "Ufopaedia.h"
 #include "UfopaediaSelectState.h"
 #include "../Mod/ArticleDefinition.h"
-#include "../Engine/CrossPlatform.h"
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
 #include "../Engine/LocalizedText.h"

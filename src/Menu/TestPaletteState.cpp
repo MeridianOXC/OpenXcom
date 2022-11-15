@@ -18,7 +18,6 @@
  */
 #include "TestPaletteState.h"
 #include "../Engine/Game.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Palette.h"
 #include "../Interface/NumberText.h"
 #include "../Interface/Text.h"

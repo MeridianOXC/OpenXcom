@@ -17,10 +17,8 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ConfirmEndMissionState.h"
-#include <vector>
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
-#include "../Engine/LocalizedText.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
@@ -29,10 +27,6 @@
 #include "BattlescapeState.h"
 #include "BattlescapeGame.h"
 #include "../Engine/Options.h"
-#include "../Mod/AlienDeployment.h"
-#include "../Mod/Mod.h"
-#include "../Mod/MapScript.h"
-#include "../Savegame/Tile.h"
 
 namespace OpenXcom
 {

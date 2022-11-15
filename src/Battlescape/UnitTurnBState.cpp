@@ -20,7 +20,6 @@
 #include "UnitTurnBState.h"
 #include "TileEngine.h"
 #include "Map.h"
-#include "BattlescapeState.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Mod/Mod.h"

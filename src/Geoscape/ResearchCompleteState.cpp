@@ -18,7 +18,6 @@
  */
 #include "ResearchCompleteState.h"
 #include "../Engine/Game.h"
-#include "../Engine/LocalizedText.h"
 #include "../Mod/Mod.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"

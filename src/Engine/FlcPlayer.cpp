@@ -34,7 +34,6 @@
 #include "FileMap.h"
 #include "Logger.h"
 #include "Screen.h"
-#include "Surface.h"
 #include "Options.h"
 #include "Game.h"
 

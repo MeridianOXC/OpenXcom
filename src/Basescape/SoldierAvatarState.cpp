@@ -30,8 +30,6 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Soldier.h"
 #include "../Savegame/Base.h"
-#include "../Savegame/ItemContainer.h"
-#include "../Mod/Mod.h"
 #include "../Mod/Armor.h"
 #include "../Mod/RuleSoldier.h"
 

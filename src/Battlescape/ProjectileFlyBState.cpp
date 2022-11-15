@@ -22,7 +22,6 @@
 #include "Projectile.h"
 #include "TileEngine.h"
 #include "Map.h"
-#include "Pathfinding.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/BattleItem.h"
 #include "../Savegame/SavedBattleGame.h"

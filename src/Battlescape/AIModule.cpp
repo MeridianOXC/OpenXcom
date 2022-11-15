@@ -24,7 +24,6 @@
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/SavedGame.h"
 #include "TileEngine.h"
-#include "Map.h"
 #include "BattlescapeState.h"
 #include "../Savegame/Tile.h"
 #include "Pathfinding.h"

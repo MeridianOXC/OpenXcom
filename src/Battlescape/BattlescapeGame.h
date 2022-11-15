@@ -19,7 +19,6 @@
  */
 #include "Position.h"
 #include "../Mod/RuleItem.h"
-#include <SDL.h>
 #include <string>
 #include <list>
 #include <vector>

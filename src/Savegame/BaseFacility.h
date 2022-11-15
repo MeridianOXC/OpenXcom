@@ -18,7 +18,6 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <yaml-cpp/yaml.h>
-#include <SDL_stdinc.h>
 #include "../Mod/RuleBaseFacility.h"
 
 namespace OpenXcom

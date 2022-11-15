@@ -17,7 +17,6 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Globe.h"
-#include <algorithm>
 #include "../fmath.h"
 #include "../Engine/Action.h"
 #include "../Engine/SurfaceSet.h"
@@ -34,7 +33,6 @@
 #include "../Savegame/Country.h"
 #include "../Mod/RuleCountry.h"
 #include "../Interface/Text.h"
-#include "../Engine/LocalizedText.h"
 #include "../Mod/RuleRegion.h"
 #include "../Savegame/Region.h"
 #include "../Mod/City.h"

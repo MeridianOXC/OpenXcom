@@ -18,7 +18,6 @@
  */
 #include "InfoboxOKState.h"
 #include "../Engine/Game.h"
-#include "../Engine/LocalizedText.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Frame.h"
 #include "../Interface/Text.h"

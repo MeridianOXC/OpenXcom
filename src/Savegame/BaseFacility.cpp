@@ -20,7 +20,6 @@
 #include "../Mod/RuleBaseFacility.h"
 #include "../Engine/GraphSubset.h"
 #include "Base.h"
-#include <algorithm>
 
 namespace OpenXcom
 {

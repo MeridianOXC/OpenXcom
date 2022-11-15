@@ -56,7 +56,7 @@ public:
 	/// Updates the base stats.
 	void init() override;
 	/// Handler for clicking the OK button.
-	void btnOkClick(Action *action);
+	virtual void btnOkClick(Action *action);
 	/// Handler for clicking the Facilities list.
 	virtual void lstFacilitiesClick(Action *action);
 };

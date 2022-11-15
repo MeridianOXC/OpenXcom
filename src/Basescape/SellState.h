@@ -22,7 +22,6 @@
 #include "../Menu/OptionsBaseState.h"
 #include <vector>
 #include <string>
-#include <set>
 
 namespace OpenXcom
 {

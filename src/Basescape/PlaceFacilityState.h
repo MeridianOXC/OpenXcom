@@ -53,7 +53,7 @@ public:
 	/// Handler for clicking the Cancel button.
 	void btnCancelClick(Action *action);
 	/// Handler for clicking the base view.
-	void viewClick(Action *action);
+	virtual void viewClick(Action *action);
 };
 
 }

@@ -17,20 +17,11 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #define _USE_MATH_DEFINES
-#include <cmath>
 #include "ItemSprite.h"
-#include "../Engine/SurfaceSet.h"
-#include "../Mod/RuleSoldier.h"
-#include "../Mod/Unit.h"
-#include "../Mod/RuleItem.h"
-#include "../Mod/Armor.h"
-#include "../Mod/RuleInventory.h"
 #include "../Mod/Mod.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/BattleItem.h"
-#include "../Savegame/Soldier.h"
 #include "../Savegame/SavedBattleGame.h"
-#include "../Battlescape/Position.h"
 
 namespace OpenXcom
 {

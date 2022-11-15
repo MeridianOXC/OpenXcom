@@ -22,10 +22,8 @@
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
 #include "../Engine/Surface.h"
-#include "../Engine/LocalizedText.h"
 #include "../Interface/TextButton.h"
 #include "../Mod/ArticleDefinition.h"
-#include "../Mod/RuleItem.h"
 #include "../Mod/Mod.h"
 #include "../Savegame/SavedGame.h"
 

@@ -22,8 +22,6 @@
 #include <algorithm>
 #include "TileEngine.h"
 #include "Pathfinding.h"
-#include "Map.h"
-#include "Camera.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/Tile.h"

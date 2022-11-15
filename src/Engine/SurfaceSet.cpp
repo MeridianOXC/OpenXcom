@@ -19,7 +19,6 @@
 #include "SurfaceSet.h"
 #include <climits>
 #include "Surface.h"
-#include "Exception.h"
 #include "FileMap.h"
 
 namespace OpenXcom

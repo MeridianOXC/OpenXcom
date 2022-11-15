@@ -20,7 +20,6 @@
 #include "../Engine/Collections.h"
 #include "../Mod/Armor.h"
 #include "../Mod/Mod.h"
-#include <algorithm>
 
 namespace YAML
 {

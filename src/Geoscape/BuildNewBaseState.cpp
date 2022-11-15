@@ -21,7 +21,6 @@
 #include "../Engine/Game.h"
 #include "../Engine/Action.h"
 #include "../Mod/Mod.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Surface.h"
 #include "../Engine/Timer.h"
 #include "../Engine/Screen.h"
@@ -37,8 +36,6 @@
 #include "../Engine/Options.h"
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleInterface.h"
-#include "../Mod/RuleGlobe.h"
-#include "../Mod/Texture.h"
 
 namespace OpenXcom
 {

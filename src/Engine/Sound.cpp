@@ -17,7 +17,6 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Sound.h"
-#include "Exception.h"
 #include "Options.h"
 #include "Logger.h"
 #include "Unicode.h"

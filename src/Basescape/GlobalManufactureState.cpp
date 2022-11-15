@@ -32,7 +32,6 @@
 #include "../Savegame/Production.h"
 #include "ManufactureState.h"
 #include "TechTreeViewerState.h"
-#include <algorithm>
 
 namespace OpenXcom
 {

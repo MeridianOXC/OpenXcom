@@ -19,7 +19,6 @@
  */
 #include "Surface.h"
 #include "GraphSubset.h"
-#include <vector>
 
 namespace OpenXcom
 {

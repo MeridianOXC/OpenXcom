@@ -25,7 +25,6 @@
 #include "../Savegame/SavedBattleGame.h"
 #include "../Engine/RNG.h"
 #include "BattlescapeGame.h"
-#include "../Savegame/SavedBattleGame.h"
 
 namespace OpenXcom
 {

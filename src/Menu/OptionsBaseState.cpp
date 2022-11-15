@@ -20,7 +20,6 @@
 #include <SDL.h>
 #include "../Engine/Game.h"
 #include "../Engine/Options.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Screen.h"
 #include "../Mod/Mod.h"
 #include "../Savegame/SavedGame.h"

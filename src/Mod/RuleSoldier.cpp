@@ -26,7 +26,6 @@
 #include "Armor.h"
 #include "SoldierNamePool.h"
 #include "StatString.h"
-#include "../Engine/Collections.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/ScriptBind.h"
 #include "../Engine/Unicode.h"

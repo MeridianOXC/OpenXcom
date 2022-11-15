@@ -23,14 +23,10 @@
 #include <algorithm>
 #include <SDL_gfxPrimitives.h>
 #include <SDL_image.h>
-#include <SDL_endian.h>
 #include "../lodepng.h"
 #include "Palette.h"
 #include "Exception.h"
 #include "Logger.h"
-#include "ShaderMove.h"
-#include "Unicode.h"
-#include <stdlib.h>
 #include "SDL2Helpers.h"
 #include "FileMap.h"
 #ifdef _WIN32

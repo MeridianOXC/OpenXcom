@@ -17,17 +17,14 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <assert.h>
-#include <climits>
 #include <set>
 #include "TileEngine.h"
-#include <SDL.h>
 #include "AIModule.h"
 #include "Map.h"
 #include "Camera.h"
 #include "Projectile.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
-#include "ExplosionBState.h"
 #include "../Savegame/Tile.h"
 #include "../Savegame/BattleItem.h"
 #include "../Savegame/BattleUnit.h"
@@ -40,10 +37,8 @@
 #include "../Mod/Unit.h"
 #include "../Mod/Mod.h"
 #include "../Mod/Armor.h"
-#include "../Mod/Mod.h"
 #include "../Mod/RuleSkill.h"
 #include "Pathfinding.h"
-#include "../Engine/Game.h"
 #include "../Engine/Options.h"
 #include "ProjectileFlyBState.h"
 #include "MeleeAttackBState.h"

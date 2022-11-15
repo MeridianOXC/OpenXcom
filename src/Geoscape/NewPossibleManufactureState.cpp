@@ -27,7 +27,6 @@
 #include "../Mod/RuleManufacture.h"
 #include "../Basescape/ManufactureState.h"
 #include "../Engine/Options.h"
-#include <unordered_set>
 
 namespace OpenXcom
 {

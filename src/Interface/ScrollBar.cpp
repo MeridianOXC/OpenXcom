@@ -18,7 +18,6 @@
  */
 #include "ScrollBar.h"
 #include "../fmath.h"
-#include <algorithm>
 #include "../Engine/Action.h"
 #include "TextList.h"
 #include "../Engine/Palette.h"

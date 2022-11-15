@@ -28,7 +28,6 @@
 #include "HitLog.h"
 #include "Node.h"
 #include "../Mod/MapDataSet.h"
-#include "../Mod/MCDPatch.h"
 #include "../Battlescape/Pathfinding.h"
 #include "../Battlescape/TileEngine.h"
 #include "../Battlescape/BattlescapeState.h"

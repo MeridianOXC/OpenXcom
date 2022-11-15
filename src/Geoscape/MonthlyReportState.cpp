@@ -29,7 +29,6 @@
 #include "../Savegame/Base.h"
 #include "../Savegame/GameTime.h"
 #include "PsiTrainingState.h"
-#include "TrainingState.h"
 #include "../Savegame/Region.h"
 #include "../Savegame/Country.h"
 #include "../Mod/RuleCountry.h"
@@ -37,14 +36,11 @@
 #include "../Engine/Options.h"
 #include "../Engine/Unicode.h"
 #include "../Menu/CutsceneState.h"
-#include "../Savegame/Base.h"
 #include "../Battlescape/CommendationState.h"
 #include "../Savegame/SoldierDiary.h"
 #include "../Menu/SaveGameState.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleVideo.h"
-#include "../Savegame/GeoscapeEvent.h"
-#include "../Mod/RuleEvent.h"
 
 namespace OpenXcom
 {

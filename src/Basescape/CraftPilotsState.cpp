@@ -33,7 +33,6 @@
 #include "../Mod/RuleCraft.h"
 #include "../Savegame/Soldier.h"
 #include "../Mod/RuleSoldier.h"
-#include "../Mod/RuleSoldierBonus.h"
 
 namespace OpenXcom
 {

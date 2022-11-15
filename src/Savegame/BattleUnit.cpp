@@ -48,8 +48,6 @@
 #include "SavedGame.h"
 #include "SavedBattleGame.h"
 #include "../Engine/ShaderDraw.h"
-#include "../Engine/ShaderMove.h"
-#include "../Engine/Options.h"
 #include "BattleUnitStatistics.h"
 #include "../fmath.h"
 #include "../fallthrough.h"

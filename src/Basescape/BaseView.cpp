@@ -26,7 +26,6 @@
 #include "../Savegame/BaseFacility.h"
 #include "../Mod/RuleBaseFacility.h"
 #include "../Savegame/Craft.h"
-#include "../Mod/RuleCraft.h"
 #include "../Interface/Text.h"
 #include "../Engine/Timer.h"
 #include "../Engine/Options.h"

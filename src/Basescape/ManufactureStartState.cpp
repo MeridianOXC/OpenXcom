@@ -34,7 +34,6 @@
 #include "../Savegame/ItemContainer.h"
 #include "ManufactureInfoState.h"
 #include "../Savegame/SavedGame.h"
-#include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleInterface.h"
 
 namespace OpenXcom

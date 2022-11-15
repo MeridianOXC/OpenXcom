@@ -20,7 +20,6 @@
 #include "Mod.h"
 #include "../Engine/Collections.h"
 #include "../Engine/ScriptBind.h"
-#include "../Battlescape/BattlescapeGame.h"
 
 namespace OpenXcom
 {

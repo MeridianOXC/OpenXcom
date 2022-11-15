@@ -32,7 +32,6 @@
 #include "AllocateTrainingState.h"
 #include "../Engine/Options.h"
 #include "../Mod/Mod.h"
-#include "../Mod/RuleInterface.h"
 
 namespace OpenXcom
 {

@@ -34,7 +34,6 @@
 #include "../Engine/Action.h"
 #include "../Engine/Options.h"
 #include "../Interface/ComboBox.h"
-#include "../Mod/Mod.h"
 #include "../Mod/RuleSoldier.h"
 #include "../Basescape/SoldierSortUtil.h"
 #include <algorithm>

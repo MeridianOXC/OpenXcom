@@ -27,7 +27,6 @@
 #include "../Mod/RuleItem.h"
 #include "../Basescape/PurchaseState.h"
 #include "../Engine/Options.h"
-#include <unordered_set>
 
 namespace OpenXcom
 {

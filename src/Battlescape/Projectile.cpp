@@ -22,8 +22,6 @@
 #include "Camera.h"
 #include "Particle.h"
 #include "Pathfinding.h"
-#include "../Engine/SurfaceSet.h"
-#include "../Engine/Surface.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleItem.h"
 #include "../Mod/MapData.h"
@@ -391,7 +389,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		Tile *t = _save->getTile(target->toTile());
 		if (t)
 		{
-			bool hasLOS = false;
+			bool hasLOS;
 			BattleUnit *bu = _action.actor;
 			BattleUnit *targetUnit = t->getOverlappingUnit(_save);
 

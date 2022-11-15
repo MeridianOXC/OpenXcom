@@ -40,7 +40,6 @@
 #include "../Savegame/Ufo.h"
 #include "../Savegame/MissionSite.h"
 #include "../Savegame/AlienBase.h"
-#include "../Savegame/ItemContainer.h"
 #include "../Savegame/Soldier.h"
 #include "../Engine/Options.h"
 #include "../Engine/Sound.h"

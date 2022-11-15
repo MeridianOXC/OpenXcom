@@ -21,7 +21,6 @@
 #include "../version.h"
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
-#include "../Engine/Exception.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Screen.h"
 #include "../Interface/TextButton.h"

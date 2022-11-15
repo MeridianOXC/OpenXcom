@@ -51,7 +51,6 @@
 #include "../Mod/RuleInventory.h"
 #include "../Mod/Mod.h"
 #include "../Mod/MapData.h"
-#include "../Mod/MCDPatch.h"
 #include "../Mod/Armor.h"
 #include "../Mod/Unit.h"
 #include "../Mod/AlienRace.h"
@@ -61,7 +60,6 @@
 #include "../Mod/AlienDeployment.h"
 #include "../Mod/RuleBaseFacility.h"
 #include "../Mod/Texture.h"
-#include "BattlescapeState.h"
 #include "Pathfinding.h"
 
 namespace OpenXcom

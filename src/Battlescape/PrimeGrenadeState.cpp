@@ -20,7 +20,6 @@
 #include "PrimeGrenadeState.h"
 #include "BattlescapeGame.h"
 #include "../Engine/Game.h"
-#include "../Engine/LocalizedText.h"
 #include "../Engine/Action.h"
 #include "../Interface/Text.h"
 #include "../Interface/Frame.h"

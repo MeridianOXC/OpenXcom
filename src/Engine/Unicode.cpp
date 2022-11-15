@@ -20,7 +20,6 @@
 #include <sstream>
 #include <locale>
 #include <stdexcept>
-#include <algorithm>
 #include <cstring>
 #include <assert.h>
 #include "Logger.h"
