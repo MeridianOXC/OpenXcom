@@ -2890,6 +2890,22 @@ void GeoscapeState::time1Month()
 			}
 		}
 	}
+
+	for (std::vector<Base *>::const_iterator b = _game->getSavedGame()->getBases()->begin(); b != _game->getSavedGame()->getBases()->end(); ++b)
+	{
+		
+		for (std::vector<Soldier *>::const_iterator s = (*b)->getSoldiers()->begin(); s != (*b)->getSoldiers()->end(); ++s)
+		{
+			for (std::vector<SoldierRoleRanks *>::const_iterator r = (*s)->getRoles().begin(); r != (*s)->getRoles().end(); ++r)
+			{
+				if ((*r)->rank < 1)
+				{
+					(*r)->experience /= 2;
+				}
+			}
+		}
+		
+	}
 }
 
 /**
