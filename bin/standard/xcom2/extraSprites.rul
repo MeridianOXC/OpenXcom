@@ -31,6 +31,13 @@ extraSprites: #done
     singleImage: true
     files:
       0: Resources/Extended/Pedia/info-button-tftd.png
+  - type: MapEditorIcons
+    width: 320
+    height: 240
+    subX: 32
+    subY: 40
+    files:
+      0: Resources/Extended/UI/mapeditor_icons.png
   - type: Pathfinding
     files:
       0: Resources/Pathfinding/Pathfinding.png

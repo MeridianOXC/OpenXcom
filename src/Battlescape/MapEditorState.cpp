@@ -853,6 +853,26 @@ void MapEditorState::init()
 
 		_editor->setSelectedObject(O_MAX);
 
+		// Validate some node data:
+		// Make sure all the nodes are placed inside the map (fixes some TFTD issues)
+		// Limit node rank to 10?
+		bool mapHadOutOfBoundNodes = false;
+		for (auto node : *_save->getNodes())
+		{
+			Position validatedPosition = validateNodePosition(node, node->getPosition());
+			if (validatedPosition != node->getPosition())
+			{
+				mapHadOutOfBoundNodes = true;
+				Log(LOG_WARNING) << "A node from " << _editor->getMapName() << ".RMP was out-of bounds at " << node->getPosition() << ", moving to " << validatedPosition;
+				node->setPosition(validatedPosition);
+			}
+		}
+
+		if (mapHadOutOfBoundNodes)
+		{
+			_message->showMessage(tr("STR_MAP_EDITOR_RMP_HAD_OUT_OF_BOUNDS_NODES"));
+		}
+
 		_firstInit = false;
 	}
 	_txtTooltip->setText("");

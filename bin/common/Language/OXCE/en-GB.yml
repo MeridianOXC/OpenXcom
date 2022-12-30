@@ -379,6 +379,7 @@ en-GB:
   STR_TOOLTIP_NODE_RESERVED: "Reserved - AI shoots this in base defense when = 5"
   STR_TOOLTIP_NODE_LINKS: "Node Links - which nodes are next in patrol routes"
   STR_TOOLTIP_NODE_LINKTYPES: "Link Types - legacy data unused in OXC, ignore"
+  STR_MAP_EDITOR_RMP_HAD_OUT_OF_BOUNDS_NODES: "Loaded RMP file had out-of-bounds nodes that were moved in-bounds."
 #NextTurnState.cpp
   STR_TELL_ME_MORE: "Tell me more..."
   STR_REINFORCEMENTS_ALERT: "Reinforcements alert!"

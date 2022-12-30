@@ -2315,7 +2315,7 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
  * @param segment Mapblock segment.
  * @sa http://www.ufopaedia.org/index.php?title=ROUTES
  */
-void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int zoff, int segment)
+void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int zoff, int segment, bool cullDummyNodes)
 {
 	unsigned char value[24];
 	std::string filename = "ROUTES/" + mapblock->getName() +".RMP";
@@ -2331,9 +2331,10 @@ void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int z
 		int pos_y = value[0];
 		int pos_z = value[2];
 		Node *node;
-		if (pos_x >= 0 && pos_x < mapblock->getSizeX() &&
+		if ((pos_x >= 0 && pos_x < mapblock->getSizeX() &&
 			pos_y >= 0 && pos_y < mapblock->getSizeY() &&
-			pos_z >= 0 && pos_z < mapblock->getSizeZ())
+			pos_z >= 0 && pos_z < mapblock->getSizeZ()) ||
+			!cullDummyNodes)
 		{
 			Position pos = Position(xoff + pos_x, yoff + pos_y, mapblock->getSizeZ() - 1 - pos_z + zoff);
 			int type     = value[19];
@@ -2369,6 +2370,9 @@ void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int z
 			// this is because the "built in" nodeLinks reference each other by number, and it's gonna be implementational hell to try
 			// to adjust those numbers retroactively, post-culling. far better to simply mark these culled nodes as dummies, and discount their use
 			// that way, all the connections will still line up properly in the array.
+			//
+			// Note that specifically for the case of the map editor, we're leaving in these out-of-bounds nodes so that they can be fixed
+			//
 			node = new Node();
 			node->setDummy(true);
 			Log(LOG_INFO) << "Bad node in RMP file: " << filename << " Node #" << nodesAdded << " is outside map boundaries at X:" << pos_x << " Y:" << pos_y << " Z:" << pos_z << ". Culling Node.";
@@ -4821,7 +4825,7 @@ void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
 		}
 
 		loadMAP(block, 0, 0, 0, _terrain, 0, true);
-		loadRMP(block, 0, 0, 0, 0);
+		loadRMP(block, 0, 0, 0, 0, false);
 	}
 	else
 	{
