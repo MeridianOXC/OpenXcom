@@ -1477,6 +1477,7 @@ interfaces: #done
         color: 1   # pink
       - id: numbers
         color: 244   # white
+        color2: 244   # white
       - id: button
         color: 1   # purple
       - id: barTUs
