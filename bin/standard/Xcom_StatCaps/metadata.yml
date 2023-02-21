@@ -1,0 +1,10 @@
+#
+# metadata.yaml for Stat Cap Display
+
+name: "Show stat at cap"
+version: 1.0
+description: "Marks a stat at its cap in the soldier information screen by 
+coloring it in a seperate color."
+author: maxmahem
+id: StatCapDisplay
+master: xcom1

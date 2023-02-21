@@ -1,0 +1,6 @@
+interfaces:
+  - type: soldierInfo
+    elements:
+      - id: numbers
+        color: 208    # white
+        color2: 218   # blue
