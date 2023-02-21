@@ -1451,6 +1451,7 @@ interfaces:
         color: 241   # pink
       - id: numbers
         color: 208   # white
+        color2: 208 
       - id: button
         color: 246   # purple
       - id: barTUs
