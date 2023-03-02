@@ -27,6 +27,7 @@
 #include "../Engine/FileMap.h"
 #include "../Engine/Collections.h"
 #include "../Savegame/GameTime.h"
+#include "../Savegame/Soldier.h"
 #include "RuleDamageType.h"
 #include "RuleAlienMission.h"
 #include "RuleBaseFacilityFunctions.h"
@@ -236,7 +237,7 @@ private:
 	int _escortRange, _drawEnemyRadarCircles;
 	bool _escortsJoinFightAgainstHK, _hunterKillerFastRetarget;
 	int _crewEmergencyEvacuationSurvivalChance, _pilotsEmergencyEvacuationSurvivalChance;
-	int _soldiersPerSergeant, _soldiersPerCaptain, _soldiersPerColonel, _soldiersPerCommander;
+	std::array<int, (size_t)(RANK_COMMANDER + 1)> _soldiersPerRank;
 	int _pilotAccuracyZeroPoint, _pilotAccuracyRange, _pilotReactionsZeroPoint, _pilotReactionsRange;
 	int _pilotBraveryThresholds[3];
 	int _performanceBonusFactor;
@@ -899,14 +900,8 @@ public:
 	int getCrewEmergencyEvacuationSurvivalChance() const { return _crewEmergencyEvacuationSurvivalChance; }
 	/// Gets the pilots emergency evacuation survival chance
 	int getPilotsEmergencyEvacuationSurvivalChance() const { return _pilotsEmergencyEvacuationSurvivalChance; }
-	/// Gets how many soldiers are needed for one sergeant promotion
-	int getSoldiersPerSergeant() const { return _soldiersPerSergeant; }
-	/// Gets how many soldiers are needed for one captain promotion
-	int getSoldiersPerCaptain() const { return _soldiersPerCaptain; }
-	/// Gets how many soldiers are needed for one colonel promotion
-	int getSoldiersPerColonel() const { return _soldiersPerColonel; }
-	/// Gets how many soldiers are needed for one commander promotion
-	int getSoldiersPerCommander() const { return _soldiersPerCommander; }
+	/// Gets how many soldiers are needed for a given rank
+	int getSoldiersPerRank(const SoldierRank rank) const { return _soldiersPerRank[(size_t)rank]; }
 	/// Gets the firing accuracy needed for no bonus/penalty
 	int getPilotAccuracyZeroPoint() const { return _pilotAccuracyZeroPoint; }
 	/// Gets the firing accuracy impact (as percentage of distance to zero point) on pilot's aim in dogfight

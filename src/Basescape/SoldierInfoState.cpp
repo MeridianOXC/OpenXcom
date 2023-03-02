@@ -40,6 +40,7 @@
 #include "SellState.h"
 #include "SoldierArmorState.h"
 #include "SoldierBonusState.h"
+#include "SoldierRankState.h"
 #include "SackSoldierState.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleSoldier.h"
@@ -75,7 +76,7 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), 
 
 	// Create objects
 	_bg = new Surface(320, 200, 0, 0);
-	_rank = new Surface(26, 23, 4, 4);
+	_rank = new InteractiveSurface(26, 23, 4, 4);
 	_flag = new InteractiveSurface(40, 20, 275, 6);
 	_btnPrev = new TextButton(28, 14, 0, 33);
 	_btnOk = new TextButton(48, 14, 30, 33);
@@ -290,6 +291,8 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), 
 			_flag->onMouseClick((ActionHandler)&SoldierInfoState::btnFlagClick, SDL_BUTTON_LEFT);
 			_flag->onMouseClick((ActionHandler)&SoldierInfoState::btnFlagClick, SDL_BUTTON_RIGHT);
 		}
+
+		_rank->onMouseClick((ActionHandler)&SoldierInfoState::btnRankClick);
 	}
 
 	_btnSack->setText(tr("STR_SACK"));
@@ -778,6 +781,18 @@ void SoldierInfoState::btnFlagClick(Action *action)
 
 	_soldier->setNationality(temp);
 	init();
+}
+
+/**
+ * Shows the Promotion window.
+ * @param action Pointer to an action.
+ */
+void SoldierInfoState::btnRankClick(Action *)
+{
+	if (Options::manualPromotions)
+	{
+		_game->pushState(new SoldierRankState(_base, _soldierId));
+	}
 }
 
 }

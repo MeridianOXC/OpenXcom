@@ -43,8 +43,8 @@ private:
 	Soldier *_soldier;
 	std::vector<Soldier*> *_list;
 
-	Surface *_bg, *_rank;
-	InteractiveSurface *_flag;
+	Surface *_bg;
+	InteractiveSurface *_flag, *_rank;
 	TextButton *_btnOk, *_btnPrev, *_btnNext, *_btnArmor, *_btnSack, *_btnDiary, *_btnBonuses;
 	Text *_txtRank, *_txtMissions, *_txtKills, *_txtCraft, *_txtRecovery, *_txtPsionic, *_txtDead;
 	Text *_txtStuns;
@@ -83,6 +83,8 @@ public:
 	void btnDiaryClick(Action *action);
 	/// Handler for clicking the flag.
 	void btnFlagClick(Action *action);
+	/// Handler for clicking the rank.
+	void btnRankClick(Action *action);
 };
 
 }

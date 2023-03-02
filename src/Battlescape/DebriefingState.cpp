@@ -81,7 +81,7 @@ namespace OpenXcom
  * Initializes all the elements in the Debriefing screen.
  * @param game Pointer to the core game.
  */
-DebriefingState::DebriefingState() : _eventToSpawn(nullptr), _region(0), _country(0), _positiveScore(true), _destroyBase(false), _showSellButton(true), _initDone(false), _pageNumber(0)
+DebriefingState::DebriefingState() : _eventToSpawn(nullptr), _region(0), _country(0), _positiveScore(true), _destroyBase(false), _showSellButton(true), _initDone(false), _pageNumber(0), _promotions(false)
 {
 	_missionStatistics = new MissionStatistics();
 
@@ -777,7 +777,12 @@ void DebriefingState::init()
 			participants.push_back(bu->getGeoscapeSoldier());
 		}
 	}
-	_promotions = _game->getSavedGame()->handlePromotions(participants, _game->getMod());
+
+	// only do automatic promotions if that feature is enabled.
+	if (Options::automaticPromotions)
+	{
+		_promotions = _game->getSavedGame()->handlePromotions(participants, _game->getMod());
+	}
 
 	_game->getSavedGame()->setBattleGame(0);
 

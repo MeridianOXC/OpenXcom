@@ -1124,6 +1124,8 @@
     <ClCompile Include="Battlescape\ExtendedInventoryLinksState.cpp">
       <Filter>Battlescape</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\SoldierRankState.cpp" />
+    <ClCompile Include="Savegame\RankCount.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2309,6 +2311,8 @@
     <ClInclude Include="Battlescape\ExtendedInventoryLinksState.h">
       <Filter>Battlescape</Filter>
     </ClInclude>
+    <ClInclude Include="Basescape\SoldierRankState.h" />
+    <ClInclude Include="Savegame\RankCount.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Geoscape">

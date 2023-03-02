@@ -95,17 +95,6 @@ struct SaveInfo
 	bool reserved;
 };
 
-struct PromotionInfo
-{
-	int totalSoldiers;
-	int totalCommanders;
-	int totalColonels;
-	int totalCaptains;
-	int totalSergeants;
-	PromotionInfo(): totalSoldiers(0), totalCommanders(0), totalColonels(0), totalCaptains(0), totalSergeants(0){}
-};
-
-
 /**
  * The game data that gets written to disk when the game is saved.
  * A saved game holds all the variable info in a game like funds,
@@ -303,6 +292,8 @@ public:
 	void getNewlyAvailableResearchProjects(std::vector<RuleResearch*> & before, std::vector<RuleResearch*> & after, std::vector<RuleResearch*> & diff) const;
 	/// Get the list of Productions which can be manufactured in a Base
 	void getAvailableProductions(std::vector<RuleManufacture*> & productions, const Mod *mod, Base *base, ManufacturingFilterType filter = MANU_FILTER_DEFAULT) const;
+	/// Gets a list of all active soldiers.
+	std::vector<Soldier *> getAllActiveSoldiers() const;
 	/// Get the list of newly available manufacture projects once a research has been completed.
 	void getDependableManufacture(std::vector<RuleManufacture*> & dependables, const RuleResearch *research, const Mod *mod, Base *base) const;
 	/// Get the list of Soldier Transformations that can occur at a base
@@ -355,8 +346,6 @@ public:
 	Soldier *getSoldier(int id) const;
 	/// Handles the higher promotions.
 	bool handlePromotions(std::vector<Soldier*> &participants, const Mod *mod);
-	/// Processes a soldier's promotion.
-	void processSoldier(Soldier *soldier, PromotionInfo &soldierData);
 	/// Checks how many soldiers of a rank exist and which one has the highest score.
 	Soldier *inspectSoldiers(std::vector<Soldier*> &soldiers, std::vector<Soldier*> &participants, int rank);
 	/// Gets the (approximate) number of idle days since the soldier's last mission.

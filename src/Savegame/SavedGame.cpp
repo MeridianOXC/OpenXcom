@@ -65,6 +65,7 @@
 #include "SoldierDeath.h"
 #include "SoldierDiary.h"
 #include "../Mod/AlienRace.h"
+#include "RankCount.h"
 
 namespace OpenXcom
 {
@@ -2321,100 +2322,69 @@ Soldier *SavedGame::getSoldier(int id) const
 }
 
 /**
+ * @brief Gets all active soldiers
+ * @return All active soldiers.
+*/
+std::vector<Soldier *> SavedGame::getAllActiveSoldiers() const
+{
+	std::vector<Soldier *> soldiers;
+	for (auto *xbase : _bases)
+	{
+		std::vector<Soldier *> baseSoldiers = *xbase->getSoldiers();
+		soldiers.insert(soldiers.end(), baseSoldiers.begin(), baseSoldiers.end());
+
+		for (auto *transfer : *xbase->getTransfers())
+		{
+			if (transfer->getType() == TRANSFER_SOLDIER)
+			{
+				soldiers.push_back(transfer->getSoldier());
+			}
+		}
+	}
+
+	return soldiers;
+}
+
+/**
  * Handles the higher promotions (not the rookie-squaddie ones).
  * @param participants a list of soldiers that were actually present at the battle.
  * @param mod the Game Mod
  * @return Whether or not some promotions happened - to show the promotions screen.
+ * TODO: This method has no dependencies to this class and should probably move elsewhere.
  */
 bool SavedGame::handlePromotions(std::vector<Soldier*> &participants, const Mod *mod)
 {
 	int soldiersPromoted = 0;
 	Soldier *highestRanked = 0;
-	PromotionInfo soldierData;
-	std::vector<Soldier*> soldiers;
-	for (auto* xbase : _bases)
-	{
-		for (auto* soldier : *xbase->getSoldiers())
-		{
-			soldiers.push_back(soldier);
-			processSoldier(soldier, soldierData);
-		}
-		for (auto* transfer : *xbase->getTransfers())
-		{
-			if (transfer->getType() == TRANSFER_SOLDIER)
-			{
-				soldiers.push_back(transfer->getSoldier());
-				processSoldier(transfer->getSoldier(), soldierData);
-			}
-		}
-	}
+	std::vector<Soldier*> soldiers = getAllActiveSoldiers();
+	RankCount rankCounts = RankCount(soldiers);
 
-	int totalSoldiers = soldierData.totalSoldiers;
+	int totalSoldiers = rankCounts.getTotalSoldiers();
 
-	if (soldierData.totalCommanders == 0)
+	if (rankCounts[RANK_COMMANDER] == 0 && totalSoldiers >= mod->getSoldiersPerRank(RANK_COMMANDER))
 	{
-		if (totalSoldiers >= mod->getSoldiersPerCommander())
+		highestRanked = inspectSoldiers(soldiers, participants, RANK_COLONEL);
+		if (highestRanked)
 		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_COLONEL);
-			if (highestRanked)
-			{
-				// only promote one colonel to commander
-				highestRanked->promoteRank();
-				soldiersPromoted++;
-				soldierData.totalCommanders++;
-				soldierData.totalColonels--;
-			}
+			// only promote one colonel to commander
+			highestRanked->promoteRank();
+			soldiersPromoted++;
+			rankCounts[RANK_COMMANDER];
+			rankCounts[RANK_COLONEL]--;
 		}
 	}
 
-	if ((totalSoldiers / mod->getSoldiersPerColonel()) > soldierData.totalColonels)
+	for (SoldierRank rank : { RANK_COLONEL, RANK_CAPTAIN, RANK_SERGEANT })
 	{
-		while ((totalSoldiers / mod->getSoldiersPerColonel()) > soldierData.totalColonels)
+		while ((totalSoldiers / mod->getSoldiersPerRank(rank)) > rankCounts[rank])
 		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_CAPTAIN);
+			highestRanked = inspectSoldiers(soldiers, participants, rank-1);
 			if (highestRanked)
 			{
 				highestRanked->promoteRank();
 				soldiersPromoted++;
-				soldierData.totalColonels++;
-				soldierData.totalCaptains--;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-	if ((totalSoldiers / mod->getSoldiersPerCaptain()) > soldierData.totalCaptains)
-	{
-		while ((totalSoldiers / mod->getSoldiersPerCaptain()) > soldierData.totalCaptains)
-		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_SERGEANT);
-			if (highestRanked)
-			{
-				highestRanked->promoteRank();
-				soldiersPromoted++;
-				soldierData.totalCaptains++;
-				soldierData.totalSergeants--;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-	if ((totalSoldiers / mod->getSoldiersPerSergeant()) > soldierData.totalSergeants)
-	{
-		while ((totalSoldiers / mod->getSoldiersPerSergeant()) > soldierData.totalSergeants)
-		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_SQUADDIE);
-			if (highestRanked)
-			{
-				highestRanked->promoteRank();
-				soldiersPromoted++;
-				soldierData.totalSergeants++;
+				rankCounts[rank]++;
+				rankCounts[(SoldierRank)(rank - 1)]--;
 			}
 			else
 			{
@@ -2424,41 +2394,6 @@ bool SavedGame::handlePromotions(std::vector<Soldier*> &participants, const Mod 
 	}
 
 	return (soldiersPromoted > 0);
-}
-
-/**
- * Processes a soldier, and adds their rank to the promotions data array.
- * @param soldier the soldier to process.
- * @param soldierData the data array to put their info into.
- */
-void SavedGame::processSoldier(Soldier *soldier, PromotionInfo &soldierData)
-{
-	if (soldier->getRules()->getAllowPromotion())
-	{
-		soldierData.totalSoldiers++;
-	}
-	else
-	{
-		return;
-	}
-
-	switch (soldier->getRank())
-	{
-	case RANK_COMMANDER:
-		soldierData.totalCommanders++;
-		break;
-	case RANK_COLONEL:
-		soldierData.totalColonels++;
-		break;
-	case RANK_CAPTAIN:
-		soldierData.totalCaptains++;
-		break;
-	case RANK_SERGEANT:
-		soldierData.totalSergeants++;
-		break;
-	default:
-		break;
-	}
 }
 
 /**
