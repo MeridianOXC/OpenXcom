@@ -100,8 +100,8 @@ const bool PromotionOpenings::isManualPromotionPossible(const Soldier *soldier, 
 
 	const SoldierRank currentRank = soldier->getRank();
 
-	// rookies cannot be promoted via this method.
-	if (currentRank == RANK_ROOKIE)
+	// rookies cannot be promoted or demoted to via this method.
+	if (currentRank == RANK_ROOKIE || newRank == RANK_ROOKIE)
 	{
 		return false;
 	}
