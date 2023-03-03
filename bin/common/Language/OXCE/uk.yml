@@ -44,6 +44,7 @@ uk:
   STR_REFUND_VALUE: "Вартість продажу> {ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "ОГЛЯД ВИРОБНИЦТВА"
   STR_RESEARCH_OVERVIEW: "ОГЛЯД ДОСЛІДЖЕНЬ"
+  STR_CONTAINMENT_OVERVIEW: ""
   STR_KILL_SELECTED: "Вбити"
   STR_SELL_SELECTED: "Продати"
   STR_GO_TO_TRANSFERS: "Транспортування..."

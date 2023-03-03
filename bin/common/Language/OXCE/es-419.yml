@@ -34,6 +34,7 @@ es-419:
   STR_REFUND_VALUE: "Valor de ventas>{ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "INFORME DE PRODUCCION"
   STR_RESEARCH_OVERVIEW: "Resumén de investigación"
+  STR_CONTAINMENT_OVERVIEW: ""
   STR_SELL_SELECTED: "Vender"
   STR_GO_TO_TRANSFERS: "Transferir..."
   STR_TOPIC: "Tema>{ALT} {0}"

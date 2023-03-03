@@ -48,6 +48,7 @@ ru:
   STR_REFUND_VALUE: "Цена продажи> {ALT}{0}"
   STR_PRODUCTION_OVERVIEW: "ОБЗОР ПРОИЗВОДСТВА"
   STR_RESEARCH_OVERVIEW: "ОБЗОР ИССЛЕДОВАНИЙ"
+  STR_CONTAINMENT_OVERVIEW: ""
   STR_KILL_SELECTED: "Ликвид."
   STR_SELL_SELECTED: "Продать"
   STR_GO_TO_TRANSFERS: "К транспортировке..."

@@ -64,7 +64,7 @@ en-GB:
 #GlobalResearchState.cpp
   STR_RESEARCH_OVERVIEW: "RESEARCH OVERVIEW"
 #GlobalAlienContainmentState.cpp
-  STR_PRISONER_OVERVIEW: "PRISONER OVERVIEW"
+  STR_CONTAINMENT_OVERVIEW: "PRISONER OVERVIEW"
 #ManageAlienContainmentState.cpp
   STR_KILL_SELECTED: "Kill"
   STR_SELL_SELECTED: "Sell"
