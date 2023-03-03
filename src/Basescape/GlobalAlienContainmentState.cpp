@@ -18,6 +18,7 @@
  */
 #include "GlobalAlienContainmentState.h"
 #include <sstream>
+#include <set>
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
@@ -152,7 +153,7 @@ void GlobalAlienContainmentState::onOpenTechTreeViewer(Action *)
 }
 
 /**
- * Updates the research list
+ * Updates the prisoner list
  * after going to other screens.
  */
 void GlobalAlienContainmentState::init()
@@ -162,7 +163,7 @@ void GlobalAlienContainmentState::init()
 }
 
 /**
- * Fills the list with Prisoners from all bases. Also updates total count of available containment space
+ * Fills the list with prisoners from all bases. Also updates total count of available containment space over all bases
  */
 void GlobalAlienContainmentState::fillAlienList()
 {
@@ -174,8 +175,22 @@ void GlobalAlienContainmentState::fillAlienList()
 	int allocatedScientists = 0;
 	int freeLaboratories = 0;
 
+	std::set<int> prisonTypes;
+    //determine prison types in game
+	for(auto& itemType : _game->getMod()->getItemList())
+	{
+		if(itemType->isAlien())
+		{
+			prisonTypes.insert(itemType->getPrisonType())
+		}
+	}
+	//start gathering base information
+
 	for (Base *xbase : *_game->getSavedGame()->getBases())
 	{
+		
+
+		
 		auto& baseProjects = xbase->getResearch();
 		if (!baseProjects.empty())
 		{
