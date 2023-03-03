@@ -38,11 +38,10 @@ class GlobalAlienContainmentState : public State
 private:
 	TextButton *_btnOk;
 	Window *_window;
-	Text *_txtTitle, *_txtAvailable, *_txtAllocated, *_txtSpace, *_txtProject, *_txtScientists, *_txtProgress;
+	Text *_txtTitle, *_txtAvailable, *_txtAllocated, *_txtSpace, *_txtProject, *_txtLiveAliens, *_txtDeadAliens, *_txtInterrogatedAliens;
 	TextList *_lstAliens;
 
-	std::vector<Base*> _bases;
-	std::vector<RuleResearch*> _topics;
+	std::vector<std::pair<Base*, int>> _bases;
 	bool _openedFromBasescape;
 public:
 	/// Creates the GlobalAlienContainmentState.

@@ -120,21 +120,21 @@ void GlobalAlienContainmentState::btnOkClick(Action *)
  */
 void GlobalAlienContainmentState::onSelectBase(Action *)
 {
-	Base *base = _bases[_lstAliens->getSelectedRow()];
+	auto base = _bases[_lstAliens->getSelectedRow()];
 
-	if (base)
+	if (base.first())
 	{
 		// close this window
 		_game->popState();
 
-		// close Research UI (goes back to BaseView)
+		// close Containment UI (goes back to BaseView)
 		if (_openedFromBasescape)
 		{
 			_game->popState();
 		}
 
-		// open new window TODO: FIXME
-		_game->pushState(new ManageAlienContainmentState(base, 0, OPT_GEOSCAPE));
+		// open new window 
+		_game->pushState(new ManageAlienContainmentState(base.first(), base.second(), OPT_GEOSCAPE));
 	}
 }
 
@@ -144,12 +144,6 @@ void GlobalAlienContainmentState::onSelectBase(Action *)
  */
 void GlobalAlienContainmentState::onOpenTechTreeViewer(Action *)
 {
-	const RuleResearch *selectedTopic = _topics[_lstAliens->getSelectedRow()];
-
-	if (selectedTopic)
-	{
-		_game->pushState(new TechTreeViewerState(selectedTopic, 0));
-	}
 }
 
 /**
@@ -185,34 +179,73 @@ void GlobalAlienContainmentState::fillAlienList()
 		}
 	}
 	//start gathering base information
-
 	for (Base *xbase : *_game->getSavedGame()->getBases())
 	{
-		
-
-		
-		auto& baseProjects = xbase->getResearch();
-		if (!baseProjects.empty())
+		//find the prisoners under interrogation at the base (i.e. under research)
+		std::vector<std::string> researchList;
+		for (const auto* proj : _base->getResearch())
 		{
-			std::string baseName = xbase->getName(_game->getLanguage());
-			_lstAliens->addRow(3, baseName.c_str(), "", "");
-			_lstAliens->setRowColor(_lstAliens->getLastRowIndex(), _lstAliens->getSecondaryColor());
-
-			// dummy
-			_bases.push_back(0);
-			_topics.push_back(0);
+			const RuleResearch *research = proj->getRules();
+			RuleItem *item = _game->getMod()->getItem(research->getName());
+			if (research->needItem() && research->destroyItem() && item && item->isAlien()))
+			{
+				researchList.push_back(research->getName());
+			}
 		}
-		for (const auto* proj : baseProjects)
-		{
-			std::ostringstream sstr;
-			sstr << proj->getAssigned();
-			const RuleResearch *r = proj->getRules();
+		//walk the prison types
+		for(auto prisonType : prisonTypes)
+		{	
+			//extract the prisoners in holding
+			for (auto& itemType : _game->getMod()->getItemsList())
+			{
+				int qty = _base->getStorageItems()->getItem(itemType);
+				RuleItem *rule = _game->getMod()->getItem(itemType, true);
+				if (qty > 0 && rule->isAlien() && rule->getPrisonType() == prisonType)
+				{
+					_qtys.push_back(0);
+					_aliens.push_back(itemType);
+					std::ostringstream ss;
+					ss << qty;
+					std::string rqty;
+					auto researchIt = std::find(researchList.begin(), researchList.end(), itemType);
+					if (researchIt != researchList.end())
+					{
+						rqty = "1";
+						researchList.erase(researchIt);
+					}
+					else
+					{
+						rqty = "0";
+					}
 
-			std::string wstr = tr(r->getName());
-			_lstAliens->addRow(3, wstr.c_str(), sstr.str().c_str(), tr(proj->getResearchProgress()).c_str());
+					_lstAliens->addRow(5, tr(itemType).c_str(), formattedCost.c_str(), ss.str().c_str(), "0", rqty.c_str());
+				}
+			}
 
-			_bases.push_back(xbase);
-			_topics.push_back(_game->getMod()->getResearch(r->getName()));
+			//old research overview code for reference, will be deleted soon enough
+			auto& baseProjects = xbase->getResearch();
+			if (!baseProjects.empty())
+			{
+				std::string baseName = xbase->getName(_game->getLanguage());
+				_lstAliens->addRow(3, baseName.c_str(), "", "");
+				_lstAliens->setRowColor(_lstAliens->getLastRowIndex(), _lstAliens->getSecondaryColor());
+
+				// dummy
+				_bases.push_back(0);
+				_topics.push_back(0);
+			}
+			for (const auto* proj : baseProjects)
+			{
+				std::ostringstream sstr;
+				sstr << proj->getAssigned();
+				const RuleResearch *r = proj->getRules();
+
+				std::string wstr = tr(r->getName());
+				_lstAliens->addRow(3, wstr.c_str(), sstr.str().c_str(), tr(proj->getResearchProgress()).c_str());
+
+				_bases.push_back(xbase);
+				_topics.push_back(_game->getMod()->getResearch(r->getName()));
+			}
 		}
 
 		availableScientists += xbase->getAvailableScientists();
