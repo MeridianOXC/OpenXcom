@@ -2482,7 +2482,7 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base)
 			}
 			// special case of fixed weapons on a soldier's armor, but not HWPs
 			// makes sure we recover the ammunition from this weapon
-			else if (rule->isFixed() && bi->getOwner()->getOriginalFaction() == FACTION_PLAYER && bi->getOwner()->getGeoscapeSoldier())
+			else if (rule->isFixed() && bi->getOwner() && bi->getOwner()->getOriginalFaction() == FACTION_PLAYER && bi->getOwner()->getGeoscapeSoldier())
 			{
 				switch (rule->getBattleType())
 				{
