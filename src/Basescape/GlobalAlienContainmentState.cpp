@@ -29,6 +29,7 @@
 #include "../Interface/TextList.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Base.h"
+#include "../Savegame/ItemContainer.h"
 #include "ManageAlienContainmentState.h"
 #include "../Savegame/ResearchProject.h"
 #include "../Mod/RuleResearch.h"
@@ -46,12 +47,12 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_window = new Window(this, 320, 200, 0, 0);
 	_btnOk = new TextButton(304, 16, 8, 176);
 	_txtTitle = new Text(310, 17, 5, 8);
-	_txtAvailable = new Text(150, 9, 10, 24);
-	_txtAllocated = new Text(150, 9, 160, 24);
-	_txtSpace = new Text(300, 9, 10, 34);
-	_txtProject = new Text(110, 17, 10, 44);
-	_txtScientists = new Text(106, 17, 120, 44);
-	_txtProgress = new Text(84, 9, 226, 44);
+//	_txtAlien = new Text(150, 9, 10, 24);
+//	_txtHeldAliens = new Text(150, 9, 120, 24);
+//	_txtInterrogatedAliens = new Text(150, 9, 160, 24);
+//	_txtUsedSpace = new Text(300, 9, 10, 34);
+//	_txtFreeSpace = new Text(110, 17, 10, 44);
+//	_txtMaxSpace = new Text(106, 17, 120, 44);
 	_lstAliens = new TextList(288, 112, 8, 62);
 
 	// Set palette
@@ -60,12 +61,12 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	add(_window, "window", "globalContainmentMenu");
 	add(_btnOk, "button", "globalContainmentMenu");
 	add(_txtTitle, "text", "globalContainmentMenu");
-	add(_txtAvailable, "text", "globalContainmentMenu");
-	add(_txtAllocated, "text", "globalContainmentMenu");
-	add(_txtSpace, "text", "globalContainmentMenu");
-	add(_txtProject, "text", "globalContainmentMenu");
-	add(_txtScientists, "text", "globalContainmentMenu");
-	add(_txtProgress, "text", "globalContainmentMenu");
+	//add(_txtAlien, "text", "globalContainmentMenu");
+	//add(_txtHeldAliens, "text", "globalContainmentMenu");
+	//add(_txtInterrogatedAliens, "text", "globalContainmentMenu");
+	//add(_txtUsedSpace, "text", "globalContainmentMenu");
+	//add(_txtFreeSpace, "text", "globalContainmentMenu");
+	//add(_txtMaxSpace, "text", "globalContainmentMenu");
 	add(_lstAliens, "list", "globalContainmentMenu");
 
 	centerAllSurfaces();
@@ -79,15 +80,15 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);
-	_txtTitle->setText(tr("STR_PRISONER_OVERVIEW"));
+	_txtTitle->setText(tr("STR_CONTAINMENT_OVERVIEW"));
 
-	_txtProject->setWordWrap(true);
-	_txtProject->setText(tr("STR_RESEARCH_PROJECT"));
+	//_txtAlien->setWordWrap(true);
+	//_txtAlien->setText(tr("STR_RESEARCH_PROJECT"));
 
-	_txtScientists->setWordWrap(true);
-	_txtScientists->setText(tr("STR_SCIENTISTS_ALLOCATED_UC"));
+	//_txtHeldAliens->setWordWrap(true);
+	//_txtHeldAliens->setText(tr("STR_SCIENTISTS_ALLOCATED_UC"));
 
-	_txtProgress->setText(tr("STR_PROGRESS"));
+	//_txtInterrogatedAliens->setText(tr("STR_PROGRESS"));
 
 	_lstAliens->setColumns(3, 158, 58, 70);
 	_lstAliens->setSelectable(true);
@@ -95,7 +96,7 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_lstAliens->setMargin(2);
 	_lstAliens->setWordWrap(true);
 	_lstAliens->onMouseClick((ActionHandler)&GlobalAlienContainmentState::onSelectBase, SDL_BUTTON_LEFT);
-	_lstAliens->onMouseClick((ActionHandler)&GlobalAlienContainmentState::onOpenTechTreeViewer, SDL_BUTTON_MIDDLE);
+//	_lstAliens->onMouseClick((ActionHandler)&GlobalAlienContainmentState::onOpenTechTreeViewer, SDL_BUTTON_MIDDLE);
 }
 
 /**
@@ -122,7 +123,7 @@ void GlobalAlienContainmentState::onSelectBase(Action *)
 {
 	auto base = _bases[_lstAliens->getSelectedRow()];
 
-	if (base.first())
+	if (base.first)
 	{
 		// close this window
 		_game->popState();
@@ -134,7 +135,7 @@ void GlobalAlienContainmentState::onSelectBase(Action *)
 		}
 
 		// open new window 
-		_game->pushState(new ManageAlienContainmentState(base.first(), base.second(), OPT_GEOSCAPE));
+		_game->pushState(new ManageAlienContainmentState(base.first, base.second, OPT_GEOSCAPE));
 	}
 }
 
@@ -162,100 +163,112 @@ void GlobalAlienContainmentState::init()
 void GlobalAlienContainmentState::fillAlienList()
 {
 	_bases.clear();
-	_topics.clear();
 	_lstAliens->clearList();
+	int rowCount = 0;
 
-	int availableScientists = 0;
-	int allocatedScientists = 0;
-	int freeLaboratories = 0;
+	int maxContainmentSpace = 0;
+	int usedContainmentSpace = 0;
+	int freeContainmentSpace = 0;
 
 	std::set<int> prisonTypes;
     //determine prison types in game
-	for(auto& itemType : _game->getMod()->getItemList())
+	for(auto itemName : _game->getMod()->getItemsList())
 	{
-		if(itemType->isAlien())
+		auto item = _game->getMod()->getItem(itemName);
+		if(item->isAlien())
 		{
-			prisonTypes.insert(itemType->getPrisonType())
+			prisonTypes.insert(item->getPrisonType());
 		}
 	}
+     //HOW TO HANDLE NO PRISONERS CASE
 	//start gathering base information
 	for (Base *xbase : *_game->getSavedGame()->getBases())
 	{
-		//find the prisoners under interrogation at the base (i.e. under research)
-		std::vector<std::string> researchList;
-		for (const auto* proj : _base->getResearch())
-		{
-			const RuleResearch *research = proj->getRules();
-			RuleItem *item = _game->getMod()->getItem(research->getName());
-			if (research->needItem() && research->destroyItem() && item && item->isAlien()))
-			{
-				researchList.push_back(research->getName());
-			}
-		}
-		//walk the prison types
+		bool baseHasPrisoners = false;
+		std::vector<int> occupiedPrisonTypes;
+		//check if the base contains prisoners
 		for(auto prisonType : prisonTypes)
 		{	
-			//extract the prisoners in holding
-			for (auto& itemType : _game->getMod()->getItemsList())
+			
+			int usedSpace = xbase->getUsedContainment(prisonType); 
+			int availableSpace = xbase->getAvailableContainment(prisonType); 
+			if(usedSpace > 0)
 			{
-				int qty = _base->getStorageItems()->getItem(itemType);
-				RuleItem *rule = _game->getMod()->getItem(itemType, true);
-				if (qty > 0 && rule->isAlien() && rule->getPrisonType() == prisonType)
-				{
-					_qtys.push_back(0);
-					_aliens.push_back(itemType);
-					std::ostringstream ss;
-					ss << qty;
-					std::string rqty;
-					auto researchIt = std::find(researchList.begin(), researchList.end(), itemType);
-					if (researchIt != researchList.end())
-					{
-						rqty = "1";
-						researchList.erase(researchIt);
-					}
-					else
-					{
-						rqty = "0";
-					}
-
-					_lstAliens->addRow(5, tr(itemType).c_str(), formattedCost.c_str(), ss.str().c_str(), "0", rqty.c_str());
-				}
+				baseHasPrisoners = true;
+				occupiedPrisonTypes.push_back(prisonType);
 			}
-
-			//old research overview code for reference, will be deleted soon enough
-			auto& baseProjects = xbase->getResearch();
-			if (!baseProjects.empty())
-			{
-				std::string baseName = xbase->getName(_game->getLanguage());
-				_lstAliens->addRow(3, baseName.c_str(), "", "");
-				_lstAliens->setRowColor(_lstAliens->getLastRowIndex(), _lstAliens->getSecondaryColor());
-
-				// dummy
-				_bases.push_back(0);
-				_topics.push_back(0);
-			}
-			for (const auto* proj : baseProjects)
-			{
-				std::ostringstream sstr;
-				sstr << proj->getAssigned();
-				const RuleResearch *r = proj->getRules();
-
-				std::string wstr = tr(r->getName());
-				_lstAliens->addRow(3, wstr.c_str(), sstr.str().c_str(), tr(proj->getResearchProgress()).c_str());
-
-				_bases.push_back(xbase);
-				_topics.push_back(_game->getMod()->getResearch(r->getName()));
-			}
+			//update totals
+			freeContainmentSpace += (availableSpace - usedSpace);
+			usedContainmentSpace += usedSpace;
+			maxContainmentSpace += availableSpace;
 		}
 
-		availableScientists += xbase->getAvailableScientists();
-		allocatedScientists += xbase->getAllocatedScientists();
-		freeLaboratories += xbase->getFreeLaboratories();
+		if(baseHasPrisoners)
+		{
+			//insert dummy here for base name
+			std::string baseName = xbase->getName(_game->getLanguage());
+			_lstAliens->addRow(4, baseName.c_str(), "", "", "");
+			_lstAliens->setRowColor(_lstAliens->getLastRowIndex(), _lstAliens->getSecondaryColor());
+			// dummy
+			_bases.push_back(std::pair<Base*,int>(nullptr,0));
+			rowCount++;
+			
+			//walk the occupied prison types
+			for(auto prisonType : occupiedPrisonTypes)
+			{	
+				//find the prisoners under interrogation at the base (i.e. under research)
+				std::vector<std::string> researchList;
+				for (const auto* proj : xbase->getResearch())
+				{
+					const RuleResearch *research = proj->getRules();
+					RuleItem *item = _game->getMod()->getItem(research->getName());
+					if (research->needItem() && research->destroyItem() && item && item->isAlien() && item->getPrisonType() == prisonType)
+					{
+						researchList.push_back(research->getName());
+					}
+				}
+				//extract the prisoners in holding
+				for (auto& itemType : _game->getMod()->getItemsList())
+				{
+					const ItemContainer* container = xbase->getStorageItems();
+					int qty = container->getItem(itemType);
+					RuleItem *rule = _game->getMod()->getItem(itemType, true);
+					if (qty > 0 && rule->isAlien() && rule->getPrisonType() == prisonType)
+					{
+						std::ostringstream ss;
+						ss << qty;
+						std::string rqty;
+						auto researchIt = std::find(researchList.begin(), researchList.end(), itemType);
+						if (researchIt != researchList.end())
+						{
+							rqty = "1";
+							researchList.erase(researchIt);
+						}
+						else
+						{
+							rqty = "0";
+						}
+						_lstAliens->addRow(4, tr(itemType).c_str(), ss.str().c_str(), "0", rqty.c_str());
+						rowCount++;
+						_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
+					}
+				}
+				//finish the interrogations for last prisoner interrogated in the prison type
+				for (const auto& researchName : researchList)
+				{
+					_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
+					_lstAliens->addRow(4, tr(researchName).c_str(), Options::canSellLiveAliens ? "-" : "", "0", "0", "1");
+					rowCount++;
+					_lstAliens->setRowColor(rowCount -1, _lstAliens->getSecondaryColor());
+				}
+
+			}
+		}
 	}
 
-	_txtAvailable->setText(tr("STR_SCIENTISTS_AVAILABLE").arg(availableScientists));
-	_txtAllocated->setText(tr("STR_SCIENTISTS_ALLOCATED").arg(allocatedScientists));
-	_txtSpace->setText(tr("STR_LABORATORY_SPACE_AVAILABLE").arg(freeLaboratories));
+	//_txtFreeSpace->setText(tr("STR_SPACE_AVAILABLE").arg(freeContainmentSpace));
+	//_txtUsedSpace->setText(tr("STR_SPACE_USED").arg(usedContainmentSpace));
+	//_txtMaxSpace->setText(tr("STR_LABORATORY_SPACE_AVAILABLE").arg(freeLaboratories));
 }
 
 }

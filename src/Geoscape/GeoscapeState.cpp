@@ -2927,7 +2927,7 @@ void GeoscapeState::btnGlobalResearchClick(Action *)
  */
 void GeoscapeState::btnGlobalPrisonerClick(Action *)
 {
-	_game->pushState(new GlobalAlientContainmentState(false));
+	_game->pushState(new GlobalAlienContainmentState(false));
 }
 
 /**

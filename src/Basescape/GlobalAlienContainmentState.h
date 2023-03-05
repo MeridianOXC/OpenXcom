@@ -38,7 +38,7 @@ class GlobalAlienContainmentState : public State
 private:
 	TextButton *_btnOk;
 	Window *_window;
-	Text *_txtTitle, *_txtAvailable, *_txtAllocated, *_txtSpace, *_txtProject, *_txtLiveAliens, *_txtDeadAliens, *_txtInterrogatedAliens;
+	Text *_txtTitle, *_txtFreeSpace, *_txtUsedSpace, *_txtMaxSpace, *_txtHeldAliens, *_txtInterrogatedAliens,*_txtAlien;
 	TextList *_lstAliens;
 
 	std::vector<std::pair<Base*, int>> _bases;

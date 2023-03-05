@@ -22,6 +22,7 @@ set ( basescape_src
   Basescape/DismantleFacilityState.cpp
   Basescape/GlobalManufactureState.cpp
   Basescape/GlobalResearchState.cpp
+  Basescape/GlobalAlienContainmentState.cpp
   Basescape/ManageAlienContainmentState.cpp
   Basescape/ManufactureDependenciesTreeState.cpp
   Basescape/ManufactureInfoState.cpp
