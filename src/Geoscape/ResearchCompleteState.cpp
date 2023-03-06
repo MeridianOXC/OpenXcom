@@ -35,16 +35,17 @@ namespace OpenXcom
  * @param bonus Pointer to bonus unlocked research.
  * @param research Pointer to the research project.
  */
-ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, const RuleResearch *bonus, const RuleResearch *research) : _research(newResearch), _bonus(bonus)
+ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, const RuleResearch *bonus, const RuleResearch *research, const std::string baseName) : _research(newResearch), _bonus(bonus), _baseName(baseName)
 {
 	_screen = false;
 
 	// Create objects
-	_window = new Window(this, 230, 140, 45, 30, POPUP_BOTH);
+	_window = new Window(this, 230, 180, 45, 30, POPUP_BOTH);
 	_btnOk = new TextButton(80, 16, 64, 146);
 	_btnReport = new TextButton(80, 16, 176, 146);
 	_txtTitle = new Text(230, 17, 45, 70);
 	_txtResearch = new Text(230, 32, 45, 96);
+	_txtBaseName = new Text(110,17,45, 128);
 
 	// Set palette
 	setInterface("geoResearchComplete");
@@ -54,6 +55,7 @@ ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, co
 	add(_btnReport, "button", "geoResearchComplete");
 	add(_txtTitle, "text1", "geoResearchComplete");
 	add(_txtResearch, "text2", "geoResearchComplete");
+	add(_txtBaseName, "text2", "geoResearchComplete");
 
 	centerAllSurfaces();
 
@@ -79,6 +81,10 @@ ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, co
 	{
 		_txtResearch->setText(tr(research->getName()));
 	}
+
+	_txtBaseName->setAlign(ALIGN_CENTER);
+	_txtBaseName->setWordWrap(true);
+	_txtBaseName->setText(baseName);
 }
 
 /**

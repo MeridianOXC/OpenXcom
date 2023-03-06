@@ -2426,7 +2426,7 @@ void GeoscapeState::time1Day()
 				}
 			}
 			// 3e. handle research complete popup + ufopedia article popups (topic+bonus)
-			popup(new ResearchCompleteState(newResearch, bonus, research));
+			popup(new ResearchCompleteState(newResearch, bonus, research, xbase->getName()));
 			// 3f. reset timer
 			timerReset();
 			// 3g. warning if weapon is researched before its clip
