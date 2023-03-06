@@ -84,7 +84,7 @@ ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, co
 
 	_txtBaseName->setAlign(ALIGN_CENTER);
 	_txtBaseName->setWordWrap(true);
-	_txtBaseName->setText(baseName.c_str());
+	_txtBaseName->setText(baseName);
 }
 
 /**
