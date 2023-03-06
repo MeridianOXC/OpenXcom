@@ -1092,15 +1092,11 @@ interfaces:
         color: 218   # blue
         color2: 208  # white
       - id: list
-        color: 208   # white
-        color2: 218  # blue
+        color: 218   # blue
+        color2: 208  # white
         border: 218  # blue
       - id: button
         color: 218   # blue
-      - id: errorPalette
-        color: 6     # oxide
-      - id: errorMessage
-        color: 241   # pink
   - type: transferBaseSelect
     backgroundImage: BACK13.SCR
     palette: PAL_BASESCAPE

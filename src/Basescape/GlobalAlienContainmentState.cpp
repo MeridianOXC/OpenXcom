@@ -47,13 +47,13 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_window = new Window(this, 320, 200, 0, 0);
 	_btnOk = new TextButton(304, 16, 8, 176);
 	_txtTitle = new Text(310, 17, 5, 8);
-//	_txtAlien = new Text(150, 9, 10, 24);
-//	_txtHeldAliens = new Text(150, 9, 120, 24);
-//	_txtInterrogatedAliens = new Text(150, 9, 160, 24);
-//	_txtUsedSpace = new Text(300, 9, 10, 34);
-//	_txtFreeSpace = new Text(110, 17, 10, 44);
-//	_txtMaxSpace = new Text(106, 17, 120, 44);
-	_lstAliens = new TextList(288, 112, 8, 62);
+	_txtAlien = new Text(110, 17, 10, 44);
+	_txtHeldAliens = new Text(106, 17, 150, 44);
+	_txtInterrogatedAliens = new Text(80, 17, 208, 44);
+	_txtFreeSpace = new Text(150, 9, 10, 24);
+	_txtMaxSpace = new Text(150, 9, 160, 24);
+	_txtUsedSpace = new Text(300, 9, 10, 34);
+	_lstAliens = new TextList(288, 112, 8, 63);
 
 	// Set palette
 	setInterface("globalContainmentMenu");
@@ -61,12 +61,12 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	add(_window, "window", "globalContainmentMenu");
 	add(_btnOk, "button", "globalContainmentMenu");
 	add(_txtTitle, "text", "globalContainmentMenu");
-	//add(_txtAlien, "text", "globalContainmentMenu");
-	//add(_txtHeldAliens, "text", "globalContainmentMenu");
-	//add(_txtInterrogatedAliens, "text", "globalContainmentMenu");
-	//add(_txtUsedSpace, "text", "globalContainmentMenu");
-	//add(_txtFreeSpace, "text", "globalContainmentMenu");
-	//add(_txtMaxSpace, "text", "globalContainmentMenu");
+	add(_txtAlien, "text", "globalContainmentMenu");
+	add(_txtHeldAliens, "text", "globalContainmentMenu");
+	add(_txtInterrogatedAliens, "text", "globalContainmentMenu");
+	add(_txtUsedSpace, "text", "globalContainmentMenu");
+	add(_txtFreeSpace, "text", "globalContainmentMenu");
+	add(_txtMaxSpace, "text", "globalContainmentMenu");
 	add(_lstAliens, "list", "globalContainmentMenu");
 
 	centerAllSurfaces();
@@ -82,13 +82,15 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setText(tr("STR_CONTAINMENT_OVERVIEW"));
 
-	//_txtAlien->setWordWrap(true);
-	//_txtAlien->setText(tr("STR_RESEARCH_PROJECT"));
+	_txtAlien->setWordWrap(true);
+	_txtAlien->setText(tr("STR_CONTAINED_ALIEN"));
 
-	//_txtHeldAliens->setWordWrap(true);
-	//_txtHeldAliens->setText(tr("STR_SCIENTISTS_ALLOCATED_UC"));
+	_txtHeldAliens->setWordWrap(true);
+	_txtHeldAliens->setText(tr("STR_CONTAINED_ALIEN_AMOUNT"));
 
-	//_txtInterrogatedAliens->setText(tr("STR_PROGRESS"));
+	_txtInterrogatedAliens->setWordWrap(true);
+	_txtInterrogatedAliens->setText(tr("STR_INTERROGATED_ALIEN_AMOUNT"));
+
 
 	_lstAliens->setColumns(3, 158, 58, 70);
 	_lstAliens->setSelectable(true);
@@ -166,7 +168,7 @@ void GlobalAlienContainmentState::fillAlienList()
 	_lstAliens->clearList();
 	int rowCount = 0;
 
-	int maxContainmentSpace = 0;
+	int interrogated = 0;
 	int usedContainmentSpace = 0;
 	int freeContainmentSpace = 0;
 
@@ -200,14 +202,14 @@ void GlobalAlienContainmentState::fillAlienList()
 			//update totals
 			freeContainmentSpace += (availableSpace - usedSpace);
 			usedContainmentSpace += usedSpace;
-			maxContainmentSpace += availableSpace;
 		}
 
 		if(baseHasPrisoners)
 		{
 			//insert dummy here for base name
 			std::string baseName = xbase->getName(_game->getLanguage());
-			_lstAliens->addRow(4, baseName.c_str(), "", "", "");
+			Log(LOG_INFO) << "Adding base " << baseName.c_str();
+			_lstAliens->addRow(3, baseName.c_str(), "", "");
 			_lstAliens->setRowColor(_lstAliens->getLastRowIndex(), _lstAliens->getSecondaryColor());
 			// dummy
 			_bases.push_back(std::pair<Base*,int>(nullptr,0));
@@ -227,6 +229,7 @@ void GlobalAlienContainmentState::fillAlienList()
 						researchList.push_back(research->getName());
 					}
 				}
+				Log(LOG_INFO) << "Starting prisoners";
 				//extract the prisoners in holding
 				for (auto& itemType : _game->getMod()->getItemsList())
 				{
@@ -243,32 +246,38 @@ void GlobalAlienContainmentState::fillAlienList()
 						{
 							rqty = "1";
 							researchList.erase(researchIt);
+							interrogated++;
 						}
 						else
 						{
 							rqty = "0";
 						}
-						_lstAliens->addRow(4, tr(itemType).c_str(), ss.str().c_str(), "0", rqty.c_str());
+						
+						Log(LOG_INFO) << "Adding prisoner " << rowCount;
+						_lstAliens->addRow(3, tr(itemType).c_str(), ss.str().c_str(), rqty.c_str());
 						rowCount++;
 						_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
 					}
 				}
+				Log(LOG_INFO) << "Starting rest of interrogation critters";
 				//finish the interrogations for last prisoner interrogated in the prison type
 				for (const auto& researchName : researchList)
 				{
 					_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
-					_lstAliens->addRow(4, tr(researchName).c_str(), Options::canSellLiveAliens ? "-" : "", "0", "0", "1");
+					Log(LOG_INFO) << "Adding prisoner " << rowCount;
+					Log(LOG_INFO) << tr(researchName).c_str();
+					_lstAliens->addRow(3, tr(researchName).c_str(), "0", "1");
 					rowCount++;
-					_lstAliens->setRowColor(rowCount -1, _lstAliens->getSecondaryColor());
+					interrogated++;
 				}
 
 			}
 		}
 	}
 
-	//_txtFreeSpace->setText(tr("STR_SPACE_AVAILABLE").arg(freeContainmentSpace));
-	//_txtUsedSpace->setText(tr("STR_SPACE_USED").arg(usedContainmentSpace));
-	//_txtMaxSpace->setText(tr("STR_LABORATORY_SPACE_AVAILABLE").arg(freeLaboratories));
+	_txtFreeSpace->setText(tr("STR_TOTAL_FREE_CONTAINMENT_SPACE").arg(freeContainmentSpace));
+	_txtUsedSpace->setText(tr("STR_TOTAL_CONTAINED").arg(usedContainmentSpace));
+	_txtMaxSpace->setText(tr("STR_TOTAL_INTERROGATED").arg(interrogated));
 }
 
 }
