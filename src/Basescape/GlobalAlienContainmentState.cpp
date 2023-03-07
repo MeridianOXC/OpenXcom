@@ -50,9 +50,8 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_txtAlien = new Text(110, 17, 10, 44);
 	_txtHeldAliens = new Text(106, 17, 150, 44);
 	_txtInterrogatedAliens = new Text(80, 17, 208, 44);
-	_txtFreeSpace = new Text(150, 9, 10, 24);
-	_txtMaxSpace = new Text(150, 9, 160, 24);
-	_txtUsedSpace = new Text(300, 9, 10, 34);
+	_txtInterrogatedSpace = new Text(150, 9, 160, 24);
+	_txtUsedSpace = new Text(300, 9, 10, 24);
 	_lstAliens = new TextList(288, 112, 8, 63);
 
 	// Set palette
@@ -65,8 +64,7 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	add(_txtHeldAliens, "text", "globalContainmentMenu");
 	add(_txtInterrogatedAliens, "text", "globalContainmentMenu");
 	add(_txtUsedSpace, "text", "globalContainmentMenu");
-	add(_txtFreeSpace, "text", "globalContainmentMenu");
-	add(_txtMaxSpace, "text", "globalContainmentMenu");
+	add(_txtInterrogatedSpace, "text", "globalContainmentMenu");
 	add(_lstAliens, "list", "globalContainmentMenu");
 
 	centerAllSurfaces();
@@ -208,7 +206,6 @@ void GlobalAlienContainmentState::fillAlienList()
 		{
 			//insert dummy here for base name
 			std::string baseName = xbase->getName(_game->getLanguage());
-			Log(LOG_INFO) << "Adding base " << baseName.c_str();
 			_lstAliens->addRow(3, baseName.c_str(), "", "");
 			_lstAliens->setRowColor(_lstAliens->getLastRowIndex(), _lstAliens->getSecondaryColor());
 			// dummy
@@ -229,7 +226,6 @@ void GlobalAlienContainmentState::fillAlienList()
 						researchList.push_back(research->getName());
 					}
 				}
-				Log(LOG_INFO) << "Starting prisoners";
 				//extract the prisoners in holding
 				for (auto& itemType : _game->getMod()->getItemsList())
 				{
@@ -253,19 +249,15 @@ void GlobalAlienContainmentState::fillAlienList()
 							rqty = "0";
 						}
 						
-						Log(LOG_INFO) << "Adding prisoner " << rowCount;
 						_lstAliens->addRow(3, tr(itemType).c_str(), ss.str().c_str(), rqty.c_str());
 						rowCount++;
 						_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
 					}
 				}
-				Log(LOG_INFO) << "Starting rest of interrogation critters";
 				//finish the interrogations for last prisoner interrogated in the prison type
 				for (const auto& researchName : researchList)
 				{
 					_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
-					Log(LOG_INFO) << "Adding prisoner " << rowCount;
-					Log(LOG_INFO) << tr(researchName).c_str();
 					_lstAliens->addRow(3, tr(researchName).c_str(), "0", "1");
 					rowCount++;
 					interrogated++;
@@ -275,9 +267,8 @@ void GlobalAlienContainmentState::fillAlienList()
 		}
 	}
 
-	_txtFreeSpace->setText(tr("STR_TOTAL_FREE_CONTAINMENT_SPACE").arg(freeContainmentSpace));
 	_txtUsedSpace->setText(tr("STR_TOTAL_CONTAINED").arg(usedContainmentSpace));
-	_txtMaxSpace->setText(tr("STR_TOTAL_INTERROGATED").arg(interrogated));
+	_txtInterrogatedSpace->setText(tr("STR_TOTAL_INTERROGATED").arg(interrogated));
 }
 
 }
