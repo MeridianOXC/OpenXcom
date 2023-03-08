@@ -32,6 +32,7 @@
 #include "../Savegame/ItemContainer.h"
 #include "ManageAlienContainmentState.h"
 #include "../Savegame/ResearchProject.h"
+#include "../Savegame/BaseFacility.h"
 #include "../Mod/RuleResearch.h"
 #include "TechTreeViewerState.h"
 
@@ -47,9 +48,10 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_window = new Window(this, 320, 200, 0, 0);
 	_btnOk = new TextButton(304, 16, 8, 176);
 	_txtTitle = new Text(310, 17, 5, 8);
-	_txtAlien = new Text(110, 17, 10, 44);
-	_txtHeldAliens = new Text(106, 17, 150, 44);
-	_txtInterrogatedAliens = new Text(80, 17, 208, 44);
+	_txtAlien = new Text(90, 17, 10, 44);
+	_txtPrison = new Text(70, 17, 100, 44);
+	_txtHeldAliens = new Text(80, 17, 170, 44);
+	_txtInterrogatedAliens = new Text(100, 17, 220, 44);
 	_txtInterrogatedSpace = new Text(150, 9, 160, 24);
 	_txtUsedSpace = new Text(300, 9, 10, 24);
 	_lstAliens = new TextList(288, 112, 8, 63);
@@ -62,6 +64,7 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	add(_txtTitle, "text", "globalContainmentMenu");
 	add(_txtAlien, "text", "globalContainmentMenu");
 	add(_txtHeldAliens, "text", "globalContainmentMenu");
+	add(_txtPrison, "text", "globalContainmentMenu");
 	add(_txtInterrogatedAliens, "text", "globalContainmentMenu");
 	add(_txtUsedSpace, "text", "globalContainmentMenu");
 	add(_txtInterrogatedSpace, "text", "globalContainmentMenu");
@@ -83,6 +86,9 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_txtAlien->setWordWrap(true);
 	_txtAlien->setText(tr("STR_CONTAINED_ALIEN"));
 
+	_txtPrison->setWordWrap(true);
+	_txtPrison->setText(tr("STR_PRISON_TYPE"));
+
 	_txtHeldAliens->setWordWrap(true);
 	_txtHeldAliens->setText(tr("STR_CONTAINED_ALIEN_AMOUNT"));
 
@@ -90,13 +96,12 @@ GlobalAlienContainmentState::GlobalAlienContainmentState(bool openedFromBasescap
 	_txtInterrogatedAliens->setText(tr("STR_INTERROGATED_ALIEN_AMOUNT"));
 
 
-	_lstAliens->setColumns(3, 158, 58, 70);
+	_lstAliens->setColumns(4, 98, 80, 55, 70);
 	_lstAliens->setSelectable(true);
 	_lstAliens->setBackground(_window);
 	_lstAliens->setMargin(2);
 	_lstAliens->setWordWrap(true);
 	_lstAliens->onMouseClick((ActionHandler)&GlobalAlienContainmentState::onSelectBase, SDL_BUTTON_LEFT);
-//	_lstAliens->onMouseClick((ActionHandler)&GlobalAlienContainmentState::onOpenTechTreeViewer, SDL_BUTTON_MIDDLE);
 }
 
 /**
@@ -180,16 +185,26 @@ void GlobalAlienContainmentState::fillAlienList()
 			prisonTypes.insert(item->getPrisonType());
 		}
 	}
-     //HOW TO HANDLE NO PRISONERS CASE
 	//start gathering base information
 	for (Base *xbase : *_game->getSavedGame()->getBases())
 	{
+		std::map<int,std::string> prisonTypeMap;
 		bool baseHasPrisoners = false;
 		std::vector<int> occupiedPrisonTypes;
 		//check if the base contains prisoners
 		for(auto prisonType : prisonTypes)
 		{	
 			
+			//find first prison matching type
+			for(auto baseFacility : *(xbase->getFacilities()))
+			{
+				if(prisonType == baseFacility->getRules()->getPrisonType())
+				{
+					prisonTypeMap[prisonType] = baseFacility->getRules()->getType();
+					break;
+				}
+
+			}
 			int usedSpace = xbase->getUsedContainment(prisonType); 
 			int availableSpace = xbase->getAvailableContainment(prisonType); 
 			if(usedSpace > 0)
@@ -206,7 +221,7 @@ void GlobalAlienContainmentState::fillAlienList()
 		{
 			//insert dummy here for base name
 			std::string baseName = xbase->getName(_game->getLanguage());
-			_lstAliens->addRow(3, baseName.c_str(), "", "");
+			_lstAliens->addRow(4, baseName.c_str(), "", "", "");
 			_lstAliens->setRowColor(_lstAliens->getLastRowIndex(), _lstAliens->getSecondaryColor());
 			// dummy
 			_bases.push_back(std::pair<Base*,int>(nullptr,0));
@@ -249,7 +264,7 @@ void GlobalAlienContainmentState::fillAlienList()
 							rqty = "0";
 						}
 						
-						_lstAliens->addRow(3, tr(itemType).c_str(), ss.str().c_str(), rqty.c_str());
+						_lstAliens->addRow(4, tr(itemType).c_str(), tr(prisonTypeMap[prisonType]).c_str(), ss.str().c_str(), rqty.c_str());
 						rowCount++;
 						_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
 					}
@@ -258,7 +273,7 @@ void GlobalAlienContainmentState::fillAlienList()
 				for (const auto& researchName : researchList)
 				{
 					_bases.push_back(std::pair<Base*,int>(xbase,prisonType));
-					_lstAliens->addRow(3, tr(researchName).c_str(), "0", "1");
+					_lstAliens->addRow(4, tr(researchName).c_str(), tr(prisonTypeMap[prisonType]).c_str(), "0", "1");
 					rowCount++;
 					interrogated++;
 				}
