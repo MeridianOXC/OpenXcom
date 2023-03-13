@@ -122,6 +122,8 @@ public:
 	void btnGlobalProductionClick(Action *action);
 	/// Handler for clicking the [GlobalResearch] key.
 	void btnGlobalResearchClick(Action *action);
+	/// Handler for clicking the [GlobalPrisoner] key.
+	void btnGlobalPrisonerClick(Action *action);
 	/// Handler for clicking the [DogfightExperience] key.
 	void btnDogfightExperienceClick(Action *action);
 	/// Handler for clicking the [Debug] key.

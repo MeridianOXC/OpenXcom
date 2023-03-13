@@ -66,6 +66,7 @@
 #include "../Basescape/TechTreeViewerState.h"
 #include "../Basescape/GlobalManufactureState.h"
 #include "../Basescape/GlobalResearchState.h"
+#include "../Basescape/GlobalAlienContainmentState.h"
 #include "../Menu/CutsceneState.h"
 #include "../Menu/ErrorMessageState.h"
 #include "GraphsState.h"
@@ -274,6 +275,7 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 	_btnIntercept->onKeyboardPress((ActionHandler)&GeoscapeState::btnSelectMusicTrackClick, Options::keySelectMusicTrack);
 	_btnIntercept->onKeyboardPress((ActionHandler)&GeoscapeState::btnGlobalProductionClick, Options::keyGeoGlobalProduction);
 	_btnIntercept->onKeyboardPress((ActionHandler)&GeoscapeState::btnGlobalResearchClick, Options::keyGeoGlobalResearch);
+	_btnIntercept->onKeyboardPress((ActionHandler)&GeoscapeState::btnGlobalPrisonerClick, Options::keyGeoGlobalPrisoners);
 	_btnIntercept->onKeyboardPress((ActionHandler)&GeoscapeState::btnDogfightExperienceClick, Options::keyGeoDailyPilotExperience);
 	_btnIntercept->setGeoscapeButton(true);
 
@@ -2917,6 +2919,15 @@ void GeoscapeState::btnGlobalProductionClick(Action *)
 void GeoscapeState::btnGlobalResearchClick(Action *)
 {
 	_game->pushState(new GlobalResearchState(false));
+}
+
+/**
+ * Opens the Global Prisoner status screen
+ * @param action Pointer to an action.
+ */
+void GeoscapeState::btnGlobalPrisonerClick(Action *)
+{
+	_game->pushState(new GlobalAlienContainmentState(false));
 }
 
 /**

@@ -1080,6 +1080,23 @@ interfaces:
         color: 6     # oxide
       - id: errorMessage
         color: 241   # pink
+  - type: globalContainmentMenu
+    backgroundImage: BACK05.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 1     # burgundy
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 218   # blue
+        color2: 208  # white
+      - id: list
+        color: 218   # blue
+        color2: 208  # white
+        border: 218  # blue
+      - id: button
+        color: 218   # blue
   - type: transferBaseSelect
     backgroundImage: BACK13.SCR
     palette: PAL_BASESCAPE
