@@ -357,14 +357,18 @@ std::string Soldier::getName(bool statstring, unsigned int maxLength) const
 	if (statstring && !_statString.empty())
 	{
 		auto nameCodePointLength = Unicode::codePointLengthUTF8(_name);
-		auto statCodePointLength = Unicode::codePointLengthUTF8(_statString);
+		// add the custom divider length to this, -1 because the original assumption was a single character divider.
+		auto statCodePointLength = Unicode::codePointLengthUTF8(_statString)
+			+ Unicode::codePointLengthUTF8(Options::oxceStatStringDivider) - 1;
+
 		if (nameCodePointLength + statCodePointLength > maxLength)
 		{
-			return Unicode::codePointSubstrUTF8(_name, 0, maxLength - statCodePointLength) + "/" + _statString;
+			return Unicode::codePointSubstrUTF8(_name, 0, maxLength - statCodePointLength)
+				+ Options::oxceStatStringDivider + _statString;
 		}
 		else
 		{
-			return _name + "/" + _statString;
+			return _name + Options::oxceStatStringDivider + _statString;
 		}
 	}
 	else
@@ -884,6 +888,14 @@ UnitStats *Soldier::getInitStats()
 UnitStats *Soldier::getCurrentStats()
 {
 	return &_currentStats;
+}
+
+/**
+ * Get a const reference to current stats.
+ */
+const UnitStats &Soldier::getCurrentStats() const
+{
+	return _currentStats;
 }
 
 void Soldier::setBothStats(UnitStats *stats)
@@ -1504,19 +1516,32 @@ void Soldier::resetDiary()
 /**
  * Calculates the soldier's statString
  * Calculates the soldier's statString.
- * @param statStrings List of statString rules.
+ * @param globalStatStrings List of global (not specific to soliderType) statString rules.
  * @param psiStrengthEval Are psi stats available?
  */
-void Soldier::calcStatString(const std::vector<StatString *> &statStrings, bool psiStrengthEval)
+void Soldier::calcStatString(const std::vector<StatString *> &globalStatStrings, bool psiStrengthEval)
 {
-	if (_rules->getStatStrings().empty())
+	// we will show Psistats if psiStrengthEval is true, or if psiSkill is greater than 0. (original logic)
+	bool showPsiStats = psiStrengthEval || (getCurrentStats()->psiSkill > 0);
+	
+	std::vector<StatString *> statStringsToCalc{};
+
+	// captures original logic. We use all the globalStatStrings passed if the soldierRules statString rules are empty.
+	const auto &soldierStatStrings = _rules->getStatStrings();
+	if (!soldierStatStrings.empty())
 	{
-		_statString = StatString::calcStatString(_currentStats, statStrings, psiStrengthEval, _psiTraining);
+		// rules from the global scope that have the right flag will also get evaluated.
+		std::copy_if(globalStatStrings.begin(), globalStatStrings.end(), std::back_inserter(statStringsToCalc),
+			[](const StatString *statString) { return statString->isGlobalRule(); });
+
+		statStringsToCalc.insert(statStringsToCalc.cend(), soldierStatStrings.cbegin(), soldierStatStrings.cend());
 	}
 	else
 	{
-		_statString = StatString::calcStatString(_currentStats, _rules->getStatStrings(), psiStrengthEval, _psiTraining);
+		statStringsToCalc = globalStatStrings;
 	}
+
+	_statString = StatString::calcStatString(this, statStringsToCalc, showPsiStats);
 }
 
 /**

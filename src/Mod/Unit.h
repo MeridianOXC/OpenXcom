@@ -19,9 +19,11 @@
  */
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <yaml-cpp/yaml.h>
 #include <SDL_types.h>
 #include "../Engine/RNG.h"
+#include "../Engine/Logger.h"
 
 namespace OpenXcom
 {
@@ -33,6 +35,23 @@ class ModScript;
 class ScriptParserBase;
 
 enum SpecialAbility { SPECAB_NONE, SPECAB_EXPLODEONDEATH, SPECAB_BURNFLOOR, SPECAB_BURN_AND_EXPLODE };
+
+enum class StatType
+{
+	PSI_STRENGTH,
+	PSI_SKILL,
+	BRAVERY,
+	STRENGTH,
+	FIRING,
+	REACTIONS,
+	STAMINA,
+	TU,
+	HEALTH,
+	THROWING,
+	MELEE,
+	MANA,
+};
+
 /**
  * This struct holds some plain unit attribute data together.
  */
@@ -62,6 +81,45 @@ struct UnitStats
 	UnitStats operator-(const UnitStats& stats) const { return UnitStats(tu - stats.tu, stamina - stats.stamina, health - stats.health, bravery - stats.bravery, reactions - stats.reactions, firing - stats.firing, throwing - stats.throwing, strength - stats.strength, psiStrength - stats.psiStrength, psiSkill - stats.psiSkill, melee - stats.melee, mana - stats.mana); }
 	UnitStats operator-() const { return UnitStats(-tu, -stamina, -health, -bravery, -reactions, -firing, -throwing, -strength, -psiStrength, -psiSkill, -melee, -mana); }
 	void merge(const UnitStats& stats) { tu = (stats.tu ? stats.tu : tu); stamina = (stats.stamina ? stats.stamina : stamina); health = (stats.health ? stats.health : health); bravery = (stats.bravery ? stats.bravery : bravery); reactions = (stats.reactions ? stats.reactions : reactions); firing = (stats.firing ? stats.firing : firing); throwing = (stats.throwing ? stats.throwing : throwing); strength = (stats.strength ? stats.strength : strength); psiStrength = (stats.psiStrength ? stats.psiStrength : psiStrength); psiSkill = (stats.psiSkill ? stats.psiSkill : psiSkill); melee = (stats.melee ? stats.melee : melee); mana = (stats.mana ? stats.mana : mana); };
+
+	/**
+	 * @brief Gets the attribute identified by a text string. 
+	 * @param attribute the attribute to get. 
+	 * @return a const reference to the attribute.
+	*/
+	const Type &operator[](StatType attribute) const
+	{
+		switch (attribute)
+		{
+		case StatType::PSI_STRENGTH:
+			return psiStrength;
+		case StatType::PSI_SKILL:
+			return psiSkill;
+		case StatType::BRAVERY:
+			return bravery;
+		case StatType::STRENGTH:
+			return strength;
+		case StatType::FIRING:
+			return firing; 
+		case StatType::REACTIONS:
+			return reactions;
+		case StatType::STAMINA:
+			return stamina;
+		case StatType::TU:
+			return tu;
+		case StatType::HEALTH:
+			return health;
+		case StatType::THROWING:
+			return throwing;
+		case StatType::MELEE:
+			return melee;
+		case StatType::MANA:
+			return mana;
+		default:
+			Log(LOG_FATAL) << "Stat enum value not found.";
+			throw new std::logic_error("Stat enum value not found.");
+		}
+	}
 
 	template<typename Func>
 	static void fieldLoop(Func f)

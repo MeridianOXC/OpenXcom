@@ -23,8 +23,6 @@
 namespace OpenXcom
 {
 
-struct UnitStats;
-
 /**
  * For adding statStrings to the game.
  * See http://ufopaedia.org/index.php?title=Statstrings
@@ -103,27 +101,39 @@ or eliminating the first name as needed.  If this string is still too
 long, nothing will be changed.
  */
 
+static constexpr bool STATSTRING_GLOBALRULE_DEFAULT = false;
+
 class StatString
 {
-private:
-	std::string _stringToBeAddedIfAllConditionsAreMet;
-	std::vector<StatStringCondition*> _conditions;
-	static StatStringCondition *getCondition(const std::string &conditionName, const YAML::Node &node);
-public:
+  private:
+	/// string that is added if conditions are met.
+	std::string _conditionString;
+	std::vector<std::unique_ptr<const StatStringCondition>> _conditions;
+	/// global rules combine with soldierType specific rules.
+	bool _globalRule = STATSTRING_GLOBALRULE_DEFAULT;
+
+  public:
 	/// Creates a blank StatString ruleset.
-	StatString();
-	/// Cleans up the StatString ruleset.
-	virtual ~StatString();
+	StatString() = default;
+
+	// because this class contains a vector of unique_ptr, blocking copy is appropriate.
+	StatString(const StatString &) = delete;
+	StatString &operator=(const StatString &) = delete;
+	// move is still okay though.
+	StatString(StatString &&) = default;
+	StatString& operator=(StatString &&) = default;
+
 	/// Loads the StatString from YAML.
 	void load(const YAML::Node& node);
 	/// Get the conditions for this StatString.
-	const std::vector<StatStringCondition*> &getConditions() const;
+	const std::vector<std::unique_ptr<const StatStringCondition> > &getConditions() const { return _conditions; }
 	/// Get the StatString string.
-	std::string getString() const;
-	/// Calculate a StatString.
-	static std::string calcStatString(UnitStats &currentStats, const std::vector<StatString*> &statStrings, bool psiStrengthEval, bool inTraining);
-	/// Get the CurrentStats.
-	static std::map<std::string, int> getCurrentStats(UnitStats &currentStats);
+	std::string getString() const { return _conditionString; }
+	/// Is this rule a global rule?
+	bool isGlobalRule() const { return _globalRule; }
+
+	/// Calculate the string that applies given these statstrings.
+	static std::string calcStatString(Soldier *soldier, const std::vector<StatString *> &statStringsToCalculate, bool psiStrengthEval);
 };
 
 }

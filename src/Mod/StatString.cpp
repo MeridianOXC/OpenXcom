@@ -16,28 +16,49 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <string_view>
 #include "StatString.h"
 #include "Unit.h"
-#include <vector>
-#include "../Engine/Language.h"
 #include "../Engine/Unicode.h"
+#include "../Savegame/Soldier.h"
 
 namespace OpenXcom
 {
 
-/**
- * Creates a blank StatString.
- */
-StatString::StatString()
-{
-}
+constexpr static auto absoluteConditionData = std::array<std::pair<std::string_view, StatType>, 12>{{
+	{"psiStrength", StatType::PSI_STRENGTH},
+	{"psiSkill", StatType::PSI_SKILL},
+	{"bravery", StatType::BRAVERY},
+	{"strength", StatType::STRENGTH},
+	{"firing", StatType::FIRING},
+	{"reactions", StatType::REACTIONS},
+	{"stamina", StatType::STAMINA},
+	{"tu", StatType::TU},
+	{"health", StatType::HEALTH},
+	{"throwing", StatType::THROWING},
+	{"melee", StatType::MELEE},
+	{"manaPool", StatType::MANA},
+}};
 
-/**
- * Cleans up the extra StatString.
- */
-StatString::~StatString()
-{
-}
+constexpr static auto percentConditionData = std::array<std::pair<std::string_view, StatType>, 12>{{
+	{"percentPsiStrength", StatType::PSI_STRENGTH},
+	{"percentPsiSkill", StatType::PSI_SKILL},
+	{"percentBravery", StatType::BRAVERY},
+	{"percentStrength", StatType::STRENGTH},
+	{"percentFiring", StatType::FIRING},
+	{"percentReactions", StatType::REACTIONS},
+	{"percentStamina", StatType::STAMINA},
+	{"percentTu", StatType::TU},
+	{"percentHealth", StatType::HEALTH},
+	{"percentThrowing", StatType::THROWING},
+	{"percentMelee", StatType::MELEE},
+	{"percentManaPool", StatType::MANA},
+}};
+
+constexpr static auto trainingConditionData = std::array<std::pair<std::string_view, TrainingType>, 2>{{
+	{"psiTraining", TrainingType::PSI_TRAINING},
+	{"physTraining", TrainingType::PHYS_TRAINING},
+}};
 
 /**
  * Loads the StatString from a YAML file.
@@ -45,95 +66,82 @@ StatString::~StatString()
  */
 void StatString::load(const YAML::Node &node)
 {
-	std::string conditionNames[] = {"psiStrength", "psiSkill", "bravery", "strength", "firing", "reactions", "stamina", "tu", "health", "throwing", "melee", "psiTraining", "manaPool"};
-	_stringToBeAddedIfAllConditionsAreMet = node["string"].as<std::string>(_stringToBeAddedIfAllConditionsAreMet);
-	for (size_t i = 0; i < std::size(conditionNames); i++)
+	_conditionString = node["string"].as<std::string>(std::string());
+	_globalRule = node["globalRule"].as<bool>(STATSTRING_GLOBALRULE_DEFAULT);
+
+	for (const auto &datum : absoluteConditionData)
 	{
-		if (node[conditionNames[i]])
+		if (auto subnode = node[std::string(datum.first)])
 		{
-			_conditions.push_back(getCondition(conditionNames[i], node));
+			int minValue = STATSTRING_CONDITION_ABSOLUTE_DEFAULT_MIN, maxValue = STATSTRING_CONDITION_ABSOLUTE_DEFAULT_MAX;
+			if (subnode[0])
+			{
+				minValue = subnode[0].as<int>(minValue);
+			}
+			if (subnode[1])
+			{
+				maxValue = subnode[1].as<int>(maxValue);
+			}
+			auto condition = std::make_unique<StatStringConditionAbsolulte>(datum.second, minValue, maxValue);
+			_conditions.emplace_back(std::move(condition));
+		}
+	};
+
+	for (const auto &datum : percentConditionData)
+	{
+		if (auto subnode = node[std::string(datum.first)])
+		{
+			float minValue = STATSTRING_CONDITION_PERCENT_DEFAULT_MIN, maxValue = STATSTRING_CONDITION_PERCENT_DEFAULT_MAX;
+			if (subnode[0])
+			{
+				minValue = subnode[0].as<float>(minValue);
+			}
+			if (subnode[1])
+			{
+				maxValue = subnode[1].as<float>(maxValue);
+			}
+			auto condition = std::make_unique<StatStringConditionPercent>(datum.second, minValue, maxValue);
+			_conditions.emplace_back(std::move(condition));
+		}
+	};
+
+	for (const auto &datum : trainingConditionData)
+	{
+		if (auto subnode = node[std::string(datum.first)])
+		{
+			bool inTraining = subnode.as<bool>(STAT_CONDITION_TRAINING_INTRAINING_DEFAULT);
+			auto condition = std::make_unique<StatStringConditionTraining>(datum.second, inTraining);
+			_conditions.emplace_back(std::move(condition));
 		}
 	}
 }
 
 /**
- * Generates a condition from YAML.
- * @param conditionName Stat name of the condition.
- * @param node YAML node.
- * @return New StatStringCondition.
- */
-StatStringCondition *StatString::getCondition(const std::string &conditionName, const YAML::Node &node)
-{
-	// These are the defaults from xcomutil
-	int minValue = 0, maxValue = 255;
-	if (node[conditionName][0])
-	{
-		minValue = node[conditionName][0].as<int>(minValue);
-	}
-	if (node[conditionName][1])
-	{
-		maxValue = node[conditionName][1].as<int>(maxValue);
-	}
-	StatStringCondition *thisCondition = new StatStringCondition(conditionName, minValue, maxValue);
-	return thisCondition;
-}
-
-/**
- * Returns the conditions associated with this StatString.
- * @return List of StatStringConditions.
- */
-const std::vector<StatStringCondition*> &StatString::getConditions() const
-{
-	return _conditions;
-}
-
-/**
- * Returns the string to add to a name for this StatString.
- * @return StatString... string.
- */
-std::string StatString::getString() const
-{
-	return _stringToBeAddedIfAllConditionsAreMet;
-}
-
-/**
- * Calculates the list of StatStrings that apply to certain unit stats.
- * @param currentStats Unit stats.
- * @param statStrings List of statString rules.
- * @param psiStrengthEval Are psi stats available?
- * @return Resulting string of all valid StatStrings.
- */
-std::string StatString::calcStatString(UnitStats &currentStats, const std::vector<StatString *> &statStrings, bool psiStrengthEval, bool inTraining)
+ * @brief Calculates a combined StatString based a vector of rules.
+ * @param statStringsToCalc The rules to evaluate
+ * @param showPsiStats Should Psi Rules be evaluted?
+ * @return The calculated string that should apply to the name.
+*/
+std::string StatString::calcStatString(Soldier *soldier, const std::vector<StatString *> &statStringsToCalc, bool showPsiStats)
 {
 	std::string result;
-	std::map<std::string, int> currentStatsMap = getCurrentStats(currentStats);
-	if (inTraining)
+
+	for (auto &statString : statStringsToCalc)
 	{
-		currentStatsMap["psiTraining"] = 1;
-	}
-	for (auto* statStringDef : statStrings)
-	{
-		bool conditionsMet = true;
-		for (auto* statStringCondition : statStringDef->getConditions())
+		const auto &conditions = statString->getConditions();
+
+		// Condition test. Never apply if it's a psi condition and we aren't showing them. Otherwise, test the condition.
+		const auto conditionTest = [&](auto &condition) -> bool
 		{
-			if (!conditionsMet) break; // loop finished
-			auto name = currentStatsMap.find(statStringCondition->getConditionName());
-			if (name != currentStatsMap.end())
-			{
-				conditionsMet = conditionsMet && statStringCondition->isMet(name->second, currentStats.psiSkill > 0 || psiStrengthEval);
-			}
-			else
-			{
-				// if name == currentStatsMap.end() we've searched for a stat that doesn't exist.
-				// this means psi training. if there's no "psiTraining" stat in the statsMap,
-				// this soldier isn't in training, so we won't append his name with the psiTraining tag.
-				// presumably conditionsMet was originally initialized as false, but for whatever reason that was changed, hence this.
-				conditionsMet = false;
-			}
-		}
+			return (condition->isPsiCondition() && !showPsiStats) ? false : condition->isMet(*soldier);
+		};
+
+		bool conditionsMet = !conditions.empty() && std::all_of(conditions.begin(), conditions.end(), conditionTest);
+
 		if (conditionsMet)
 		{
-			std::string wstring = statStringDef->getString();
+			// if the applied string is longer than 1, we stop here.
+			std::string wstring = statString->getString();
 			result += wstring;
 			if (Unicode::codePointLengthUTF8(wstring) > 1)
 			{
@@ -143,29 +151,4 @@ std::string StatString::calcStatString(UnitStats &currentStats, const std::vecto
 	}
 	return result;
 }
-
-/**
- * Get a map associating stat names to unit stats.
- * @param currentStats Unit stats to use.
- * @return Map of unit stats.
- */
-std::map<std::string, int> StatString::getCurrentStats(UnitStats &currentStats)
-{
-	std::map<std::string, int> currentStatsMap;
-	currentStatsMap["psiStrength"] = currentStats.psiStrength;
-	currentStatsMap["psiSkill"] = currentStats.psiSkill;
-	currentStatsMap["bravery"] = currentStats.bravery;
-	currentStatsMap["strength"] = currentStats.strength;
-	currentStatsMap["firing"] = currentStats.firing;
-	currentStatsMap["reactions"] = currentStats.reactions;
-	currentStatsMap["stamina"] = currentStats.stamina;
-	currentStatsMap["tu"] = currentStats.tu;
-	currentStatsMap["health"] = currentStats.health;
-	currentStatsMap["throwing"] = currentStats.throwing;
-	currentStatsMap["melee"] = currentStats.melee;
-	currentStatsMap["manaPool"] = currentStats.mana;
-	return currentStatsMap;
-}
-
-
 }

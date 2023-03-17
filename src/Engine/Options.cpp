@@ -269,6 +269,7 @@ void create()
 	_info.push_back(OptionInfo("oxceDisableAlienInventory", &oxceDisableAlienInventory, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo("oxceDisableInventoryTuCost", &oxceDisableInventoryTuCost, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo("oxceShowBaseNameInPopups", &oxceShowBaseNameInPopups, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo("oxceStatStringDivider", &oxceStatStringDivider, "/", "", "HIDDEN"));
 
 	// controls
 	_info.push_back(OptionInfo("keyOk", &keyOk, SDLK_RETURN, "STR_OK", "STR_GENERAL"));
