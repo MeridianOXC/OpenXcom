@@ -66,6 +66,7 @@ private:
 	int _listOrder;
 	std::vector<std::string> _requires;
 	RuleBaseFacilityFunctions _requiresBuyBaseFunc;
+	std::string _requiresBuyCountry;
 	UnitStats _minStats, _maxStats, _statCaps, _trainingStatCaps, _dogfightExperience;
 	std::string _armorName;
 	const Armor* _armor;
@@ -116,6 +117,8 @@ public:
 	const std::vector<std::string> &getRequirements() const;
 	/// Gets the base functions required to buy solder.
 	RuleBaseFacilityFunctions getRequiresBuyBaseFunc() const { return _requiresBuyBaseFunc; }
+	/// Gets the allied country name required to buy a soldier.
+	const std::string &getRequiresBuyCountry() const { return _requiresBuyCountry; }
 	/// Gets the minimum stats for the random stats generator.
 	UnitStats getMinStats() const;
 	/// Gets the maximum stats for the random stats generator.
