@@ -48,14 +48,12 @@ SoldierRankState::SoldierRankState(Base *base, size_t soldierId) : _base(base), 
 	// Create objects
 	_window = new Window(this, 192, 160, 64, 20, POPUP_BOTH);
 	_btnQuickSearch = new TextEdit(this, 48, 9, 80, 43);
-	_btnCancel = new TextButton(140, 16, 90, 156);
-	_txtTitle = new Text(182, 16, 69, 28);
+	_btnCancel = new TextButton(140, 17, 90, 156);
+	_txtTitle = new Text(182, 17, 69, 28);
 	_txtRank = new Text(90, 9, 80, 52);
 	_txtOpening = new Text(70, 9, 190, 52);
 	_lstRank = new TextList(160, 80, 73, 68);
 
-	// Set palette
-	setStandardPalette("PAL_BATTLESCAPE");
 	setInterface("soldierRank");
 
 	add(_window, "window", "soldierRank");
@@ -95,7 +93,7 @@ SoldierRankState::SoldierRankState(Base *base, size_t soldierId) : _base(base), 
 	_btnCancel->onKeyboardRelease((ActionHandler)&SoldierRankState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
 
 	_lstRank->onMouseClick((ActionHandler)&SoldierRankState::lstRankClick);
-	_lstRank->onMouseClick((ActionHandler)&SoldierRankState::lstArmorClickMiddle, SDL_BUTTON_MIDDLE);
+	_lstRank->onMouseClick((ActionHandler)&SoldierRankState::lstRankClickMiddle, SDL_BUTTON_MIDDLE);
 
 	// temporary objects for convience.
 	const SavedGame *savedGame = _game->getSavedGame();
@@ -112,8 +110,6 @@ SoldierRankState::SoldierRankState(Base *base, size_t soldierId) : _base(base), 
 	{
 		rankStrings = {"STR_ROOKIE", "STR_SQUADDIE", "STR_SERGEANT", "STR_CAPTAIN", "STR_COLONEL", "STR_COMMANDER"};
 	}
-
-	SoldierRank currentRank = soldier->getRank();
 
 	// build the promotion list.
 	for (const auto &rank : {RANK_ROOKIE, RANK_SQUADDIE, RANK_SERGEANT, RANK_CAPTAIN, RANK_COLONEL, RANK_COMMANDER})
@@ -163,7 +159,8 @@ void SoldierRankState::updateList()
 		}
 		rankText += tr(rankItem.name);
 
-		const std::string quantityText = rankItem.openings >= 0 ? std::to_string(rankItem.openings) : "∞";
+		const std::string quantityText = rankItem.openings >= 0 ? std::to_string(rankItem.openings)
+																: tr("STR_UNLIMITED_QUANTITIES_SYMBOL").c_str();
 
 		_lstRank->addRow(2, rankText.c_str(), quantityText.c_str());
 		_indices.push_back(index);
@@ -217,7 +214,7 @@ void SoldierRankState::lstRankClick(Action *)
 	if (selectedRank.promotionAllowed)
 	{
 		Soldier *soldier = _base->getSoldiers()->at(_soldierId);
-		soldier->promoteRank(selectedRank.rank);
+		soldier->changeRank(selectedRank.rank);
 
 		_game->popState();
 	}
@@ -227,7 +224,7 @@ void SoldierRankState::lstRankClick(Action *)
  * Shows corresponding Ufopaedia article.
  * @param action Pointer to an action.
  */
-void SoldierRankState::lstArmorClickMiddle(Action *action)
+void SoldierRankState::lstRankClickMiddle(Action *action)
 {
 	Ufopaedia::openArticle(_game, getSelectedRankItem().name);
 }

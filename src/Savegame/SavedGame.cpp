@@ -2369,7 +2369,7 @@ bool SavedGame::handlePromotions(std::vector<Soldier*> &participants, const Mod 
 			// only promote one colonel to commander
 			highestRanked->promoteRank();
 			soldiersPromoted++;
-			rankCounts[RANK_COMMANDER];
+			rankCounts[RANK_COMMANDER]++;
 			rankCounts[RANK_COLONEL]--;
 		}
 	}

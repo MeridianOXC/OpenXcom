@@ -28,7 +28,7 @@ namespace OpenXcom
 class RankCountBase
 {
   protected:
-	/// cout of soldiers in each rank.
+	/// count of soldiers in each rank.
 	std::array<int, RANK_COMMANDER + 1> _rankCounts;
 	int _totalSoldiers;
 
@@ -50,14 +50,14 @@ class RankCount : public RankCountBase
 };
 
 /**
- * @brief Container for count of promtion openings.
+ * @brief Container for count of promotion openings.
  */
 class PromotionOpenings : public RankCountBase
 {
   public:
-	PromotionOpenings(const std::vector<Soldier *> soldiers, const Mod *mod);
+	PromotionOpenings(const std::vector<Soldier *> soldiers, const Mod* mod);
 
-	// check if a soldier can be promoted to a give rank.
+	/// Check if a soldier can be promoted to a given rank.
 	const bool isManualPromotionPossible(const Soldier *soldier, const SoldierRank newRank) const;
 };
 

@@ -135,7 +135,7 @@ public:
 	/// Increase the soldier's military rank.
 	void promoteRank();
 	/// Promotes a soldier to a specific rank.
-	void promoteRank(const SoldierRank newRank);
+	void changeRank(const SoldierRank newRank);
 	/// Gets the soldier's missions.
 	int getMissions() const;
 	/// Gets the soldier's kills.

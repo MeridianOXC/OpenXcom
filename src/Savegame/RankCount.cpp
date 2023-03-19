@@ -56,11 +56,11 @@ RankCount::RankCount(const std::vector<Soldier *> soldiers)
 }
 
 /**
- * Creates a new PromotionOpenings object, containing the count of promotion openings based on the mods promotion rules.
- * Ranks that are overcomplement for some reason will show as 0 openings, ranks that have unlimited openings will have -1
+ * Creates a new PromotionOpenings object, containing the count of promotion openings based on the mod's promotion rules.
+ * Ranks that are overcomplemented for some reason will show as 0 openings, ranks that have unlimited openings will have -1
  * openings.
- * @param soldiers the set of soldiers to consider for calcuation, typically should be all active soldiers.
- * @param mod the mod containing the rules for promotions.
+ * @param soldiers The set of soldiers to consider for calculation, typically should be all active soldiers.
+ * @param mod The mod containing the rules for promotions.
  */
 PromotionOpenings::PromotionOpenings(const std::vector<Soldier *> soldiers, const Mod *mod)
 {
@@ -92,7 +92,7 @@ PromotionOpenings::PromotionOpenings(const std::vector<Soldier *> soldiers, cons
 const bool PromotionOpenings::isManualPromotionPossible(const Soldier *soldier, const SoldierRank newRank) const
 {
 	// check if the soldiers rules allow promotion.
-	auto const soldierRules = soldier->getRules();
+	const auto* soldierRules = soldier->getRules();
 	if (!soldierRules->getAllowPromotion())
 	{
 		return false;
@@ -115,7 +115,7 @@ const bool PromotionOpenings::isManualPromotionPossible(const Soldier *soldier, 
 	// If the rankString for the soldier is not empty, check if the new rank is defined in the rank strings.
 	// If not, it is not allowed. If no rankStrings are defined, we assume default behavior.
 	const size_t rankStringsSize = soldierRules->getRankStrings().size();
-	if (rankStringsSize != 0 && newRank <= rankStringsSize - 1)
+	if (rankStringsSize != 0 && newRank >= rankStringsSize)
 	{
 		return false;
 	}
@@ -126,7 +126,7 @@ const bool PromotionOpenings::isManualPromotionPossible(const Soldier *soldier, 
 		return true;
 	}
 
-	// otherwise promotion or demotion depends on their being an opening.
+	// Otherwise, promotion or demotion depends on there being an opening.
 	return _rankCounts[newRank] > 0;
 }
 

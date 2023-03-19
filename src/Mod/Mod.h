@@ -900,7 +900,7 @@ public:
 	int getCrewEmergencyEvacuationSurvivalChance() const { return _crewEmergencyEvacuationSurvivalChance; }
 	/// Gets the pilots emergency evacuation survival chance
 	int getPilotsEmergencyEvacuationSurvivalChance() const { return _pilotsEmergencyEvacuationSurvivalChance; }
-	/// Gets how many soldiers are needed for a given rank
+	/// Gets how many soldiers are needed for one promotion of a given rank
 	int getSoldiersPerRank(const SoldierRank rank) const { return _soldiersPerRank[(size_t)rank]; }
 	/// Gets the firing accuracy needed for no bonus/penalty
 	int getPilotAccuracyZeroPoint() const { return _pilotAccuracyZeroPoint; }

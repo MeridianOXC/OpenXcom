@@ -26,13 +26,13 @@ namespace OpenXcom
 
 struct RankItem
 {
-	RankItem(const SoldierRank _rank, const std::string &_name, const int &_quantity, const bool _promotionAllowed)
-		: rank(_rank), name(_name), openings(_quantity), promotionAllowed(_promotionAllowed)
+	RankItem(const SoldierRank _rank, const std::string& _name, int _openings, bool _promotionAllowed)
+		: rank(_rank), name(_name), openings(_openings), promotionAllowed(_promotionAllowed)
 	{
 	}
-	const SoldierRank rank;
-	const int openings;
-	const std::string name;
+	SoldierRank rank;
+	int openings;
+	std::string name;
 	bool promotionAllowed;
 };
 
@@ -42,8 +42,6 @@ class Window;
 class Text;
 class TextEdit;
 class TextList;
-class Armor;
-class ArrowButton;
 
 class SoldierRankState : public State
 {
@@ -73,7 +71,7 @@ private:
 	/// Handler for clicking the Rank list (promotes if possible).
 	void lstRankClick(Action *action);
 	/// Handler for middle clicking the Rank list (ufopedia article if possible).
-	void lstArmorClickMiddle(Action *action);
+	void lstRankClickMiddle(Action *action);
 	/// Gets the currently selected Rank Item
 	const RankItem &getSelectedRankItem() const;
 };

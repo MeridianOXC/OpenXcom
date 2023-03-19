@@ -749,7 +749,7 @@ void Soldier::promoteRank()
 /**
  * Promotes a soldier to a specific rank (possibly a demotion)
  */
-void Soldier::promoteRank(const SoldierRank newRank)
+void Soldier::changeRank(const SoldierRank newRank)
 {
 	if (!_rules->getAllowPromotion())
 		return;
@@ -763,7 +763,7 @@ void Soldier::promoteRank(const SoldierRank newRank)
 
 	_rank = newRank;
 
-	// note that we never need to show a notification for this style of promtion.
+	// note that we never need to show a notification for this style of promotion.
 }
 
 /**

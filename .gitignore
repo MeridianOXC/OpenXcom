@@ -80,3 +80,4 @@ bin/user
 /makefile
 /.kdev4/
 /*.kdev4
+/src/OpenXcom.2010.vcxproj.user

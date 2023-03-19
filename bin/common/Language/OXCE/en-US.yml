@@ -107,6 +107,9 @@ en-US:
   STR_MONTHLY_SOLDIER_HIRING_LIMIT_EXCEEDED: "MONTHLY HIRING LIMIT EXCEEDED!{SMALLLINE}More recruits will be available next month."
 #SoldierArmorState.cpp
   STR_NOT_ENOUGH_CRAFT_SPACE: "Not enough space onboard!"
+#SoldierRankState.cpp
+  STR_PROMOTE_SOLDIER: "PROMOTE/DEMOTE{NEWLINE}{0} {1}"
+  STR_UNLIMITED_QUANTITIES_SYMBOL: "-"
 #SoldierAvatarState.cpp
   STR_SELECT_AVATAR_FOR: "SELECT AVATAR FOR{NEWLINE}{0}"
 #SoldierBonusState.cpp
@@ -313,6 +316,10 @@ en-US:
   STR_REMEMBER_DISABLED_CRAFT_WEAPONS_DESC: "Craft weapons disabled during a dogfight will stay disabled. They will also not be rearmed at the base."
   STR_OFF_CENTRE_SHOOTING: "Off-center shooting"
   STR_OFF_CENTRE_SHOOTING_DESC: "Soldiers will automatically try to adjust the firing angle slightly in case there is no line of fire."
+  STR_MANUALPROMOTIONS: "Manual promotions"
+  STR_MANUALPROMOTIONS_DESC: "Soldiers can be manually promoted or demoted by clicking on the rank icon."
+  STR_AUTOMATICPROMOTIONS: "Automatic promotions"
+  STR_AUTOMATICPROMOTIONS_DESC: "Soldiers are automatically promoted after missions according to standard rules."
 #===================
   STR_GRAPHS_ZOOM_IN: "Zoom In (Graphs)"
   STR_GRAPHS_ZOOM_OUT: "Zoom Out (Graphs)"
