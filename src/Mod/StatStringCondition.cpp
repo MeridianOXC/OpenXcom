@@ -30,7 +30,7 @@ namespace OpenXcom
  */
 bool StatStringConditionAbsolulte::isMet(const Soldier &soldier) const
 {
-	const int stat = soldier.getCurrentStats()[_statType];
+	const int stat = soldier.getCurrentStats().*_statRef;
 	return stat >= _minVal && stat <= _maxVal;
 }
 
@@ -41,8 +41,8 @@ bool StatStringConditionAbsolulte::isMet(const Soldier &soldier) const
  */
 bool StatStringConditionPercent::isMet(const Soldier &soldier) const
 {
-	const int stat = soldier.getCurrentStats()[_statType];
-	const int cap = soldier.getRules()->getStatCaps()[_statType];
+	const int stat = soldier.getCurrentStats().*_statRef;
+	const int cap = soldier.getRules()->getStatCaps().*_statRef;
 
 	// cap should probably never be 0, but we'll handle that just in case to avoid DBZ.
 	if (cap == 0)

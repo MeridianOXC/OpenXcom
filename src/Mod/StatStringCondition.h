@@ -39,10 +39,10 @@ static constexpr bool STAT_CONDITION_TRAINING_INTRAINING_DEFAULT = true;
  */
 class StatStringCondition
 {
-  private:
+private:
 	bool _psiCondition;
 
-  public:
+public:
 	/// Create a new StatString Condition
 	StatStringCondition(bool psi) : _psiCondition(psi) {}
 
@@ -65,15 +65,15 @@ class StatStringCondition
  */
 class StatStringConditionAbsolulte : public StatStringCondition
 {
-  private:
+private:
 	int _minVal, _maxVal;
-	StatType _statType;
+	UnitStats::Type UnitStats::* _statRef;
 
-  public:
+public:
 	/// Creates a StandardStatStringCondition, for testing if a stat is in an attribute range.
-	StatStringConditionAbsolulte(StatType stat,  int minVal, int maxVal)
-		: StatStringCondition(stat == StatType::PSI_SKILL || stat == StatType::PSI_STRENGTH),
-			_statType(stat), _minVal(minVal), _maxVal(maxVal) {}
+	StatStringConditionAbsolulte(UnitStats::Type UnitStats::* stat, int minVal, int maxVal)
+	  : StatStringCondition(stat == &UnitStats::psiStrength || stat == &UnitStats::psiSkill),
+			_statRef(stat), _minVal(minVal), _maxVal(maxVal) {}
 	
 	/// Checks if a soldier meets this condition.
 	bool isMet(const Soldier &soldier) const override;
@@ -86,15 +86,15 @@ class StatStringConditionAbsolulte : public StatStringCondition
  */
 class StatStringConditionPercent : public StatStringCondition
 {
-  private:
+private:
 	float _minVal, _maxVal;
-	StatType _statType;
+	UnitStats::Type UnitStats::*_statRef;
 
-  public:
+public:
 	/// Creates a condition, for testing if a stat is an percentage range.
-	StatStringConditionPercent(StatType stat, float minVal, float maxVal)
-		: StatStringCondition(stat == StatType::PSI_SKILL || stat == StatType::PSI_STRENGTH),
-		  _statType(stat), _minVal(minVal), _maxVal(maxVal) {}
+	StatStringConditionPercent(UnitStats::Type UnitStats::* stat, float minVal, float maxVal)
+		: StatStringCondition(stat == &UnitStats::psiStrength || stat == &UnitStats::psiSkill),
+		  _statRef(stat), _minVal(minVal), _maxVal(maxVal) {}
 
 	bool isMet(const Soldier &soldier) const override;
 };
@@ -106,17 +106,16 @@ enum class TrainingType { PSI_TRAINING, PHYS_TRAINING };
  */
 class StatStringConditionTraining : public StatStringCondition
 {
-  private:
+private:
 	bool _inTraining = STAT_CONDITION_TRAINING_INTRAINING_DEFAULT;
 	TrainingType _trainingType;
 
-  public:
+public:
 	/// Creates a conditio for checking if a soldier is in PsiTraining.
 	StatStringConditionTraining(TrainingType trainingType, bool inTraining = STAT_CONDITION_TRAINING_INTRAINING_DEFAULT)
 		: StatStringCondition(trainingType == TrainingType::PSI_TRAINING), _trainingType(trainingType), _inTraining(inTraining) {}
 
 	bool isMet(const Soldier &soldier) const override;
 };
-
 
 }

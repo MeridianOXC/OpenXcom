@@ -105,14 +105,14 @@ static constexpr bool STATSTRING_GLOBALRULE_DEFAULT = false;
 
 class StatString
 {
-  private:
+private:
 	/// string that is added if conditions are met.
 	std::string _conditionString;
 	std::vector<std::unique_ptr<const StatStringCondition>> _conditions;
 	/// global rules combine with soldierType specific rules.
 	bool _globalRule = STATSTRING_GLOBALRULE_DEFAULT;
 
-  public:
+public:
 	/// Creates a blank StatString ruleset.
 	StatString() = default;
 

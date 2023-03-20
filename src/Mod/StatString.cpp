@@ -25,34 +25,36 @@
 namespace OpenXcom
 {
 
-constexpr static auto absoluteConditionData = std::array<std::pair<std::string_view, StatType>, 12>{{
-	{"psiStrength", StatType::PSI_STRENGTH},
-	{"psiSkill", StatType::PSI_SKILL},
-	{"bravery", StatType::BRAVERY},
-	{"strength", StatType::STRENGTH},
-	{"firing", StatType::FIRING},
-	{"reactions", StatType::REACTIONS},
-	{"stamina", StatType::STAMINA},
-	{"tu", StatType::TU},
-	{"health", StatType::HEALTH},
-	{"throwing", StatType::THROWING},
-	{"melee", StatType::MELEE},
-	{"manaPool", StatType::MANA},
+typedef UnitStats::Type UnitStat;
+
+constexpr static auto absoluteConditionData = std::array<std::pair<std::string_view, UnitStat UnitStats::*>, 12>{{
+	{"psiStrength", &UnitStats::psiStrength},
+	{"psiSkill",    &UnitStats::psiSkill},
+	{"bravery",     &UnitStats::bravery},
+	{"strength",    &UnitStats::strength},
+	{"firing",      &UnitStats::firing},
+	{"reactions",   &UnitStats::reactions},
+	{"stamina",     &UnitStats::stamina},
+	{"tu",          &UnitStats::tu},
+	{"health",      &UnitStats::health},
+	{"throwing",    &UnitStats::throwing},
+	{"melee",       &UnitStats::melee},
+	{"manaPool",    &UnitStats::mana},
 }};
 
-constexpr static auto percentConditionData = std::array<std::pair<std::string_view, StatType>, 12>{{
-	{"percentPsiStrength", StatType::PSI_STRENGTH},
-	{"percentPsiSkill", StatType::PSI_SKILL},
-	{"percentBravery", StatType::BRAVERY},
-	{"percentStrength", StatType::STRENGTH},
-	{"percentFiring", StatType::FIRING},
-	{"percentReactions", StatType::REACTIONS},
-	{"percentStamina", StatType::STAMINA},
-	{"percentTu", StatType::TU},
-	{"percentHealth", StatType::HEALTH},
-	{"percentThrowing", StatType::THROWING},
-	{"percentMelee", StatType::MELEE},
-	{"percentManaPool", StatType::MANA},
+constexpr static auto percentConditionData = std::array<std::pair<std::string_view, UnitStats::Type UnitStats::*>, 12>{{
+	{"percentPsiStrength", &UnitStats::psiStrength},
+	{"percentPsiSkill",    &UnitStats::psiSkill},
+	{"percentBravery",     &UnitStats::bravery},
+	{"percentStrength",    &UnitStats::strength},
+	{"percentFiring",      &UnitStats::firing},
+	{"percentReactions",   &UnitStats::reactions},
+	{"percentStamina",     &UnitStats::stamina},
+	{"percentTu",          &UnitStats::tu},
+	{"percentHealth",      &UnitStats::health},
+	{"percentThrowing",    &UnitStats::throwing},
+	{"percentMelee",       &UnitStats::melee},
+	{"percentManaPool",    &UnitStats::mana},
 }};
 
 constexpr static auto trainingConditionData = std::array<std::pair<std::string_view, TrainingType>, 2>{{
