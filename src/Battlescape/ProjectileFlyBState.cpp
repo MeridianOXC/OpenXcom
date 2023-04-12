@@ -593,6 +593,9 @@ bool ProjectileFlyBState::createNewProjectile()
  */
 void ProjectileFlyBState::think()
 {
+	/// checks if a weapon has any more shots to fire.
+	auto noMoreShootsToShoot = [this]() { return !_action.weapon->haveNextShotsForAction(_action.type, _action.autoShotCounter) || !_action.weapon->getAmmoForAction(_action.type); };
+
 	_parent->getSave()->getBattleState()->clearMouseScrollingState();
 	/* TODO refactoring : store the projectile in this state, instead of getting it from the map each time? */
 	if (_parent->getMap()->getProjectile() == 0)
@@ -728,7 +731,7 @@ void ProjectileFlyBState::think()
 					_parent->statePushFront(new ExplosionBState(
 						_parent, _parent->getMap()->getProjectile()->getLastPositions(offset),
 						attack, 0,
-						_action.weapon->haveNextShotsForAction(_action.type, _action.autoShotCounter) || !_action.weapon->getAmmoForAction(_action.type),
+						noMoreShootsToShoot(),
 						shotgun ? 0 : _range + _parent->getMap()->getProjectile()->getDistance()
 					));
 
@@ -817,7 +820,7 @@ void ProjectileFlyBState::think()
 					// nerf unit's XP values (gained via extra shotgun bullets)
 					_unit->nerfXP();
 				}
-				else if (!_action.weapon->haveNextShotsForAction(_action.type, _action.autoShotCounter) || !_action.weapon->getAmmoForAction(_action.type))
+				else if (noMoreShootsToShoot())
 				{
 					_unit->aim(false);
 				}
