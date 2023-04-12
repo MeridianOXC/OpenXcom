@@ -6323,6 +6323,45 @@ void getInventoryScript(const Mod* mod, const RuleInventory* &inv, const std::st
 	}
 }
 
+/**
+ * @brief Custom method for retrieving a sprite by set for scripting.
+ * @param surface The surface the sprite is loaded into. nullptr on error.
+ */
+void getSpiteScript(const Mod* mod, const Surface*& surface, const std::string& setName, int index)
+{
+	surface = mod ? const_cast<Mod*>(mod)->getSurfaceSet(setName, false)->getFrame(index) : nullptr;
+}
+
+/**
+ * @brief Custom method for retrieving a sprite by name for scripting.
+ * @param surface The surface the sprite is loaded into. nullptr on error.
+ */
+void getNamedSpriteScript(const Mod* mod, const Surface*& surface, const std::string& spriteName)
+{
+	surface = mod ? const_cast<Mod*>(mod)->getSurface(spriteName, false) : nullptr;
+}
+
+/**
+ * @brief Custom method for retrieving an interface element color.
+ * @param color Out reference for the color. -1 on error.
+*/
+void getInterfaceElementColor(const Mod* mod, int &color, const std::string& interfaceName, const std::string& elementName)
+{
+	auto interface = mod->getInterface(interfaceName);
+	auto element = interface->getElement(elementName);
+	color = (interface && element) ? element->color : -1;
+}
+/**
+ * @brief Custom method for retrieving an interface element color2.
+ * @param color Out reference for the color. -1 on error.
+ */
+void getInterfaceElementColor2(const Mod* mod, int& color, const std::string& interfaceName, const std::string& elementName)
+{
+	auto interface = mod->getInterface(interfaceName);
+	auto element = interface->getElement(elementName);
+	color = (interface && element) ? element->color2 : -1;
+}
+
 } // namespace
 
 /**
@@ -6337,6 +6376,18 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 	parser->registerPointerType<RuleResearch>();
 	parser->registerPointerType<RuleSoldier>();
 	parser->registerPointerType<RuleInventory>();
+
+	{
+		// since all user generated references to surfaces should be constant, we will call them sprite.
+		const std::string name = "Sprite";
+		parser->registerRawPointerType<Surface>(name);
+		Bind<Surface> surfaceBinder = {parser, name};
+
+		surfaceBinder.add<&Surface::getWidth>("getWidth", "Get's the width of the sprite. (width)");
+		surfaceBinder.add<&Surface::getHeight>("getHeight", "Get's the width of the sprite. (height)");
+
+//		surfaceBinder.addDebugDisplay<&debugDisplayScript>();
+	}
 
 	Bind<Mod> mod = { parser };
 
@@ -6364,6 +6415,11 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 	mod.add<&Mod::getInventoryBackpack>("getRuleInventoryBackpack");
 	mod.add<&Mod::getInventoryBelt>("getRuleInventoryBelt");
 	mod.add<&Mod::getInventoryGround>("getRuleInventoryGround");
+
+	mod.add<&getSpiteScript>("getSpriteFromSet", "Gets a sprite identified by set name and index from the appropriate store. (sprite set index");
+	mod.add<&getNamedSpriteScript>("getNamedSprite", "Get a sprite identified by a string. (sprite spriteName)");
+	mod.add<&getInterfaceElementColor>("getInterfaceElementColor", "Gets the color of a specific interface element. -1 on error. (color interface element)");
+	mod.add<&getInterfaceElementColor2>("getInterfaceElementColor2", "Gets the color of a specific interface element.  -1 on error. (color interface element)");
 
 	mod.addScriptValue<&Mod::_scriptGlobal, &ModScriptGlobal::getScriptValues>();
 }

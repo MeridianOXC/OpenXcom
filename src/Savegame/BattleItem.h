@@ -149,6 +149,10 @@ public:
 	const Surface *getFloorSprite(const SurfaceSet *set, const SavedBattleGame *save, int animFrame, int shade) const;
 	/// Gets the item's inventory sprite.
 	const Surface *getBigSprite(const SurfaceSet *set, const SavedBattleGame *save, int animFrame) const;
+	/// Gets the bounds of the inventory sprite.
+	[[nodiscard]] SDL_Rect getInvSpriteBounds(int groundOffset = 0) const;
+	/// Get the bounds of an item centered in a hand slot.
+	[[nodiscard]] SDL_Rect getHandCenteredSpriteBounds() const;
 
 	/// Check if item can use any ammo.
 	bool isWeaponWithAmmo() const;

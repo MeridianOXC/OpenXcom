@@ -30,7 +30,6 @@ namespace OpenXcom
 
 class Font;
 class Language;
-class ScriptWorkerBase;
 class SurfaceCrop;
 template<typename Pixel> class SurfaceRaw;
 

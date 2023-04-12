@@ -58,7 +58,7 @@ public:
 	/// Draws the inventory grid.
 	void drawGrid();
 	/// Draws the inventory items.
-	void drawItems();
+	void drawItems() const;
 	/// Blits the inventory onto another surface.
 	void blit(SDL_Surface *surface) override;
 	/// Special handling for mouse clicks.

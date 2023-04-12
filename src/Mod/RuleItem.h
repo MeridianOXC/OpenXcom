@@ -753,7 +753,7 @@ public:
 	/// Gets the chance of special effect like zombify or corpse explosion or mine triggering.
 	int getSpecialChance() const;
 	/// Draws the item's hand sprite onto a surface.
-	void drawHandSprite(const SurfaceSet *texture, Surface *surface, const BattleItem *item = 0, const SavedBattleGame* save = 0, int animFrame = 0) const;
+	void drawHandSprite(const SurfaceSet *texture, Surface *surface) const;
 	/// item's hand spite x offset
 	int getHandSpriteOffX() const;
 	/// item's hand spite y offset

@@ -47,6 +47,7 @@
 #include "../Engine/Screen.h"
 #include "../Engine/CrossPlatform.h"
 #include "TileEngine.h"
+#include "InventoryItemSprite.h"
 
 namespace OpenXcom
 {
@@ -62,17 +63,18 @@ namespace OpenXcom
  */
 Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base) : InteractiveSurface(width, height, x, y), _game(game), _selUnit(0), _selItem(0), _tu(true), _base(base), _mouseOverItem(0), _groundOffset(0), _animFrame(0)
 {
-	_twoHandedRed = _game->getMod()->getInterface("battlescape")->getElement("twoHandedRed")->color;
-	_twoHandedGreen = _game->getMod()->getInterface("battlescape")->getElement("twoHandedGreen")->color;
-
 	_depth = _game->getSavedGame()->getSavedBattle()->getDepth();
 	_grid = new Surface(width, height, 0, 0);
 	_items = new Surface(width, height, 0, 0);
 	_gridLabels = new Surface(width, height, 0, 0);
 	_selection = new Surface(RuleInventory::HAND_W * RuleInventory::SLOT_W, RuleInventory::HAND_H * RuleInventory::SLOT_H, x, y);
+	_bigObs = _game->getMod()->getSurfaceSet("BIGOBS.PCK");
 	_warning = new WarningMessage(224, 24, 48, 176);
 	_stackNumber = new NumberText(15, 15, 0, 0);
 	_stackNumber->setBordered(true);
+
+	Uint8 stackNumberColor = _game->getMod()->getInterface("inventory")->getElement("numStack")->color;
+	_stackNumber->setColor(stackNumberColor);
 
 	_warning->initText(_game->getMod()->getFont("FONT_BIG"), _game->getMod()->getFont("FONT_SMALL"), _game->getLanguage());
 	_warning->setColor(_game->getMod()->getInterface("battlescape")->getElement("warning")->color2);
@@ -82,11 +84,6 @@ Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base)
 	_animTimer->onTimer((SurfaceHandler)&Inventory::animate);
 	_animTimer->start();
 
-	_stunIndicator = _game->getMod()->getSurface("BigStunIndicator", false);
-	_woundIndicator = _game->getMod()->getSurface("BigWoundIndicator", false);
-	_burnIndicator = _game->getMod()->getSurface("BigBurnIndicator", false);
-	_shockIndicator = _game->getMod()->getSurface("BigShockIndicator", false);
-
 	const SavedBattleGame *battleSave = _game->getSavedGame()->getSavedBattle();
 	if (battleSave)
 	{
@@ -95,7 +92,7 @@ Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base)
 		{
 			if (!enviro->getInventoryShockIndicator().empty())
 			{
-				_shockIndicator = _game->getMod()->getSurface(enviro->getInventoryShockIndicator(), false);
+				auto _shockIndicator = _game->getMod()->getSurface(enviro->getInventoryShockIndicator(), false);
 			}
 		}
 	}
@@ -298,71 +295,43 @@ void Inventory::drawGridLabels(bool showTuCost)
  */
 void Inventory::drawItems()
 {
-	const int Pulsate[8] = { 0, 1, 2, 3, 4, 3, 2, 1 };
 	const SavedBattleGame* save = _game->getSavedGame()->getSavedBattle();
-	Surface *tempSurface = _game->getMod()->getSurfaceSet("SCANG.DAT")->getFrame(6);
-	auto primers = [&](int x, int y, bool a)
-	{
-		tempSurface->blitNShade(_items, x, y, Pulsate[_animFrame % 8], false, a ? 0 : 32);
-	};
-	auto indicators = [&](Surface *surf, int x, int y)
-	{
-		surf->blitNShade(_items, x, y, Pulsate[_animFrame % 8]);
-	};
 
 	ScriptWorkerBlit work;
 	_items->clear();
-	Uint8 color = _game->getMod()->getInterface("inventory")->getElement("numStack")->color;
-	Uint8 color2 = _game->getMod()->getInterface("inventory")->getElement("numStack")->color2;
-	if (_selUnit != 0)
+	
+	if (_selUnit != nullptr)
 	{
-		SurfaceSet *texture = _game->getMod()->getSurfaceSet("BIGOBS.PCK");
 		// Soldier items
-		for (auto* invItem : *_selUnit->getInventory())
+		for (const auto* invItem : *_selUnit->getInventory())
 		{
-			const Surface *frame = invItem->getBigSprite(texture, save, _animFrame);
+			// if the item is selected (grabbed by the cursor) continue. It isn't handled here.
+			if (invItem == _selItem) { continue; }
 
-			if (invItem == _selItem || !frame)
-				continue;
+			const auto itemSlot = invItem->getSlot();
+			SDL_Rect spriteBounds = invItem->getInvSpriteBounds();
+			spriteBounds.x += itemSlot->getX();
+			spriteBounds.y += itemSlot->getY();
 
-			int x, y;
-			if (invItem->getSlot()->getType() == INV_SLOT)
+			if (invItem->getSlot()->getType() != INV_HAND)
 			{
-				x = (invItem->getSlot()->getX() + invItem->getSlotX() * RuleInventory::SLOT_W);
-				y = (invItem->getSlot()->getY() + invItem->getSlotY() * RuleInventory::SLOT_H);
+				// if the cursor is hovering over an item append the hover context. 
+				auto context = _mouseOverItem == invItem ? InventorySpriteContext::SOLDIER_INV_SLOT.with(InventorySpriteContext::CURSOR_HOVER)
+														 : InventorySpriteContext::SOLDIER_INV_SLOT;
+				InventoryItemSprite(*invItem, save, *_items, spriteBounds).draw(*_bigObs, context, _animFrame);
 			}
-			else if (invItem->getSlot()->getType() == INV_HAND)
+			else // hand slot
 			{
-				x = (invItem->getSlot()->getX() + invItem->getRules()->getHandSpriteOffX());
-				y = (invItem->getSlot()->getY() + invItem->getRules()->getHandSpriteOffY());
-			}
-			else
-			{
-				continue;
-			}
-			BattleItem::ScriptFill(&work, invItem, save, BODYPART_ITEM_INVENTORY, _animFrame, 0);
-			work.executeBlit(frame, _items, x, y, 0);
-
-			// two-handed indicator
-			if (invItem->getSlot()->getType() == INV_HAND)
-			{
-				if (invItem->getRules()->isTwoHanded() || invItem->getRules()->isBlockingBothHands())
-				{
-					NumberText text = NumberText(10, 5, 0, 0);
-					text.setPalette(getPalette());
-					text.setColor(invItem->getRules()->isBlockingBothHands() ? _twoHandedRed : _twoHandedGreen);
-					text.setBordered(false);
-					text.setX(invItem->getSlot()->getX() + RuleInventory::HAND_W * RuleInventory::SLOT_W - 5);
-					text.setY(invItem->getSlot()->getY() + RuleInventory::HAND_H * RuleInventory::SLOT_H - 7);
-					text.setValue(2);
-					text.blit(_items->getSurface());
-				}
-			}
-
-			// grenade primer indicators
-			if (invItem->getFuseTimer() >= 0 && invItem->getRules()->getInventoryWidth() > 0)
-			{
-				primers(x, y, invItem->isFuseEnabled());
+				const auto handSlotBounds = SDL_Rect{
+					static_cast<Sint16>(itemSlot->getX() + 1),
+					static_cast<Sint16>(itemSlot->getY() + 1),
+					(RuleInventory::HAND_SLOT_W) - 1,
+					(RuleInventory::HAND_SLOT_H) - 2,
+				};
+				auto context = _mouseOverItem == invItem ? InventorySpriteContext::SOLDIER_INV_HAND.with(InventorySpriteContext::CURSOR_HOVER)
+														 : InventorySpriteContext::SOLDIER_INV_HAND;
+				InventoryItemSprite(*invItem, save, *_items, spriteBounds).draw(*_bigObs, context, _animFrame);
+				InventoryItemSprite(*invItem, save, *_items, handSlotBounds).drawHandOverlay(context, _animFrame);
 			}
 		}
 
@@ -370,18 +339,19 @@ void Inventory::drawItems()
 		stackLayer.setPalette(getPalette());
 
 		// Ground items
-		int fatalWounds = 0;
 		auto& occupiedSlots = *clearOccupiedSlotsCache();
-		for (auto* groundItem : *_selUnit->getTile()->getInventory())
+		for (const auto* groundItem : *_selUnit->getTile()->getInventory())
 		{
-			const Surface *frame = groundItem->getBigSprite(texture, save, _animFrame);
-			// note that you can make items invisible by setting their width or height to 0 (for example used with tank corpse items)
-			if (groundItem == _selItem || groundItem->getRules()->getInventoryHeight() == 0 || groundItem->getRules()->getInventoryWidth() == 0 || !frame)
+			const auto rules = groundItem->getRules();
+			// ground items can have more potentially valid states that need to be filtered.
+			if (groundItem == _selItem                                                 // selected item not handled here.
+				|| rules->getInventoryHeight() == 0 || rules->getInventoryWidth() == 0 // items with no width or height also filtered (tank corpses)
+				|| rules->getBigSprite() == -1                                         // items with no sprite filtered
+				|| groundItem->getSlotX() < _groundOffset                              // item out of sight (left side)
+				|| groundItem->getSlotX() >= _groundOffset + _groundSlotsX)            // item out of sight (right side)
+			{
 				continue;
-
-			// check if item is in visible range
-			if (groundItem->getSlotX() < _groundOffset || groundItem->getSlotX() >= _groundOffset + _groundSlotsX)
-				continue;
+			}
 
 			// check if something was draw here before
 			auto& pos = occupiedSlots[groundItem->getSlotY()][groundItem->getSlotX() - _groundOffset];
@@ -394,57 +364,14 @@ void Inventory::drawItems()
 				pos = true;
 			}
 
-			int x, y;
-			x = (groundItem->getSlot()->getX() + (groundItem->getSlotX() - _groundOffset) * RuleInventory::SLOT_W);
-			y = (groundItem->getSlot()->getY() + groundItem->getSlotY() * RuleInventory::SLOT_H);
-			BattleItem::ScriptFill(&work, groundItem, save, BODYPART_ITEM_INVENTORY, _animFrame, 0);
-			work.executeBlit(frame, _items, x, y, 0);
+			const auto itemSlot = groundItem->getSlot();
+			SDL_Rect spriteBounds = groundItem->getInvSpriteBounds();
+			spriteBounds.x += itemSlot->getX();
+			spriteBounds.y += itemSlot->getY();
 
-			// grenade primer indicators
-			if (groundItem->getFuseTimer() >= 0 && groundItem->getRules()->getInventoryWidth() > 0)
-			{
-				primers(x, y, groundItem->isFuseEnabled());
-			}
-
-			// fatal wounds
-			fatalWounds = 0;
-			if (groundItem->getUnit())
-			{
-				// don't show on dead units
-				if (groundItem->getUnit()->getStatus() == STATUS_UNCONSCIOUS && groundItem->getUnit()->indicatorsAreEnabled())
-				{
-					fatalWounds = groundItem->getUnit()->getFatalWounds();
-					if (_burnIndicator && groundItem->getUnit()->getFire() > 0)
-					{
-						indicators(_burnIndicator, x, y);
-					}
-					else if (_woundIndicator && fatalWounds > 0)
-					{
-						indicators(_woundIndicator, x, y);
-					}
-					else if (_shockIndicator && groundItem->getUnit()->hasNegativeHealthRegen())
-					{
-						indicators(_shockIndicator, x, y);
-					}
-					else if (_stunIndicator)
-					{
-						indicators(_stunIndicator, x, y);
-					}
-				}
-			}
-			if (fatalWounds > 0)
-			{
-				_stackNumber->setX((groundItem->getSlot()->getX() + ((groundItem->getSlotX() + groundItem->getRules()->getInventoryWidth()) - _groundOffset) * RuleInventory::SLOT_W)-4);
-				if (fatalWounds > 9)
-				{
-					_stackNumber->setX(_stackNumber->getX()-4);
-				}
-				_stackNumber->setY((groundItem->getSlot()->getY() + (groundItem->getSlotY() + groundItem->getRules()->getInventoryHeight()) * RuleInventory::SLOT_H)-6);
-				_stackNumber->setValue(fatalWounds);
-				_stackNumber->draw();
-				_stackNumber->setColor(color2);
-				_stackNumber->blit(stackLayer.getSurface());
-			}
+			auto context = _mouseOverItem == groundItem ? InventorySpriteContext::SOLDIER_INV_SLOT.with(InventorySpriteContext::CURSOR_HOVER)
+														: InventorySpriteContext::SOLDIER_INV_SLOT;
+			InventoryItemSprite(*groundItem, save, *_items, spriteBounds).draw(*_bigObs, InventorySpriteContext::SOLDIER_INV_GROUND, _animFrame);
 
 			// item stacking
 			if (_stackLevel[groundItem->getSlotX()][groundItem->getSlotY()] > 1)
@@ -457,7 +384,6 @@ void Inventory::drawItems()
 				_stackNumber->setY((groundItem->getSlot()->getY() + (groundItem->getSlotY() + groundItem->getRules()->getInventoryHeight()) * RuleInventory::SLOT_H)-6);
 				_stackNumber->setValue(_stackLevel[groundItem->getSlotX()][groundItem->getSlotY()]);
 				_stackNumber->draw();
-				_stackNumber->setColor(color);
 				_stackNumber->blit(stackLayer.getSurface());
 			}
 		}
@@ -474,7 +400,18 @@ void Inventory::drawSelectedItem()
 	if (_selItem)
 	{
 		_selection->clear();
-		_selItem->getRules()->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _selection, _selItem, _game->getSavedGame()->getSavedBattle(), _animFrame);
+		SDL_Rect bounds = _selItem->getHandCenteredSpriteBounds();
+		const auto save = _game->getSavedGame()->getSavedBattle();
+		InventoryItemSprite(*_selItem, save, *_selection, bounds).draw(*_bigObs, InventorySpriteContext::SOLDIER_INV_CURSOR, _animFrame);
+
+		auto handSlotBounds = SDL_Rect{ 
+				static_cast<Sint16>(_selection->getX()),
+				static_cast<Sint16>(_selection->getY()),
+				RuleInventory::HAND_SLOT_W,
+				RuleInventory::HAND_SLOT_H,
+		};
+		// this renders no effects by default, but allows for scripting.
+		InventoryItemSprite(*_selItem, save, *_selection, bounds).drawHandOverlay(InventorySpriteContext::SOLDIER_INV_CURSOR, _animFrame);
 	}
 }
 

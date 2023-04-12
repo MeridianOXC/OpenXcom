@@ -54,6 +54,8 @@ class Mod;
 class BattleUnit;
 class BattleUnitVisibility;
 class BattleItem;
+class SpriteOverlay;
+struct InventorySpriteContext;
 struct StatAdjustment;
 
 class Ufo;
@@ -91,6 +93,14 @@ class ModScript
 	struct RecolorUnitParser : ScriptParserEvents<Output, const BattleUnit*, const SavedBattleGame*, int, int, int, int>
 	{
 		RecolorUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+	struct UnitPaperdollOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleUnit*, const SavedBattleGame*, SpriteOverlay*, const Soldier*, int>
+	{
+		UnitPaperdollOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+	struct UnitRankOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleUnit*, const SavedBattleGame*, SpriteOverlay*, const Soldier*, int>
+	{
+		UnitRankOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
 	struct SelectUnitParser : ScriptParserEvents<Output, const BattleUnit*, const SavedBattleGame*, int, int, int>
 	{
@@ -180,6 +190,14 @@ class ModScript
 	struct SelectItemParser : ScriptParserEvents<Output, const BattleItem*, const SavedBattleGame*, int, int, int>
 	{
 		SelectItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+	struct InventorySpriteOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleItem*, const SavedBattleGame*, SpriteOverlay*, InventorySpriteContext*, int>
+	{
+		InventorySpriteOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+	struct HandOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleItem*, const SavedBattleGame*, SpriteOverlay*, InventorySpriteContext*, int>
+	{
+		HandOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
 
 	struct TryPsiAttackItemParser : ScriptParserEvents<ScriptOutputArgs<int&>, const BattleItem*, const BattleUnit*, const BattleUnit*, const RuleSkill*, int, int, int, RNG::RandomState*, int, int, const SavedBattleGame*>
@@ -291,6 +309,8 @@ public:
 
 	using RecolorUnitSprite = MACRO_NAMED_SCRIPT("recolorUnitSprite", RecolorUnitParser);
 	using SelectUnitSprite = MACRO_NAMED_SCRIPT("selectUnitSprite", SelectUnitParser);
+	using UnitPaperdollOverlay = MACRO_NAMED_SCRIPT("unitPaperdollOverlay", UnitPaperdollOverlayParser);
+	using UnitRankOverlay = MACRO_NAMED_SCRIPT("unitRankOverlay", UnitRankOverlayParser);
 	using SelectMoveSoundUnit = MACRO_NAMED_SCRIPT("selectMoveSoundUnit", SelectMoveSoundUnitParser);
 
 	using ReactionUnitAction = MACRO_NAMED_SCRIPT("reactionUnitAction", ReactionUnitParser);
@@ -319,6 +339,8 @@ public:
 
 	using RecolorItemSprite = MACRO_NAMED_SCRIPT("recolorItemSprite", RecolorItemParser);
 	using SelectItemSprite = MACRO_NAMED_SCRIPT("selectItemSprite", SelectItemParser);
+	using InventorySpriteOverlay = MACRO_NAMED_SCRIPT("inventorySpriteOverlay", InventorySpriteOverlayParser);
+	using HandOverlay = MACRO_NAMED_SCRIPT("handOverlay", HandOverlayParser);
 
 	using ReactionWeaponAction = MACRO_NAMED_SCRIPT("reactionWeaponAction", ReactionUnitParser);
 
@@ -394,6 +416,8 @@ public:
 
 	using BattleUnitScripts = ScriptGroup<Mod,
 		RecolorUnitSprite,
+		UnitPaperdollOverlay,
+		UnitRankOverlay,
 		SelectUnitSprite,
 		SelectMoveSoundUnit,
 
@@ -421,6 +445,8 @@ public:
 	using BattleItemScripts = ScriptGroup<Mod,
 		RecolorItemSprite,
 		SelectItemSprite,
+		InventorySpriteOverlay,
+		HandOverlay,
 
 		ReactionWeaponAction,
 

@@ -55,6 +55,10 @@ public:
 	static const int SLOT_H = 16;
 	static const int HAND_W = 2;
 	static const int HAND_H = 3;
+	/// width of the hand slot in pixels.
+	static const int HAND_SLOT_W = SLOT_W * HAND_W;
+	/// height of the hand slot in pixels.
+	static const int HAND_SLOT_H = SLOT_H * HAND_H;
 	static const int PAPERDOLL_W = 40;
 	static const int PAPERDOLL_H = 70;
 	static const int PAPERDOLL_X = 60;
