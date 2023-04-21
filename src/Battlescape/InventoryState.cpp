@@ -530,8 +530,9 @@ void InventoryState::init()
 			armorSurface->blitNShade(_soldier, 0, 0);
 		}
 	}
-	auto bounds = SDL_Rect{ 0, 0, static_cast<Uint16>(_soldier->getWidth()), static_cast<Uint16>(_soldier->getHeight()) };
-	SpriteOverlay(*_soldier, bounds, _game->getSavedGame()->getSavedBattle()).draw<ModScript::UnitPaperdollOverlay>(*unit->getArmor(), unit, s);
+	auto bounds = SpriteOverlay::getSurfaceBounds(*_soldier);
+	auto save = _game->getSavedGame()->getSavedBattle();
+	SpriteOverlay(*_soldier, bounds, save).draw<ModScript::UnitPaperdollOverlay>(*unit->getArmor(), unit, _inv->getAnimFrame());
 
 	// coming from InventoryLoad window...
 	if (_globalLayoutIndex > -1)
@@ -2042,9 +2043,9 @@ void InventoryState::handle(Action *action)
  */
 void InventoryState::think()
 {
+	int anim = _inv->getAnimFrame();
 	if (_mouseHoverItem)
 	{
-		int anim = _inv->getAnimFrame();
 		int seq = std::max(((anim - _mouseHoverItemFrame) / 10) - 1, 0); // `-1` cause that first item will be show bit more longer
 		int modulo = 0;
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
@@ -2093,10 +2094,10 @@ void InventoryState::think()
 			r.h -= 2;
 			_selAmmo->drawRect(&r, Palette::blockOffset(0)+15);
 
-			const SDL_Rect spriteBounds = firstAmmo->getHandCenteredSpriteBounds();
+			const SDL_Rect spriteBounds = InventoryItemSprite::getHandCenteredSpriteBounds(*firstAmmo);
 			const auto save = _game->getSavedGame()->getSavedBattle();
-			const auto surfaceSet = *_game->getMod()->getSurfaceSet("BIGOBS.PCK", anim);
-			InventoryItemSprite(*firstAmmo, save, *_selAmmo, spriteBounds).draw(surfaceSet, InventorySpriteContext::SOLDIER_INV_AMMO, anim);
+			const auto& surfaceSet = *_game->getMod()->getSurfaceSet("BIGOBS.PCK", anim);
+			InventoryItemSprite(*firstAmmo, *save, *_selAmmo, spriteBounds).draw(surfaceSet, InventorySpriteContext::SOLDIER_INV_AMMO, anim);
 
 			constexpr auto handSlotBounds = SDL_Rect{
 				static_cast<Sint16>(1),
@@ -2104,12 +2105,19 @@ void InventoryState::think()
 				RuleInventory::HAND_SLOT_W-1,
 				RuleInventory::HAND_SLOT_H-2,
 			};
-			InventoryItemSprite(*firstAmmo, save, *_selAmmo, handSlotBounds).drawHandOverlay(InventorySpriteContext::SOLDIER_INV_AMMO, anim);
+			InventoryItemSprite(*firstAmmo, *save, *_selAmmo, handSlotBounds).drawHandOverlay(InventorySpriteContext::SOLDIER_INV_AMMO, anim);
 		}
 		else
 		{
 			_selAmmo->clear();
 		}
+	}
+	/// animate the paperdoll scripts.
+	if (BattleUnit* unit = _battleGame->getSelectedUnit())
+	{
+		auto bounds = SpriteOverlay::getSurfaceBounds(*_soldier);
+		auto save = _game->getSavedGame()->getSavedBattle();
+		SpriteOverlay(*_soldier, bounds, save).draw<ModScript::UnitPaperdollOverlay>(*unit->getArmor(), unit, anim);
 	}
 	State::think();
 }

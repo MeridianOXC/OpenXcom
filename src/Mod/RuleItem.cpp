@@ -1739,35 +1739,6 @@ int RuleItem::getSpecialChance() const
 {
 	return _specialChance;
 }
-/**
- * Draws and centers the hand sprite on a surface
- * according to its dimensions.
- * @param texture Pointer to the surface set to get the sprite from.
- * @param surface Pointer to the surface to draw to.
- */
-void RuleItem::drawHandSprite(const SurfaceSet *texture, Surface *surface) const
-{
-	const Surface* frame = texture->getFrame(this->getBigSprite());
-	frame->blitNShade(surface, this->getHandSpriteOffX(), this->getHandSpriteOffY());
-}
-
-/**
- * item's hand spite x offset
- * @return x offset
- */
-int RuleItem::getHandSpriteOffX() const
-{
-	return (RuleInventory::HAND_W - getInventoryWidth()) * RuleInventory::SLOT_W/2;
-}
-
-/**
- * item's hand spite y offset
- * @return y offset
- */
-int RuleItem::getHandSpriteOffY() const
-{
-	return (RuleInventory::HAND_H - getInventoryHeight()) * RuleInventory::SLOT_H/2;
-}
 
 /**
  * Gets the heal quantity of the item.

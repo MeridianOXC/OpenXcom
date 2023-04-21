@@ -309,20 +309,27 @@ void Inventory::drawItems()
 			if (invItem == _selItem) { continue; }
 
 			const auto itemSlot = invItem->getSlot();
-			SDL_Rect spriteBounds = invItem->getInvSpriteBounds();
-			spriteBounds.x += itemSlot->getX();
-			spriteBounds.y += itemSlot->getY();
 
-			if (invItem->getSlot()->getType() != INV_HAND)
+			if (itemSlot->getType() != INV_HAND) // not hand slot
 			{
+				SDL_Rect spriteBounds = InventoryItemSprite::getInvSpriteBounds(*invItem);
+				spriteBounds.x += itemSlot->getX();
+				spriteBounds.y += itemSlot->getY();
+
 				// if the cursor is hovering over an item append the hover context. 
 				auto context = _mouseOverItem == invItem ? InventorySpriteContext::SOLDIER_INV_SLOT.with(InventorySpriteContext::CURSOR_HOVER)
 														 : InventorySpriteContext::SOLDIER_INV_SLOT;
-				InventoryItemSprite(*invItem, save, *_items, spriteBounds).draw(*_bigObs, context, _animFrame);
+				InventoryItemSprite(*invItem, *save, *_items, spriteBounds).draw(*_bigObs, context, _animFrame);
 			}
 			else // hand slot
 			{
-				const auto handSlotBounds = SDL_Rect{
+				SDL_Rect spriteBounds = InventoryItemSprite::getHandCenteredSpriteBounds(*invItem);
+				spriteBounds.x += itemSlot->getX();
+				spriteBounds.y += itemSlot->getY();
+
+				// the bounds for the hand overlay are inset by one pixel compared to the standard hand box,
+				// because the outline is drawn inside the hand box.
+				const auto handOverlayBounds = SDL_Rect{
 					static_cast<Sint16>(itemSlot->getX() + 1),
 					static_cast<Sint16>(itemSlot->getY() + 1),
 					(RuleInventory::HAND_SLOT_W) - 1,
@@ -330,8 +337,8 @@ void Inventory::drawItems()
 				};
 				auto context = _mouseOverItem == invItem ? InventorySpriteContext::SOLDIER_INV_HAND.with(InventorySpriteContext::CURSOR_HOVER)
 														 : InventorySpriteContext::SOLDIER_INV_HAND;
-				InventoryItemSprite(*invItem, save, *_items, spriteBounds).draw(*_bigObs, context, _animFrame);
-				InventoryItemSprite(*invItem, save, *_items, handSlotBounds).drawHandOverlay(context, _animFrame);
+				InventoryItemSprite(*invItem, *save, *_items, spriteBounds).draw(*_bigObs, context, _animFrame);
+				InventoryItemSprite(*invItem, *save, *_items, handOverlayBounds).drawHandOverlay(context, _animFrame);
 			}
 		}
 
@@ -365,13 +372,13 @@ void Inventory::drawItems()
 			}
 
 			const auto itemSlot = groundItem->getSlot();
-			SDL_Rect spriteBounds = groundItem->getInvSpriteBounds();
+			SDL_Rect spriteBounds = InventoryItemSprite::getGroundSlotSpriteBounds(*groundItem, _groundOffset);
 			spriteBounds.x += itemSlot->getX();
 			spriteBounds.y += itemSlot->getY();
 
 			auto context = _mouseOverItem == groundItem ? InventorySpriteContext::SOLDIER_INV_SLOT.with(InventorySpriteContext::CURSOR_HOVER)
 														: InventorySpriteContext::SOLDIER_INV_SLOT;
-			InventoryItemSprite(*groundItem, save, *_items, spriteBounds).draw(*_bigObs, InventorySpriteContext::SOLDIER_INV_GROUND, _animFrame);
+			InventoryItemSprite(*groundItem, *save, *_items, spriteBounds).draw(*_bigObs, InventorySpriteContext::SOLDIER_INV_GROUND, _animFrame);
 
 			// item stacking
 			if (_stackLevel[groundItem->getSlotX()][groundItem->getSlotY()] > 1)
@@ -400,9 +407,9 @@ void Inventory::drawSelectedItem()
 	if (_selItem)
 	{
 		_selection->clear();
-		SDL_Rect bounds = _selItem->getHandCenteredSpriteBounds();
+		SDL_Rect bounds = InventoryItemSprite::getHandCenteredSpriteBounds(*_selItem);
 		const auto save = _game->getSavedGame()->getSavedBattle();
-		InventoryItemSprite(*_selItem, save, *_selection, bounds).draw(*_bigObs, InventorySpriteContext::SOLDIER_INV_CURSOR, _animFrame);
+		InventoryItemSprite(*_selItem, *save, *_selection, bounds).draw(*_bigObs, InventorySpriteContext::SOLDIER_INV_CURSOR, _animFrame);
 
 		auto handSlotBounds = SDL_Rect{ 
 				static_cast<Sint16>(_selection->getX()),
@@ -411,7 +418,7 @@ void Inventory::drawSelectedItem()
 				RuleInventory::HAND_SLOT_H,
 		};
 		// this renders no effects by default, but allows for scripting.
-		InventoryItemSprite(*_selItem, save, *_selection, bounds).drawHandOverlay(InventorySpriteContext::SOLDIER_INV_CURSOR, _animFrame);
+		InventoryItemSprite(*_selItem, *save, *_selection, bounds).drawHandOverlay(InventorySpriteContext::SOLDIER_INV_CURSOR, _animFrame);
 	}
 }
 

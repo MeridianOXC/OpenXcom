@@ -20,6 +20,7 @@
 #include "../Engine/Script.h"
 #include "../Interface/NumberText.h"
 #include "../Savegame/BattleItem.h"
+#include "../Savegame/SavedBattleGame.h"
 
 namespace OpenXcom
 {
@@ -28,6 +29,7 @@ class Surface;
 class SurfaceSet;
 class SavedBattleGame;
 class BattleItem;
+class Mod;
 class RuleItem;
 class ScriptParserBase;
 
@@ -65,10 +67,11 @@ struct InventorySpriteContext
 	static const InventorySpriteContext SOLDIER_INV_HAND;
 	static const InventorySpriteContext SOLDIER_INV_SLOT;
 	static const InventorySpriteContext SOLDIER_INV_GROUND;
-	static const InventorySpriteContext ALIEN_INV_HAND;
-	static const InventorySpriteContext BATTSCAPE_HAND;
 	static const InventorySpriteContext SOLDIER_INV_AMMO;
 	static const InventorySpriteContext SOLDIER_INV_CURSOR;
+	static const InventorySpriteContext ALIEN_INV_HAND;
+	static const InventorySpriteContext BATTSCAPE_HAND;
+	static const InventorySpriteContext UFOPEDIA_ARTICLE;
 
 	/// returns a copy of the object with the new value or-ed in.
 	InventorySpriteContext with(RenderContext otherContext) const
@@ -87,6 +90,7 @@ inline constexpr InventorySpriteContext InventorySpriteContext::SOLDIER_INV_CURS
 inline constexpr InventorySpriteContext InventorySpriteContext::SOLDIER_INV_AMMO{ RenderContext::SCREEN_INVENTORY, OverlayOptions::DRAW_NONE};
 inline constexpr InventorySpriteContext InventorySpriteContext::ALIEN_INV_HAND{	RenderContext::SCREEN_ALIEN_INV, OverlayOptions::DRAW_NONE};
 inline constexpr InventorySpriteContext InventorySpriteContext::BATTSCAPE_HAND{	RenderContext::SCREEN_BATTSCAPE, static_cast<OverlayOptions>(DRAW_GRENADE | DRAW_AMMO | DRAW_MEDIKIT | DRAW_TWOHAND)};
+inline constexpr InventorySpriteContext InventorySpriteContext::UFOPEDIA_ARTICLE{ RenderContext::SCREEN_UFOPEDIA, OverlayOptions::DRAW_NONE };
 
 /// Namespace for segregating InventorySpriteContext scripting functions.
 namespace InventorySpriteContextScript
@@ -110,9 +114,14 @@ class InventoryItemSprite
 private:
 	/// Worker for pixel level script blitting.
 	ScriptWorkerBlit _scriptWorker{};
-	const BattleItem* _battleItem;
+	/// BattleItem coresponding with this sprite. Null if initialized in a ufopedia context.
+	const BattleItem* _battleItem = nullptr;
+	/// RuleItem coresponding with this sprite. Always initialized.
 	const RuleItem& _ruleItem;
-	const SavedBattleGame* _save;
+	/// SavedBattleGame context the sprite is operating in. Null if initialized in a ufopedia context.
+	const SavedBattleGame* _save = nullptr;
+	/// Mod context the sprite is operating in. Null if initalized in a ufopedia context.
+	const Mod& _mod;
 	/// Surface this item should be draw to.
 	Surface& _target;
 	/// Bounding box for the sprite.
@@ -124,26 +133,40 @@ public:
 	/**
 	 * @brief Creates a new inventory item sprite.
 	 * @param target The surface the item is going to be rendered to.
-	 * @param spriteBounds The bounds of the sprite. Not necessarily equal to target's area.
+	 * @param spriteBounds The bounds of the sprite relative to target.
 	*/
-	InventoryItemSprite(const BattleItem& battleItem, const SavedBattleGame* save, Surface& target, const SDL_Rect& spriteBounds)
-		: _battleItem(&battleItem), _ruleItem(*battleItem.getRules()), _save(save), _target(target), _bounds(spriteBounds) {}
+	InventoryItemSprite(const BattleItem& battleItem, const SavedBattleGame& save, Surface& target, const SDL_Rect& spriteBounds)
+		: _battleItem(&battleItem), _ruleItem(*_battleItem->getRules()), _save(&save), _mod(*_save->getMod()), _target(target), _bounds(spriteBounds) {}
 
 	/**
-	 * @brief Creates a new inventory item sprite. Bounds are assumed to be equal to target's dimensions with x and y of 0, 0.
+	 * @brief Create a new invetory item sprite, without requiring a battle context (for the ufopedia).
 	 * @param target The surface the item is going to be rendered to.
+	 * @param spriteBounds The bounds of the sprite, relative to target.
 	*/
-	InventoryItemSprite(const BattleItem& battleItem, const SavedBattleGame* save, Surface& target)
-		: _battleItem(&battleItem), _ruleItem(*battleItem.getRules()), _save(save), _target(target),
-		  _bounds(SDL_Rect{ 0, 0, static_cast<Uint16>(_target.getWidth()), static_cast<Uint16>(target.getHeight()) }) {}
-	
+	InventoryItemSprite(const RuleItem& ruleItem, const Mod& mod, Surface& target, const SDL_Rect& spriteBounds)
+		: _ruleItem(ruleItem), _mod(mod), _target(target), _bounds(spriteBounds) {}
 
 	/// Draw the sprite, including scripted recolor and blitting.
 	void draw(const SurfaceSet& surfaceSet, InventorySpriteContext context, int animationFrame = 0);
 	/// Draw the hand overlay, which does not include the sprite.
 	void drawHandOverlay(InventorySpriteContext context, int animationFrame = 0);
 
+	/// Gets the bounds for proper display of an inventory sprite relative to it's inventory slot.
+	static SDL_Rect getInvSpriteBounds(const BattleItem& battleItem);
+	/// Gets the bounds for display of an inventory sprite relative to a hand slot (fixed size).
+	static SDL_Rect getHandCenteredSpriteBounds(const BattleItem& battleItem)
+	{
+		return InventoryItemSprite::getHandCenteredSpriteBounds(*battleItem.getRules());
+	}
+	/// Gets the bounds for display of an inventory sprite relative to a hand slot (fixed size).
+	static SDL_Rect getHandCenteredSpriteBounds(const RuleItem& ruleItem);
+	/// Gets the bounds for display of an inventory sprite relative to a ground inventory slot.
+	static SDL_Rect getGroundSlotSpriteBounds(const BattleItem& battleItem, int groundOffset);
+
 private:
+	/// gets the appropriate big item sprite, including scripted replacement.
+	const Surface* getBigSprite(const SurfaceSet* set, const SavedBattleGame* save, int animFrame) const;
+
 	void drawGrenadePrimedIndicator(int animationFrame) const;
 	void drawAmmoIndicator();
 	void drawMedkitIndicator();

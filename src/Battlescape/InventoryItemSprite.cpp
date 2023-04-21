@@ -44,7 +44,7 @@ namespace OpenXcom
 */
 void InventoryItemSprite::draw(const SurfaceSet& surfaceSet, InventorySpriteContext context, int animationFrame)
 {
-	const Surface* sprite = _battleItem->getBigSprite(&surfaceSet, _save, animationFrame);
+	const Surface* sprite = getBigSprite(&surfaceSet, _save, animationFrame);
 
 	if (!sprite)
 	{
@@ -73,6 +73,101 @@ void InventoryItemSprite::drawHandOverlay(InventorySpriteContext context, int an
 	if (context.options & InventorySpriteContext::DRAW_AMMO) { drawAmmoIndicator(); }
 	if (context.options & InventorySpriteContext::DRAW_MEDIKIT) { drawMedkitIndicator(); }
 	if (context.options & InventorySpriteContext::DRAW_TWOHAND) { drawTwoHandIndicator(); }
+}
+
+std::tuple<int, int, Uint16, Uint16> getDimensions(const RuleItem& ruleItem)
+{
+	// item dimensions in inventory units.
+	int invSlotW = ruleItem.getInventoryWidth();
+	int invSlotH = ruleItem.getInventoryHeight();
+
+	// sprite bounding dimensions in pixels.
+	Uint16 itemW = invSlotW * RuleInventory::SLOT_W;
+	Uint16 itemH = invSlotH * RuleInventory::SLOT_H;
+
+	return std::tuple{ invSlotW ,invSlotH, itemW, itemH };
+}
+
+/**
+ * @brief Gets the bounds for proper display of an inventory sprite relative to it's inventory slot.
+ * @param groundOffset the number of inventory units the ground inventory slot is offset.
+ * @return A SDL_Rect describing the sprite's bounds, relative to it's inventory slot.
+*/
+SDL_Rect InventoryItemSprite::getInvSpriteBounds(const BattleItem& battleItem)
+{
+	assert(battleItem.getSlot()->getType() == INV_SLOT && "getInvSpriteBounds called on non-inventory item.");
+	const auto itemRules = battleItem.getRules();
+
+	// sprite bounding dimensions in pixels.
+	Uint16 itemW = itemRules->getInventoryWidth()  * RuleInventory::SLOT_W;
+	Uint16 itemH = itemRules->getInventoryHeight() * RuleInventory::SLOT_H;
+
+	// offset the box by its place in inventory container * slot size.
+	Sint16 itemX = battleItem.getSlotX() * RuleInventory::SLOT_W;
+	Sint16 itemY = battleItem.getSlotY() * RuleInventory::SLOT_H;
+
+	return SDL_Rect{ itemX, itemY, itemW, itemH };
+}
+
+SDL_Rect InventoryItemSprite::getGroundSlotSpriteBounds(const BattleItem& battleItem, int groundOffset)
+{
+	assert(battleItem.getSlot()->getType() == INV_GROUND && "getGroundSlotSpriteBounds called on non-ground item.");
+	const auto itemRules = battleItem.getRules();
+
+	// sprite bounding dimensions in pixels.
+	Uint16 itemW = itemRules->getInventoryWidth()  * RuleInventory::SLOT_W;
+	Uint16 itemH = itemRules->getInventoryHeight() * RuleInventory::SLOT_H;
+
+	// offset the box by place in the ground container, after taking into account the ground offset (in inventory units)
+	Sint16 itemX = (battleItem.getSlotX() - groundOffset) * RuleInventory::SLOT_W;
+	Sint16 itemY = battleItem.getSlotY() * RuleInventory::SLOT_H;
+
+	return SDL_Rect{ itemX, itemY, itemW, itemH };
+}
+
+SDL_Rect InventoryItemSprite::getHandCenteredSpriteBounds(const RuleItem& ruleItem)
+{
+	// no assert, calling this on items not in hand is potentially valid.
+
+	// item dimensions in inventory units.
+	int invSlotW = ruleItem.getInventoryWidth();
+	int invSlotH = ruleItem.getInventoryHeight();
+
+	// sprite bounding dimensions in pixels.
+	Uint16 itemW = invSlotW * RuleInventory::SLOT_W;
+	Uint16 itemH = invSlotH * RuleInventory::SLOT_H;
+
+	// position item by half the difference in item size and hand slot size in order to center.
+	Sint16 itemX = (RuleInventory::HAND_W - invSlotW) * RuleInventory::SLOT_W / 2;
+	Sint16 itemY = (RuleInventory::HAND_H - invSlotH) * RuleInventory::SLOT_H / 2;
+
+	return SDL_Rect{ itemX, itemY, itemW, itemH };
+}
+
+/**
+ * Gets the item's inventory sprite.
+ * @return Return current inventory sprite.
+ */
+const Surface* InventoryItemSprite::getBigSprite(const SurfaceSet* set, const SavedBattleGame* save, int animFrame) const
+{
+	int spriteIndex = _ruleItem.getBigSprite();
+	if (spriteIndex == -1) { return nullptr; }
+
+	const Surface* ruleSurf = set->getFrame(spriteIndex);
+	//enforce compatibility with basic version
+	if (ruleSurf == nullptr)
+	{
+		throw Exception("Image missing in 'BIGOBS.PCK' for item '" + _ruleItem.getType() + "'");
+	}
+
+	spriteIndex = ModScript::scriptFunc2<ModScript::SelectItemSprite>(
+		&_ruleItem,
+		spriteIndex, 0,
+		_battleItem, save, BODYPART_ITEM_INVENTORY, animFrame, 0
+	);
+
+	auto* scriptSurf = set->getFrame(spriteIndex);
+	return scriptSurf != nullptr ? scriptSurf : ruleSurf;
 }
 
 namespace // some short helper functions.
@@ -104,23 +199,6 @@ std::pair<int, int> bottomLeft(const SDL_Rect& bounds, int numW, int numH, int s
 std::pair<int, int> bottomRight(const SDL_Rect& bounds, int numW, int numH, int spacing)
 {
 	return std::pair{bounds.x + bounds.w - numW - spacing, bounds.y + bounds.h - numH - spacing};
-}
-
-/**
- * @brief Gets an element member allowing for the fact that the element or the interface might not exist and return null.
- * @param member pointer to the member of the element we want.
- * @param fallback value to return if the element is not found.
- * @return The member of the element, or fallback if the element was not found.
-*/
-int getInterfaceElementMember(const Mod& mod, const std::string& interfaceName, const std::string& elementName, int Element::* member, int fallback = 0)
-{
-	const auto interface = mod.getInterface(interfaceName);
-	if (interface == nullptr) { return fallback; }
-
-	auto element = interface->getElement(elementName);
-	if (element == nullptr) { return fallback; }
-
-	return element->*member;
 }
 
 } // namespace
@@ -160,7 +238,7 @@ void InventoryItemSprite::drawGrenadePrimedIndicator(int animationFrame) const
 	if (_battleItem->getFuseTimer() < 0) { return; }
 
 	/// TODO: This should be const, but the get methods are not.
-	const Surface* primedIndicator = const_cast<Mod*>(_save->getMod())->getSurfaceSet("SCANG.DAT")->getFrame(6);
+	const Surface* primedIndicator = const_cast<Mod&>(_mod).getSurfaceSet("SCANG.DAT")->getFrame(6);
 	// if the grenade is primed, but without the fuse enabled, it gets a grey indicator. This is used for flares in XCF.
 	int newColor = _battleItem->isFuseEnabled() ? 0 : 32; /// TODO: these colors should be moved to the interface.
 
@@ -169,19 +247,19 @@ void InventoryItemSprite::drawGrenadePrimedIndicator(int animationFrame) const
 
 namespace
 {
-Surface* getCorpseStateIndicator(const SavedBattleGame& save, const BattleUnit& unit) {
+Surface* getCorpseStateIndicator(const SavedBattleGame& save, const Mod& mod, const BattleUnit& unit) {
 	/// TODO: This should be const, but the get methods are not.
-	Mod& mod = const_cast<Mod&>(*save.getMod());
+	Mod& mutableMod = const_cast<Mod&>(*save.getMod());
 	const auto enviro = save.getEnviroEffects();
 
-	if (unit.getFire() > 0) { return mod.getSurface("BigBurnIndicator", false); }
-	if (unit.getFatalWounds() > 0) { return mod.getSurface("BigWoundIndicator", false); }
+	if (unit.getFire() > 0) { return mutableMod.getSurface("BigBurnIndicator", false); }
+	if (unit.getFatalWounds() > 0) { return mutableMod.getSurface("BigWoundIndicator", false); }
 	if (unit.hasNegativeHealthRegen())
 	{
-		return enviro && !enviro->getInventoryShockIndicator().empty() ? mod.getSurface(enviro->getInventoryShockIndicator(), false)
-																	   : mod.getSurface("BigShockIndicator", false);
+		return enviro && !enviro->getInventoryShockIndicator().empty() ? mutableMod.getSurface(enviro->getInventoryShockIndicator(), false)
+																	   : mutableMod.getSurface("BigShockIndicator", false);
 	}
-	return mod.getSurface("BigStunIndicator", false);
+	return mutableMod.getSurface("BigStunIndicator", false);
 }
 }
 
@@ -191,7 +269,7 @@ void InventoryItemSprite::drawCorpseIndicator(int animationFrame) const
 	const auto unit = _battleItem->getUnit();
 	if (!unit || unit->getStatus() != STATUS_UNCONSCIOUS) { return; }
 
-	if (const Surface* corpseStateIndicator = getCorpseStateIndicator(*_save, *unit))
+	if (const Surface* corpseStateIndicator = getCorpseStateIndicator(*_save, _mod, *unit))
 	{
 		corpseStateIndicator->blitNShade(&_target, _bounds.x, _bounds.y, triangleWave(animationFrame, 8, 4));
 	}
@@ -205,15 +283,15 @@ void InventoryItemSprite::drawFatalWoundIndicator()
 	int woundCount = unit->getFatalWounds();
 
 	/// TODO: this element should be replaced with a more descriptively named element.
-	int woundColor = getInterfaceElementMember(*_save->getMod(), "inventory", "numStack", &Element::color2);
+	int woundColor = getInterfaceElementMember(_mod, "inventory", "numStack", &Element::color2).value_or(0);
 
 	drawNumberCorner(bottomRight, 0, woundCount, woundColor, 0, true);
 }
 
 void InventoryItemSprite::drawAmmoIndicator()
 {
-	int ammoColor = _battleItem->getSlot()->isRightHand() ? getInterfaceElementMember(*_save->getMod(), "battlescape", "numAmmoRight", &Element::color) :
-					_battleItem->getSlot()->isLeftHand()  ? getInterfaceElementMember(*_save->getMod(), "battlescape", "numAmmoLeft", &Element::color)
+	int ammoColor = _battleItem->getSlot()->isRightHand() ? getInterfaceElementMember(_mod, "battlescape", "numAmmoRight", &Element::color).value_or(0) :
+					_battleItem->getSlot()->isLeftHand()  ? getInterfaceElementMember(_mod, "battlescape", "numAmmoLeft", &Element::color).value_or(0)
 														  : throw std::logic_error("item in hand with bad hand value.");
 
 	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
@@ -232,8 +310,8 @@ void InventoryItemSprite::drawMedkitIndicator()
 {
 	if (_ruleItem.getBattleType() != BT_MEDIKIT) { return; }
 
-	int medkitColor = _battleItem->getSlot()->isRightHand() ? getInterfaceElementMember(*_save->getMod(), "battlescape", "numMedikitRight", &Element::color) :
-					  _battleItem->getSlot()->isLeftHand()  ? getInterfaceElementMember(*_save->getMod(), "battlescape", "numMedikitLeft", &Element::color)
+	int medkitColor = _battleItem->getSlot()->isRightHand() ? getInterfaceElementMember(_mod, "battlescape", "numMedikitRight", &Element::color).value_or(0) :
+					  _battleItem->getSlot()->isLeftHand()  ? getInterfaceElementMember(_mod, "battlescape", "numMedikitLeft", &Element::color).value_or(0)
 														    : throw std::logic_error("item in hand with bad hand value.");
 
 	drawNumberCorner(bottomLeft, 1, _battleItem->getPainKillerQuantity(), medkitColor, -2);
@@ -245,8 +323,8 @@ void InventoryItemSprite::drawTwoHandIndicator()
 {
 	if (!_ruleItem.isTwoHanded()) { return; }
 
-	int color = _ruleItem.isBlockingBothHands() ? getInterfaceElementMember(*_save->getMod(), "battlescape", "twoHandedRed", &Element::color)
-			  									: getInterfaceElementMember(*_save->getMod(), "battlescape", "twoHandedGreen", &Element::color);
+	int color = _ruleItem.isBlockingBothHands() ? getInterfaceElementMember(_mod, "battlescape", "twoHandedRed", &Element::color).value_or(0)
+			  									: getInterfaceElementMember(_mod, "battlescape", "twoHandedGreen", &Element::color).value_or(0);
 
 	drawNumberCorner(bottomRight, 1, 2, color);
 }

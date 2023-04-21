@@ -1847,8 +1847,8 @@ void BattlescapeState::drawItem(const BattleItem* item, Surface* hand, bool draw
 		const SurfaceSet* surfaceSet = _game->getMod()->getSurfaceSet("BIGOBS.PCK");
 		int animFrame = _save->getAnimFrame();
 
-		InventoryItemSprite(*item, _save, *hand, item->getInvSpriteBounds()).draw(*surfaceSet, InventorySpriteContext::BATTSCAPE_HAND, animFrame);
-		InventoryItemSprite(*item, _save, *hand).drawHandOverlay(InventorySpriteContext::BATTSCAPE_HAND, animFrame);
+		InventoryItemSprite(*item, *_save, *hand, InventoryItemSprite::getHandCenteredSpriteBounds(*item)).draw(*surfaceSet, InventorySpriteContext::BATTSCAPE_HAND, animFrame);
+		InventoryItemSprite(*item, *_save, *hand, SpriteOverlay::getSurfaceBounds(*hand)).drawHandOverlay(InventorySpriteContext::BATTSCAPE_HAND, animFrame);
 	}
 	if (drawReactionIndicator)
 	{
@@ -2046,7 +2046,8 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 				crop.blit(_rank);
 			}
 		}
-		SpriteOverlay(*_rank, _save).draw<ModScript::UnitRankOverlay>(*soldier->getArmor(), battleUnit, soldier, _save->getAnimFrame());
+		auto overlay = SpriteOverlay(*_rank, SpriteOverlay::getSurfaceBounds(*_rank), _save);
+		overlay.draw<ModScript::UnitRankOverlay>(*soldier->getArmor(), battleUnit, _save->getAnimFrame());
 	}
 	else
 	{
@@ -2329,7 +2330,8 @@ void BattlescapeState::animate()
 
 	if(auto unit = _save->getSelectedUnit())
 	{
-		SpriteOverlay(*_rank, _save).draw<ModScript::UnitRankOverlay>(*unit->getArmor(), unit, unit->getGeoscapeSoldier(), _save->getAnimFrame());
+		auto overlay = SpriteOverlay(*_rank, SpriteOverlay::getSurfaceBounds(*_rank), _save);
+		overlay.draw<ModScript::UnitRankOverlay>(*unit->getArmor(), unit, _save->getAnimFrame());
 	}
 	
 

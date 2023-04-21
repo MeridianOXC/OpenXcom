@@ -6214,6 +6214,26 @@ bool Mod::isDemigod() const
 	return _difficultyDemigod;
 }
 
+/**
+ * @brief Gets an element member allowing for the fact that the element or the interface might not exist.
+ * @tparam MemberType The type of the element member desired.
+ * @param member pointer to the member of the element we want.
+ * @param fallback value to return if the element is not found.
+ * @return An optional containing the member of the element if it exists.
+*/
+template <typename MemberType>
+std::optional<MemberType> getInterfaceElementMember(const Mod& mod, const std::string& interfaceName, const std::string& elementName, MemberType Element::* member)
+{
+	static_assert(std::is_same<MemberType, bool>::value || std::is_same<MemberType, int>::value, "Element member type must be bool or int");
+
+	const auto interface = mod.getInterface(interfaceName, false);
+	if (interface == nullptr) { return std::nullopt; }
+
+	const auto element = interface->getElement(elementName);
+	if (element == nullptr) { return std::nullopt; }
+
+	return element->*member;
+}
 
 ////////////////////////////////////////////////////////////
 //					Script binding
@@ -6345,21 +6365,27 @@ void getNamedSpriteScript(const Mod* mod, const Surface*& surface, const std::st
  * @brief Custom method for retrieving an interface element color.
  * @param color Out reference for the color. -1 on error.
 */
-void getInterfaceElementColor(const Mod* mod, int &color, const std::string& interfaceName, const std::string& elementName)
+void getInterfaceElementColorScript(const Mod* mod, int &color, const std::string& interfaceName, const std::string& elementName)
 {
-	auto interface = mod->getInterface(interfaceName);
-	auto element = interface->getElement(elementName);
-	color = (interface && element) ? element->color : -1;
+	color = mod ? getInterfaceElementMember(*mod, interfaceName, elementName, &Element::color).value_or(-1) : -1;
 }
 /**
  * @brief Custom method for retrieving an interface element color2.
  * @param color Out reference for the color. -1 on error.
  */
-void getInterfaceElementColor2(const Mod* mod, int& color, const std::string& interfaceName, const std::string& elementName)
+void getInterfaceElementColor2Script(const Mod* mod, int& color, const std::string& interfaceName, const std::string& elementName)
 {
-	auto interface = mod->getInterface(interfaceName);
-	auto element = interface->getElement(elementName);
-	color = (interface && element) ? element->color2 : -1;
+	color = mod ? getInterfaceElementMember(*mod, interfaceName, elementName, &Element::color2).value_or(-1) : -1;
+}
+
+std::string surfaceDebugDisplayScript(const Surface* surface)
+{
+	if (surface == nullptr) { return "null"; }
+
+	std::ostringstream output;
+	output << " (x:" << surface->getX() << " y:" << surface->getY()
+		   << " w:" << surface->getWidth() << " h:" << surface->getHeight() << ")";
+	return output.str();
 }
 
 } // namespace
@@ -6418,8 +6444,8 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 
 	mod.add<&getSpiteScript>("getSpriteFromSet", "Gets a sprite identified by set name and index from the appropriate store. (sprite set index");
 	mod.add<&getNamedSpriteScript>("getNamedSprite", "Get a sprite identified by a string. (sprite spriteName)");
-	mod.add<&getInterfaceElementColor>("getInterfaceElementColor", "Gets the color of a specific interface element. -1 on error. (color interface element)");
-	mod.add<&getInterfaceElementColor2>("getInterfaceElementColor2", "Gets the color of a specific interface element.  -1 on error. (color interface element)");
+	mod.add<&getInterfaceElementColorScript>("getInterfaceElementColor", "Gets the color of a specific interface element. -1 on error. (color interface element)");
+	mod.add<&getInterfaceElementColor2Script>("getInterfaceElementColor2", "Gets the color of a specific interface element.  -1 on error. (color interface element)");
 
 	mod.addScriptValue<&Mod::_scriptGlobal, &ModScriptGlobal::getScriptValues>();
 }

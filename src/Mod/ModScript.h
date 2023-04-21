@@ -94,11 +94,11 @@ class ModScript
 	{
 		RecolorUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-	struct UnitPaperdollOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleUnit*, const SavedBattleGame*, SpriteOverlay*, const Soldier*, int>
+	struct UnitPaperdollOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleUnit*, const SavedBattleGame*, SpriteOverlay*, int>
 	{
 		UnitPaperdollOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
-	struct UnitRankOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleUnit*, const SavedBattleGame*, SpriteOverlay*, const Soldier*, int>
+	struct UnitRankOverlayParser : ScriptParserEvents<ScriptOutputArgs<>, const BattleUnit*, const SavedBattleGame*, SpriteOverlay*, int>
 	{
 		UnitRankOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};

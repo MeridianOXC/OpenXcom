@@ -166,7 +166,7 @@ void AlienInventory::drawItems() const
 			if (item->getSlot()->getType() != INV_HAND) { continue; }
 
 			const auto handSlot = item->getSlot();
-			SDL_Rect spriteBounds = item->getInvSpriteBounds();
+			SDL_Rect spriteBounds = InventoryItemSprite::getHandCenteredSpriteBounds(*item);
 			spriteBounds.x += handSlot->getX() + _game->getMod()->getAlienInventoryOffsetX();
 			spriteBounds.y += handSlot->getY();
 
@@ -175,7 +175,7 @@ void AlienInventory::drawItems() const
 							   handSlot->isLeftHand()  ? _dynamicOffset  :
 							   throw std::logic_error("Item in hand slot with bad hand value."));
 
-			InventoryItemSprite(*item, save, *_items, spriteBounds).draw(*surfaceSet, InventorySpriteContext::ALIEN_INV_HAND, _animFrame);
+			InventoryItemSprite(*item, *save, *_items, spriteBounds).draw(*surfaceSet, InventorySpriteContext::ALIEN_INV_HAND, _animFrame);
 
 			/// offset for hand overlay
 			auto handSlotBounds = SDL_Rect{
@@ -185,7 +185,7 @@ void AlienInventory::drawItems() const
 				RuleInventory::HAND_SLOT_H-2,
 			};
 			// this should render no default effects, but allows for scripting.
-			InventoryItemSprite(*item, save, *_items, handSlotBounds).drawHandOverlay(InventorySpriteContext::ALIEN_INV_HAND, _animFrame);
+			InventoryItemSprite(*item, *save, *_items, handSlotBounds).drawHandOverlay(InventorySpriteContext::ALIEN_INV_HAND, _animFrame);
 		}
 	}
 }

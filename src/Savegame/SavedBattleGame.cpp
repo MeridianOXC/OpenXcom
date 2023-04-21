@@ -3493,16 +3493,6 @@ void getTileScript(const SavedBattleGame* sbg, const Tile*& t, int x, int y, int
 	}
 }
 
-void getEnvrionmentShockIndicator(const SavedBattleGame* sbg, const Surface*& shockIndicator)
-{
-	/// TODO: Should there be a default environment that sets this?
-	// With scripting there are better ways to handle this in any case (like a tag).
-	auto* enviro = sbg->getEnviroEffects();
-	auto* mod = const_cast<Mod*>(sbg->getMod());
-	shockIndicator = enviro && !enviro->getInventoryShockIndicator().empty() ? mod->getSurface(enviro->getInventoryShockIndicator(), false)
-																			 : mod->getSurface("BigShockIndicator", false);
-}
-
 void setAlienItemLevelScript(SavedBattleGame* sbg, int val)
 {
 	if (sbg)
@@ -3569,8 +3559,6 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.add<&setAlienItemLevelScript>("setAlienItemLevel");
 	sbg.add<&SavedBattleGame::getReinforcementsItemLevel>("getReinforcementsItemLevel");
 	sbg.add<&setReinforcementsItemLevelScript>("setReinforcementsItemLevel");
-
-	sbg.add<&getEnvrionmentShockIndicator>("getEnvrionmentShockIndicator", "Gets the shock indicator appropriate for the environment (IE drowning for underwater), or the default if none.");
 
 	sbg.addPair<SavedGame, &getGeoscapeSaveScript, &getGeoscapeSaveScript>("getGeoscapeGame");
 

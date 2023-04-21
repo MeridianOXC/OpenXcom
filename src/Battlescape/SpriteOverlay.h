@@ -31,19 +31,6 @@ class SavedBattleGame;
 /// Namespace for segregating SpriteOverlay scripting functions.
 namespace SpriteOverlayScript
 {
-void drawNumber(SpriteOverlay* dest, int value, int x, int y, int width, int height, int color);
-void drawText(SpriteOverlay* dest, const std::string& text, int width, int height, int x, int y, int color);
-
-void blit(SpriteOverlay* dest, const Surface* source, int x, int y);
-void blitCrop(SpriteOverlay* dest, const Surface* source, int x1, int y1, int x2, int y2);
-void blitShadeCrop(SpriteOverlay* dest, const Surface* source, int shade, int x, int y, int x1, int y1, int x2, int y2);
-void blitShade(SpriteOverlay* dest, const Surface* source, int x, int y, int shade);
-void blitShadeRecolor(SpriteOverlay* dest, const Surface* source, int x, int y, int shade, int newColor);
-
-void drawLine(SpriteOverlay* dest, int x1, int y1, int x2, int y2, int color);
-void drawRect(SpriteOverlay* dest, int x1, int y1, int x2, int y2, int color);
-void drawCirc(SpriteOverlay* dest, int x, int y, int radius, int color);
-
 std::string debugDisplayScript(const SpriteOverlay* overlay);
 }
 
@@ -70,12 +57,6 @@ public:
 	*/
 	SpriteOverlay(Surface& target, const SDL_Rect& spriteBounds, const SavedBattleGame *save)
 		: _target(target), _bounds(spriteBounds), _save(save) {}
-	/**
-	 * @brief Creates a new InventoryItemSprite should not be stored or persist beyond the local scope.
-	 * @param target The surface the sprite is rendered to. The bounds are infered to be the size of this surface, with a x,y of 0, 0.
-	*/
-	SpriteOverlay(Surface& target, const SavedBattleGame* save)
-		: _target(target), _bounds(SDL_Rect{ 0, 0, static_cast<Uint8>(_target.getWidth()), static_cast<Uint8>(_target.getHeight()) }), _save(save) { }
 
 	// no copy or move.
 	SpriteOverlay(SpriteOverlay&) = delete;
@@ -84,6 +65,10 @@ public:
 	/// Draw the scripted overlay.
 	template<typename Callback, typename Rule, typename Battle, typename Context>
 	void draw(const Rule& rule, const Battle* battle, Context* context, int animationFrame = 0);
+
+	/// Draw the scripted overlay for hooks lacking a context object.
+	template<typename Callback, typename Rule, typename Battle>
+	void draw(const Rule& rule, const Battle* battle, int animationFrame = 0);
 
 	void draw(const RuleItem& ruleItem, const BattleItem* battleItem, InventorySpriteContext* context, int animationFrame);
 
@@ -94,24 +79,31 @@ public:
 	/// Gets the height of this overlay.
 	[[nodiscard]] int getHeight() const { return _bounds.h; }
 
-	friend void SpriteOverlayScript::drawNumber(SpriteOverlay* dest, int value, int x, int y, int width, int height, int color);
-	friend void SpriteOverlayScript::drawText(SpriteOverlay* dest, const std::string& text, int x, int y, int width, int height, int color);
-
-	friend void SpriteOverlayScript::blit(SpriteOverlay* dest, const Surface* source, int x, int y);
-	friend void SpriteOverlayScript::blitCrop(SpriteOverlay* dest, const Surface* source, int x1, int y1, int x2, int y2);
-	friend void SpriteOverlayScript::blitShadeCrop(SpriteOverlay* dest, const Surface* source, int shade, int x, int y, int x1, int y1, int x2, int y2);
-	friend void SpriteOverlayScript::blitShade(SpriteOverlay* dest, const Surface* source, int x, int y, int shade);
-	friend void SpriteOverlayScript::blitShadeRecolor(SpriteOverlay* dest, const Surface* source, int x, int y, int shade, int newColor);
-	friend void SpriteOverlayScript::drawLine(SpriteOverlay* dest, int x1, int y1, int x2, int y2, int color);
-	friend void SpriteOverlayScript::drawRect(SpriteOverlay* dest, int x1, int y1, int x2, int y2, int color);
-	friend void SpriteOverlayScript::drawCirc(SpriteOverlay* dest, int x, int y, int radius, int color);
-
 	friend std::string SpriteOverlayScript::debugDisplayScript(const SpriteOverlay* overlay);
+
+	/// Gets a bounding box based on a surface's size, with the x and y set to 0.
+	static SDL_Rect getSurfaceBounds(const Surface& surface)
+	{
+		return SDL_Rect{ 0, 0, static_cast<Uint16>(surface.getWidth()), static_cast<Uint16>(surface.getHeight()) };
+	}
 
 	/// Name of class used in script.
 	static constexpr const char* ScriptName = "SpriteOverlay";
 	/// Register all useful function used by script.
 	static void ScriptRegister(ScriptParserBase* parser);
+
+private:
+	void drawNumber(int value, int x, int y, int width, int height, int color);
+	void drawText(const std::string& text, int x, int y, int width, int height, int color);
+
+	void blit(const Surface* source, int x, int y);
+	void blitCrop(const Surface* source, int x1, int y1, int x2, int y2);
+	void blitShadeCrop(const Surface* source, int shade, int x, int y, int x1, int y1, int x2, int y2);
+	void blitShade(const Surface* source, int x, int y, int shade);
+	void blitShadeRecolor(const Surface* source, int x, int y, int shade, int newColor);
+	void drawLine(int x1, int y1, int x2, int y2, int color);
+	void drawRect(int x1, int y1, int x2, int y2, int color);
+	void drawCirc(int x, int y, int radius, int color);
 };
 
 }

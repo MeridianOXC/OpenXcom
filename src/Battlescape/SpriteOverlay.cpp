@@ -29,10 +29,23 @@ void SpriteOverlay::draw(const Rule& rule, const Battle* battle, Context* contex
 	ModScript::scriptCallback<Callback>(&rule, battle, _save, this, context, animationFrame);
 }
 
+/**
+ * @brief Draws a scripted sprite overlay for hooks lacking a context.
+ * @tparam Battle The battlescape instance of the object associated with this script.
+ * @tparam Callback The ModScript struct to use when calling this script
+ * @tparam Rule The rule object associated with the object this script targets.
+ * @param animationFrame The current animation frame. Defaults to 0.
+*/
+template<typename Callback, typename Rule, typename Battle>
+void SpriteOverlay::draw(const Rule& rule, const Battle* battle, int animationFrame)
+{
+	ModScript::scriptCallback<Callback>(&rule, battle, _save, this, animationFrame);
+}
+
 /// Draw the paperdoll overlay.
-template void SpriteOverlay::draw<ModScript::UnitPaperdollOverlay>(const Armor& armor, const BattleUnit* unit, Soldier* soldier, int animationFrame);
+template void SpriteOverlay::draw<ModScript::UnitPaperdollOverlay>(const Armor& armor, const BattleUnit* unit, int animationFrame);
 /// Draw the unitRank overlay.
-template void SpriteOverlay::draw<ModScript::UnitRankOverlay>(const Armor& armor, const BattleUnit* unit, Soldier* soldier, int animationFrame);
+template void SpriteOverlay::draw<ModScript::UnitRankOverlay>(const Armor& armor, const BattleUnit* unit, int animationFrame);
 
 /**
  * @brief Draws an overlay for an inventory sprite/bigobj.
@@ -48,96 +61,91 @@ void SpriteOverlay::draw(const RuleItem& ruleItem, const BattleItem* battleItem,
 	}
 };
 
-//// Script binding
-namespace SpriteOverlayScript {
-
 /// Draws a number on the surface the sprite targets.
-void drawNumber(SpriteOverlay* dest, int value, int x, int y, int width, int height, int color)
+void SpriteOverlay::drawNumber(int value, int x, int y, int width, int height, int color)
 {
-	dest->_numberRender.clear();
-	dest->_numberRender.setX(dest->_bounds.x + x);
-	dest->_numberRender.setY(dest->_bounds.y + y);
+	_numberRender.clear();
+	_numberRender.setX(_bounds.x + x);
+	_numberRender.setY(_bounds.y + y);
 
 	// avoid resizing if possible.
-	if (width > dest->_numberRender.getWidth()) { dest->_numberRender.setWidth(width); }
-	if (height != dest->_numberRender.getHeight()) { dest->_numberRender.setWidth(height); }
+	if (width > _numberRender.getWidth()) { _numberRender.setWidth(width); }
+	if (height != _numberRender.getHeight()) { _numberRender.setWidth(height); }
 
-	dest->_numberRender.setPalette(dest->_target.getPalette());
-	dest->_numberRender.setColor(static_cast<Uint8>(color));  
-	dest->_numberRender.setBordered(false);
-	dest->_numberRender.setValue(value);
-	dest->_numberRender.blit(dest->_target.getSurface());
+	_numberRender.setPalette(_target.getPalette());
+	_numberRender.setColor(static_cast<Uint8>(color));  
+	_numberRender.setBordered(false);
+	_numberRender.setValue(value);
+	_numberRender.blit(_target.getSurface());
 }
 
 /// Draws text on on the surface the sprite targets.
-void drawText(SpriteOverlay* dest, const std::string& text, int x, int y, int width, int height, int color)
+void SpriteOverlay::drawText(const std::string& text, int x, int y, int width, int height, int color)
 {
-	auto surfaceText = Text(width, height, dest->_bounds.x + x, dest->_bounds.y + y);
-	surfaceText.setPalette(dest->_target.getPalette());
+	auto surfaceText = Text(width, height, _bounds.x + x, _bounds.y + y);
+	surfaceText.setPalette(_target.getPalette());
 	auto temp = Language(); // note getting the selected language is tough here, and might not even be what is wanted.
-	const auto mod = dest->_save->getMod();
+	const auto mod = _save->getMod();
 	surfaceText.initText(mod->getFont("FONT_BIG"), mod->getFont("FONT_SMALL"), &temp);
 	surfaceText.setSmall();
 	surfaceText.setColor(color);
 	surfaceText.setText(text);
-	surfaceText.blit(dest->_target.getSurface());
+	surfaceText.blit(_target.getSurface());
 }
 
 
-void blit(SpriteOverlay* dest, const Surface* source, int x, int y)
+void SpriteOverlay::blit(const Surface* source, int x, int y)
 {
-	source->blitNShade(&dest->_target, dest->_bounds.x + x, dest->_bounds.y + y, 0, false, 0);
+	source->blitNShade(&_target, _bounds.x + x, _bounds.y + y, 0, false, 0);
 }
 
-void blitCrop(SpriteOverlay* dest, const Surface* source, int x1, int y1, int x2, int y2)
+void SpriteOverlay::blitCrop(const Surface* source, int x1, int y1, int x2, int y2)
 {
-	const auto crop = GraphSubset({dest->_bounds.x + x1, dest->_bounds.x + x2}, {dest->_bounds.y + y1, dest->_bounds.y + y2});
-	source->blitNShade(&dest->_target, dest->_bounds.x, dest->_bounds.y, 0, crop);
+	const auto crop = GraphSubset({_bounds.x + x1, _bounds.x + x2}, {_bounds.y + y1, _bounds.y + y2});
+	source->blitNShade(&_target, _bounds.x, _bounds.y, 0, crop);
 }
 
-void blitShadeCrop(SpriteOverlay* dest, const Surface* source, int shade, int x, int y, int x1, int y1, int x2, int y2)
+void SpriteOverlay::blitShadeCrop(const Surface* source, int shade, int x, int y, int x1, int y1, int x2, int y2)
 {
 	const auto crop = GraphSubset({x1, x2}, {y1, y2});
-	source->blitNShade(&dest->_target, dest->_bounds.x + x, dest->_bounds.y + y, shade, crop);
+	source->blitNShade(&_target, _bounds.x + x, _bounds.y + y, shade, crop);
 }
 
-void blitShade(SpriteOverlay* dest, const Surface* source, int x, int y, int shade)
+void SpriteOverlay::blitShade(const Surface* source, int x, int y, int shade)
 {
-	source->blitNShade(&dest->_target, dest->_bounds.x + x, dest->_bounds.y + y, shade, false, 0);
+	source->blitNShade(&_target, _bounds.x + x, _bounds.y + y, shade, false, 0);
 }
 
-void blitShadeRecolor(SpriteOverlay* dest, const Surface* source, int x, int y, int shade, int newColor)
+void SpriteOverlay::blitShadeRecolor(const Surface* source, int x, int y, int shade, int newColor)
 {
-	source->blitNShade(&dest->_target, dest->_bounds.x, dest->_bounds.y, shade, false, newColor);
+	source->blitNShade(&_target, _bounds.x, _bounds.y, shade, false, newColor);
 }
 
-void drawLine(SpriteOverlay* dest, int x1, int y1, int x2, int y2, int color)
+void SpriteOverlay::drawLine(int x1, int y1, int x2, int y2, int color)
 {
-	dest->_target.drawLine(dest->_bounds.x + x1, dest->_bounds.y + y1, dest->_bounds.x + x2, dest->_bounds.y + y2, color);
+	_target.drawLine(_bounds.x + x1, _bounds.y + y1, _bounds.x + x2, _bounds.y + y2, color);
 }
 
-void drawRect(SpriteOverlay* dest, int x1, int y1, int x2, int y2, int color)
+void SpriteOverlay::drawRect(int x1, int y1, int x2, int y2, int color)
 {
-	dest->_target.drawRect(dest->_bounds.x + x1, dest->_bounds.y + y1, dest->_bounds.x + x2, dest->_bounds.y + y2, color);
+	_target.drawRect(_bounds.x + x1, _bounds.y + y1, _bounds.x + x2, _bounds.y + y2, color);
 }
 
-void drawCirc(SpriteOverlay* dest, int x, int y, int radius, int color)
+void SpriteOverlay::drawCirc(int x, int y, int radius, int color)
 {
-	dest->_target.drawCircle(dest->_bounds.x + x, dest->_bounds.y + y, radius, color);
+	_target.drawCircle(_bounds.x + x, _bounds.y + y, radius, color);
 }
+
+//// Script binding
+namespace SpriteOverlayScript {
 
 std::string debugDisplayScript(const SpriteOverlay* overlay)
 {
-	if (overlay)
-	{
-		std::ostringstream output;
-		output << " (x:" << overlay->_bounds.x << " y:" << overlay->_bounds.y << " w:" << overlay->_bounds.w << " h:" << overlay->_bounds.h << ")";
-		return output.str();
-	}
-	else
-	{
-		return "null";
-	}
+	if (overlay == nullptr) { return "null"; }
+
+	std::ostringstream output;
+	output << " (x:" << overlay->_bounds.x << " y:" << overlay->_bounds.y << " w:" << overlay->_bounds.w << " h:" << overlay->_bounds.h << ")";
+	return output.str();
 }
 
 } // SpriteOverlayScript
@@ -146,17 +154,17 @@ void SpriteOverlay::ScriptRegister(ScriptParserBase* parser)
 {
 	Bind<SpriteOverlay> spriteOverlayBinder = { parser };
 
-	spriteOverlayBinder.add<&SpriteOverlayScript::blit>("blit", "Blits a sprite onto the overlay. (sprite x y)");
-	spriteOverlayBinder.add<&SpriteOverlayScript::blitCrop>("blitCrop", "Blits a sprite onto the overlay with a crop. (sprite x y cropX1 cropY1 cropX2 cropY2)");
-	spriteOverlayBinder.add<&SpriteOverlayScript::blitShade>("blitShade", "Blits and shades a sprite onto the overlay. (sprite x y shade)");
-	spriteOverlayBinder.add<&SpriteOverlayScript::blitShadeRecolor>("blitShadeRecolor", "Blits, shades, and recolors a sprite onto the overlay. (sprite x y shade color)");
+	spriteOverlayBinder.add<&SpriteOverlay::blit>("blit", "Blits a sprite onto the overlay. (sprite x y)");
+	spriteOverlayBinder.add<&SpriteOverlay::blitCrop>("blitCrop", "Blits a sprite onto the overlay with a crop. (sprite x y cropX1 cropY1 cropX2 cropY2)");
+	spriteOverlayBinder.add<&SpriteOverlay::blitShade>("blitShade", "Blits and shades a sprite onto the overlay. (sprite x y shade)");
+	spriteOverlayBinder.add<&SpriteOverlay::blitShadeRecolor>("blitShadeRecolor", "Blits, shades, and recolors a sprite onto the overlay. (sprite x y shade color)");
 
-	spriteOverlayBinder.add<&SpriteOverlayScript::drawNumber>("drawNumber", "Draws number on the overlay. (number x y width height color)");
-	spriteOverlayBinder.add<&SpriteOverlayScript::drawText>("drawText", "Draws text on the overlay. (text x y width height color");
+	spriteOverlayBinder.add<&SpriteOverlay::drawNumber>("drawNumber", "Draws number on the overlay. (number x y width height color)");
+	spriteOverlayBinder.add<&SpriteOverlay::drawText>("drawText", "Draws text on the overlay. (text x y width height color");
 
-	spriteOverlayBinder.add<&SpriteOverlayScript::drawLine>("drawLine", "Draws a line on the overlay. (x1 y1 x2 y2 color)");
-	spriteOverlayBinder.add<&SpriteOverlayScript::drawRect>("drawRect", "Draws a rectangle on the overlay. (x1 y1 x2 y2 color)");
-	spriteOverlayBinder.add<&SpriteOverlayScript::drawCirc>("drawCirc", "Draws a circle on the overlay. (x y radius color)");
+	spriteOverlayBinder.add<&SpriteOverlay::drawLine>("drawLine", "Draws a line on the overlay. (x1 y1 x2 y2 color)");
+	spriteOverlayBinder.add<&SpriteOverlay::drawRect>("drawRect", "Draws a rectangle on the overlay. (x1 y1 x2 y2 color)");
+	spriteOverlayBinder.add<&SpriteOverlay::drawCirc>("drawCirc", "Draws a circle on the overlay. (x y radius color)");
 
 	spriteOverlayBinder.add<&SpriteOverlay::getWidth>("getWidth", "Gets the width of this overlay.");
 	spriteOverlayBinder.add<&SpriteOverlay::getHeight>("getHeight", "Gets the height of this overlay.");
@@ -192,7 +200,7 @@ ModScript::HandOverlayParser::HandOverlayParser(ScriptGlobal* shared, const std:
  * Constructor of hand overlay script parser.
  */
 ModScript::UnitPaperdollOverlayParser::UnitPaperdollOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod)
-	: ScriptParserEvents{ shared, name, "unit", "battle_game", "overlay", "soldier", "anim_frame" }
+	: ScriptParserEvents{ shared, name, "unit", "battle_game", "overlay", "anim_frame" }
 {
 	BindBase bindBase{ this };
 	bindBase.addCustomPtr<const Mod>("rules", mod);
@@ -202,7 +210,7 @@ ModScript::UnitPaperdollOverlayParser::UnitPaperdollOverlayParser(ScriptGlobal* 
  * Constructor of hand overlay script parser.
  */
 ModScript::UnitRankOverlayParser::UnitRankOverlayParser(ScriptGlobal* shared, const std::string& name, Mod* mod)
-	: ScriptParserEvents{ shared, name, "unit", "battle_game", "overlay", "soldier", "anim_frame" }
+	: ScriptParserEvents{ shared, name, "unit", "battle_game", "overlay", "anim_frame" }
 {
 	BindBase bindBase{ this };
 	bindBase.addCustomPtr<const Mod>("rules", mod);

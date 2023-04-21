@@ -5848,7 +5848,7 @@ void setFireScript(BattleUnit *bu, int val)
 
 void getStatusScript(const BattleUnit* bu, int& status)
 {
-	status = bu ? bu->getStatus() : status;
+	status = bu ? bu->getStatus() : 0;
 }
 
 void getVisibleUnitsCountScript(BattleUnit *bu, int &ret)
