@@ -21,11 +21,13 @@
 #include <algorithm>
 #include "Ufopaedia.h"
 #include "ArticleStateItem.h"
+#include "../Battlescape/InventoryItemSprite.h"
 #include "../Mod/Mod.h"
 #include "../Mod/ArticleDefinition.h"
 #include "../Mod/RuleItem.h"
 #include "../Engine/Game.h"
 #include "../Engine/Surface.h"
+#include "../Engine/SurfaceSet.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Unicode.h"
 #include "../Interface/Text.h"
@@ -177,8 +179,9 @@ namespace OpenXcom
 		_image = new Surface(32, 48, 157, 5);
 		add(_image);
 
-		item->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _image);
-
+		const auto& mod = *_game->getMod();
+		auto itemSprite = InventoryItemSprite(*item, mod, *_image, InventoryItemSprite::getHandCenteredSpriteBounds(*item));
+		itemSprite.draw(*const_cast<Mod&>(mod).getSurfaceSet("BIGOBS.PCK"), InventorySpriteContext::UFOPEDIA_ARTICLE);
 
 		int ammoSlot = defs->getAmmoSlotForPage(_state->current_page);
 		int ammoSlotPrevUsage = defs->getAmmoSlotPrevUsageForPage(_state->current_page);
@@ -381,7 +384,9 @@ namespace OpenXcom
 
 							addAmmoDamagePower(currShow, type);
 
-							type->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _imageAmmo[currShow]);
+							const auto& mod = *_game->getMod();
+							auto itemSprite = InventoryItemSprite(*type, mod, *_imageAmmo[currShow], InventoryItemSprite::getHandCenteredSpriteBounds(*type));
+							itemSprite.draw(*const_cast<Mod&>(mod).getSurfaceSet("BIGOBS.PCK"), InventorySpriteContext::UFOPEDIA_ARTICLE);
 
 							++currShow;
 							if (currShow == maxShow)

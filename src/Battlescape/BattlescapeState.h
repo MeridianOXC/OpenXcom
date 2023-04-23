@@ -71,9 +71,6 @@ private:
 	WarningMessage *_warning;
 	Text *_txtName;
 	NumberText *_numTimeUnits, *_numEnergy, *_numHealth, *_numMorale, *_numLayers;
-	std::vector<NumberText*> _numAmmoLeft, _numAmmoRight;
-	std::vector<NumberText*> _numMedikitLeft, _numMedikitRight;
-	NumberText *_numTwoHandedIndicatorLeft, *_numTwoHandedIndicatorRight;
 	Uint8 _twoHandedRed, _twoHandedGreen;
 	Bar *_barTimeUnits, *_barEnergy, *_barHealth, *_barMorale, *_barMana;
 	bool _manaBarVisible;
@@ -103,7 +100,7 @@ private:
 	/// Shifts the red colors of the visible unit buttons backgrounds.
 	void blinkVisibleUnitButtons();
 	/// Draw hand item with ammo number.
-	void drawItem(BattleItem *item, Surface *hand, std::vector<NumberText*> &ammoText, std::vector<NumberText*> &medikitText, NumberText *twoHandedText, bool drawReactionIndicator);
+	void drawItem(const BattleItem *item, Surface *hand, bool drawReactionIndicator) const;
 	/// Draw both hands sprites.
 	void drawHandsItems();
 	/// Shifts the colors of the health bar when unit has fatal wounds.

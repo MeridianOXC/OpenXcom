@@ -147,8 +147,6 @@ public:
 	bool occupiesSlot(int x, int y, BattleItem *item = 0) const;
 	/// Gets the item's floor sprite.
 	const Surface *getFloorSprite(const SurfaceSet *set, const SavedBattleGame *save, int animFrame, int shade) const;
-	/// Gets the item's inventory sprite.
-	const Surface *getBigSprite(const SurfaceSet *set, const SavedBattleGame *save, int animFrame) const;
 
 	/// Check if item can use any ammo.
 	bool isWeaponWithAmmo() const;

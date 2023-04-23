@@ -449,6 +449,7 @@
     <ClCompile Include="Interface\TextList.cpp" />
     <ClCompile Include="Interface\ToggleTextButton.cpp" />
     <ClCompile Include="Interface\Window.cpp" />
+    <ClCompile Include="Battlescape\InventoryItemSprite.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="md5.cpp" />
@@ -582,6 +583,7 @@
     <ClCompile Include="Savegame\Vehicle.cpp" />
     <ClCompile Include="Savegame\Waypoint.cpp" />
     <ClCompile Include="Savegame\WeightedOptions.cpp" />
+    <ClCompile Include="Battlescape\SpriteOverlay.cpp" />
     <ClCompile Include="Ufopaedia\ArticleState.cpp" />
     <ClCompile Include="Ufopaedia\ArticleStateArmor.cpp" />
     <ClCompile Include="Ufopaedia\ArticleStateBaseFacility.cpp" />
@@ -846,6 +848,7 @@
     <ClInclude Include="Interface\TextList.h" />
     <ClInclude Include="Interface\ToggleTextButton.h" />
     <ClInclude Include="Interface\Window.h" />
+    <ClInclude Include="Battlescape\InventoryItemSprite.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="Menu\AbandonGameState.h" />
@@ -984,6 +987,7 @@
     <ClInclude Include="Savegame\Vehicle.h" />
     <ClInclude Include="Savegame\Waypoint.h" />
     <ClInclude Include="Savegame\WeightedOptions.h" />
+    <ClInclude Include="Battlescape\SpriteOverlay.h" />
     <ClInclude Include="Ufopaedia\ArticleState.h" />
     <ClInclude Include="Ufopaedia\ArticleStateArmor.h" />
     <ClInclude Include="Ufopaedia\ArticleStateBaseFacility.h" />

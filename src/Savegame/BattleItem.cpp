@@ -707,41 +707,6 @@ const Surface *BattleItem::getFloorSprite(const SurfaceSet *set, const SavedBatt
 }
 
 /**
- * Gets the item's inventory sprite.
- * @return Return current inventory sprite.
- */
-const Surface *BattleItem::getBigSprite(const SurfaceSet *set, const SavedBattleGame *save, int animFrame) const
-{
-	int i = _rules->getBigSprite();
-	if (i != -1)
-	{
-		const Surface *surf = set->getFrame(i);
-		//enforce compatibility with basic version
-		if (surf == nullptr)
-		{
-			throw Exception("Image missing in 'BIGOBS.PCK' for item '" + _rules->getType() + "'");
-		}
-
-		i = ModScript::scriptFunc2<ModScript::SelectItemSprite>(
-			_rules,
-			i, 0,
-			this, save, BODYPART_ITEM_INVENTORY, animFrame, 0
-		);
-
-		auto* newSurf = set->getFrame(i);
-		if (newSurf == nullptr)
-		{
-			newSurf = surf;
-		}
-		return newSurf;
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
-/**
  * Check if item use any ammo.
  * @return True if item accept ammo.
  */
@@ -1509,6 +1474,7 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 
 	bi.addRules<RuleItem, &BattleItem::getRules>("getRuleItem");
 	bi.addPair<BattleUnit, &BattleItem::getUnit, &BattleItem::getUnit>("getBattleUnit");
+	bi.add<&BattleItem::isAmmoVisibleForSlot>("isAmmoVisibleForSlot", "Shows if ammo for a given slot is visible or not. (result slot)");
 	bi.addFunc<getAmmoItemScript>("getAmmoItem");
 	bi.addFunc<getAmmoItemConstScript>("getAmmoItem");
 	bi.addFunc<getAmmoForSlotScript>("getAmmoForSlot");

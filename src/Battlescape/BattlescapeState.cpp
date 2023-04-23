@@ -31,6 +31,8 @@
 #include "UnitInfoState.h"
 #include "InventoryState.h"
 #include "AlienInventoryState.h"
+#include "InventoryItemSprite.h"
+#include "SpriteOverlay.h"
 #include "Pathfinding.h"
 #include "BattlescapeGame.h"
 #include "WarningMessage.h"
@@ -165,22 +167,6 @@ BattlescapeState::BattlescapeState() :
 	_btnZeroTUs = new BattlescapeButton(10, 23, x + 49, y + 33);
 	_btnLeftHandItem = new InteractiveSurface(32, 48, x + 8, y + 4);
 	_btnRightHandItem = new InteractiveSurface(32, 48, x + 280, y + 4);
-	_numAmmoLeft.reserve(RuleItem::AmmoSlotMax);
-	_numAmmoRight.reserve(RuleItem::AmmoSlotMax);
-	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
-	{
-		_numAmmoLeft.push_back(new NumberText(30, 5, x + 8, y + 4 + 6 * slot));
-		_numAmmoRight.push_back(new NumberText(30, 5, x + 280, y + 4 + 6 * slot));
-	}
-	_numMedikitLeft.reserve(RuleItem::MedikitSlots);
-	_numMedikitRight.reserve(RuleItem::MedikitSlots);
-	for (int slot = 0; slot < RuleItem::MedikitSlots; ++slot)
-	{
-		_numMedikitLeft.push_back(new NumberText(30, 5, x + 9, y + 32 + 7 * slot));
-		_numMedikitRight.push_back(new NumberText(30, 5, x + 281, y + 32 + 7 * slot));
-	}
-	_numTwoHandedIndicatorLeft = new NumberText(10, 5, x + 36, y + 46);
-	_numTwoHandedIndicatorRight = new NumberText(10, 5, x + 308, y + 46);
 	const int visibleUnitX = _game->getMod()->getInterface("battlescape")->getElement("visibleUnits")->x;
 	const int visibleUnitY = _game->getMod()->getInterface("battlescape")->getElement("visibleUnits")->y;
 	for (int i = 0; i < VISIBLE_MAX; ++i)
@@ -359,18 +345,6 @@ BattlescapeState::BattlescapeState() :
 	add(_btnZeroTUs, "buttonZeroTUs", "battlescape", _icons);
 	add(_btnLeftHandItem, "buttonLeftHand", "battlescape", _icons);
 	add(_btnRightHandItem, "buttonRightHand", "battlescape", _icons);
-	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
-	{
-		add(_numAmmoLeft[slot], "numAmmoLeft", "battlescape", _icons);
-		add(_numAmmoRight[slot], "numAmmoRight", "battlescape", _icons);
-	}
-	for (int slot = 0; slot < RuleItem::MedikitSlots; ++slot)
-	{
-		add(_numMedikitLeft[slot], "numMedikitLeft", "battlescape", _icons);
-		add(_numMedikitRight[slot], "numMedikitRight", "battlescape", _icons);
-	}
-	add(_numTwoHandedIndicatorLeft, "numTwoHandedIndicatorLeft", "battlescape", _icons);
-	add(_numTwoHandedIndicatorRight, "numTwoHandedIndicatorRight", "battlescape", _icons);
 	for (int i = 0; i < VISIBLE_MAX; ++i)
 	{
 		add(_btnVisibleUnit[i]);
@@ -415,19 +389,6 @@ BattlescapeState::BattlescapeState() :
 
 	_numLayers->setColor(Palette::blockOffset(1)-2);
 	_numLayers->setValue(1);
-
-	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
-	{
-		_numAmmoLeft[slot]->setValue(999);
-		_numAmmoRight[slot]->setValue(999);
-	}
-	for (int slot = 0; slot < RuleItem::MedikitSlots; ++slot)
-	{
-		_numMedikitLeft[slot]->setValue(999);
-		_numMedikitRight[slot]->setValue(999);
-	}
-	_numTwoHandedIndicatorLeft->setValue(2);
-	_numTwoHandedIndicatorRight->setValue(2);
 
 	_icons->onMouseIn((ActionHandler)&BattlescapeState::mouseInIcons);
 	_icons->onMouseOut((ActionHandler)&BattlescapeState::mouseOutIcons);
@@ -1876,72 +1837,19 @@ bool BattlescapeState::playableUnitSelected()
 }
 
 /**
- * Draw hand item with ammo number.
+ * Draw hand item inventory sprite and reaction indicator.
  */
-void BattlescapeState::drawItem(BattleItem* item, Surface* hand, std::vector<NumberText*> &ammoText, std::vector<NumberText*> &medikitText, NumberText *twoHandedText, bool drawReactionIndicator)
+void BattlescapeState::drawItem(const BattleItem* item, Surface* hand, bool drawReactionIndicator) const
 {
 	hand->clear();
-	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
-	{
-		ammoText[slot]->setVisible(false);
-	}
-	for (int slot = 0; slot < RuleItem::MedikitSlots; ++slot)
-	{
-		medikitText[slot]->setVisible(false);
-	}
-	twoHandedText->setVisible(false);
+
 	if (item)
 	{
-		const RuleItem *rule = item->getRules();
-		rule->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), hand, item, _save, _save->getAnimFrame());
-		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
-		{
-			if (item->isAmmoVisibleForSlot(slot))
-			{
-				BattleItem* ammo = item->getAmmoForSlot(slot);
-				if (!ammo)
-				{
-					ammoText[slot]->setVisible(true);
-					ammoText[slot]->setValue(0);
-				}
-				else
-				{
-					ammoText[slot]->setVisible(true);
-					ammoText[slot]->setValue(ammo->getAmmoQuantity());
-				}
-			}
-		}
-		twoHandedText->setVisible(rule->isTwoHanded());
-		twoHandedText->setColor(rule->isBlockingBothHands() ? _twoHandedRed : _twoHandedGreen);
-		if (rule->getBattleType() == BT_MEDIKIT)
-		{
-			medikitText[0]->setVisible(true);
-			medikitText[0]->setValue(item->getPainKillerQuantity());
-			medikitText[1]->setVisible(true);
-			medikitText[1]->setValue(item->getStimulantQuantity());
-			medikitText[2]->setVisible(true);
-			medikitText[2]->setValue(item->getHealQuantity());
-		}
+		const SurfaceSet* surfaceSet = _game->getMod()->getSurfaceSet("BIGOBS.PCK");
+		int animFrame = _save->getAnimFrame();
 
-		// primed grenade indicator (static)
-		/*
-		if (item->getFuseTimer() >= 0)
-		{
-			Surface *tempSurface = _game->getMod()->getSurfaceSet("SCANG.DAT")->getFrame(6);
-			tempSurface->setX((RuleInventory::HAND_W - rule->getInventoryWidth()) * RuleInventory::SLOT_W / 2);
-			tempSurface->setY((RuleInventory::HAND_H - rule->getInventoryHeight()) * RuleInventory::SLOT_H / 2);
-			tempSurface->blit(hand);
-		}
-		*/
-		// primed grenade indicator (animated)
-		if (item->getFuseTimer() >= 0)
-		{
-			const int Pulsate[8] = { 0, 1, 2, 3, 4, 3, 2, 1 };
-			Surface *tempSurface = _game->getMod()->getSurfaceSet("SCANG.DAT")->getFrame(6);
-			int x = (RuleInventory::HAND_W - rule->getInventoryWidth()) * RuleInventory::SLOT_W / 2;
-			int y = (RuleInventory::HAND_H - rule->getInventoryHeight()) * RuleInventory::SLOT_H / 2;
-			tempSurface->blitNShade(hand, x, y, Pulsate[_save->getAnimFrame() % 8], false, item->isFuseEnabled() ? 0 : 32);
-		}
+		InventoryItemSprite(*item, *_save, *hand, InventoryItemSprite::getHandCenteredSpriteBounds(*item)).draw(*surfaceSet, InventorySpriteContext::BATTSCAPE_HAND, animFrame);
+		InventoryItemSprite(*item, *_save, *hand, SpriteOverlay::getSurfaceBounds(*hand)).drawHandOverlay(InventorySpriteContext::BATTSCAPE_HAND, animFrame);
 	}
 	if (drawReactionIndicator)
 	{
@@ -1989,8 +1897,8 @@ void BattlescapeState::drawHandsItems()
 			}
 		}
 	}
-	drawItem(leftHandItem, _btnLeftHandItem, _numAmmoLeft, _numMedikitLeft, _numTwoHandedIndicatorLeft, left);
-	drawItem(rightHandItem, _btnRightHandItem, _numAmmoRight, _numMedikitRight, _numTwoHandedIndicatorRight, right);
+	drawItem(leftHandItem, _btnLeftHandItem, left);
+	drawItem(rightHandItem, _btnRightHandItem, right);
 }
 
 /**
@@ -2139,6 +2047,8 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 				crop.blit(_rank);
 			}
 		}
+		auto overlay = SpriteOverlay(*_rank, SpriteOverlay::getSurfaceBounds(*_rank), _save);
+		overlay.draw<ModScript::UnitRankOverlay>(*soldier->getArmor(), battleUnit, _save->getAnimFrame());
 	}
 	else
 	{
@@ -2418,6 +2328,13 @@ void BattlescapeState::animate()
 
 	blinkVisibleUnitButtons();
 	blinkHealthBar();
+
+	if(auto unit = _save->getSelectedUnit())
+	{
+		auto overlay = SpriteOverlay(*_rank, SpriteOverlay::getSurfaceBounds(*_rank), _save);
+		overlay.draw<ModScript::UnitRankOverlay>(*unit->getArmor(), unit, _save->getAnimFrame());
+	}
+	
 
 	if (!_map->getProjectile())
 	{

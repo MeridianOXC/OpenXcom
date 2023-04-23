@@ -5859,6 +5859,10 @@ void setFireScript(BattleUnit *bu, int val)
 	}
 }
 
+void getStatusScript(const BattleUnit* bu, int& status)
+{
+	status = bu ? bu->getStatus() : 0;
+}
 
 void getVisibleUnitsCountScript(BattleUnit *bu, int &ret)
 {
@@ -6155,6 +6159,7 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&BattleUnit::getAggression>("getAggression");
 	bu.add<&BattleUnit::getTurretDirection>("getTurretDirection");
 	bu.add<&BattleUnit::getWalkingPhase>("getWalkingPhase");
+	bu.add<&BattleUnit::indicatorsAreEnabled>("indicatorsAreEnabled", "Checks if indicators are enabled.");
 	bu.add<&BattleUnit::disableIndicators>("disableIndicators");
 
 	bu.add<&BattleUnit::getVisible>("isVisible");
@@ -6201,10 +6206,11 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_morale, 0, 100>>("setMorale");
 	bu.add<&addBaseStatRangeScript<&BattleUnit::_morale, 0, 100>>("addMorale");
 
+	bu.add<&getStatusScript>("getStatus", "Gets the units current status (STATUS_UNCONSCIOUS, STATUS_DEAD...)");
 
 	bu.add<&BattleUnit::getFire>("getFire");
 	bu.add<&setFireScript>("setFire");
-
+	bu.add<&BattleUnit::hasNegativeHealthRegen>("hasNegativeHealthRegen", "Is the unit's health regeneration negative (in shock)?");
 
 	bu.add<&setArmorValueScript>("setArmor", "first arg is side, second one is new value of armor");
 	bu.add<&addArmorValueScript>("addArmor", "first arg is side, second one is value to add to armor");
@@ -6219,9 +6225,7 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	UnitStats::addGetStatsScript<&BattleUnit::_stats>(bu, "Stats.");
 	UnitStats::addSetStatsWithCurrScript<&BattleUnit::_stats, &BattleUnit::_tu, &BattleUnit::_energy, &BattleUnit::_health, &BattleUnit::_mana>(bu, "Stats.");
-
 	UnitStats::addGetStatsScript<&BattleUnit::_exp>(bu, "Exp.", true);
-
 
 	bu.add<&getMovmentTypeScript>("getMovmentType", BindBase::functionInvisible); //old bugged name
 	bu.add<&getMovmentTypeScript>("getMovementType", "get move type of unit");
@@ -6309,6 +6313,17 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.addCustomConst("COLOR_X1_SILVER", 14);
 	bu.addCustomConst("COLOR_X1_SPECIAL", 15);
 
+	bu.addCustomConst("STATUS_STANDING", STATUS_STANDING);
+	bu.addCustomConst("STATUS_WALKING", STATUS_WALKING);
+	bu.addCustomConst("STATUS_FLYING", STATUS_FLYING);
+	bu.addCustomConst("STATUS_TURNING", STATUS_TURNING);
+	bu.addCustomConst("STATUS_AIMING", STATUS_AIMING);
+	bu.addCustomConst("STATUS_COLLAPSING", STATUS_COLLAPSING);
+	bu.addCustomConst("STATUS_DEAD", STATUS_DEAD);
+	bu.addCustomConst("STATUS_UNCONSCIOUS", STATUS_UNCONSCIOUS);
+	bu.addCustomConst("STATUS_PANICKING", STATUS_PANICKING);
+	bu.addCustomConst("STATUS_BERSERK", STATUS_BERSERK);
+	bu.addCustomConst("STATUS_IGNORE_ME", STATUS_IGNORE_ME);
 
 	bu.addCustomConst("LOOK_BLONDE", LOOK_BLONDE);
 	bu.addCustomConst("LOOK_BROWNHAIR", LOOK_BROWNHAIR);

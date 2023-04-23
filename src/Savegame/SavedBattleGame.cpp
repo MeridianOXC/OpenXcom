@@ -1944,7 +1944,7 @@ BattleItem *SavedBattleGame::createItemForUnit(const RuleItem *rule, BattleUnit 
 	{
 		return nullptr;
 	}
-
+	
 	BattleItem *item = new BattleItem(rule, getCurrentItemId());
 	if (!unit->addItem(item, _rule, false, fixedWeapon, fixedWeapon))
 	{
@@ -3541,7 +3541,7 @@ std::string debugDisplayScript(const SavedBattleGame* p)
 } // namespace
 
 /**
- * Register Armor in script parser.
+ * Register Save Battle Game in script parser.
  * @param parser Script parser.
  */
 void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)

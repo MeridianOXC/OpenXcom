@@ -1701,50 +1701,6 @@ int RuleItem::getSpecialChance() const
 {
 	return _specialChance;
 }
-/**
- * Draws and centers the hand sprite on a surface
- * according to its dimensions.
- * @param texture Pointer to the surface set to get the sprite from.
- * @param surface Pointer to the surface to draw to.
- */
-void RuleItem::drawHandSprite(const SurfaceSet *texture, Surface *surface, const BattleItem *item, const SavedBattleGame *save, int animFrame) const
-{
-	//TODO: split this function to one using only `this` and another using only `item`
-	const Surface *frame = nullptr;
-	if (item)
-	{
-		frame = item->getBigSprite(texture, save, animFrame);
-		if (frame)
-		{
-			ScriptWorkerBlit scr;
-			BattleItem::ScriptFill(&scr, item, save, BODYPART_ITEM_INVENTORY, animFrame, 0);
-			scr.executeBlit(frame, surface, this->getHandSpriteOffX(), this->getHandSpriteOffY(), 0);
-		}
-	}
-	else
-	{
-		frame = texture->getFrame(this->getBigSprite());
-		frame->blitNShade(surface, this->getHandSpriteOffX(), this->getHandSpriteOffY());
-	}
-}
-
-/**
- * item's hand spite x offset
- * @return x offset
- */
-int RuleItem::getHandSpriteOffX() const
-{
-	return (RuleInventory::HAND_W - getInventoryWidth()) * RuleInventory::SLOT_W/2;
-}
-
-/**
- * item's hand spite y offset
- * @return y offset
- */
-int RuleItem::getHandSpriteOffY() const
-{
-	return (RuleInventory::HAND_H - getInventoryHeight()) * RuleInventory::SLOT_H/2;
-}
 
 /**
  * Gets the heal quantity of the item.
@@ -2643,6 +2599,16 @@ void getBattleTypeScript(const RuleItem *ri, int &ret)
 	ret = (int)BT_NONE;
 }
 
+void getMedikitTypeScript(const RuleItem* ri, int& ret)
+{
+	if (ri)
+	{
+		ret = static_cast<int>(ri->getMediKitType());
+		return;
+	}
+	ret = -1;
+}
+
 void isSingleTargetScript(const RuleItem* r, int &ret)
 {
 	if (r)
@@ -2801,6 +2767,11 @@ void RuleItem::ScriptRegister(ScriptParserBase* parser)
 	ri.addCustomConst("BT_FLARE", BT_FLARE);
 	ri.addCustomConst("BT_CORPSE", BT_CORPSE);
 
+	ri.addCustomConst("BMT_NORMAL", BMT_NORMAL);
+	ri.addCustomConst("BMT_HEAL", BMT_HEAL);
+	ri.addCustomConst("BMT_PAINKILER", BMT_PAINKILLER);
+	ri.addCustomConst("BMT_STIMULANT", BMT_STIMULANT);
+
 	ri.add<&getTypeScript>("getType");
 
 	ri.add<&RuleItem::getAccuracyAimed>("getAccuracyAimed");
@@ -2819,6 +2790,14 @@ void RuleItem::ScriptRegister(ScriptParserBase* parser)
 
 	ri.add<&RuleItem::getArmor>("getArmorValue");
 	ri.add<&RuleItem::getWeight>("getWeight");
+	ri.add<&RuleItem::getClipSize>("getClipSize");
+	ri.add<&getMedikitTypeScript>("getMediKitType", "Gets the the medikit type. WARNING: BMT_NORMAL if not a medikit.");
+	ri.add<&RuleItem::getHealQuantity>("getMaxHealQuantity", "Gets the default number of heal charges.");
+	ri.add<&RuleItem::getPainKillerQuantity>("getMaxPainKillerQuantity", "Gets the default number of painkiller charges.");
+	ri.add<&RuleItem::getStimulantQuantity>("getMaxStimulantQuantity", "Gets the default number of stim charges.");
+	ri.add<&RuleItem::getInventoryWidth>("getInvWidth", "Gets an items inventory width.");
+	ri.add<&RuleItem::getInventoryHeight>("getInvHeight", "Gets an items inventory height.");
+	ri.add<&RuleItem::getBigSprite>("getBigSpriteIndex", "Gets the index of the BIGOBS sprite used to display this item (without scripting).");
 	ri.add<&getBattleTypeScript>("getBattleType");
 	ri.add<&RuleItem::getWaypoints>("getWaypoints");
 	ri.add<&RuleItem::isWaterOnly>("isWaterOnly");

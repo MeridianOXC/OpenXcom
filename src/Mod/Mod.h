@@ -24,6 +24,7 @@
 #include <bitset>
 #include <array>
 #include <SDL.h>
+#include <optional>
 #include <yaml-cpp/yaml.h>
 #include "../Engine/Options.h"
 #include "../Engine/FileMap.h"
@@ -88,6 +89,7 @@ class ExtraStrings;
 class RuleCommendations;
 class StatString;
 class RuleInterface;
+struct Element;
 class RuleGlobe;
 class RuleConverter;
 class SoundDefinition;
@@ -1106,5 +1108,9 @@ public:
 	const std::vector<int>& getAliensFacingCraftOdds() { return _aliensFacingCraftOdds; }
 
 };
+
+/// Gets an element member allowing for the fact that the element or the interface might not exist.
+template <typename MemberType>
+std::optional<MemberType> getInterfaceElementMember(const Mod& mod, const std::string& interfaceName, const std::string& elementName, MemberType Element::* member);
 
 }
