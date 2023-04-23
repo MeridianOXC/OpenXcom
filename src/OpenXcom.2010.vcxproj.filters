@@ -1133,6 +1133,12 @@
     <ClCompile Include="Savegame\RankCount.cpp">
       <Filter>Savegame</Filter>
     </ClCompile>
+    <ClCompile Include="Battlescape\InventoryItemSprite.cpp">
+      <Filter>Battlescape</Filter>
+    </ClCompile>
+    <ClCompile Include="Battlescape\SpriteOverlay.cpp">
+      <Filter>Battlescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2326,6 +2332,12 @@
     </ClInclude>
     <ClInclude Include="Savegame\RankCount.h">
       <Filter>Savegame</Filter>
+    </ClInclude>
+    <ClInclude Include="Battlescape\InventoryItemSprite.h">
+      <Filter>Battlescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Battlescape\SpriteOverlay.h">
+      <Filter>Battlescape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

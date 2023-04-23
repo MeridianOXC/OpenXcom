@@ -91,6 +91,7 @@ set ( battlescape_src
   Battlescape/InfoboxOKState.cpp
   Battlescape/InfoboxState.cpp
   Battlescape/Inventory.cpp
+  Battlescape/InventoryItemSprite.cpp
   Battlescape/InventoryLoadState.cpp
   Battlescape/InventoryPersonalState.cpp
   Battlescape/InventorySaveState.cpp
@@ -115,6 +116,7 @@ set ( battlescape_src
   Battlescape/ScannerState.cpp
   Battlescape/ScannerView.cpp
   Battlescape/SkillMenuState.cpp
+  Battlescape/SpriteOverlay.cpp
   Battlescape/TileEngine.cpp
   Battlescape/TurnDiaryState.cpp
   Battlescape/UnitDieBState.cpp
