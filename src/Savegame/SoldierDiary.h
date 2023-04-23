@@ -97,13 +97,13 @@ public:
 	/// Update the diary statistics.
 	void updateDiary(BattleUnitStatistics*, std::vector<MissionStatistics*>*, Mod*);
 	/// Get the list of kills, mapped by rank.
-	std::map<std::string, int> getAlienRankTotal();
+	std::map<std::string, int> getAlienRankTotal() const;
 	/// Get the list of kills, mapped by race.
-	std::map<std::string, int> getAlienRaceTotal();
+	std::map<std::string, int> getAlienRaceTotal() const;
 	/// Get the list of kills, mapped by weapon used.
-	std::map<std::string, int> getWeaponTotal();
+	std::map<std::string, int> getWeaponTotal() const;
 	/// Get the list of kills, mapped by weapon ammo used.
-	std::map<std::string, int> getWeaponAmmoTotal();
+	std::map<std::string, int> getWeaponAmmoTotal() const;
 	/// Get the list of missions, mapped by region.
 	std::map<std::string, int> getRegionTotal(std::vector<MissionStatistics*>*) const;
 	/// Get the list of missions, mapped by country.
@@ -138,6 +138,7 @@ public:
 	int getMonthsService() const;
 	/// Get the mission id list.
 	std::vector<int> &getMissionIdList();
+	const std::vector<int>& getMissionIdList() const;
 	/// Get the kill list.
 	std::vector<BattleUnitKills*> &getKills();
 	/// Award special commendation to the original 8 soldiers.

@@ -209,7 +209,7 @@ void MissionSite::setTexture(int texture)
  * Gets the mission site's associated city, if any.
  * @return String ID for the city, "" if none.
  */
-std::string MissionSite::getCity() const
+const std::string& MissionSite::getCity() const
 {
 	return _city;
 }

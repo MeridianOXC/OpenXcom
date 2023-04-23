@@ -636,6 +636,10 @@ std::vector<int> &SoldierDiary::getMissionIdList()
 {
 	return _missionIdList;
 }
+const std::vector<int>& SoldierDiary::getMissionIdList() const
+{
+	return _missionIdList;
+}
 
 /**
  * Get vector of kills.
@@ -650,7 +654,7 @@ std::vector<BattleUnitKills*> &SoldierDiary::getKills()
  * Get list of kills sorted by rank
  * @return
  */
-std::map<std::string, int> SoldierDiary::getAlienRankTotal()
+std::map<std::string, int> SoldierDiary::getAlienRankTotal() const
 {
 	std::map<std::string, int> list;
 	for (const auto* buk : _killList)
@@ -663,7 +667,7 @@ std::map<std::string, int> SoldierDiary::getAlienRankTotal()
 /**
  *
  */
-std::map<std::string, int> SoldierDiary::getAlienRaceTotal()
+std::map<std::string, int> SoldierDiary::getAlienRaceTotal() const
 {
 	std::map<std::string, int> list;
 	for (const auto* buk : _killList)
@@ -676,7 +680,7 @@ std::map<std::string, int> SoldierDiary::getAlienRaceTotal()
 /**
  *
  */
-std::map<std::string, int> SoldierDiary::getWeaponTotal()
+std::map<std::string, int> SoldierDiary::getWeaponTotal() const
 {
 	std::map<std::string, int> list;
 	for (const auto* buk : _killList)
@@ -690,7 +694,7 @@ std::map<std::string, int> SoldierDiary::getWeaponTotal()
 /**
  *
  */
-std::map<std::string, int> SoldierDiary::getWeaponAmmoTotal()
+std::map<std::string, int> SoldierDiary::getWeaponAmmoTotal() const
 {
 	std::map<std::string, int> list;
 	for (const auto* buk : _killList)

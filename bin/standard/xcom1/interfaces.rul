@@ -852,6 +852,10 @@ interfaces:
       - id: text2
         color: 239   # bright green
         color2: 133  # minty green
+      - id: list
+        color: 133   # minty green
+        color2: 138  # yellow
+        border: 239  # bright green
       - id: button
         color: 239   # bright green
   - type: graphs

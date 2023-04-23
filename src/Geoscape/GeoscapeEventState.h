@@ -23,6 +23,8 @@ namespace OpenXcom
 {
 
 class TextButton;
+class TextList;
+class ToggleTextButton;
 class Window;
 class Text;
 class RuleEvent;
@@ -35,7 +37,10 @@ class GeoscapeEventState : public State
 private:
 	Window *_window;
 	Text *_txtTitle, *_txtMessage;
+	Text *_txtItem, *_txtQuantity;
 	TextButton *_btnOk;
+	ToggleTextButton *_btnItemsArriving;
+	TextList *_lstTransfers;
 
 	std::string _researchName;
 	std::string _bonusResearchName;
@@ -52,6 +57,8 @@ public:
 	void init() override;
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
+	/// Handler for clicking the ItemsArriving button.
+	void btnItemsArrivingClick(Action *action);
 };
 
 }

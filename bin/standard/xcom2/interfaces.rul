@@ -879,6 +879,10 @@ interfaces: #done
       - id: text2
         color: 1
         color2: 239
+      - id: list
+        color: 239
+        color2: 244
+        border: 1
       - id: button
         color: 1
   - type: graphs

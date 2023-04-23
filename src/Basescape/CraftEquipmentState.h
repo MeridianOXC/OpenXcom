@@ -59,6 +59,7 @@ private:
 	Uint8 _ammoColor;
 	bool _reload;
 	bool _returningFromGlobalTemplates;
+	bool _returningFromInventory;
 	bool _firstInit;
 	bool _isNewBattle;
 	/// Updates quantities of item.

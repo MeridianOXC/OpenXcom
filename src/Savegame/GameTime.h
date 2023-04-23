@@ -72,6 +72,8 @@ public:
 	std::string getMonthString() const;
 	/// Gets the ingame year.
 	int getYear() const;
+	// Gets a string version of the ingame date and time.
+	std::string getFullString() const;
 	/// Gets the position of the daylight according to the ingame time.
 	double getDaylight() const;
 };

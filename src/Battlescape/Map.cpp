@@ -130,6 +130,11 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	{
 		_transparencies = &_game->getMod()->getLUTs()->at(_save->getDepth());
 	}
+	else
+	{
+		const static std::vector<Uint8> dummy;
+		_transparencies = &dummy;
+	}
 
 	_spriteWidth = _game->getMod()->getSurfaceSet("BLANKS.PCK")->getFrame(0)->getWidth();
 	_spriteHeight = _game->getMod()->getSurfaceSet("BLANKS.PCK")->getFrame(0)->getHeight();

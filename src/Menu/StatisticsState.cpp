@@ -178,9 +178,9 @@ void StatisticsState::listStats()
 	int daysWounded = 0, longestMonths = 0;
 	int shotsFired = 0, shotsLanded = 0;
 	std::map<std::string, int> weaponKills, alienKills;
-	for (auto* soldier : allSoldiers)
+	for (const auto* soldier : allSoldiers)
 	{
-		SoldierDiary *diary = soldier->getDiary();
+		const SoldierDiary *diary = soldier->getDiary();
 		aliensKilled += diary->getKillTotal();
 		aliensCaptured += diary->getStunTotal();
 		daysWounded += diary->getDaysWoundedTotal();

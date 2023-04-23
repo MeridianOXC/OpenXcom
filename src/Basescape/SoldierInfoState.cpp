@@ -382,8 +382,8 @@ void SoldierInfoState::init()
 	_soldier = _list->at(_soldierId);
 	_edtSoldier->setBig();
 	_edtSoldier->setText(_soldier->getName());
-	UnitStats *initial = _soldier->getInitStats();
-	UnitStats *current = _soldier->getCurrentStats();
+	const UnitStats *initial = _soldier->getInitStats();
+	const UnitStats *current = _soldier->getCurrentStats();
 	const UnitStats max = _soldier->getRules()->getStatCaps();
 
 	bool hasBonus = _soldier->prepareStatsWithBonuses(_game->getMod()); // refresh all bonuses

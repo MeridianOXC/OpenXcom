@@ -21,6 +21,7 @@
 #include <vector>
 #include <unordered_map>
 #include <yaml-cpp/yaml.h>
+#include "LoadYaml.h"
 #include "RuleStatBonus.h"
 #include "RuleDamageType.h"
 #include "ModScript.h"
@@ -137,15 +138,15 @@ struct RuleItemUseCost
 	 */
 	void loadCost(const YAML::Node& node, const std::string& name)
 	{
-		loadInt(Time, node["tu" + name]);
+		loadIntNullable(Time, node["tu" + name]);
 		if (const YAML::Node& cost = node["cost" + name])
 		{
-			loadInt(Time, cost["time"]);
-			loadInt(Energy, cost["energy"]);
-			loadInt(Morale, cost["morale"]);
-			loadInt(Health, cost["health"]);
-			loadInt(Stun, cost["stun"]);
-			loadInt(Mana, cost["mana"]);
+			loadIntNullable(Time, cost["time"]);
+			loadIntNullable(Energy, cost["energy"]);
+			loadIntNullable(Morale, cost["morale"]);
+			loadIntNullable(Health, cost["health"]);
+			loadIntNullable(Stun, cost["stun"]);
+			loadIntNullable(Mana, cost["mana"]);
 		}
 	}
 
@@ -161,56 +162,16 @@ struct RuleItemUseCost
 		{
 			if (cost.IsScalar())
 			{
-				loadTriBool(Time, cost);
+				loadBoolNullable(Time, cost);
 			}
 			else
 			{
-				loadTriBool(Time, cost["time"]);
-				loadTriBool(Energy, cost["energy"]);
-				loadTriBool(Morale, cost["morale"]);
-				loadTriBool(Health, cost["health"]);
-				loadTriBool(Stun, cost["stun"]);
-				loadTriBool(Mana, cost["mana"]);
-			}
-		}
-	}
-
-	/**
-	 * Load nullable bool value and store it in int (with null as -1).
-	 * @param a value to set.
-	 * @param node YAML node.
-	 */
-	void loadTriBool(int& a, const YAML::Node& node) const
-	{
-		if (node)
-		{
-			if (node.IsNull())
-			{
-				a = -1;
-			}
-			else
-			{
-				a = node.as<bool>();
-			}
-		}
-	}
-
-	/**
-	 * Load nullable int (with null as -1).
-	 * @param a value to set.
-	 * @param node YAML node.
-	 */
-	void loadInt(int& a, const YAML::Node& node) const
-	{
-		if (node)
-		{
-			if (node.IsNull())
-			{
-				a = -1;
-			}
-			else
-			{
-				a = node.as<int>();
+				loadBoolNullable(Time, cost["time"]);
+				loadBoolNullable(Energy, cost["energy"]);
+				loadBoolNullable(Morale, cost["morale"]);
+				loadBoolNullable(Health, cost["health"]);
+				loadBoolNullable(Stun, cost["stun"]);
+				loadBoolNullable(Mana, cost["mana"]);
 			}
 		}
 	}
@@ -317,6 +278,7 @@ public:
 	static void loadAmmoSlotChecked(int& result, const YAML::Node& node, const std::string& parentName);
 
 private:
+	std::string _ufopediaType;
 	std::string _type, _name, _nameAsAmmo; // two types of objects can have the same name
 	std::string _requiresBuyCountry;
 	std::vector<std::string> _requiresName;
@@ -400,11 +362,17 @@ private:
 	int _manaExperience;
 	int _listOrder, _maxRange, _minRange, _dropoff, _bulletSpeed, _explosionSpeed, _shotgunPellets;
 	int _shotgunBehaviorType, _shotgunSpread, _shotgunChoke;
+
 	std::map<std::string, std::string> _zombieUnitByArmorMale, _zombieUnitByArmorFemale, _zombieUnitByType;
 	std::string _zombieUnit, _spawnUnitName, _spawnItemName;
 	const Unit* _spawnUnit = nullptr;
 	const RuleItem* _spawnItem = nullptr;
-	int _spawnUnitFaction;
+	UnitFaction _spawnUnitFaction;
+	UnitFaction _zombieUnitFaction;
+	int _spawnUnitChance = -1;
+	int _zombieUnitChance = -1;
+	int _spawnItemChance = -1;
+
 	int _targetMatrix;
 	bool _LOSRequired, _underwaterOnly, _landOnly, _psiReqiured, _manaRequired;
 	int _meleePower, _specialType, _vaporColor, _vaporDensity, _vaporProbability;
@@ -419,12 +387,6 @@ private:
 
 	/// Get final value of cost.
 	RuleItemUseCost getDefault(const RuleItemUseCost& a, const RuleItemUseCost& b) const;
-	/// Load bool as int from yaml.
-	void loadBool(bool& a, const YAML::Node& node) const;
-	/// Load bool as int from yaml.
-	void loadTriBool(int& a, const YAML::Node& node) const;
-	/// Load int from yaml.
-	void loadInt(int& a, const YAML::Node& node) const;
 	/// Load RuleItemUseCost from yaml.
 	void loadCost(RuleItemUseCost& a, const YAML::Node& node, const std::string& name) const;
 	/// Load RuleItemUseCost as bool from yaml.
@@ -452,6 +414,9 @@ public:
 	void load(const YAML::Node& node, Mod *mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
+
+	/// Gets the custom name of the Ufopedia article related to this item.
+	const std::string& getUfopediaType() const;
 
 	/// Gets the item's type.
 	const std::string &getType() const;
@@ -885,13 +850,22 @@ public:
 	const std::map<std::string, std::string> &getZombieUnitByArmorMaleRaw() const { return _zombieUnitByArmorMale; }
 	const std::map<std::string, std::string> &getZombieUnitByArmorFemaleRaw() const { return _zombieUnitByArmorFemale; }
 	const std::map<std::string, std::string> &getZombieUnitByTypeRaw() const { return _zombieUnitByType; }
+	/// Gets which faction the spawned unit should have.
+	UnitFaction getZombieUnitFaction() const { return _zombieUnitFaction; }
+	/// Gets chance for zombie transformation on attack.
+	int getZombieUnitChance() const { return _zombieUnitChance != -1 ? _zombieUnitChance : _specialChance; }
 
 	/// Gets the weapon's spawn unit.
 	const Unit* getSpawnUnit() const { return _spawnUnit; }
 	/// Gets which faction the spawned unit should have.
-	int getSpawnUnitFaction() const { return _spawnUnitFaction; }
+	UnitFaction getSpawnUnitFaction() const { return _spawnUnitFaction; }
+	/// Gets chance for unit spawn on attack.
+	int getSpawnUnitChance() const { return _spawnUnitChance != -1 ? _spawnUnitChance : _specialChance; }
+
 	/// Gets the weapon's spawn item.
 	const RuleItem* getSpawnItem() const { return _spawnItem; }
+	/// Gets chance for item spawn on attack.
+	int getSpawnItemChance() const { return _spawnItemChance != -1 ? _spawnItemChance : _specialChance; }
 
 	/// Checks if this item can be used to target a given faction.
 	bool isTargetAllowed(UnitFaction targetFaction) const;

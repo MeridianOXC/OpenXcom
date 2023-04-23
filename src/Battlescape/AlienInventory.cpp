@@ -257,7 +257,7 @@ void AlienInventory::mouseClick(Action *action, State *state)
 				BattleItem *item = _selUnit->getItem(slot, x, y);
 				if (item != 0)
 				{
-					std::string articleId = item->getRules()->getType();
+					std::string articleId = item->getRules()->getUfopediaType();
 					Ufopaedia::openArticle(_game, articleId);
 				}
 			}

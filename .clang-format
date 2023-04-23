@@ -7,6 +7,6 @@
 	TabWidth: 4,
 	BreakBeforeBraces: Allman,
 	FixNamespaceComments: false,
-	PointerAlignment: Right,
+	PointerAlignment: Left,
 #	EmptyLineAfterAccessModifier: Never,
 }

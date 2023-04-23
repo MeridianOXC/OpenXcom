@@ -18,6 +18,7 @@
  */
 #include "GameTime.h"
 #include "../Engine/Language.h"
+#include <iomanip>
 
 namespace OpenXcom
 {
@@ -259,6 +260,18 @@ std::string GameTime::getMonthString() const
 int GameTime::getYear() const
 {
 	return _year;
+}
+
+/**
+ * Returns a string version of the ingame date and time.
+ * @return Game date and time string.
+ */
+std::string GameTime::getFullString() const
+{
+	std::ostringstream ss;
+	ss << _year << "-" << std::setfill('0') << std::setw(2) << _month << "-" << std::setw(2) << _day;
+	ss << " " << std::setw(2) << _hour << ":" << std::setw(2) << _minute << ":" << std::setw(2) << _second;
+	return ss.str();
 }
 
 /**

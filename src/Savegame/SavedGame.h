@@ -125,6 +125,7 @@ private:
 	bool _ironman;
 	GameTime *_time;
 	std::vector<std::string> _userNotes;
+	std::vector<std::string> _geoscapeDebugLog;
 	std::vector<int> _researchScores;
 	std::vector<int64_t> _funds, _maintenance, _incomes, _expenditures;
 	double _globeLon, _globeLat;
@@ -347,7 +348,7 @@ public:
 	/// Checks how many soldiers of a rank exist and which one has the highest score.
 	Soldier *inspectSoldiers(std::vector<Soldier*> &soldiers, std::vector<Soldier*> &participants, int rank);
 	/// Gets the (approximate) number of idle days since the soldier's last mission.
-	int getSoldierIdleDays(Soldier *soldier);
+	int getSoldierIdleDays(const Soldier *soldier);
 	///  Returns the list of alien bases.
 	std::vector<AlienBase*> *getAlienBases();
 	/// Sets debug mode.
@@ -506,6 +507,8 @@ public:
 	void handlePrimaryResearchSideEffects(const std::vector<const RuleResearch*> &topicsToCheck, const Mod* mod, Base* base);
 	/// Gets the list of user notes.
 	std::vector<std::string>& getUserNotes() { return _userNotes; }
+	/// Gets the list of geoscape debug log entries.
+	std::vector<std::string>& getGeoscapeDebugLog() { return _geoscapeDebugLog; }
 };
 
 }

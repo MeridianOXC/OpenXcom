@@ -896,7 +896,7 @@ void Soldier::addStunCount(int count)
 /**
  * Get pointer to initial stats.
  */
-UnitStats *Soldier::getInitStats()
+const UnitStats* Soldier::getInitStats() const
 {
 	return &_initialStats;
 }
@@ -904,7 +904,11 @@ UnitStats *Soldier::getInitStats()
 /**
  * Get pointer to current stats.
  */
-UnitStats *Soldier::getCurrentStats()
+UnitStats *Soldier::getCurrentStatsEditable()
+{
+	return &_currentStats;
+}
+const UnitStats* Soldier::getCurrentStats() const
 {
 	return &_currentStats;
 }
@@ -1511,6 +1515,10 @@ void Soldier::clearEquipmentLayout()
  * @return Diary.
  */
 SoldierDiary *Soldier::getDiary()
+{
+	return _diary;
+}
+const SoldierDiary* Soldier::getDiary() const
 {
 	return _diary;
 }

@@ -1901,7 +1901,7 @@ void DebriefingState::prepareDebriefing()
 			// recover items from the craft floor
 			for (int i = 0; i < battle->getMapSizeXYZ(); ++i)
 			{
-				if (battle->getTile(i)->getMapData(O_FLOOR) && (battle->getTile(i)->getMapData(O_FLOOR)->getSpecialType() == START_POINT))
+				if (battle->getTile(i)->getFloorSpecialTileType() == START_POINT)
 					recoverItems(battle->getTile(i)->getInventory(), base);
 			}
 		}

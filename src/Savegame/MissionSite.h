@@ -78,7 +78,7 @@ public:
 	/// Sets the mission site's texture.
 	void setTexture(int texture);
 	/// Gets the mission site's city.
-	std::string getCity() const;
+	const std::string& getCity() const;
 	/// Sets the mission site's city.
 	void setCity(const std::string &city);
 	/// Gets the mission site's detection state.

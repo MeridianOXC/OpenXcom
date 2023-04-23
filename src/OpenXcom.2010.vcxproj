@@ -913,6 +913,7 @@
     <ClInclude Include="Mod\ExtraStrings.h" />
     <ClInclude Include="Mod\RuleMissionScript.h" />
     <ClInclude Include="Mod\Texture.h" />
+    <ClInclude Include="Mod\LoadYaml.h" />
     <ClInclude Include="Mod\MapBlock.h" />
     <ClInclude Include="Mod\MapDataSet.h" />
     <ClInclude Include="Mod\MapData.h" />

@@ -48,7 +48,7 @@ namespace OpenXcom
 {
 
 AlienMission::AlienMission(const RuleAlienMission &rule) : _rule(rule), _nextWave(0), _nextUfoCounter(0), _spawnCountdown(0), _liveUfos(0),
-	_interrupted(false), _multiUfoRetaliationInProgress(false), _uniqueID(0), _missionSiteZone(-1), _base(0)
+	_interrupted(false), _multiUfoRetaliationInProgress(false), _uniqueID(0), _missionSiteZoneArea(-1), _base(0)
 {
 	// Empty by design.
 }
@@ -106,7 +106,7 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 		}
 		_base = *found;
 	}
-	_missionSiteZone = node["missionSiteZone"].as<int>(_missionSiteZone);
+	_missionSiteZoneArea = node["missionSiteZone"].as<int>(_missionSiteZoneArea);
 
 	// fix invalid saves
 	RuleRegion* region = mod->getRegion(_region, false);
@@ -114,9 +114,9 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 	{
 		Log(LOG_ERROR) << "Corrupted save: Mission with uniqueID: " << _uniqueID << " has an invalid region: " << _region;
 		_interrupted = true;
-		if (_missionSiteZone > -1)
+		if (_missionSiteZoneArea > -1)
 		{
-			_missionSiteZone = 0;
+			_missionSiteZoneArea = 0;
 		}
 		_region = mod->getRegionsList().front();
 		if (_liveUfos > 0)
@@ -166,7 +166,7 @@ YAML::Node AlienMission::save() const
 	{
 		node["alienBase"] = _base->saveId();
 	}
-	node["missionSiteZone"] = _missionSiteZone;
+	node["missionSiteZone"] = _missionSiteZoneArea;
 	return node;
 }
 
@@ -225,7 +225,7 @@ void AlienMission::think(Game &engine, const Globe &globe)
 	{
 		RuleRegion* regionRules = mod.getRegion(_region, true);
 		std::vector<MissionArea> areas = regionRules->getMissionZones().at((_rule.getSpawnZone() == -1) ? trajectory.getZone(0) : _rule.getSpawnZone()).areas;
-		MissionArea area = areas.at((_missionSiteZone == -1) ? RNG::generate(0, areas.size() - 1) : _missionSiteZone);
+		MissionArea area = areas.at((_missionSiteZoneArea == -1) ? RNG::generate(0, areas.size() - 1) : _missionSiteZoneArea);
 
 		if (wave.objectiveOnXcomBase)
 		{
@@ -363,7 +363,7 @@ void AlienMission::think(Game &engine, const Globe &globe)
 			_nextWave = 0;
 		}
 	}
-	if (_rule.getObjective() == OBJECTIVE_BASE && _nextWave == _rule.getWaveCount())
+	if (_rule.getObjective() == OBJECTIVE_BASE && _nextWave == _rule.getWaveCount() && !wave.objectiveOnTheLandingSite)
 	{
 		RuleRegion *region = mod.getRegion(_region, true);
 		std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getSpawnZone()).areas;
@@ -481,6 +481,27 @@ Base* AlienMission::selectXcomBase(SavedGame& game, const RuleRegion& regionRule
  */
 Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe, const MissionWave &wave, const UfoTrajectory &trajectory)
 {
+	auto logUfo = [](Ufo* u, SavedGame& g, AlienMission* a)
+	{
+		if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+		{
+			std::ostringstream ss;
+			ss << "gameTime: " << g.getTime()->getFullString();
+			ss << " ufoId: " << u->getUniqueId();
+			ss << " ufoType: " << u->getRules()->getType();
+			ss << " race: " << u->getAlienRace();
+			ss << " region: " << a->getRegion();
+			ss << " trajectory: " << u->getTrajectory().getID();
+			if (u->isHunterKiller())
+			{
+				ss << " hk: true";
+			}
+			ss << " missionId: " << a->getId();
+			ss << " missionType: " << a->getRules().getType();
+			g.getGeoscapeDebugLog().push_back(ss.str());
+		}
+	};
+
 	RuleUfo *ufoRule = mod.getUfo(wave.ufoType);
 	int hunterKillerPercentage = wave.hunterKillerPercentage;
 	if (hunterKillerPercentage == -1 && ufoRule)
@@ -535,6 +556,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			wp->setLongitude(xcombase->getLongitude());
 			wp->setLatitude(xcombase->getLatitude());
 			ufo->setDestination(wp);
+			logUfo(ufo, game, this);
 			return ufo;
 		}
 		else if (_rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
@@ -625,6 +647,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 				}
 			}
 		}
+		logUfo(ufo, game, this);
 		return ufo;
 	}
 	if (ufoRule == 0)
@@ -685,6 +708,7 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 			}
 		}
 	}
+	logUfo(ufo, game, this);
 	return ufo;
 }
 
@@ -873,13 +897,13 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 	else
 	{
 		// UFO landed.
-		if (_missionSiteZone != -1 && wave.objective && trajectory.getZone(curWaypoint) == (size_t)(_rule.getSpawnZone()))
+		if (_missionSiteZoneArea != -1 && wave.objective && trajectory.getZone(curWaypoint) == (size_t)(_rule.getSpawnZone()))
 		{
 			// Remove UFO, replace with MissionSite.
 			addScore(ufo.getLongitude(), ufo.getLatitude(), game);
 			ufo.setStatus(Ufo::DESTROYED);
 
-			MissionArea area = regionRules.getMissionZones().at(trajectory.getZone(curWaypoint)).areas.at(_missionSiteZone);
+			MissionArea area = regionRules.getMissionZones().at(trajectory.getZone(curWaypoint)).areas.at(_missionSiteZoneArea);
 			if (wave.objectiveOnTheLandingSite)
 			{
 				// Note: 'area' is a local variable; we're not changing the ruleset
@@ -939,6 +963,19 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 				if (ufo.getDetected() && ufo.getLandId() == 0)
 				{
 					ufo.setLandId(engine.getSavedGame()->getId("STR_LANDING_SITE"));
+				}
+
+				// Many players wanted this over the years... you're welcome
+				if (_rule.getObjective() == OBJECTIVE_BASE && wave.objectiveOnTheLandingSite && trajectory.getZone(curWaypoint) == (size_t)(_rule.getSpawnZone()))
+				{
+					std::pair<double, double> pos;
+					pos.first = ufo.getLongitude();
+					pos.second = ufo.getLatitude();
+
+					MissionArea dummyArea;
+					AlienDeployment* alienBaseType = chooseAlienBaseType(mod, dummyArea);
+
+					spawnAlienBase(0, engine, pos, alienBaseType);
 				}
 			}
 			else
@@ -1114,6 +1151,21 @@ AlienBase *AlienMission::spawnAlienBase(Country *pactCountry, Game &engine, std:
 	ab->setLatitude(pos.second);
 	game.getAlienBases()->push_back(ab);
 	addScore(ab->getLongitude(), ab->getLatitude(), game);
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "gameTime: " << game.getTime()->getFullString();
+		ss << " baseId: " << ab->getId();
+		ss << " baseType: " << ab->getType();
+		ss << " race: " << _race;
+		ss << " region: " << _region;
+		ss << " deployment: " << deployment->getType();
+		ss << " missionId: " << _uniqueID;
+		ss << " missionType: " << _rule.getType();
+		game.getGeoscapeDebugLog().push_back(ss.str());
+	}
+
 	return ab;
 }
 
@@ -1182,13 +1234,13 @@ std::pair<double, double> AlienMission::getWaypoint(const MissionWave &wave, con
 		logMissionError(trajectory.getZone(nextWaypoint), region);
 	}
 
-	if (_missionSiteZone != -1 && wave.objective && trajectory.getZone(nextWaypoint) == (size_t)(_rule.getSpawnZone()))
+	if (_missionSiteZoneArea != -1 && wave.objective && trajectory.getZone(nextWaypoint) == (size_t)(_rule.getSpawnZone()))
 	{
 		if (wave.objectiveOnTheLandingSite)
 		{
-			return getLandPointForMissionSite(globe, region, _rule.getSpawnZone(), _missionSiteZone, ufo);
+			return getLandPointForMissionSite(globe, region, _rule.getSpawnZone(), _missionSiteZoneArea, ufo);
 		}
-		const MissionArea *area = &region.getMissionZones().at(_rule.getSpawnZone()).areas.at(_missionSiteZone);
+		const MissionArea *area = &region.getMissionZones().at(_rule.getSpawnZone()).areas.at(_missionSiteZoneArea);
 		return std::make_pair(area->lonMin, area->latMin);
 	}
 
@@ -1393,18 +1445,41 @@ MissionSite *AlienMission::spawnMissionSite(SavedGame &game, const Mod &mod, con
 		missionSite->setTexture(area.texture);
 		missionSite->setCity(area.name);
 		game.getMissionSites()->push_back(missionSite);
+
+		if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+		{
+			std::ostringstream ss;
+			ss << "gameTime: " << game.getTime()->getFullString();
+			ss << " siteId: " << missionSite->getId();
+			ss << " siteType: " << missionSite->getType();
+			ss << " race: " << _race;
+			ss << " region: " << _region;
+			if (!missionSite->getCity().empty())
+			{
+				ss << " city: " << missionSite->getCity();
+			}
+			ss << " deployment: " << deployment->getType();
+			if (alienCustomDeploy)
+			{
+				ss << " / " << alienCustomDeploy->getType();
+			}
+			ss << " missionId: " << _uniqueID;
+			ss << " missionType: " << _rule.getType();
+			game.getGeoscapeDebugLog().push_back(ss.str());
+		}
+
 		return missionSite;
 	}
 	return 0;
 }
 
 /**
- * Tell the mission which entry in the zone array we're targetting for our missionSite payload.
- * @param zone the number of the zone to target, synonymous with a city.
+ * Tell the mission which entry in the 'areas' array we're targetting for our missionSite payload.
+ * @param area the number of the area to target, synonymous with a city.
  */
-void AlienMission::setMissionSiteZone(int zone)
+void AlienMission::setMissionSiteZoneArea(int area)
 {
-	_missionSiteZone = zone;
+	_missionSiteZoneArea = area;
 }
 
 void AlienMission::logMissionError(int zone, const RuleRegion &region)

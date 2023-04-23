@@ -31,12 +31,14 @@ class OptionsFoldersState : public OptionsBaseState
 {
 private:
 	Text *_txtDataFolder, *_txtUserFolder, *_txtSaveFolder, *_txtConfigFolder;
-	Text *_txtDataFolderPath, *_txtUserFolderPath, *_txtSaveFolderPath, *_txtConfigFolderPath;
+	Text* _txtDataFolderPath1, *_txtDataFolderPath2, *_txtUserFolderPath, *_txtSaveFolderPath, *_txtConfigFolderPath;
 public:
 	/// Creates the Folders Options state.
 	OptionsFoldersState(OptionsOrigin origin);
 	/// Cleans up the Folders Options state.
 	~OptionsFoldersState();
+	/// Handler for opei.
+	void txtClick(Action* action);
 };
 
 }

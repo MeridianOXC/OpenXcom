@@ -478,7 +478,7 @@ void NewBattleState::initSave()
 				continue;
 			soldier->promoteRank();
 
-			UnitStats* stats = soldier->getCurrentStats();
+			UnitStats* stats = soldier->getCurrentStatsEditable();
 			stats->tu			+= RNG::generate(0, 5);
 			stats->stamina		+= RNG::generate(0, 5);
 			stats->health		+= RNG::generate(0, 5);
@@ -492,7 +492,7 @@ void NewBattleState::initSave()
 			stats->melee		+= RNG::generate(0, 5);
 			stats->psiSkill		+= RNG::generate(0, 20);
 		}
-		UnitStats* stats = soldier->getCurrentStats();
+		UnitStats* stats = soldier->getCurrentStatsEditable();
 		stats->bravery = (int)ceil(stats->bravery / 10.0) * 10; // keep it a multiple of 10
 
 		// update again, could have been changed since soldier creation

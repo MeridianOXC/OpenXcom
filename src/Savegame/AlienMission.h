@@ -55,7 +55,7 @@ private:
 	size_t _spawnCountdown;
 	size_t _liveUfos;
 	bool _interrupted, _multiUfoRetaliationInProgress;
-	int _uniqueID, _missionSiteZone;
+	int _uniqueID, _missionSiteZoneArea;
 	const AlienBase *_base;
 public:
 	// Data
@@ -116,7 +116,7 @@ public:
 	/// Handle Points for mission successes.
 	void addScore(double lon, double lat, SavedGame &game) const;
 	/// Keep track of the city/whatever that we're going to target.
-	void setMissionSiteZone(int zone);
+	void setMissionSiteZoneArea(int area);
 private:
 	/// Selects an xcom base in a given region.
 	Base* selectXcomBase(SavedGame& game, const RuleRegion& regionRules);

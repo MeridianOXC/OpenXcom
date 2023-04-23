@@ -165,9 +165,10 @@ public:
 	/// Add a stun to the counter.
 	void addStunCount(int count);
 	/// Get pointer to initial stats.
-	UnitStats *getInitStats();
+	const UnitStats* getInitStats() const;
 	/// Get pointer to current stats.
-	UnitStats *getCurrentStats();
+	UnitStats *getCurrentStatsEditable();
+	const UnitStats* getCurrentStats() const;
 	/// Set initial and current stats.
 	void setBothStats(UnitStats *stats);
 	/// Get whether the unit was recently promoted.
@@ -259,6 +260,7 @@ public:
 	void clearEquipmentLayout();
 	/// Gets the soldier's diary.
 	SoldierDiary *getDiary();
+	const SoldierDiary* getDiary() const;
 	/// Resets the soldier's diary.
 	void resetDiary();
 	/// Calculate statString.

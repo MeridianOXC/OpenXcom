@@ -101,6 +101,8 @@ public:
 	{
 		Sint8 terrainLevel = 0;
 		Uint8 isNoFloor:1;
+		Uint8 isGravLift:1;
+		Uint8 isLadder:1;
 		Uint8 bigWall:1;
 		Uint8 danger:1;
 	};
@@ -190,6 +192,10 @@ public:
 	int getTUCost(int part, MovementType movementType) const;
 	/// Checks if this tile has a floor.
 	bool hasNoFloor(const SavedBattleGame *savedBattleGame = nullptr) const;
+	/// Checks if this tile has a GravLift floor.
+	bool hasGravLiftFloor() const { return _cache.isGravLift; }
+	/// Check if this gile has a Ladder (similar to GravLift but on wall).
+	bool hasLadder() const { return _cache.isLadder; }
 
 	/**
 	 * Whether this tile has a big wall.

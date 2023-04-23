@@ -2339,6 +2339,9 @@
     <ClInclude Include="Savegame\RankCount.h">
       <Filter>Savegame</Filter>
     </ClInclude>
+    <ClInclude Include="Mod\LoadYaml.h">
+      <Filter>Mod</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Geoscape">
