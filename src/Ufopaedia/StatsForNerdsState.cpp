@@ -2185,6 +2185,7 @@ void StatsForNerdsState::initItemList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, itemRule->getType(), "type");
+		addSingleString(ss, itemRule->getUfopediaType(), "ufopediaType");
 		addSingleString(ss, itemRule->getName(), "name", itemRule->getType());
 		addSingleString(ss, itemRule->getNameAsAmmo(), "nameAsAmmo");
 		addInteger(ss, itemRule->getListOrder(), "listOrder");
@@ -2247,13 +2248,19 @@ void StatsForNerdsState::initItemList()
 			endHeading();
 		}
 		addIntegerPercent(ss, itemRule->getSpecialChance(), "specialChance", 100);
+
+		addSection("{Spawning}", "", _white);
 		addBoolean(ss, !itemRule->getZombieUnitByArmorMaleRaw().empty(), "zombieUnitByArmorMale*", false); // just say if there are any or not
 		addBoolean(ss, !itemRule->getZombieUnitByArmorFemaleRaw().empty(), "zombieUnitByArmorFemale*", false); // just say if there are any or not
 		addBoolean(ss, !itemRule->getZombieUnitByTypeRaw().empty(), "zombieUnitByType*", false); // just say if there are any or not
 		addSingleString(ss, itemRule->getZombieUnit(nullptr), "zombieUnit");
+		addIntegerPercent(ss, itemRule->getZombieUnitChance(), "zombieUnitChance", 100); // default -1 means same as "specialChance"
+		addInteger(ss, itemRule->getZombieUnitFaction(), "zombieUnitFaction", 1); // hostile
 		addRule(ss, itemRule->getSpawnUnit(), "spawnUnit");
-		addInteger(ss, itemRule->getSpawnUnitFaction(), "spawnUnitFaction", -1);
+		addIntegerPercent(ss, itemRule->getSpawnUnitChance(), "spawnUnitChance", 100); // default -1 means same as "specialChance"
+		addInteger(ss, itemRule->getSpawnUnitFaction(), "spawnUnitFaction", -1); // none (i.e. same faction as attacker)
 		addRule(ss, itemRule->getSpawnItem(), "spawnItem");
+		addIntegerPercent(ss, itemRule->getSpawnItemChance(), "spawnItemChance", 100); // default -1 means same as "specialChance"
 
 		addSection("{Sprites}", "", _white);
 		addBoolean(ss, itemRule->getFixedShow(), "fixedWeaponShow");
@@ -2362,6 +2369,13 @@ void StatsForNerdsState::initItemList()
 		addSection("{Script tags}", "", _white, true);
 		{
 			addScriptTags(ss, itemRule->getScriptValuesRaw());
+			endHeading();
+		}
+
+		addSection("{Mod info}", "", _white);
+		{
+			addSingleString(ss, mod->getModCreatingRule(itemRule)->name, "createdByMod");
+			addSingleString(ss, mod->getModLastUpdatingRule(itemRule)->name, "updatedByMod");
 			endHeading();
 		}
 	}
@@ -2561,7 +2575,7 @@ void StatsForNerdsState::addForcedTorso(std::ostringstream &ss, const ForcedTors
 	}
 	if (_showIds)
 	{
-		ss << " [" << value << "]";
+		ss << " [" << (int)value << "]";
 	}
 	_lstRawData->addRow(2, trp(propertyName).c_str(), ss.str().c_str());
 	++_counter;
@@ -2822,6 +2836,7 @@ void StatsForNerdsState::initArmorList()
 		{
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBase(), "basePercent", { 100, 100 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseFly(), "baseFlyPercent", { 100, 100 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseClimb(), "baseClimbPercent", { 100, 100 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseNormal(), "baseNormalPercent", { 100, 100 });
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostWalk(), "walkPercent", { 100, 50 });
@@ -2835,6 +2850,9 @@ void StatsForNerdsState::initArmorList()
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyUp(), "flyUpPercent", { 100, 0 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyDown(), "flyDownPercent", { 100, 0 });
+
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostClimbUp(), "climbUpPercent", { 100, 50 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostClimbDown(), "climbDownPercent", { 100, 50 });
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostGravLift(), "gravLiftPercent", { 100, 0 });
 
@@ -2853,6 +2871,13 @@ void StatsForNerdsState::initArmorList()
 		addSection("{Script tags}", "", _white, true);
 		{
 			addScriptTags(ss, armorRule->getScriptValuesRaw());
+			endHeading();
+		}
+
+		addSection("{Mod info}", "", _white);
+		{
+			addSingleString(ss, mod->getModCreatingRule(armorRule)->name, "createdByMod");
+			addSingleString(ss, mod->getModLastUpdatingRule(armorRule)->name, "updatedByMod");
 			endHeading();
 		}
 	}
@@ -2911,6 +2936,13 @@ void StatsForNerdsState::initSoldierBonusList()
 		addSection("{Script tags}", "", _white, true);
 		{
 			addScriptTags(ss, bonusRule->getScriptValuesRaw());
+			endHeading();
+		}
+
+		addSection("{Mod info}", "", _white);
+		{
+			addSingleString(ss, mod->getModCreatingRule(bonusRule)->name, "createdByMod");
+			addSingleString(ss, mod->getModLastUpdatingRule(bonusRule)->name, "updatedByMod");
 			endHeading();
 		}
 	}
@@ -3120,6 +3152,13 @@ void StatsForNerdsState::initFacilityList()
 		tmpSoundVector.clear();
 		tmpSoundVector.push_back(facilityRule->getPlaceSound());
 		addSoundVectorResourcePaths(ss, mod, "GEO.CAT", tmpSoundVector);
+
+		addSection("{Mod info}", "", _white);
+		{
+			addSingleString(ss, mod->getModCreatingRule(facilityRule)->name, "createdByMod");
+			addSingleString(ss, mod->getModLastUpdatingRule(facilityRule)->name, "updatedByMod");
+			endHeading();
+		}
 	}
 }
 
@@ -3152,6 +3191,7 @@ void StatsForNerdsState::initCraftList()
 
 	addVectorOfStrings(ss, craftRule->getRequirements(), "requires");
 	addVectorOfStrings(ss, mod->getBaseFunctionNames(craftRule->getRequiresBuyBaseFunc()), "requiresBuyBaseFunc");
+	addSingleString(ss, craftRule->getRequiresBuyCountry(), "requiresBuyCountry");
 
 	addInteger(ss, craftRule->getBuyCost(), "costBuy", 0, true);
 	addInteger(ss, craftRule->getMonthlyBuyLimit(), "monthlyBuyLimit");
@@ -3365,6 +3405,13 @@ void StatsForNerdsState::initCraftList()
 		addSection("{Script tags}", "", _white, true);
 		{
 			addScriptTags(ss, craftRule->getScriptValuesRaw());
+			endHeading();
+		}
+
+		addSection("{Mod info}", "", _white);
+		{
+			addSingleString(ss, mod->getModCreatingRule(craftRule)->name, "createdByMod");
+			addSingleString(ss, mod->getModLastUpdatingRule(craftRule)->name, "updatedByMod");
 			endHeading();
 		}
 	}
@@ -3606,6 +3653,13 @@ void StatsForNerdsState::initUfoList()
 			addScriptTags(ss, ufoRule->getScriptValuesRaw());
 			endHeading();
 		}
+
+		addSection("{Mod info}", "", _white);
+		{
+			addSingleString(ss, mod->getModCreatingRule(ufoRule)->name, "createdByMod");
+			addSingleString(ss, mod->getModLastUpdatingRule(ufoRule)->name, "updatedByMod");
+			endHeading();
+		}
 	}
 }
 
@@ -3713,6 +3767,13 @@ void StatsForNerdsState::initCraftWeaponList()
 		std::vector<int> tmpSoundVector;
 		tmpSoundVector.push_back(craftWeaponRule->getSound());
 		addSoundVectorResourcePaths(ss, mod, "GEO.CAT", tmpSoundVector);
+
+		addSection("{Mod info}", "", _white);
+		{
+			addSingleString(ss, mod->getModCreatingRule(craftWeaponRule)->name, "createdByMod");
+			addSingleString(ss, mod->getModLastUpdatingRule(craftWeaponRule)->name, "updatedByMod");
+			endHeading();
+		}
 	}
 }
 

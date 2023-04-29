@@ -62,15 +62,15 @@ private:
 	/// Determines whether a tile blocks a certain movementType.
 	bool isBlocked(const BattleUnit *unit, const Tile *tile, const int part, BattleActionMove bam, const BattleUnit *missileTarget, int bigWallExclusion = -1) const;
 	/// Determines whether or not movement between start tile and end tile is possible in the direction.
-	bool isBlockedDirection(const BattleUnit *unit, Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const;
+	bool isBlockedDirection(const BattleUnit *unit, const Tile *startTile, const int direction, BattleActionMove bam, const BattleUnit *missileTarget) const;
 	/// Tries to find a straight line path between two positions.
 	bool bresenhamPath(Position origin, Position target, BattleActionMove bam, const BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
 	/// Tries to find a path between two positions.
 	bool aStarPath(Position origin, Position target, BattleActionMove bam, const BattleUnit *missileTarget, bool sneak = false, int maxTUCost = 1000);
 	/// Determines whether a unit can fall down from this tile.
-	bool canFallDown(Tile *destinationTile) const;
+	bool canFallDown(const Tile *destinationTile) const;
 	/// Determines whether a unit can fall down from this tile.
-	bool canFallDown(Tile *destinationTile, int size) const;
+	bool canFallDown(const Tile *destinationTile, int size) const;
 	std::vector<int> _path;
 public:
 	/// Determines whether the unit is going up a stairs.
@@ -80,6 +80,8 @@ public:
 
 	/// Default move cost for tile that have floor with 0 cost.
 	static constexpr int DEFAULT_MOVE_COST = 4;
+	/// Default move cost for changing level for fly or gravlift.
+	static constexpr int DEFAULT_MOVE_FLY_COST = 8;
 	/// How much time units one move can have.
 	static constexpr int MAX_MOVE_COST = 100;
 	/// Fake cost representing invalid move.
@@ -89,7 +91,107 @@ public:
 
 	static const int DIR_UP = 8;
 	static const int DIR_DOWN = 9;
-	enum bigWallTypes{ BLOCK = 1, BIGWALLNESW, BIGWALLNWSE, BIGWALLWEST, BIGWALLNORTH, BIGWALLEAST, BIGWALLSOUTH, BIGWALLEASTANDSOUTH, BIGWALLWESTANDNORTH};
+	enum bigWallTypes
+	{
+		/**
+		     /###\
+		 W  /#####\  N
+		   /#######\
+		  |#########|
+		   \#######/
+		 S  \#####/  E
+		     \###/
+		 */
+		BLOCK = 1,
+
+		/**
+		     /   \
+		 W  /     \  N
+		   /#######\
+		  |#########|
+		   \#######/
+		 S  \     /  E
+		     \   /
+		 */
+		BIGWALLNESW = 2,
+
+		/**
+		     /###\
+		 W  / ### \  N
+		   /  ###  \
+		  |   ###   |
+		   \  ###  /
+		 S  \ ### /  E
+		     \###/
+		 */
+		BIGWALLNWSE = 3,
+
+		/**
+		     /## \
+		 W  /##   \  N
+		   /##     \
+		  |##       |
+		   \       /
+		 S  \     /  E
+		     \   /
+		 */
+		BIGWALLWEST = 4,
+
+		/**
+		     / ##\
+		 W  /   ##\  N
+		   /     ##\
+		  |       ##|
+		   \       /
+		 S  \     /  E
+		     \   /
+		 */
+		BIGWALLNORTH = 5,
+
+		/**
+		     /   \
+		 W  /     \  N
+		   /       \
+		  |       ##|
+		   \     ##/
+		 S  \   ##/  E
+		     \ ##/
+		 */
+		BIGWALLEAST = 6,
+
+		/**
+		     /   \
+		 W  /     \  N
+		   /       \
+		  |##       |
+		   \##     /
+		 S  \##   /  E
+		     \## /
+		 */
+		BIGWALLSOUTH = 7,
+
+		/**
+		     /   \
+		 W  /     \  N
+		   /       \
+		  |##     ##|
+		   \##   ##/
+		 S  \#####/  E
+		     \###/
+		 */
+		BIGWALLEASTANDSOUTH = 8,
+
+		/**
+		     /###\
+		 W  /#####\  N
+		   /##   ##\
+		  |##     ##|
+		   \       /
+		 S  \     /  E
+		     \   /
+		 */
+		BIGWALLWESTANDNORTH = 9,
+	};
 	static const int O_BIGWALL = -1;
 	static int red;
 	static int green;

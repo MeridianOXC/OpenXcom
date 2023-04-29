@@ -1130,6 +1130,15 @@
     <ClCompile Include="Battlescape\ExtendedInventoryLinksState.cpp">
       <Filter>Battlescape</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\GlobalAlienContainmentState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
+    <ClCompile Include="Basescape\SoldierRankState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
+    <ClCompile Include="Savegame\RankCount.cpp">
+      <Filter>Savegame</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2320,6 +2329,18 @@
     </ClInclude>
     <ClInclude Include="Battlescape\ExtendedInventoryLinksState.h">
       <Filter>Battlescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\GlobalAlienContainmentState.h">
+      <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\SoldierRankState.h">
+      <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Savegame\RankCount.h">
+      <Filter>Savegame</Filter>
+    </ClInclude>
+    <ClInclude Include="Mod\LoadYaml.h">
+      <Filter>Mod</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ManageAlienContainmentState.h"
+#include "GlobalAlienContainmentState.h"
 #include <climits>
 #include <sstream>
 #include <algorithm>
@@ -114,6 +115,7 @@ ManageAlienContainmentState::ManageAlienContainmentState(Base *base, int prisonT
 	_btnOk->setText(trAlt(_threeButtons ? "STR_KILL_SELECTED" : "STR_REMOVE_SELECTED", _prisonType));
 	_btnOk->onMouseClick((ActionHandler)&ManageAlienContainmentState::btnOkClick);
 	_btnOk->onKeyboardPress((ActionHandler)&ManageAlienContainmentState::btnOkClick, Options::keyOk);
+	_btnOk->onKeyboardPress((ActionHandler)&ManageAlienContainmentState::onGlobalAlienContainmentClick, Options::keyGeoGlobalAlienContainment);
 
 	_btnSell->setText(trAlt("STR_SELL_SELECTED", _prisonType));
 	_btnSell->onMouseClick((ActionHandler)&ManageAlienContainmentState::btnSellClick);
@@ -319,6 +321,15 @@ void ManageAlienContainmentState::btnOkClick(Action *)
 {
 	bool sell = Options::canSellLiveAliens && !Options::retainCorpses; // in all other cases, it's kill, not sell
 	dealWithSelectedAliens(sell);
+}
+
+/**
+ * Opens the Global Alien Containment UI.
+ * @param action Pointer to an action.
+ */
+void ManageAlienContainmentState::onGlobalAlienContainmentClick(Action *)
+{
+	_game->pushState(new GlobalAlienContainmentState(true));
 }
 
 /**

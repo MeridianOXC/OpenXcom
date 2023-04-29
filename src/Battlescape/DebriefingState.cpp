@@ -81,7 +81,10 @@ namespace OpenXcom
  * Initializes all the elements in the Debriefing screen.
  * @param game Pointer to the core game.
  */
-DebriefingState::DebriefingState() : _eventToSpawn(nullptr), _region(0), _country(0), _positiveScore(true), _destroyBase(false), _showSellButton(true), _initDone(false), _pageNumber(0)
+DebriefingState::DebriefingState() :
+	_eventToSpawn(nullptr), _region(0), _country(0),
+	_positiveScore(true), _destroyBase(false), _promotions(false), _showSellButton(true), _initDone(false),
+	_pageNumber(0)
 {
 	_missionStatistics = new MissionStatistics();
 
@@ -777,7 +780,11 @@ void DebriefingState::init()
 			participants.push_back(bu->getGeoscapeSoldier());
 		}
 	}
-	_promotions = _game->getSavedGame()->handlePromotions(participants, _game->getMod());
+
+	if (Options::oxceAutomaticPromotions)
+	{
+		_promotions = _game->getSavedGame()->handlePromotions(participants, _game->getMod());
+	}
 
 	_game->getSavedGame()->setBattleGame(0);
 
@@ -1894,7 +1901,7 @@ void DebriefingState::prepareDebriefing()
 			// recover items from the craft floor
 			for (int i = 0; i < battle->getMapSizeXYZ(); ++i)
 			{
-				if (battle->getTile(i)->getMapData(O_FLOOR) && (battle->getTile(i)->getMapData(O_FLOOR)->getSpecialType() == START_POINT))
+				if (battle->getTile(i)->getFloorSpecialTileType() == START_POINT)
 					recoverItems(battle->getTile(i)->getInventory(), base);
 			}
 		}

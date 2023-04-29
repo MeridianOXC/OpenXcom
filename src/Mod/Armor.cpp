@@ -19,39 +19,12 @@
 #include "Armor.h"
 #include "Unit.h"
 #include "../Engine/ScriptBind.h"
+#include "LoadYaml.h"
 #include "Mod.h"
 #include "RuleSoldier.h"
-#include "../Savegame/BattleUnit.h"
 
 namespace OpenXcom
 {
-
-namespace
-{
-
-const Sint8 defTriBool = -1;
-
-void loadTriBoolHelper(Sint8& value, const YAML::Node& node)
-{
-	if (node)
-	{
-		if (node.IsNull())
-		{
-			value = defTriBool;
-		}
-		else
-		{
-			value = node.as<bool>();
-		}
-	}
-}
-
-bool useTriBoolHelper(Sint8 value, bool def)
-{
-	return value == defTriBool ? def : value;
-}
-
-}
 
 const std::string Armor::NONE = "STR_NONE";
 
@@ -67,10 +40,10 @@ Armor::Armor(const std::string &type) :
 	_camouflageAtDay(0), _camouflageAtDark(0), _antiCamouflageAtDay(0), _antiCamouflageAtDark(0), _heatVision(0), _psiVision(0), _psiCamouflage(0),
 	_deathFrames(3), _constantAnimation(false), _hasInventory(true), _forcedTorso(TORSO_USE_GENDER),
 	_faceColorGroup(0), _hairColorGroup(0), _utileColorGroup(0), _rankColorGroup(0),
-	_fearImmune(defTriBool), _bleedImmune(defTriBool), _painImmune(defTriBool), _zombiImmune(defTriBool),
-	_ignoresMeleeThreat(defTriBool), _createsMeleeThreat(defTriBool),
+	_fearImmune(defBoolNullable), _bleedImmune(defBoolNullable), _painImmune(defBoolNullable), _zombiImmune(defBoolNullable),
+	_ignoresMeleeThreat(defBoolNullable), _createsMeleeThreat(defBoolNullable),
 	_overKill(0.5f), _meleeDodgeBackPenalty(0),
-	_allowsRunning(defTriBool), _allowsStrafing(defTriBool), _allowsSneaking(defTriBool), _allowsKneeling(defTriBool), _allowsMoving(1),
+	_allowsRunning(defBoolNullable), _allowsStrafing(defBoolNullable), _allowsSneaking(defBoolNullable), _allowsKneeling(defBoolNullable), _allowsMoving(1),
 	_isPilotArmor(false), _allowTwoMainWeapons(false), _instantWoundRecovery(false),
 	_standHeight(-1), _kneelHeight(-1), _floatHeight(-1)
 {
@@ -145,6 +118,7 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	{
 		_moveCostBase.load(move["basePercent"]);
 		_moveCostBaseFly.load(move["baseFlyPercent"]);
+		_moveCostBaseClimb.load(move["baseClimbPercent"]);
 		_moveCostBaseNormal.load(move["baseNormalPercent"]);
 
 		_moveCostWalk.load(move["walkPercent"]);
@@ -158,6 +132,9 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 
 		_moveCostFlyUp.load(move["flyUpPercent"]);
 		_moveCostFlyDown.load(move["flyDownPercent"]);
+
+		_moveCostClimbUp.load(move["climbUpPercent"]);
+		_moveCostClimbDown.load(move["climbDownPercent"]);
 
 		_moveCostGravLift.load(move["gravLiftPercent"]);
 	}
@@ -216,15 +193,15 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 			_createsMeleeThreat = 0;
 		}
 	}
-	loadTriBoolHelper(_fearImmune, node["fearImmune"]);
-	loadTriBoolHelper(_bleedImmune, node["bleedImmune"]);
-	loadTriBoolHelper(_painImmune, node["painImmune"]);
+	loadBoolNullable(_fearImmune, node["fearImmune"]);
+	loadBoolNullable(_bleedImmune, node["bleedImmune"]);
+	loadBoolNullable(_painImmune, node["painImmune"]);
 	if (_size == 1) //Big units are always immune, because game we don't have 2x2 unit zombie
 	{
-		loadTriBoolHelper(_zombiImmune, node["zombiImmune"]);
+		loadBoolNullable(_zombiImmune, node["zombiImmune"]);
 	}
-	loadTriBoolHelper(_ignoresMeleeThreat, node["ignoresMeleeThreat"]);
-	loadTriBoolHelper(_createsMeleeThreat, node["createsMeleeThreat"]);
+	loadBoolNullable(_ignoresMeleeThreat, node["ignoresMeleeThreat"]);
+	loadBoolNullable(_createsMeleeThreat, node["createsMeleeThreat"]);
 
 	_overKill = node["overKill"].as<float>(_overKill);
 	_meleeDodgeBackPenalty = node["meleeDodgeBackPenalty"].as<float>(_meleeDodgeBackPenalty);
@@ -255,10 +232,10 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	mod->loadUnorderedNames(_type, _unitsNames, node["units"]);
 	_scriptValues.load(node, parsers.getShared());
 	mod->loadSpriteOffset(_type, _customArmorPreviewIndex, node["customArmorPreviewIndex"], "CustomArmorPreviews");
-	loadTriBoolHelper(_allowsRunning, node["allowsRunning"]);
-	loadTriBoolHelper(_allowsStrafing, node["allowsStrafing"]);
-	loadTriBoolHelper(_allowsSneaking, node["allowsSneaking"]);
-	loadTriBoolHelper(_allowsKneeling, node["allowsKneeling"]);
+	loadBoolNullable(_allowsRunning, node["allowsRunning"]);
+	loadBoolNullable(_allowsStrafing, node["allowsStrafing"]);
+	loadBoolNullable(_allowsSneaking, node["allowsSneaking"]);
+	loadBoolNullable(_allowsKneeling, node["allowsKneeling"]);
 	_allowsMoving = node["allowsMoving"].as<bool>(_allowsMoving);
 	_isPilotArmor = node["isPilotArmor"].as<bool>(_isPilotArmor);
 	_allowTwoMainWeapons = node["allowTwoMainWeapons"].as<bool>(_allowTwoMainWeapons);
@@ -889,7 +866,7 @@ int Armor::getPersonalLight() const
  */
 bool Armor::getFearImmune(bool def) const
 {
-	return useTriBoolHelper(_fearImmune, def);
+	return useBoolNullable(_fearImmune, def);
 }
 
 /**
@@ -899,7 +876,7 @@ bool Armor::getFearImmune(bool def) const
  */
 bool Armor::getBleedImmune(bool def) const
 {
-	return useTriBoolHelper(_bleedImmune, def);
+	return useBoolNullable(_bleedImmune, def);
 }
 
 /**
@@ -909,7 +886,7 @@ bool Armor::getBleedImmune(bool def) const
  */
 bool Armor::getPainImmune(bool def) const
 {
-	return useTriBoolHelper(_painImmune, def);
+	return useBoolNullable(_painImmune, def);
 }
 
 /**
@@ -919,7 +896,7 @@ bool Armor::getPainImmune(bool def) const
  */
 bool Armor::getZombiImmune(bool def) const
 {
-	return useTriBoolHelper(_zombiImmune, def);
+	return useBoolNullable(_zombiImmune, def);
 }
 
 /**
@@ -929,7 +906,7 @@ bool Armor::getZombiImmune(bool def) const
  */
 bool Armor::getIgnoresMeleeThreat(bool def) const
 {
-	return useTriBoolHelper(_ignoresMeleeThreat, def);
+	return useBoolNullable(_ignoresMeleeThreat, def);
 }
 
 /**
@@ -939,7 +916,7 @@ bool Armor::getIgnoresMeleeThreat(bool def) const
  */
 bool Armor::getCreatesMeleeThreat(bool def) const
 {
-	return useTriBoolHelper(_createsMeleeThreat, def);
+	return useBoolNullable(_createsMeleeThreat, def);
 }
 
 /**
@@ -1091,7 +1068,7 @@ const std::vector<int> &Armor::getCustomArmorPreviewIndex() const
  */
 bool Armor::allowsRunning(bool def) const
 {
-	return useTriBoolHelper(_allowsRunning, def);
+	return useBoolNullable(_allowsRunning, def);
 }
 
 /**
@@ -1100,7 +1077,7 @@ bool Armor::allowsRunning(bool def) const
  */
 bool Armor::allowsStrafing(bool def) const
 {
-	return useTriBoolHelper(_allowsStrafing, def);
+	return useBoolNullable(_allowsStrafing, def);
 }
 
 /**
@@ -1109,7 +1086,7 @@ bool Armor::allowsStrafing(bool def) const
  */
 bool Armor::allowsSneaking(bool def) const
 {
-	return useTriBoolHelper(_allowsSneaking, def);
+	return useBoolNullable(_allowsSneaking, def);
 }
 
 /**
@@ -1118,7 +1095,7 @@ bool Armor::allowsSneaking(bool def) const
  */
 bool Armor::allowsKneeling(bool def) const
 {
-	return useTriBoolHelper(_allowsKneeling, def);
+	return useBoolNullable(_allowsKneeling, def);
 }
 
 /**

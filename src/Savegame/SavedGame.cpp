@@ -65,6 +65,7 @@
 #include "SoldierDeath.h"
 #include "SoldierDiary.h"
 #include "../Mod/AlienRace.h"
+#include "RankCount.h"
 
 namespace OpenXcom
 {
@@ -439,6 +440,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	_funds = doc["funds"].as< std::vector<int64_t> >(_funds);
 	_maintenance = doc["maintenance"].as< std::vector<int64_t> >(_maintenance);
 	_userNotes = doc["userNotes"].as< std::vector<std::string> >(_userNotes);
+	_geoscapeDebugLog = doc["geoscapeDebugLog"].as<std::vector<std::string> >(_geoscapeDebugLog);
 	_researchScores = doc["researchScores"].as< std::vector<int> >(_researchScores);
 	_incomes = doc["incomes"].as< std::vector<int64_t> >(_incomes);
 	_expenditures = doc["expenditures"].as< std::vector<int64_t> >(_expenditures);
@@ -848,6 +850,20 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	node["funds"] = _funds;
 	node["maintenance"] = _maintenance;
 	node["userNotes"] = _userNotes;
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		if (_geoscapeDebugLog.size() > (size_t)Options::oxceGeoscapeDebugLogMaxEntries)
+		{
+			for (size_t j = _geoscapeDebugLog.size() - (size_t)Options::oxceGeoscapeDebugLogMaxEntries; j < _geoscapeDebugLog.size(); ++j)
+			{
+				node["geoscapeDebugLog"].push_back(_geoscapeDebugLog[j]);
+			}
+		}
+		else
+		{
+			node["geoscapeDebugLog"] = _geoscapeDebugLog;
+		}
+	}
 	node["researchScores"] = _researchScores;
 	node["incomes"] = _incomes;
 	node["expenditures"] = _expenditures;
@@ -2330,91 +2346,35 @@ bool SavedGame::handlePromotions(std::vector<Soldier*> &participants, const Mod 
 {
 	int soldiersPromoted = 0;
 	Soldier *highestRanked = 0;
-	PromotionInfo soldierData;
-	std::vector<Soldier*> soldiers;
-	for (auto* xbase : _bases)
-	{
-		for (auto* soldier : *xbase->getSoldiers())
-		{
-			soldiers.push_back(soldier);
-			processSoldier(soldier, soldierData);
-		}
-		for (auto* transfer : *xbase->getTransfers())
-		{
-			if (transfer->getType() == TRANSFER_SOLDIER)
-			{
-				soldiers.push_back(transfer->getSoldier());
-				processSoldier(transfer->getSoldier(), soldierData);
-			}
-		}
-	}
+	std::vector<Soldier*> soldiers = getAllActiveSoldiers();
+	RankCount rankCounts = RankCount(soldiers);
 
-	int totalSoldiers = soldierData.totalSoldiers;
+	int totalSoldiers = rankCounts.getTotalSoldiers();
 
-	if (soldierData.totalCommanders == 0)
+	if (rankCounts[RANK_COMMANDER] == 0 && totalSoldiers >= mod->getSoldiersPerRank(RANK_COMMANDER))
 	{
-		if (totalSoldiers >= mod->getSoldiersPerCommander())
+		highestRanked = inspectSoldiers(soldiers, participants, RANK_COLONEL);
+		if (highestRanked)
 		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_COLONEL);
-			if (highestRanked)
-			{
-				// only promote one colonel to commander
-				highestRanked->promoteRank();
-				soldiersPromoted++;
-				soldierData.totalCommanders++;
-				soldierData.totalColonels--;
-			}
+			// only promote one colonel to commander
+			highestRanked->promoteRank();
+			soldiersPromoted++;
+			rankCounts[RANK_COMMANDER]++;
+			rankCounts[RANK_COLONEL]--;
 		}
 	}
 
-	if ((totalSoldiers / mod->getSoldiersPerColonel()) > soldierData.totalColonels)
+	for (SoldierRank rank : { RANK_COLONEL, RANK_CAPTAIN, RANK_SERGEANT })
 	{
-		while ((totalSoldiers / mod->getSoldiersPerColonel()) > soldierData.totalColonels)
+		while ((totalSoldiers / mod->getSoldiersPerRank(rank)) > rankCounts[rank])
 		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_CAPTAIN);
+			highestRanked = inspectSoldiers(soldiers, participants, rank - 1);
 			if (highestRanked)
 			{
 				highestRanked->promoteRank();
 				soldiersPromoted++;
-				soldierData.totalColonels++;
-				soldierData.totalCaptains--;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-	if ((totalSoldiers / mod->getSoldiersPerCaptain()) > soldierData.totalCaptains)
-	{
-		while ((totalSoldiers / mod->getSoldiersPerCaptain()) > soldierData.totalCaptains)
-		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_SERGEANT);
-			if (highestRanked)
-			{
-				highestRanked->promoteRank();
-				soldiersPromoted++;
-				soldierData.totalCaptains++;
-				soldierData.totalSergeants--;
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-	if ((totalSoldiers / mod->getSoldiersPerSergeant()) > soldierData.totalSergeants)
-	{
-		while ((totalSoldiers / mod->getSoldiersPerSergeant()) > soldierData.totalSergeants)
-		{
-			highestRanked = inspectSoldiers(soldiers, participants, RANK_SQUADDIE);
-			if (highestRanked)
-			{
-				highestRanked->promoteRank();
-				soldiersPromoted++;
-				soldierData.totalSergeants++;
+				rankCounts[rank]++;
+				rankCounts[(SoldierRank)(rank - 1)]--;
 			}
 			else
 			{
@@ -2424,41 +2384,6 @@ bool SavedGame::handlePromotions(std::vector<Soldier*> &participants, const Mod 
 	}
 
 	return (soldiersPromoted > 0);
-}
-
-/**
- * Processes a soldier, and adds their rank to the promotions data array.
- * @param soldier the soldier to process.
- * @param soldierData the data array to put their info into.
- */
-void SavedGame::processSoldier(Soldier *soldier, PromotionInfo &soldierData)
-{
-	if (soldier->getRules()->getAllowPromotion())
-	{
-		soldierData.totalSoldiers++;
-	}
-	else
-	{
-		return;
-	}
-
-	switch (soldier->getRank())
-	{
-	case RANK_COMMANDER:
-		soldierData.totalCommanders++;
-		break;
-	case RANK_COLONEL:
-		soldierData.totalColonels++;
-		break;
-	case RANK_CAPTAIN:
-		soldierData.totalCaptains++;
-		break;
-	case RANK_SERGEANT:
-		soldierData.totalSergeants++;
-		break;
-	default:
-		break;
-	}
 }
 
 /**
@@ -2500,7 +2425,7 @@ Soldier *SavedGame::inspectSoldiers(std::vector<Soldier*> &soldiers, std::vector
 /**
  * Gets the (approximate) number of idle days since the soldier's last mission.
  */
-int SavedGame::getSoldierIdleDays(Soldier *soldier)
+int SavedGame::getSoldierIdleDays(const Soldier *soldier)
 {
 	int lastMissionId = -1;
 	int idleDays = 999;
@@ -2538,7 +2463,7 @@ int SavedGame::getSoldierIdleDays(Soldier *soldier)
  */
 int SavedGame::getSoldierScore(Soldier *soldier)
 {
-	UnitStats *s = soldier->getCurrentStats();
+	const UnitStats *s = soldier->getCurrentStats();
 	int v1 = 2 * s->health + 2 * s->stamina + 4 * s->reactions + 4 * s->bravery;
 	int v2 = v1 + 3*( s->tu + 2*( s->firing ) );
 	int v3 = v2 + s->melee + s->throwing + s->strength;
@@ -2961,6 +2886,30 @@ std::vector<Soldier*> *SavedGame::getDeadSoldiers()
 }
 
 /**
+ * Calculates and returns a list of all active soldiers.
+ * @return All active soldiers.
+*/
+std::vector<Soldier*> SavedGame::getAllActiveSoldiers() const
+{
+	std::vector<Soldier*> soldiers;
+	for (auto* xbase : _bases)
+	{
+		std::vector<Soldier*> baseSoldiers = *xbase->getSoldiers();
+		soldiers.insert(soldiers.end(), baseSoldiers.begin(), baseSoldiers.end());
+
+		for (auto* transfer : *xbase->getTransfers())
+		{
+			if (transfer->getType() == TRANSFER_SOLDIER)
+			{
+				soldiers.push_back(transfer->getSoldier());
+			}
+		}
+	}
+
+	return soldiers;
+}
+
+/**
  * Sets the last selected armor.
  * @param value The new value for last selected armor - Armor type string.
  */
@@ -3319,6 +3268,15 @@ bool SavedGame::spawnEvent(const RuleEvent* eventRules)
 
 	// remember that it has been generated
 	addGeneratedEvent(eventRules);
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "gameTime: " << _time->getFullString();
+		ss << " eventSpawn: " << newEvent->getRules().getName();
+		ss << " days/hours: " << (minutes / 60) / 24 << "/" << (minutes / 60) % 24;
+		_geoscapeDebugLog.push_back(ss.str());
+	}
 
 	return true;
 }

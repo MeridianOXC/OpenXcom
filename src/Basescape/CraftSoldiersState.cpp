@@ -325,7 +325,7 @@ void CraftSoldiersState::initList(size_t scrl)
 
 	Craft *c = _base->getCrafts()->at(_craft);
 	BaseSumDailyRecovery recovery = _base->getSumRecoveryPerDay();
-	for (auto* soldier : *_base->getSoldiers())
+	for (const auto* soldier : *_base->getSoldiers())
 	{
 		if (_dynGetter != NULL)
 		{

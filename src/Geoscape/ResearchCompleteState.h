@@ -36,12 +36,12 @@ class RuleResearch;
 class ResearchCompleteState : public State
 {
 	Window *_window;
-	Text *_txtTitle, *_txtResearch;
+	Text *_txtTitle, *_txtResearch, *_txtBase;
 	TextButton *_btnReport, *_btnOk;
 	const RuleResearch * _research, * _bonus;
 public:
 	/// Creates the EndResearch state.
-	ResearchCompleteState(const RuleResearch *newResearch, const RuleResearch *bonus, const RuleResearch *research);
+	ResearchCompleteState(const RuleResearch *newResearch, const RuleResearch *bonus, const RuleResearch *research, const Base* base);
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
 	/// Handler for clicking the Report button.

@@ -81,6 +81,7 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	//requires
 	mod->loadUnorderedNames(_type, _requires, node["requires"]);
 	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, node["requiresBuyBaseFunc"]);
+	_requiresBuyCountry = node["requiresBuyCountry"].as<std::string>(_requiresBuyCountry);
 
 	if (node["sprite"])
 	{

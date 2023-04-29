@@ -23,7 +23,9 @@
 #include "../Engine/LocalizedText.h"
 #include "../Engine/RNG.h"
 #include "../Interface/Text.h"
+#include "../Interface/TextList.h"
 #include "../Interface/TextButton.h"
+#include "../Interface/ToggleTextButton.h"
 #include "../Interface/Window.h"
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/City.h"
@@ -33,6 +35,7 @@
 #include "../Mod/RuleRegion.h"
 #include "../Mod/RuleSoldier.h"
 #include "../Savegame/Base.h"
+#include "../Savegame/ItemContainer.h"
 #include "../Savegame/Region.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Soldier.h"
@@ -54,7 +57,11 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
 	_window = new Window(this, 256, 176, 32, 12, POPUP_BOTH);
 	_txtTitle = new Text(236, 32, 42, 26);
 	_txtMessage = new Text(236, 94, 42, 61);
-	_btnOk = new TextButton(100, 18, 110, 158);
+	_btnOk = new TextButton(108, 18, 48, 158);
+	_btnItemsArriving = new ToggleTextButton(108, 18, 164, 158);
+	_txtItem = new Text(114, 9, 44, 61);
+	_txtQuantity = new Text(94, 9, 182, 61);
+	_lstTransfers = new TextList(216, 80, 42, 72);
 
 	// Set palette
 	setInterface("geoscapeEvent");
@@ -63,6 +70,10 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
 	add(_txtTitle, "text1", "geoscapeEvent");
 	add(_txtMessage, "text2", "geoscapeEvent");
 	add(_btnOk, "button", "geoscapeEvent");
+	add(_btnItemsArriving, "button", "geoscapeEvent");
+	add(_txtItem, "text2", "geoscapeEvent");
+	add(_txtQuantity, "text2", "geoscapeEvent");
+	add(_lstTransfers, "list", "geoscapeEvent");
 
 	centerAllSurfaces();
 
@@ -83,7 +94,28 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
 	_btnOk->onKeyboardPress((ActionHandler)&GeoscapeEventState::btnOkClick, Options::keyOk);
 	_btnOk->onKeyboardPress((ActionHandler)&GeoscapeEventState::btnOkClick, Options::keyCancel);
 
+	_btnItemsArriving->setText(tr("STR_ITEMS_ARRIVING"));
+	_btnItemsArriving->onMouseClick((ActionHandler)&GeoscapeEventState::btnItemsArrivingClick);
+
+	_txtItem->setText(tr("STR_ITEM"));
+	_txtQuantity->setText(tr("STR_QUANTITY_UC"));
+
+	_lstTransfers->setColumns(2, 155, 41);
+	_lstTransfers->setSelectable(true);
+	_lstTransfers->setBackground(_window);
+	_lstTransfers->setMargin(2);
+
 	eventLogic();
+
+	_txtItem->setVisible(false);
+	_txtQuantity->setVisible(false);
+	_lstTransfers->setVisible(false);
+
+	if (_lstTransfers->getTexts() == 0)
+	{
+		_btnOk->setX((_btnOk->getX() + _btnItemsArriving->getX()) / 2);
+		_btnItemsArriving->setVisible(false);
+	}
 }
 
 /**
@@ -255,9 +287,11 @@ void GeoscapeEventState::eventLogic()
 
 	for (auto& ti : itemsToTransfer)
 	{
-		Transfer *t = new Transfer(1);
-		t->setItems(ti.first, ti.second);
-		hq->getTransfers()->push_back(t);
+		hq->getStorageItems()->addItem(ti.first, ti.second);
+
+		std::ostringstream ss;
+		ss << ti.second;
+		_lstTransfers->addRow(2, tr(ti.first).c_str(), ss.str().c_str());
 	}
 
 	// 4. give bonus research
@@ -316,6 +350,14 @@ void GeoscapeEventState::eventLogic()
 	// 2. handle items spawned by research
 	// 3. handle events spawned by research
 	save->handlePrimaryResearchSideEffects(topicsToCheck, mod, hq);
+
+	if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+	{
+		std::ostringstream ss;
+		ss << "gameTime: " << save->getTime()->getFullString();
+		ss << " eventPopup: " << rule.getName();
+		save->getGeoscapeDebugLog().push_back(ss.str());
+	}
 }
 
 /**
@@ -361,6 +403,30 @@ void GeoscapeEventState::btnOkClick(Action *)
 	if (!_researchName.empty())
 	{
 		Ufopaedia::openArticle(_game, _researchName);
+	}
+}
+
+/**
+ * Toggles the view between the description and the ItemsArriving list.
+ * @param action Pointer to an action.
+ */
+void GeoscapeEventState::btnItemsArrivingClick(Action *)
+{
+	if (_btnItemsArriving->getPressed())
+	{
+		_txtMessage->setVisible(false);
+
+		_txtItem->setVisible(true);
+		_txtQuantity->setVisible(true);
+		_lstTransfers->setVisible(true);
+	}
+	else
+	{
+		_txtItem->setVisible(false);
+		_txtQuantity->setVisible(false);
+		_lstTransfers->setVisible(false);
+
+		_txtMessage->setVisible(true);
 	}
 }
 

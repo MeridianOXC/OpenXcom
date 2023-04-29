@@ -67,7 +67,7 @@ namespace OpenXcom
  */
 CraftEquipmentState::CraftEquipmentState(Base *base, size_t craft) :
 	_lstScroll(0), _sel(0), _craft(craft), _base(base), _totalItems(0), _totalItemStorageSize(0.0), _ammoColor(0),
-	_reload(true), _returningFromGlobalTemplates(false), _firstInit(true), _isNewBattle(false)
+	_reload(true), _returningFromGlobalTemplates(false), _returningFromInventory(false), _firstInit(true), _isNewBattle(false)
 {
 	Craft *c = _base->getCrafts()->at(_craft);
 	bool craftHasACrew = c->getNumTotalSoldiers() > 0;
@@ -258,11 +258,21 @@ void CraftEquipmentState::init()
 			{
 				c->calculateTotalSoldierEquipment();
 			}
+			if (_returningFromInventory)
+			{
+				// now that we're back from the inventory screen, we need to remove all the excess base gear
+				for (_sel = 0; _sel != _items.size(); ++_sel)
+				{
+					int excessQty = c->getItems()->getItem(_items[_sel]) - (c->getExtraItems()->getItem(_items[_sel]) + c->getSoldierItems()->getItem(_items[_sel]));
+					moveLeftByValue(excessQty);
+				}
+			}
 		}
 		initList();
 	}
 	_reload = true;
 	_returningFromGlobalTemplates = false;
+	_returningFromInventory = false;
 	_firstInit = false;
 }
 
@@ -596,7 +606,7 @@ void CraftEquipmentState::lstEquipmentMousePress(Action *action)
 	{
 		_lstScroll = _lstEquipment->getScroll();
 		RuleItem *rule = _game->getMod()->getItem(_items[_sel]);
-		std::string articleId = rule->getType();
+		std::string articleId = rule->getUfopediaType();
 		Ufopaedia::openArticle(_game, articleId);
 	}
 }
@@ -938,6 +948,35 @@ void CraftEquipmentState::btnInventoryClick(Action *)
 	Craft *craft = _base->getCrafts()->at(_craft);
 	if (craft->getNumTotalSoldiers() > 0)
 	{
+		if (Options::oxceAlternateCraftEquipmentManagement && !_isNewBattle)
+		{
+			// This is a bit tricky... here's what we're doing:
+			// * Remember the extra craft items (i.e. items that are on the craft, but not equipped by soldiers)
+			// * Move all equipment from the base into the craft.
+			// * Run the inventory screen.
+			// * Remove excess items from the craft when CraftEquipmentState::init() is called after leaving the inventory screen.
+			// (After this, the craft should have all the updated soldier equipment, and the same extra items as before.)
+
+			// Note: the current implementation assumes no limit to the number or size of items a craft can hold.
+			//       If the craft has limited space, then we just won't have all the base items available on the inventory screen.
+
+			auto& extras = *craft->getExtraItems()->getContents();
+			extras.clear();
+			for (_sel = 0; _sel != _items.size(); ++_sel)
+			{
+				const auto& itemType = _items[_sel];
+				if (craft->getItems()->getItem(itemType) > 0)
+				{
+					extras[itemType] = craft->getItems()->getItem(itemType) - craft->getSoldierItems()->getItem(itemType);
+				}
+				RuleItem* rule = _game->getMod()->getItem(itemType);
+				if (!rule->getVehicleUnit() && rule->canBeEquippedBeforeBaseDefense())
+				{
+					moveRightByValue(INT_MAX, true);
+				}
+			}
+		}
+
 		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
 		_game->getSavedGame()->setBattleGame(bgame);
 
@@ -950,6 +989,7 @@ void CraftEquipmentState::btnInventoryClick(Action *)
 
 		_game->getScreen()->clear();
 		_game->pushState(new InventoryState(false, 0, _base));
+		_returningFromInventory = true;
 	}
 }
 
@@ -1073,7 +1113,6 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 			}
 		);
 		_game->pushState(new CannotReequipState(_missingItems, _base));
-		_reload = false;
 	}
 
 	// turn back the original setting

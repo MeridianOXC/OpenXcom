@@ -53,17 +53,6 @@ class ScriptWorkerBlit;
 struct BattleUnitStatistics;
 struct StatAdjustment;
 
-enum SpecialTileType : int;
-enum MovementType : int;
-
-
-enum ForcedTorso : Uint8 { TORSO_USE_GENDER, TORSO_ALWAYS_MALE, TORSO_ALWAYS_FEMALE };
-enum UnitSide : Uint8 { SIDE_FRONT, SIDE_LEFT, SIDE_RIGHT, SIDE_REAR, SIDE_UNDER, SIDE_MAX };
-enum UnitStatus {STATUS_STANDING, STATUS_WALKING, STATUS_FLYING, STATUS_TURNING, STATUS_AIMING, STATUS_COLLAPSING, STATUS_DEAD, STATUS_UNCONSCIOUS, STATUS_PANICKING, STATUS_BERSERK, STATUS_IGNORE_ME};
-enum UnitFaction : int {FACTION_PLAYER, FACTION_HOSTILE, FACTION_NEUTRAL};
-enum UnitBodyPart : int {BODYPART_HEAD, BODYPART_TORSO, BODYPART_RIGHTARM, BODYPART_LEFTARM, BODYPART_RIGHTLEG, BODYPART_LEFTLEG, BODYPART_MAX};
-enum UnitBodyPartEx {BODYPART_LEGS = BODYPART_MAX, BODYPART_COLLAPSING, BODYPART_ITEM_RIGHTHAND, BODYPART_ITEM_LEFTHAND, BODYPART_ITEM_FLOOR, BODYPART_ITEM_INVENTORY, BODYPART_LARGE_TORSO, BODYPART_LARGE_PROPULSION = BODYPART_LARGE_TORSO + 4, BODYPART_LARGE_TURRET = BODYPART_LARGE_PROPULSION + 4};
-
 /**
  * Placeholder class for future functionality.
  */
@@ -168,6 +157,7 @@ private:
 	MovementType _originalMovementType;
 	ArmorMoveCost _moveCostBase = { 0, 0 };
 	ArmorMoveCost _moveCostBaseFly = { 0, 0 };
+	ArmorMoveCost _moveCostBaseClimb = { 0, 0 };
 	ArmorMoveCost _moveCostBaseNormal = { 0, 0 };
 	std::vector<std::pair<Uint8, Uint8> > _recolor;
 	bool _capturable;
@@ -216,9 +206,9 @@ public:
 	/// Creates a BattleUnit from unit.
 	BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, const RuleEnviroEffects* enviro, Armor *armor, StatAdjustment *adjustment, int depth, const RuleStartingCondition* sc);
 	/// Updates BattleUnit's armor and related attributes (after a change/transformation of armor).
-	void updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor *ruleArmor, int depth, bool inBattlescape, const RuleStartingCondition* sc);
+	void updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor *ruleArmor, int depth, bool nextStage, const RuleStartingCondition* sc);
 	/// Updates BattleUnit's armor and related attributes (after a change/transformation of armor).
-	void updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int depth, const RuleStartingCondition* sc);
+	void updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int depth, bool nextStage, const RuleStartingCondition* sc);
 	/// Cleans up the BattleUnit.
 	~BattleUnit();
 	/// Loads the unit from YAML.
@@ -797,6 +787,8 @@ public:
 	bool isBannedInNextStage() const { return _bannedInNextStage; }
 	/// Is the unit eagerly picking up weapons?
 	bool getPickUpWeaponsMoreActively() const { return _pickUpWeaponsMoreActively; }
+	/// Is the unit afraid to pathfind through fire?
+	bool avoidsFire() const;
 	/// Show indicators for this unit or not?
 	bool indicatorsAreEnabled() const { return !_disableIndicators; }
 	/// Disable showing indicators for this unit.
@@ -806,6 +798,8 @@ public:
 	ArmorMoveCost getMoveCostBase() const { return _moveCostBase; }
 	/// Multiplier of fly move cost.
 	ArmorMoveCost getMoveCostBaseFly() const { return _moveCostBaseFly; }
+	/// Multiplier of climb move cost.
+	ArmorMoveCost getMoveCostBaseClimb() const { return _moveCostBaseClimb; }
 	/// Multiplier of normal move cost.
 	ArmorMoveCost getMoveCostBaseNormal() const { return _moveCostBaseNormal; }
 };

@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <algorithm>
+#include "LoadYaml.h"
 #include "Mod.h"
 #include "Armor.h"
 #include "Unit.h"
@@ -169,7 +170,7 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_liveAlienPrisonType(0), _attraction(0), _flatUse(0, 1), _flatThrow(0, 1), _flatPrime(0, 1), _flatUnprime(0, 1), _arcingShot(false),
 	_experienceTrainingMode(ETM_DEFAULT), _manaExperience(0), _listOrder(listOrder),
 	_maxRange(200), _minRange(0), _dropoff(2), _bulletSpeed(0), _explosionSpeed(0), _shotgunPellets(0), _shotgunBehaviorType(0), _shotgunSpread(100), _shotgunChoke(100),
-	_spawnUnitFaction(-1),
+	_spawnUnitFaction(FACTION_NONE), _zombieUnitFaction(FACTION_HOSTILE),
 	_targetMatrix(7),
 	_LOSRequired(false), _underwaterOnly(false), _landOnly(false), _psiReqiured(false), _manaRequired(false),
 	_meleePower(0), _specialType(-1), _vaporColor(-1), _vaporDensity(0), _vaporProbability(15),
@@ -263,58 +264,6 @@ void RuleItem::loadAmmoSlotChecked(int& result, const YAML::Node& node, const st
 }
 
 /**
- * Load nullable bool value and store it in int (with null as -1).
- * @param a value to set.
- * @param node YAML node.
- */
-void RuleItem::loadBool(bool& a, const YAML::Node& node) const
-{
-	if (node)
-	{
-		a = node.as<bool>();
-	}
-}
-/**
- * Load nullable bool value and store it in int (with null as -1).
- * @param a value to set.
- * @param node YAML node.
- */
-void RuleItem::loadTriBool(int& a, const YAML::Node& node) const
-{
-	if (node)
-	{
-		if (node.IsNull())
-		{
-			a = -1;
-		}
-		else
-		{
-			a = node.as<bool>();
-		}
-	}
-}
-
-/**
- * Load nullable int (with null as -1).
- * @param a value to set.
- * @param node YAML node.
- */
-void RuleItem::loadInt(int& a, const YAML::Node& node) const
-{
-	if (node)
-	{
-		if (node.IsNull())
-		{
-			a = -1;
-		}
-		else
-		{
-			a = node.as<int>();
-		}
-	}
-}
-
-/**
  * Load RuleItemAction from yaml.
  * @param a Item use config.
  * @param node YAML node.
@@ -374,6 +323,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 		load(parent, mod, parsers);
 	}
 
+	_ufopediaType = node["ufopediaType"].as<std::string>(_ufopediaType);
 	_name = node["name"].as<std::string>(_name);
 	_nameAsAmmo = node["nameAsAmmo"].as<std::string>(_nameAsAmmo);
 
@@ -558,7 +508,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	_costPrime.loadCost(node, "Prime");
 	_costUnprime.loadCost(node, "Unprime");
 
-	loadTriBool(_flatUse.Time, node["flatRate"]);
+	loadBoolNullable(_flatUse.Time, node["flatRate"]);
 
 	_confAimed.flat.loadPercent(node, "Aimed");
 	_confAuto.flat.loadPercent(node, "Auto");
@@ -673,13 +623,20 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	_shotgunBehaviorType = node["shotgunBehavior"].as<int>(_shotgunBehaviorType);
 	_shotgunSpread = node["shotgunSpread"].as<int>(_shotgunSpread);
 	_shotgunChoke = node["shotgunChoke"].as<int>(_shotgunChoke);
+
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByArmorMale, node["zombieUnitByArmorMale"]);
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByArmorFemale, node["zombieUnitByArmorFemale"]);
 	mod->loadUnorderedNamesToNames(_type, _zombieUnitByType, node["zombieUnitByType"]);
 	mod->loadNameNull(_type, _zombieUnit, node["zombieUnit"]);
 	mod->loadNameNull(_type, _spawnUnitName, node["spawnUnit"]);
 	mod->loadNameNull(_type, _spawnItemName, node["spawnItem"]);
-	_spawnUnitFaction = node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
+	_spawnUnitFaction = (UnitFaction)node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
+	_zombieUnitFaction = (UnitFaction)node["zombieUnitFaction"].as<int>(_zombieUnitFaction);
+	loadIntNullable(_spawnUnitChance, node["spawnUnitChance"]);
+	loadIntNullable(_zombieUnitChance, node["zombieUnitChance"]);
+	loadIntNullable(_spawnItemChance, node["spawnItemChance"]);
+
+
 	if (node["psiTargetMatrix"])
 	{
 		// TODO: just backwards-compatibility, remove in 2022, update ruleset validator too
@@ -829,6 +786,18 @@ void RuleItem::afterLoad(const Mod* mod)
 	Collections::removeAll(_requiresBuyName);
 	Collections::removeAll(_recoveryTransformationsName);
 	Collections::removeAll(_compatibleAmmoNames);
+}
+
+/**
+ * Gets the custom name of the Ufopedia article related to this item.
+ * @return The ufopedia article name.
+ */
+const std::string& RuleItem::getUfopediaType() const
+{
+	if (!_ufopediaType.empty())
+		return _ufopediaType;
+
+	return _type;
 }
 
 /**

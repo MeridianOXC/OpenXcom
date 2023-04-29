@@ -18,20 +18,26 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <SDL_types.h>
-#include <algorithm>
+#include "Position.h"
 
 namespace OpenXcom
 {
 
 class Particle
 {
+public:
+	constexpr static int SubVoxelAccuracy = 256;
+	constexpr static int LayerAccuracy = 2;
+
 private:
-	float _xOffset, _yOffset, _density;
-	Uint16 _voxelZ;
+	Position _subVoxelPos;
+	Position _screenData;
+	Uint8 _density;
+	Uint8 _layerZ;
 	Uint8 _color, _opacity, _size;
 public:
 	/// Create a particle.
-	Particle(int voxelZ, float xOffset, float yOffset, float density, Uint8 color, Uint8 opacity);
+	Particle(Position voxelPos, Uint8 density, Uint8 color, Uint8 opacity);
 	/// Default copy constructor
 	Particle(const Particle&) = default;
 	/// Default move constructor
@@ -44,18 +50,22 @@ public:
 	~Particle() = default;
 	/// Animate a particle.
 	bool animate();
+	/// Update screen data.
+	Position updateScreenPosition();
 	/// Get the size value.
 	int getSize() const { return _size; }
 	/// Get the color.
 	Uint8 getColor() const { return _color; }
 	/// Get the opacity.
-	Uint8 getOpacity() const { return std::min((_opacity + 7) / 10, 3); }
-	/// Get the horizontal shift.
-	float getX() const { return _xOffset; }
-	/// Get the vertical shift.
-	float getY() const { return _yOffset; }
-	/// Get voxel position of particle.
-	int getVoxelZ() const { return _voxelZ; }
+	Uint8 getOpacity() const { return _screenData.z; }
+	/// Gets screen offset X relative to tile.
+	int getOffsetX() const { return _screenData.x; }
+	/// Gets screen offset Y relative to tile.
+	int getOffsetY() const { return _screenData.y; }
+	/// Get layer position of particle.
+	int getLayerZ() const { return _layerZ; }
+	/// Get tile position of particle.
+	int getTileZ() const { return _layerZ / LayerAccuracy; }
 };
 
 }

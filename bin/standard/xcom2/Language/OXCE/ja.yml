@@ -20,4 +20,8 @@ ja:
   GMGEO6: "ジオスケープの記録 #6"
   GMTACDRY: "バトルスケープの記録 (地上)"
   GMTACWET: "バトルスケープの記録 (水中)"
+  GMINTER0: "艦戦の軌跡 #0"
+  GMINTER1: "艦戦の軌跡 #1"
+  GMINTER2: "艦戦の軌跡 #2"
+  GMINTER3: "艦戦の軌跡 #3"
   STR_SHOT_TYPE_AUTO: "自動 (x{0})"

@@ -55,6 +55,22 @@ namespace OpenXcom
 {
 
 /**
+ * @brief Combines any number of functions into a function that returns true if all of them are true.
+ * Short circuits as well.
+ * @tparam ...Functions type of the function to combine.
+ * @param ...funcs the functions to combine.
+ * @return a new function that is true only if all predicates are satisfied. 
+*/
+template <typename... Functions>
+inline constexpr auto allOf(Functions... funcs)
+{
+	return [=](const auto& x)
+	{
+		return (... and funcs(x));
+	};
+}
+
+/**
  * Initializes all the elements in the Purchase/Hire screen.
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
@@ -161,11 +177,46 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	}
 
 	RuleBaseFacilityFunctions providedBaseFunc = _base->getProvidedBaseFunc({});
+
+	// setup the filter methods to be used in various situations (craft, soldiers, items).
+	constexpr auto costIsNotZero = [](const auto* rule)
+	{
+		return rule->getBuyCost() != 0;
+	};
+	constexpr auto requirementsAreResearched = [](const auto* rule)
+	{
+		return _game->getSavedGame()->isResearched(rule->getRequirements());
+	};
+	constexpr auto buyRequirementsAreResearched = [](const auto* rule)
+	{
+		return _game->getSavedGame()->isResearched(rule->getBuyRequirements());
+	};
+	auto necessaryBaseFunctionsPresent = [&providedBaseFunc](const auto* rule)
+	{
+		return (~providedBaseFunc & rule->getRequiresBuyBaseFunc()).none();
+	};
+	constexpr auto requiredCountryAllied = [](const auto* rule)
+	{
+		if (!rule->getRequiresBuyCountry().empty())
+		{
+			for (const auto* country : *_game->getSavedGame()->getCountries())
+			{
+				if (country->getPact() && country->getRules()->getType() == rule->getRequiresBuyCountry())
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
+	auto craftAndSoldierFilter = allOf(costIsNotZero, requirementsAreResearched, necessaryBaseFunctionsPresent, requiredCountryAllied);
+	auto itemFilter = allOf(costIsNotZero, requirementsAreResearched, buyRequirementsAreResearched, necessaryBaseFunctionsPresent, requiredCountryAllied);
+
 	for (auto& soldierType : _game->getMod()->getSoldiersList())
 	{
 		RuleSoldier *rule = _game->getMod()->getSoldier(soldierType);
-		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
-		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
+		if (craftAndSoldierFilter(rule))
 		{
 			TransferRow row = { TRANSFER_SOLDIER, rule, tr(rule->getType()), rule->getBuyCost(), _base->getSoldierCountAndSalary(rule->getType()).first, 0, 0, -4, 0, 0, 0 };
 			_items.push_back(row);
@@ -201,8 +252,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	for (auto& craftType : _game->getMod()->getCraftsList())
 	{
 		RuleCraft *rule = _game->getMod()->getCraft(craftType);
-		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
-		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
+		if (craftAndSoldierFilter(rule))
 		{
 			TransferRow row = { TRANSFER_CRAFT, rule, tr(rule->getType()), rule->getBuyCost(), _base->getCraftCount(rule), 0, 0, -1, 0, 0, 0 };
 			_items.push_back(row);
@@ -216,8 +266,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	for (auto& itemType : _game->getMod()->getItemsList())
 	{
 		RuleItem *rule = _game->getMod()->getItem(itemType);
-		RuleBaseFacilityFunctions purchaseBaseFunc = rule->getRequiresBuyBaseFunc();
-		if (rule->getBuyCost() != 0 && _game->getSavedGame()->isResearched(rule->getRequirements()) && _game->getSavedGame()->isResearched(rule->getBuyRequirements()) && (~providedBaseFunc & purchaseBaseFunc).none())
+		if (itemFilter(rule))
 		{
 			TransferRow row = { TRANSFER_ITEM, rule, tr(rule->getType()), rule->getBuyCost(), _base->getStorageItems()->getItem(rule), 0, 0, rule->getListOrder(), 0, 0, 0 };
 			_items.push_back(row);
@@ -616,24 +665,6 @@ void PurchaseState::updateList()
 		if (_items[i].type == TRANSFER_ITEM)
 		{
 			RuleItem *rule = (RuleItem*)_items[i].rule;
-			if (!rule->getRequiresBuyCountry().empty())
-			{
-				// required allied country
-				bool allied = true;
-				auto* countries = _game->getSavedGame()->getCountries();
-				for (const auto* country : *countries)
-				{
-					if (country->getPact() && country->getRules()->getType() == rule->getRequiresBuyCountry())
-					{
-						allied = false;
-						break;
-					}
-				}
-				if (!allied)
-				{
-					continue;
-				}
-			}
 			ammo = (rule->getBattleType() == BT_AMMO || (rule->getBattleType() == BT_NONE && rule->getClipSize() > 0));
 			if (ammo)
 			{
@@ -860,7 +891,7 @@ void PurchaseState::lstItemsMousePress(Action *action)
 			RuleItem *rule = (RuleItem*)getRow().rule;
 			if (rule != 0)
 			{
-				std::string articleId = rule->getType();
+				std::string articleId = rule->getUfopediaType();
 				Ufopaedia::openArticle(_game, articleId);
 			}
 		}

@@ -20,4 +20,8 @@ cs:
   GMGEO6: "Hudba glóbusu č. 6"
   GMTACDRY: "Hudba bojiště (souš)"
   GMTACWET: "Hudba bojiště (voda)"
+  GMINTER0: "Hudba honička #0"
+  GMINTER1: "Hudba honička #1"
+  GMINTER2: "Hudba honička #2"
+  GMINTER3: "Hudba honička #3"
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

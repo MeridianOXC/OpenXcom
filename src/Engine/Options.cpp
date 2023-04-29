@@ -209,6 +209,7 @@ void create()
 	_info.push_back(OptionInfo("canSellLiveAliens", &canSellLiveAliens, false, "STR_CANSELLLIVEALIENS", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("anytimePsiTraining", &anytimePsiTraining, false, "STR_ANYTIMEPSITRAINING", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("globeSeasons", &globeSeasons, false, "STR_GLOBESEASONS", "STR_GEOSCAPE"));
+	_info.push_back(OptionInfo("globeSurfaceCache", &globeSurfaceCache, true)); //hidden for now
 	_info.push_back(OptionInfo("psiStrengthEval", &psiStrengthEval, false, "STR_PSISTRENGTHEVAL", "STR_GEOSCAPE"));
 	_info.push_back(OptionInfo("canTransferCraftsWhileAirborne", &canTransferCraftsWhileAirborne, false, "STR_CANTRANSFERCRAFTSWHILEAIRBORNE", "STR_GEOSCAPE")); // When the craft can reach the destination base with its fuel
 	_info.push_back(OptionInfo("retainCorpses", &retainCorpses, false, "STR_RETAINCORPSES", "STR_GEOSCAPE"));
@@ -282,6 +283,8 @@ void create()
 	_info.push_back(OptionInfo("oxceAutoSell", &oxceAutoSell, false, "STR_AUTO_SELL", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceRememberDisabledCraftWeapons", &oxceRememberDisabledCraftWeapons, false, "STR_REMEMBER_DISABLED_CRAFT_WEAPONS", "STR_OXCE"));
 	_info.push_back(OptionInfo("oxceEnableOffCentreShooting", &oxceEnableOffCentreShooting, false, "STR_OFF_CENTRE_SHOOTING", "STR_OXCE"));
+	_info.push_back(OptionInfo("oxceManualPromotions", &oxceManualPromotions, false, "STR_MANUALPROMOTIONS", "STR_OXCE"));
+	_info.push_back(OptionInfo("oxceAutomaticPromotions", &oxceAutomaticPromotions, true, "STR_AUTOMATICPROMOTIONS", "STR_OXCE"));
 
 	// OXCE hidden
 #ifdef __MOBILE__
@@ -306,6 +309,7 @@ void create()
 	_info.push_back(OptionInfo("oxceEmbeddedOnly", &oxceEmbeddedOnly, true));
 	_info.push_back(OptionInfo("oxceListVFSContents", &oxceListVFSContents, false));
 	_info.push_back(OptionInfo("oxceRawScreenShots", &oxceRawScreenShots, false));
+	_info.push_back(OptionInfo("oxceFirstPersonViewFisheyeProjection", &oxceFirstPersonViewFisheyeProjection, false));
 	_info.push_back(OptionInfo("oxceThumbButtons", &oxceThumbButtons, true));
 
 	_info.push_back(OptionInfo("oxceRecommendedOptionsWereSet", &oxceRecommendedOptionsWereSet, false));
@@ -324,6 +328,8 @@ void create()
 	_info.push_back(OptionInfo("oxceDisableHitLog", &oxceDisableHitLog, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo("oxceDisableAlienInventory", &oxceDisableAlienInventory, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo("oxceDisableInventoryTuCost", &oxceDisableInventoryTuCost, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo("oxceShowBaseNameInPopups", &oxceShowBaseNameInPopups, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo("oxceGeoscapeDebugLogMaxEntries", &oxceGeoscapeDebugLogMaxEntries, 1000, "", "HIDDEN"));
 
 	// controls
 	_info.push_back(KeyOptionInfo("keyOk", &keyOk, SDLK_RETURN, "STR_OK", "STR_GENERAL"));
@@ -420,6 +426,7 @@ void create()
 	_info.push_back(KeyOptionInfo("keyGeoTechTreeViewer", &keyGeoTechTreeViewer, SDLK_q, "STR_TECH_TREE_VIEWER", "STR_OXCE"));
 	_info.push_back(KeyOptionInfo("keyGeoGlobalProduction", &keyGeoGlobalProduction, SDLK_p, "STR_PRODUCTION_OVERVIEW", "STR_OXCE"));
 	_info.push_back(KeyOptionInfo("keyGeoGlobalResearch", &keyGeoGlobalResearch, SDLK_c, "STR_RESEARCH_OVERVIEW", "STR_OXCE"));
+	_info.push_back(KeyOptionInfo("keyGeoGlobalAlienContainment", &keyGeoGlobalAlienContainment, SDLK_j, "STR_PRISONER_OVERVIEW", "STR_OXCE"));
 	_info.push_back(KeyOptionInfo("keyGraphsZoomIn", &keyGraphsZoomIn, SDLK_KP_PLUS, "STR_GRAPHS_ZOOM_IN", "STR_OXCE"));
 	_info.push_back(KeyOptionInfo("keyGraphsZoomOut", &keyGraphsZoomOut, SDLK_KP_MINUS, "STR_GRAPHS_ZOOM_OUT", "STR_OXCE"));
 

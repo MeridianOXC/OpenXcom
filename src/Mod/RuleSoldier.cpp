@@ -79,6 +79,7 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, const ModScript &parser
 	//requires
 	mod->loadUnorderedNames(_type, _requires, node["requires"]);
 	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, node["requiresBuyBaseFunc"]);
+	_requiresBuyCountry = node["requiresBuyCountry"].as<std::string>(_requiresBuyCountry);
 
 
 	_minStats.merge(node["minStats"].as<UnitStats>(_minStats));

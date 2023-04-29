@@ -96,6 +96,7 @@ Craft::Craft(const RuleCraft *rules, Base *base, int id) : MovingTarget(),
 	_stats = rules->getStats();
 	_items = new ItemContainer();
 	_tempSoldierItems = new ItemContainer();
+	_tempExtraItems = new ItemContainer();
 	if (id != 0)
 	{
 		_id = id;
@@ -130,6 +131,7 @@ Craft::~Craft()
 	}
 	delete _items;
 	delete _tempSoldierItems;
+	delete _tempExtraItems;
 	for (auto* vehicle : _vehicles)
 	{
 		delete vehicle;
@@ -650,6 +652,15 @@ ItemContainer *Craft::getItems()
 ItemContainer* Craft::getSoldierItems()
 {
 	return _tempSoldierItems;
+}
+
+/**
+ * Returns the list of items in the craft not equipped by the soldiers.
+ * @return Pointer to the item list.
+ */
+ItemContainer* Craft::getExtraItems()
+{
+	return _tempExtraItems;
 }
 
 /**

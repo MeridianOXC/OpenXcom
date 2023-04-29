@@ -25,6 +25,7 @@
 #include "../Mod/RuleResearch.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Engine/Options.h"
+#include "../Savegame/Base.h"
 
 namespace OpenXcom
 {
@@ -35,7 +36,7 @@ namespace OpenXcom
  * @param bonus Pointer to bonus unlocked research.
  * @param research Pointer to the research project.
  */
-ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, const RuleResearch *bonus, const RuleResearch *research) : _research(newResearch), _bonus(bonus)
+ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, const RuleResearch *bonus, const RuleResearch *research, const Base* base) : _research(newResearch), _bonus(bonus)
 {
 	_screen = false;
 
@@ -43,6 +44,7 @@ ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, co
 	_window = new Window(this, 230, 140, 45, 30, POPUP_BOTH);
 	_btnOk = new TextButton(80, 16, 64, 146);
 	_btnReport = new TextButton(80, 16, 176, 146);
+	_txtBase = new Text(230, 9, 45, 40);
 	_txtTitle = new Text(230, 17, 45, 70);
 	_txtResearch = new Text(230, 32, 45, 96);
 
@@ -52,6 +54,7 @@ ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, co
 	add(_window, "window", "geoResearchComplete");
 	add(_btnOk, "button", "geoResearchComplete");
 	add(_btnReport, "button", "geoResearchComplete");
+	add(_txtBase, "text1", "geoResearchComplete");
 	add(_txtTitle, "text1", "geoResearchComplete");
 	add(_txtResearch, "text2", "geoResearchComplete");
 
@@ -67,6 +70,10 @@ ResearchCompleteState::ResearchCompleteState(const RuleResearch *newResearch, co
 	_btnReport->setText(tr("STR_VIEW_REPORTS"));
 	_btnReport->onMouseClick((ActionHandler)&ResearchCompleteState::btnReportClick);
 	_btnReport->onKeyboardPress((ActionHandler)&ResearchCompleteState::btnReportClick, Options::keyOk);
+
+	_txtBase->setAlign(ALIGN_CENTER);
+	_txtBase->setText(base->getName());
+	_txtBase->setVisible(Options::oxceShowBaseNameInPopups);
 
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);

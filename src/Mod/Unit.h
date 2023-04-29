@@ -33,6 +33,17 @@ class ModScript;
 class ScriptParserBase;
 
 enum SpecialAbility { SPECAB_NONE, SPECAB_EXPLODEONDEATH, SPECAB_BURNFLOOR, SPECAB_BURN_AND_EXPLODE };
+enum SpecialTileType : int;
+enum MovementType : int;
+
+
+enum ForcedTorso : Uint8 { TORSO_USE_GENDER, TORSO_ALWAYS_MALE, TORSO_ALWAYS_FEMALE };
+enum UnitSide : Uint8 { SIDE_FRONT, SIDE_LEFT, SIDE_RIGHT, SIDE_REAR, SIDE_UNDER, SIDE_MAX };
+enum UnitStatus {STATUS_STANDING, STATUS_WALKING, STATUS_FLYING, STATUS_TURNING, STATUS_AIMING, STATUS_COLLAPSING, STATUS_DEAD, STATUS_UNCONSCIOUS, STATUS_PANICKING, STATUS_BERSERK, STATUS_IGNORE_ME};
+enum UnitFaction : int {FACTION_NONE = -1, FACTION_PLAYER = 0, FACTION_HOSTILE = 1, FACTION_NEUTRAL = 2};
+enum UnitBodyPart : int {BODYPART_HEAD, BODYPART_TORSO, BODYPART_RIGHTARM, BODYPART_LEFTARM, BODYPART_RIGHTLEG, BODYPART_LEFTLEG, BODYPART_MAX};
+enum UnitBodyPartEx {BODYPART_LEGS = BODYPART_MAX, BODYPART_COLLAPSING, BODYPART_ITEM_RIGHTHAND, BODYPART_ITEM_LEFTHAND, BODYPART_ITEM_FLOOR, BODYPART_ITEM_INVENTORY, BODYPART_LARGE_TORSO, BODYPART_LARGE_PROPULSION = BODYPART_LARGE_TORSO + 4, BODYPART_LARGE_TURRET = BODYPART_LARGE_PROPULSION + 4};
+
 /**
  * This struct holds some plain unit attribute data together.
  */
@@ -438,6 +449,7 @@ private:
 	bool _isLeeroyJenkins;
 	bool _waitIfOutsideWeaponRange;
 	int _pickUpWeaponsMoreActively;
+	Sint8 _avoidsFire;
 	bool _vip;
 	bool _cosmetic, _ignoredByAI;
 	bool _canPanic;
@@ -533,6 +545,8 @@ public:
 	bool waitIfOutsideWeaponRange() { return _waitIfOutsideWeaponRange; };
 	/// Should the unit try to pick up weapons more actively?
 	int getPickUpWeaponsMoreActively() const { return _pickUpWeaponsMoreActively; }
+	/// Is the unit afraid to pathfind through fire?
+	bool avoidsFire() const;
 	/// Should alien inventory show full name (e.g. Sectoid Leader) or just the race (e.g. Sectoid)?
 	bool getShowFullNameInAlienInventory(Mod *mod) const;
 	/// Is this a VIP unit?

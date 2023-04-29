@@ -160,9 +160,9 @@ public:
 	/// Gets alt pressed flag.
 	bool isAltPressed() const { return _isAltPressed; }
 	/// Add new vapor particle.
-	void addVaporParticle(const Tile* tile, Particle particle);
+	void addVaporParticle(Position pos, Particle particle);
 	/// Get all vapor for tile.
-	Collections::Range<const Particle*> getVaporParticle(const Tile* tile, bool topLayer) const;
+	Collections::Range<const Particle*> getVaporParticle(const Tile* tile, int topLayer) const;
 	/// Gets explosion set.
 	std::list<Explosion*> *getExplosions();
 

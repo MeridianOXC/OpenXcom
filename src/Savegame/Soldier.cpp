@@ -747,6 +747,29 @@ void Soldier::promoteRank()
 }
 
 /**
+ * Promotes/demotes a soldier to a specific rank.
+ */
+void Soldier::setRank(const SoldierRank newRank)
+{
+	if (!_rules->getAllowPromotion())
+		return;
+
+	const std::vector<std::string> &rankStrings = _rules->getRankStrings();
+	if (!rankStrings.empty())
+	{
+		// abort if the desired rank is not indexed in the rank strings
+		if ((size_t)newRank >= rankStrings.size())
+		{
+			return;
+		}
+	}
+
+	_rank = newRank;
+
+	// Note: we don't need to show a notification for this style of promotion
+}
+
+/**
  * Returns the soldier's amount of missions.
  * @return Missions.
  */
@@ -873,7 +896,7 @@ void Soldier::addStunCount(int count)
 /**
  * Get pointer to initial stats.
  */
-UnitStats *Soldier::getInitStats()
+const UnitStats* Soldier::getInitStats() const
 {
 	return &_initialStats;
 }
@@ -881,7 +904,11 @@ UnitStats *Soldier::getInitStats()
 /**
  * Get pointer to current stats.
  */
-UnitStats *Soldier::getCurrentStats()
+UnitStats *Soldier::getCurrentStatsEditable()
+{
+	return &_currentStats;
+}
+const UnitStats* Soldier::getCurrentStats() const
 {
 	return &_currentStats;
 }
@@ -1488,6 +1515,10 @@ void Soldier::clearEquipmentLayout()
  * @return Diary.
  */
 SoldierDiary *Soldier::getDiary()
+{
+	return _diary;
+}
+const SoldierDiary* Soldier::getDiary() const
 {
 	return _diary;
 }

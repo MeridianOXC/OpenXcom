@@ -879,6 +879,10 @@ interfaces: #done
       - id: text2
         color: 1
         color2: 239
+      - id: list
+        color: 239
+        color2: 244
+        border: 1
       - id: button
         color: 1
   - type: graphs
@@ -1110,6 +1114,22 @@ interfaces: #done
         color: 6     # oxide
       - id: errorMessage
         color: 1   # pink
+  - type: globalContainmentMenu
+    backgroundImage: BACK05.SCR
+    elements:
+      - id: palette
+        color: 0
+      - id: window
+        color: 1
+      - id: text
+        color: 1
+        color2: 239
+      - id: list
+        color: 239
+        color2: 1
+        border: 1
+      - id: button
+        color: 1
   - type: transferBaseSelect
     backgroundImage: BACK13.SCR
     elements:
@@ -1558,6 +1578,21 @@ interfaces: #done
         border: 1  # white
       - id: button
         color: 1   # white
+  - type: soldierRank
+    backgroundImage: BACK14.SCR
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 1     # white
+      - id: text
+        color: 1     # white
+      - id: list
+        color: 1     # white
+        color2: 244  # green
+        border: 1    # white
+      - id: button
+        color: 1     # white
   - type: soldierAvatar
     backgroundImage: BACK14.SCR
     elements:

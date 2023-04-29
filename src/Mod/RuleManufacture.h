@@ -54,6 +54,7 @@ private:
 	RuleBaseFacilityFunctions _requiresBaseFunc;
 	std::vector<const RuleResearch*> _requires;
 	int _space, _time, _cost;
+	int _points;
 	bool _refund;
 	std::map<std::string, int> _requiredItemsNames, _producedItemsNames;
 	std::map<const RuleItem*, int> _requiredItems, _producedItems;
@@ -93,6 +94,8 @@ public:
 	int getManufactureCost() const;
 	/// Checks if there's enough funds to manufacture one object.
 	bool haveEnoughMoneyForOneMoreUnit(int64_t funds) const;
+	/// Gets the points earned for manufacturing one production object.
+	int getPoints() const { return _points; }
 	/// Should all resources of a cancelled project be refunded?
 	bool getRefund() const;
 	/// Gets the list of items required to manufacture one object.

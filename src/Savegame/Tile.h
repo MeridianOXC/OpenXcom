@@ -101,6 +101,10 @@ public:
 	{
 		Sint8 terrainLevel = 0;
 		Uint8 isNoFloor:1;
+		Uint8 isGravLift:1;
+		Uint8 isLadderOnObject:1;
+		Uint8 isLadderOnNorth:1;
+		Uint8 isLadderOnWest:1;
 		Uint8 bigWall:1;
 		Uint8 danger:1;
 	};
@@ -190,6 +194,16 @@ public:
 	int getTUCost(int part, MovementType movementType) const;
 	/// Checks if this tile has a floor.
 	bool hasNoFloor(const SavedBattleGame *savedBattleGame = nullptr) const;
+	/// Checks if this tile has a GravLift floor.
+	bool hasGravLiftFloor() const { return _cache.isGravLift; }
+	/// Check if this tile has a Ladder (similar to GravLift but on wall).
+	bool hasLadder() const { return _cache.isLadderOnObject || _cache.isLadderOnNorth || _cache.isLadderOnWest; }
+	/// Check if this tile object part has a Ladder (similar to GravLift but on wall).
+	bool hasLadderOnObject() const { return _cache.isLadderOnObject; }
+	/// Check if this tile wall part has a Ladder (similar to GravLift but on wall).
+	bool hasLadderOnNorthWall() const { return _cache.isLadderOnNorth; }
+	/// Check if this tile wall part has a Ladder (similar to GravLift but on wall).
+	bool hasLadderOnWestWall() const { return _cache.isLadderOnWest; }
 
 	/**
 	 * Whether this tile has a big wall.

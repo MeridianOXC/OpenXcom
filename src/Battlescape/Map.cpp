@@ -130,6 +130,11 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	{
 		_transparencies = &_game->getMod()->getLUTs()->at(_save->getDepth());
 	}
+	else
+	{
+		const static std::vector<Uint8> dummy;
+		_transparencies = &dummy;
+	}
 
 	_spriteWidth = _game->getMod()->getSurfaceSet("BLANKS.PCK")->getFrame(0)->getWidth();
 	_spriteHeight = _game->getMod()->getSurfaceSet("BLANKS.PCK")->getFrame(0)->getHeight();
@@ -1107,6 +1112,36 @@ void Map::drawTerrain(Surface *surface)
 							}
 						}
 					}
+
+					//draw particle clouds
+					int pixelMaskArray[] = { 0, 2, 1, 3 };
+					SurfaceRaw<int> pixelMask(pixelMaskArray, 2, 2);
+					const int vaporScreenOriginX = screenPosition.x + _spriteWidth / 2;
+					const int vaporScreenOriginY = screenPosition.y + _spriteHeight - _spriteWidth / 2 + tile->getPosition().toVoxel().z;
+					const Uint8* const transparetPtr = _transparencies->data();
+
+					//draw particle clouds behind solder
+					for (const Particle& p : getVaporParticle(tile, 0))
+					{
+						int vaporX = vaporScreenOriginX + p.getOffsetX();
+						int vaporY = vaporScreenOriginY + p.getOffsetY();
+						auto transparetOffsets = transparetPtr
+							+ (p.getColor() * Mod::TransparenciesOpacityLevels * Mod::TransparenciesPaletteColors)
+							+ (p.getOpacity() * Mod::TransparenciesPaletteColors);
+
+						ShaderDrawFunc(
+							[&](Uint8& dest, int size)
+							{
+								if (p.getSize() <= size)
+								{
+									dest = transparetOffsets[dest];
+								}
+							},
+							ShaderSurface(this),
+							ShaderMove(pixelMask, vaporX, vaporY)
+						);
+					}
+
 					unit = tile->getUnit();
 					// Draw soldier from this tile, below or above
 					drawUnit(unitSprite, tile, tile, screenPosition, topLayer, isUnitMovingNearby ? movingUnit : nullptr);
@@ -1160,29 +1195,26 @@ void Map::drawTerrain(Surface *surface)
 						Surface::blitRaw(surface, tmpSurface, screenPosition.x, screenPosition.y, shade, false, _nvColor);
 					}
 
-					//draw particle clouds
-					int pixelMaskArray[] = { 0, 2, 1, 3 };
-					SurfaceRaw<int> pixelMask(pixelMaskArray, 2, 2);
-					for (const auto& p : getVaporParticle(tile, topLayer))
+					//draw particle clouds on front of solder
+					for (const Particle& p : getVaporParticle(tile, topLayer ? 3 : 1))
 					{
-						if ((int)(_transparencies->size()) >= (p.getColor() + 1) * 1024)
-						{
-							float vaporX = p.getX() + cameraPos.x;
-							float vaporY = p.getY() + cameraPos.y;
-							auto transparetOffsets = _transparencies->data() + (p.getColor() * 1024) + (p.getOpacity() * 256);
+						int vaporX = vaporScreenOriginX + p.getOffsetX();
+						int vaporY = vaporScreenOriginY + p.getOffsetY();
+						auto transparetOffsets = transparetPtr
+							+ (p.getColor() * Mod::TransparenciesOpacityLevels * Mod::TransparenciesPaletteColors)
+							+ (p.getOpacity() * Mod::TransparenciesPaletteColors);
 
-							ShaderDrawFunc(
-								[&](Uint8& dest, int size)
+						ShaderDrawFunc(
+							[&](Uint8& dest, int size)
+							{
+								if (p.getSize() <= size)
 								{
-									if (p.getSize() <= size)
-									{
-										dest = transparetOffsets[dest];
-									}
-								},
-								ShaderSurface(this),
-								ShaderMove(pixelMask, vaporX, vaporY)
-							);
-						}
+									dest = transparetOffsets[dest];
+								}
+							},
+							ShaderSurface(this),
+							ShaderMove(pixelMask, vaporX, vaporY)
+						);
 					}
 
 					// Draw Path Preview
@@ -1954,6 +1986,35 @@ void Map::animate(bool redraw)
 		_save->getTile(i)->animate();
 	}
 
+	// animate vapor
+	for (auto i : Collections::rangeValueLess(_vaporParticles.size()))
+	{
+		auto& v = _vaporParticles[i];
+		int posX = i % _camera->getMapSizeX();
+		int posY = i / _camera->getMapSizeX();
+
+		Collections::removeIf(
+			v,
+			[&](Particle& p)
+			{
+				if (p.animate())
+				{
+					Position tileOffset = p.updateScreenPosition();
+					if (tileOffset != Position(0,0,0))
+					{
+						addVaporParticle(Position(posX,posY,0) + tileOffset, p);
+						return true;
+					}
+					return false;
+				}
+				else
+				{
+					return true;
+				}
+			}
+		);
+	}
+
 	// init vapor vector
 	for (auto i : Collections::rangeValueLess(_vaporParticlesInit.size()))
 	{
@@ -1973,30 +2034,19 @@ void Map::animate(bool redraw)
 			vDest.insert(std::begin(vDest), std::begin(vi), std::end(vi));
 		}
 
-		std::sort(std::begin(vDest), std::end(vDest), [](const Particle& a, const Particle& b){ return a.getVoxelZ() < b.getVoxelZ(); });
 
 		Collections::removeAll(vi);
 	}
 
-	// animate vapor
 	for (auto& tilePar : _vaporParticles)
 	{
 		if (tilePar.empty())
 		{
-			continue;
-		}
-
-		auto left = Collections::removeIf(
-			tilePar,
-			[](Particle& p)
-			{
-				return p.animate() == false;
-			}
-		);
-		if (!left)
-		{
-			//clean all allocated memory, after every particle expire.
 			Collections::removeAll(tilePar);
+		}
+		else
+		{
+			std::sort(std::begin(tilePar), std::end(tilePar), [](const Particle& a, const Particle& b){ return a.getLayerZ() < b.getLayerZ(); });
 		}
 	}
 
@@ -2224,10 +2274,32 @@ Projectile *Map::getProjectile() const
 
 /**
  * Add new vapor particle.
+ * @param pos Tile position of particle.
+ * @param particle Particle to add.
  */
-void Map::addVaporParticle(const Tile* tile, Particle particle)
+void Map::addVaporParticle(Position pos, Particle particle)
 {
-	auto& v = _vaporParticlesInit[_camera->getMapSizeX() * tile->getPosition().y + tile->getPosition().x];
+	if ((int)(_transparencies->size()) < (particle.getColor() + 1) * Mod::TransparenciesOpacityLevels * Mod::TransparenciesPaletteColors)
+	{
+		return;
+	}
+	if (pos.x >= _camera->getMapSizeX() || pos.y >= _camera->getMapSizeY())
+	{
+		return;
+	}
+	if (pos.x < 0 || pos.y < 0)
+	{
+		return;
+	}
+
+	auto& v = _vaporParticlesInit[_camera->getMapSizeX() * pos.y + pos.x];
+
+	// as there will usually be more than one Particle, we prepare more space
+	if (v.capacity() < 64)
+	{
+		v.reserve(64);
+	}
+
 	v.push_back(particle);
 }
 
@@ -2237,14 +2309,14 @@ void Map::addVaporParticle(const Tile* tile, Particle particle)
  * @param topLayer if tile is top visible layer, if true then will return particles belongs to upper tiles.
  * @return range of particles that should be drawn.
  */
-Collections::Range<const Particle*> Map::getVaporParticle(const Tile* tile, bool topLayer) const
+Collections::Range<const Particle*> Map::getVaporParticle(const Tile* tile, int topLayer) const
 {
 	Position pos = tile->getPosition();
 	auto& v = _vaporParticles[_camera->getMapSizeX() * pos.y + pos.x];
-	int startZ = pos.z * Position::TileZ;
-	int endZ = startZ + Position::TileZ;
-	auto* s = std::partition_point(v.data(), v.data() + v.size(), [&](const Particle& a){ return a.getVoxelZ() < startZ; });
-	auto* e = topLayer ? v.data() + v.size() : std::partition_point(s, v.data() + v.size(), [&](const Particle& a){ return a.getVoxelZ() < endZ; });
+	int startZ = pos.z * Particle::LayerAccuracy + (topLayer & 1);
+	int endZ = startZ + Particle::LayerAccuracy / 2;
+	auto* s = std::partition_point(v.data(), v.data() + v.size(), [&](const Particle& a){ return a.getLayerZ() < startZ; });
+	auto* e = (topLayer & 2) ? v.data() + v.size() : std::partition_point(s, v.data() + v.size(), [&](const Particle& a){ return a.getLayerZ() < endZ; });
 	return Collections::Range{ s, e };
 }
 

@@ -855,7 +855,7 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 					int winnerMod = _save->getFactionMoraleModifier(victim->getOriginalFaction() == FACTION_HOSTILE);
 					for (auto* bu : *_save->getUnits())
 					{
-						if (!bu->isOut() && bu->isSmallUnit())
+						if (!bu->isOut() && (bu->isSmallUnit() || bu->getGeoscapeSoldier())) // soldier in 2x2 armors should feel dread too
 						{
 							// the losing squad all get a morale loss
 							if (bu->getOriginalFaction() == victim->getOriginalFaction())
@@ -2159,9 +2159,14 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 	if (!type)
 		return;
 
+	if (!RNG::percent(item->getSpawnUnitChance()))
+	{
+		return;
+	}
+
 	// Check which faction the new unit will be
 	UnitFaction faction;
-	if (item->getSpawnUnitFaction() == -1 && attack.attacker)
+	if (item->getSpawnUnitFaction() == FACTION_NONE && attack.attacker)
 	{
 		faction = attack.attacker->getFaction();
 	}
@@ -2260,6 +2265,11 @@ void BattlescapeGame::spawnNewItem(BattleActionAttack attack, Position position)
 
 	if (!type)
 		return;
+
+	if (!RNG::percent(item->getSpawnItemChance()))
+	{
+		return;
+	}
 
 	// Create the item
 	auto* newItem = _save->createTempItem(type);

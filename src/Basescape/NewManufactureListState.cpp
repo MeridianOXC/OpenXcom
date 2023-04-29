@@ -169,15 +169,7 @@ void NewManufactureListState::lstProdClickLeft(Action *)
 	if (basicFilter == MANU_FILTER_FACILITY_REQUIRED)
 		return;
 
-	RuleManufacture *rule = 0;
-	for (auto* manuf : _possibleProductions)
-	{
-		if (manuf->getName() == _displayedStrings[_lstManufacture->getSelectedRow()])
-		{
-			rule = manuf;
-			break;
-		}
-	}
+	RuleManufacture* rule = _game->getMod()->getManufacture(_displayedStrings[_lstManufacture->getSelectedRow()]);
 
 	// check and display error messages only further down the chain
 	_refreshCategories = false;

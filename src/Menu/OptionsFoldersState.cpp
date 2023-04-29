@@ -17,6 +17,8 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "OptionsFoldersState.h"
+#include "../Engine/Action.h"
+#include "../Engine/CrossPlatform.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/Options.h"
 #include "../Interface/Text.h"
@@ -38,7 +40,8 @@ OptionsFoldersState::OptionsFoldersState(OptionsOrigin origin) : OptionsBaseStat
 	_txtSaveFolder = new Text(218, 9, 94, 86);
 	_txtConfigFolder = new Text(218, 9, 94, 121);
 
-	_txtDataFolderPath = new Text(218, 41, 94, 18);
+	_txtDataFolderPath1 = new Text(218, 17, 94, 18);
+	_txtDataFolderPath2 = new Text(218, 17, 94, 38);
 	_txtUserFolderPath = new Text(218, 17, 94, 69);
 	_txtSaveFolderPath = new Text(218, 25, 94, 96);
 	_txtConfigFolderPath = new Text(218, 17, 94, 131);
@@ -48,7 +51,8 @@ OptionsFoldersState::OptionsFoldersState(OptionsOrigin origin) : OptionsBaseStat
 	add(_txtSaveFolder, "text1", "foldersMenu");
 	add(_txtConfigFolder, "text1", "foldersMenu");
 
-	add(_txtDataFolderPath, "text2", "foldersMenu");
+	add(_txtDataFolderPath1, "text2", "foldersMenu");
+	add(_txtDataFolderPath2, "text2", "foldersMenu");
 	add(_txtUserFolderPath, "text2", "foldersMenu");
 	add(_txtSaveFolderPath, "text2", "foldersMenu");
 	add(_txtConfigFolderPath, "text2", "foldersMenu");
@@ -76,31 +80,41 @@ OptionsFoldersState::OptionsFoldersState(OptionsOrigin origin) : OptionsBaseStat
 		oxceDataFolder = FileMap::at(file2)->fullpath;
 		oxceDataFolder = oxceDataFolder.substr(0, oxceDataFolder.find(file2));
 	}
-	std::string dataFolder = origDataFolder + "\n\n" + oxceDataFolder;
 
-	_txtDataFolderPath->setText(dataFolder);
-	_txtDataFolderPath->setWordWrap(true);
-	_txtDataFolderPath->setTooltip("STR_DATA_FOLDER_DESC");
-	_txtDataFolderPath->onMouseIn((ActionHandler)&OptionsFoldersState::txtTooltipIn);
-	_txtDataFolderPath->onMouseOut((ActionHandler)&OptionsFoldersState::txtTooltipOut);
+	_txtDataFolderPath1->setText(origDataFolder);
+	_txtDataFolderPath1->setWordWrap(true);
+	_txtDataFolderPath1->setTooltip("STR_DATA_FOLDER_DESC_1");
+	_txtDataFolderPath1->onMouseIn((ActionHandler)&OptionsFoldersState::txtTooltipIn);
+	_txtDataFolderPath1->onMouseOut((ActionHandler)&OptionsFoldersState::txtTooltipOut);
+	_txtDataFolderPath1->onMouseClick((ActionHandler)&OptionsFoldersState::txtClick);
+
+	_txtDataFolderPath2->setText(oxceDataFolder);
+	_txtDataFolderPath2->setWordWrap(true);
+	_txtDataFolderPath2->setTooltip("STR_DATA_FOLDER_DESC_2");
+	_txtDataFolderPath2->onMouseIn((ActionHandler)&OptionsFoldersState::txtTooltipIn);
+	_txtDataFolderPath2->onMouseOut((ActionHandler)&OptionsFoldersState::txtTooltipOut);
+	_txtDataFolderPath2->onMouseClick((ActionHandler)&OptionsFoldersState::txtClick);
 
 	_txtUserFolderPath->setText(Options::getUserFolder());
 	_txtUserFolderPath->setWordWrap(true);
 	_txtUserFolderPath->setTooltip("STR_USER_FOLDER_DESC");
 	_txtUserFolderPath->onMouseIn((ActionHandler)&OptionsFoldersState::txtTooltipIn);
 	_txtUserFolderPath->onMouseOut((ActionHandler)&OptionsFoldersState::txtTooltipOut);
+	_txtUserFolderPath->onMouseClick((ActionHandler)&OptionsFoldersState::txtClick);
 
 	_txtSaveFolderPath->setText(Options::getMasterUserFolder());
 	_txtSaveFolderPath->setWordWrap(true);
 	_txtSaveFolderPath->setTooltip("STR_SAVE_FOLDER_DESC");
 	_txtSaveFolderPath->onMouseIn((ActionHandler)&OptionsFoldersState::txtTooltipIn);
 	_txtSaveFolderPath->onMouseOut((ActionHandler)&OptionsFoldersState::txtTooltipOut);
+	_txtSaveFolderPath->onMouseClick((ActionHandler)&OptionsFoldersState::txtClick);
 
 	_txtConfigFolderPath->setText(Options::getConfigFolder());
 	_txtConfigFolderPath->setWordWrap(true);
 	_txtConfigFolderPath->setTooltip("STR_CONFIG_FOLDER_DESC");
 	_txtConfigFolderPath->onMouseIn((ActionHandler)&OptionsFoldersState::txtTooltipIn);
 	_txtConfigFolderPath->onMouseOut((ActionHandler)&OptionsFoldersState::txtTooltipOut);
+	_txtConfigFolderPath->onMouseClick((ActionHandler)&OptionsFoldersState::txtClick);
 }
 
 /**
@@ -109,6 +123,22 @@ OptionsFoldersState::OptionsFoldersState(OptionsOrigin origin) : OptionsBaseStat
 OptionsFoldersState::~OptionsFoldersState()
 {
 
+}
+
+/**
+ * Opens the location of the appropriate folder.
+ * @param action Pointer to an action.
+ */
+void OptionsFoldersState::txtClick(Action* action)
+{
+	Text* sender = (Text*)action->getSender();
+	std::string path = sender->getText();
+	if (Options::getDataFolder().empty() && path.size() < 10)
+	{
+		// "UFO/", "TFTD/", "common/", "standard/"
+		path = CrossPlatform::getExeFolder() + path;
+	}
+	CrossPlatform::openExplorer(path);
 }
 
 }

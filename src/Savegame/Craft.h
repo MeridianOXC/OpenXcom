@@ -79,6 +79,7 @@ private:
 	std::vector<CraftWeapon*> _weapons;
 	ItemContainer *_items;
 	ItemContainer *_tempSoldierItems;
+	ItemContainer *_tempExtraItems;
 	std::vector<Vehicle*> _vehicles;
 	std::string _status;
 	bool _lowFuel, _mission, _inBattlescape, _inDogfight;
@@ -156,6 +157,8 @@ public:
 	ItemContainer *getItems();
 	/// Gets the craft's items equipped by the soldiers.
 	ItemContainer* getSoldierItems();
+	/// Gets the craft's items not equipped by the soldiers.
+	ItemContainer* getExtraItems();
 	/// Gets the craft's vehicles.
 	std::vector<Vehicle*> *getVehicles();
 	/// Calculates (and stores) the sum of all equipment of all soldiers on the craft.

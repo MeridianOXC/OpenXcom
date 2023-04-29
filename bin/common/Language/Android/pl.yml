@@ -26,7 +26,7 @@ pl:
   STR_FORCE_GL_MODE_DESC: "Wymusza format tekstur RGB565. Użyj tej opcji, jeśli twój ekran jest zabarwiony czerwonawo. Działa po restarcie."
   STR_MOUSE_MODE: "Tryb myszy"
   STR_MOUSE_BASIC: "Podstawowy"
-  STR_MOUSE_EXTENDED: "Rozszerzony"
+  STR_MOUSE_EXTENDED: "Extended"
   STR_MOUSE_MODE_DESC: "Tryb rozszerzony pozwala na natywne zdarzenia myszy, dając wrażenie grania na komputerze."
   STR_LISTDRAGSCROLL: "Przewijanie list trzymaniem"
   STR_LISTDRAGSCROLL_DESC: "Włącza skrolowanie list poprzez ciągnięcie. Przydatne dla urządzeń dotykowych."

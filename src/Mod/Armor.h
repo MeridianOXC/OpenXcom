@@ -121,6 +121,7 @@ private:
 
 	ArmorMoveCost _moveCostBase = { 100, 100 };
 	ArmorMoveCost _moveCostBaseFly = { 100, 100 };
+	ArmorMoveCost _moveCostBaseClimb = { 100, 100 };
 	ArmorMoveCost _moveCostBaseNormal = { 100, 100 };
 
 	ArmorMoveCost _moveCostWalk = { 100, 50 };
@@ -132,6 +133,8 @@ private:
 	ArmorMoveCost _moveCostFlyStrafe = { 100, 50 };
 	ArmorMoveCost _moveCostFlyUp = { 100, 0 };
 	ArmorMoveCost _moveCostFlyDown = { 100, 0 };
+	ArmorMoveCost _moveCostClimbUp = { 100, 50 };
+	ArmorMoveCost _moveCostClimbDown = { 100, 50 };
 	ArmorMoveCost _moveCostGravLift = { 100, 0 };
 
 	int _moveSound;
@@ -242,6 +245,8 @@ public:
 	ArmorMoveCost getMoveCostBaseNormal() const { return _moveCostBaseNormal; }
 	/// Multiplier of fly base move cost.
 	ArmorMoveCost getMoveCostBaseFly() const { return _moveCostBaseFly; }
+	/// Multiplier of climb base move cost.
+	ArmorMoveCost getMoveCostBaseClimb() const { return _moveCostBaseClimb; }
 
 	/// Multiplier of walk move cost.
 	ArmorMoveCost getMoveCostWalk() const { return _moveCostWalk; }
@@ -261,6 +266,10 @@ public:
 	ArmorMoveCost getMoveCostFlyUp() const { return _moveCostFlyUp; }
 	/// Multiplier of fly down move cost.
 	ArmorMoveCost getMoveCostFlyDown() const { return _moveCostFlyDown; }
+	/// Multiplier of climb up move cost.
+	ArmorMoveCost getMoveCostClimbUp() const { return _moveCostClimbUp; }
+	/// Multiplier of climb down move cost.
+	ArmorMoveCost getMoveCostClimbDown() const { return _moveCostClimbDown; }
 	/// Multiplier of moving using GravLift cost.
 	ArmorMoveCost getMoveCostGravLift() const { return _moveCostGravLift; }
 

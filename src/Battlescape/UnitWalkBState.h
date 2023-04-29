@@ -38,7 +38,12 @@ private:
 	BattleUnit *_unit;
 	Pathfinding *_pf;
 	TileEngine *_terrain;
-	bool _falling;
+
+	/// Unit will fall down always.
+	bool _falling = false;
+	/// Allow to move over some tiles that normally should fall down.
+	bool _fallingWhenStopped = false;
+
 	bool _beforeFirstStep;
 	/// Handles some calculations when the path is finished.
 	void postPathProcedures();

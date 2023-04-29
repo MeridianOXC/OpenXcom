@@ -852,6 +852,10 @@ interfaces:
       - id: text2
         color: 239   # bright green
         color2: 133  # minty green
+      - id: list
+        color: 133   # minty green
+        color2: 138  # yellow
+        border: 239  # bright green
       - id: button
         color: 239   # bright green
   - type: graphs
@@ -1080,6 +1084,23 @@ interfaces:
         color: 6     # oxide
       - id: errorMessage
         color: 241   # pink
+  - type: globalContainmentMenu
+    backgroundImage: BACK05.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 1     # burgundy
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 218   # blue
+        color2: 208  # white
+      - id: list
+        color: 246   # purple
+        color2: 208  # white
+        border: 218  # blue
+      - id: button
+        color: 246   # purple
   - type: transferBaseSelect
     backgroundImage: BACK13.SCR
     palette: PAL_BASESCAPE
@@ -1530,6 +1551,22 @@ interfaces:
         color: 213   # gold
       - id: list
         color: 208   # white
+        border: 213  # gold
+      - id: button
+        color: 213   # gold
+  - type: soldierRank
+    backgroundImage: BACK14.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 213   # gold
+      - id: list
+        color: 208   # white
+        color2: 246  # purple
         border: 213  # gold
       - id: button
         color: 213   # gold

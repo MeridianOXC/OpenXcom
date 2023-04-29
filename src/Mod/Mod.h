@@ -18,15 +18,18 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <string>
 #include <bitset>
+#include <array>
 #include <SDL.h>
 #include <yaml-cpp/yaml.h>
 #include "../Engine/Options.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/Collections.h"
 #include "../Savegame/GameTime.h"
+#include "../Savegame/Soldier.h"
 #include "RuleDamageType.h"
 #include "RuleAlienMission.h"
 #include "RuleBaseFacilityFunctions.h"
@@ -141,6 +144,12 @@ struct LoadRuleException : Exception
  */
 class Mod
 {
+public:
+	/// Number of color per opacity level.
+	constexpr static int TransparenciesPaletteColors = 256;
+	/// Number of opacity levels.
+	constexpr static int TransparenciesOpacityLevels = 4;
+
 private:
 	Music *_muteMusic;
 	Sound *_muteSound;
@@ -236,7 +245,7 @@ private:
 	int _escortRange, _drawEnemyRadarCircles;
 	bool _escortsJoinFightAgainstHK, _hunterKillerFastRetarget;
 	int _crewEmergencyEvacuationSurvivalChance, _pilotsEmergencyEvacuationSurvivalChance;
-	int _soldiersPerSergeant, _soldiersPerCaptain, _soldiersPerColonel, _soldiersPerCommander;
+	std::array<int, (size_t)(RANK_COMMANDER + 1)> _soldiersPerRank;
 	int _pilotAccuracyZeroPoint, _pilotAccuracyRange, _pilotReactionsZeroPoint, _pilotReactionsRange;
 	int _pilotBraveryThresholds[3];
 	int _performanceBonusFactor;
@@ -292,7 +301,7 @@ private:
 	std::vector<std::string> _skillsIndex, _soldiersIndex, _soldierTransformationIndex, _soldierBonusIndex;
 	std::vector<std::string> _alienMissionsIndex, _terrainIndex, _customPalettesIndex, _arcScriptIndex, _eventScriptIndex, _eventIndex, _missionScriptIndex;
 	std::vector<std::vector<int> > _alienItemLevels;
-	std::vector<SDL_Color> _transparencies;
+	std::vector<std::array<SDL_Color, TransparenciesOpacityLevels>> _transparencies;
 	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _researchListOrder,  _manufactureListOrder;
 	int _soldierBonusListOrder, _transformationListOrder, _ufopaediaListOrder, _invListOrder, _soldierListOrder;
 	std::vector<ModData> _modData;
@@ -303,6 +312,10 @@ private:
 	std::vector<const Armor*> _armorsForSoldiersCache;
 	std::vector<const RuleItem*> _armorStorageItemsCache;
 	std::vector<const RuleItem*> _craftWeaponStorageItemsCache;
+	/// Track of what mod create rule object.
+	std::unordered_map<const void*, const ModData*> _ruleCreationTracking;
+	/// Track of what mod last update rule object.
+	std::unordered_map<const void*, const ModData*> _ruleLastUpdateTracking;
 
 	size_t _surfaceOffsetBigobs = 0;
 	size_t _surfaceOffsetFloorob = 0;
@@ -335,7 +348,7 @@ private:
 
 	/// Loads a ruleset element.
 	template <typename T, typename F = RuleFactory<T>>
-	T *loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index = 0, const std::string &key = "type", F&& factory = { }) const;
+	T *loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index = 0, const std::string &key = "type", F&& factory = { });
 	/// Gets a ruleset element.
 	template <typename T>
 	T *getRule(const std::string &id, const std::string &name, const std::map<std::string, T*> &map, bool error) const;
@@ -414,6 +427,7 @@ public:
 	static int EXTENDED_MELEE_REACTIONS;
 	static int EXTENDED_TERRAIN_MELEE;
 	static int EXTENDED_UNDERWATER_THROW_FACTOR;
+	static bool EXTENDED_EXPERIENCE_AWARD_SYSTEM;
 
 
 	/// Return `true` when given string is empty or pseudo null value.
@@ -915,14 +929,8 @@ public:
 	int getCrewEmergencyEvacuationSurvivalChance() const { return _crewEmergencyEvacuationSurvivalChance; }
 	/// Gets the pilots emergency evacuation survival chance
 	int getPilotsEmergencyEvacuationSurvivalChance() const { return _pilotsEmergencyEvacuationSurvivalChance; }
-	/// Gets how many soldiers are needed for one sergeant promotion
-	int getSoldiersPerSergeant() const { return _soldiersPerSergeant; }
-	/// Gets how many soldiers are needed for one captain promotion
-	int getSoldiersPerCaptain() const { return _soldiersPerCaptain; }
-	/// Gets how many soldiers are needed for one colonel promotion
-	int getSoldiersPerColonel() const { return _soldiersPerColonel; }
-	/// Gets how many soldiers are needed for one commander promotion
-	int getSoldiersPerCommander() const { return _soldiersPerCommander; }
+	/// Gets how many soldiers are needed for one promotion of a given rank
+	int getSoldiersPerRank(const SoldierRank rank) const { return _soldiersPerRank[(size_t)rank]; }
 	/// Gets the firing accuracy needed for no bonus/penalty
 	int getPilotAccuracyZeroPoint() const { return _pilotAccuracyZeroPoint; }
 	/// Gets the firing accuracy impact (as percentage of distance to zero point) on pilot's aim in dogfight
@@ -967,6 +975,14 @@ public:
 	int getTURecoveryWakeUpNewTurn() const { return _tuRecoveryWakeUpNewTurn; }
 	/// Gets whether or not to load base defense terrain from globe texture
 	int getBaseDefenseMapFromLocation() const { return _baseDefenseMapFromLocation; }
+
+	/// Return mod what created given rule object.
+	template<typename T>
+	const ModData* getModCreatingRule(const T* t) const { return _ruleCreationTracking.at(static_cast<const void*>(t)); }
+	/// Return mod what last updated given rule object.
+	template<typename T>
+	const ModData* getModLastUpdatingRule(const T* t) const { return _ruleLastUpdateTracking.at(static_cast<const void*>(t)); }
+
 	/// Gets the ruleset for a specific research project.
 	RuleResearch *getResearch(const std::string &id, bool error = false) const;
 	/// Gets the ruleset for a specific research project.
@@ -1044,8 +1060,6 @@ public:
 	RuleConverter *getConverter() const;
 	/// Gets the list of selective files for insertion into our cat files.
 	const std::map<std::string, SoundDefinition *> *getSoundDefinitions() const;
-	/// Gets the list of transparency colors,
-	const std::vector<SDL_Color> *getTransparencies() const;
 	const std::vector<MapScript*> *getMapScript(const std::string& id) const;
 	const std::map<std::string, std::vector<MapScript*> > &getMapScriptsRaw() const { return _mapScripts; }
 	/// Gets a video for intro/outro etc.

@@ -95,17 +95,6 @@ struct SaveInfo
 	bool reserved;
 };
 
-struct PromotionInfo
-{
-	int totalSoldiers;
-	int totalCommanders;
-	int totalColonels;
-	int totalCaptains;
-	int totalSergeants;
-	PromotionInfo(): totalSoldiers(0), totalCommanders(0), totalColonels(0), totalCaptains(0), totalSergeants(0){}
-};
-
-
 /**
  * The game data that gets written to disk when the game is saved.
  * A saved game holds all the variable info in a game like funds,
@@ -136,6 +125,7 @@ private:
 	bool _ironman;
 	GameTime *_time;
 	std::vector<std::string> _userNotes;
+	std::vector<std::string> _geoscapeDebugLog;
 	std::vector<int> _researchScores;
 	std::vector<int64_t> _funds, _maintenance, _incomes, _expenditures;
 	double _globeLon, _globeLat;
@@ -355,12 +345,10 @@ public:
 	Soldier *getSoldier(int id) const;
 	/// Handles the higher promotions.
 	bool handlePromotions(std::vector<Soldier*> &participants, const Mod *mod);
-	/// Processes a soldier's promotion.
-	void processSoldier(Soldier *soldier, PromotionInfo &soldierData);
 	/// Checks how many soldiers of a rank exist and which one has the highest score.
 	Soldier *inspectSoldiers(std::vector<Soldier*> &soldiers, std::vector<Soldier*> &participants, int rank);
 	/// Gets the (approximate) number of idle days since the soldier's last mission.
-	int getSoldierIdleDays(Soldier *soldier);
+	int getSoldierIdleDays(const Soldier *soldier);
 	///  Returns the list of alien bases.
 	std::vector<AlienBase*> *getAlienBases();
 	/// Sets debug mode.
@@ -447,6 +435,8 @@ public:
 	bool wasEventGenerated(const std::string& eventName);
 	/// Gets the list of dead soldiers.
 	std::vector<Soldier*> *getDeadSoldiers();
+	/// Gets a list of all active soldiers.
+	std::vector<Soldier*> getAllActiveSoldiers() const;
 	/// Gets the last selected player base.
 	Base *getSelectedBase();
 	/// Set the last selected player base.
@@ -517,6 +507,8 @@ public:
 	void handlePrimaryResearchSideEffects(const std::vector<const RuleResearch*> &topicsToCheck, const Mod* mod, Base* base);
 	/// Gets the list of user notes.
 	std::vector<std::string>& getUserNotes() { return _userNotes; }
+	/// Gets the list of geoscape debug log entries.
+	std::vector<std::string>& getGeoscapeDebugLog() { return _geoscapeDebugLog; }
 };
 
 }

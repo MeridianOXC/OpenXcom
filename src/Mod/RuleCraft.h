@@ -165,6 +165,7 @@ private:
 	std::string _type;
 	std::vector<std::string> _requires;
 	RuleBaseFacilityFunctions _requiresBuyBaseFunc;
+	std::string _requiresBuyCountry;
 	int _sprite, _marker;
 	std::vector<int> _skinSprites;
 	int _weapons, _soldiers, _pilots, _vehicles;
@@ -210,6 +211,8 @@ public:
 	const std::vector<std::string> &getRequirements() const;
 	/// Gets the base functions required to buy craft.
 	RuleBaseFacilityFunctions getRequiresBuyBaseFunc() const { return _requiresBuyBaseFunc; }
+	/// Gets the allied country name required to buy this craft.
+	const std::string& getRequiresBuyCountry() const { return _requiresBuyCountry; }
 	/// Gets the craft's sprite.
 	int getSprite(int skinIndex) const;
 	const std::vector<int> &getSkinSpritesRaw() const { return _skinSprites; }

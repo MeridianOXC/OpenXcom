@@ -82,6 +82,11 @@ public:
 	{
 		return Position(x / TileXY, y / TileXY, z / TileZ);
 	}
+	/// Clip voxel values to position relative to containing tile.
+	constexpr Position clipVoxel() const
+	{
+		return Position(x % TileXY, y % TileXY, z % TileZ);
+	}
 
 	/// Calculates the distance in 3d.
 	static float distance(Position pos1, Position pos2)

@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2010-2019 OpenXcom Developers.
+ * Copyright 2010-2023 OpenXcom Developers.
  *
  * This file is part of OpenXcom.
  *
@@ -22,43 +22,40 @@
 namespace OpenXcom
 {
 
+class Base;
+class Text;
 class TextButton;
 class TextList;
-class ToggleTextButton;
 class Window;
-class Text;
-class RuleEvent;
 
 /**
- * Displays info about a custom Geoscape event.
+ * Global Alien Containment screen that provides overview
+ * of all the prisoners in all the bases.
  */
-class GeoscapeEventState : public State
+class GlobalAlienContainmentState : public State
 {
 private:
-	Window *_window;
-	Text *_txtTitle, *_txtMessage;
-	Text *_txtItem, *_txtQuantity;
 	TextButton *_btnOk;
-	ToggleTextButton *_btnItemsArriving;
-	TextList *_lstTransfers;
+	Window *_window;
+	Text *_txtTitle, *_txtTotalUsed, *_txtTotalInterrogated, *_txtPrisoner, *_txtPrisonerAmount, *_txtPrisonersInterrogated;
+	TextList *_lstPrisoners;
 
-	std::string _researchName;
-	std::string _bonusResearchName;
-	const RuleEvent &_eventRule;
-
-	/// Helper performing event logic.
-	void eventLogic();
+	std::vector<std::tuple<std::string, Base*, int> > _topics;
+	bool _openedFromBasescape;
 public:
-	/// Creates the GeoscapeEventState.
-	GeoscapeEventState(const RuleEvent& eventRule);
-	/// Cleans up the GeoscapeEventState.
-	~GeoscapeEventState();
-	/// Initializes the state.
+	/// Creates the GlobalAlienContainmentState.
+	GlobalAlienContainmentState(bool openedFromBasescape);
+	/// Cleans up the GlobalAlienContainmentState.
+	~GlobalAlienContainmentState();
+	/// Updates the prisoner list.
 	void init() override;
+	/// Fills the list with all prisoners from all bases.
+	void fillPrisonerList();
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
-	/// Handler for clicking the ItemsArriving button.
-	void btnItemsArrivingClick(Action *action);
+	/// Handler for clicking the prisoners list.
+	void onSelectBase(Action *action);
+	void onOpenTechTreeViewer(Action *action);
 };
 
 }

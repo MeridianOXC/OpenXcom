@@ -71,6 +71,8 @@ public:
 	void think() override;
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
+	/// Handler for opening the Global Alien Containment UI.
+	void onGlobalAlienContainmentClick(Action *action);
 	/// Handler for clicking the Sell button.
 	void btnSellClick(Action *action);
 	/// Handler for clicking the Cancel button.

@@ -31,7 +31,8 @@ namespace OpenXcom
  * Creates a new Manufacture.
  * @param name The unique manufacture name.
  */
-RuleManufacture::RuleManufacture(const std::string &name, int listOrder) : _name(name), _space(0), _time(0), _cost(0), _refund(false), _producedCraft(0), _listOrder(listOrder)
+RuleManufacture::RuleManufacture(const std::string &name, int listOrder) :
+	_name(name), _space(0), _time(0), _cost(0), _points(0), _refund(false), _producedCraft(0), _listOrder(listOrder)
 {
 	_producedItemsNames[name] = 1;
 }
@@ -54,6 +55,7 @@ void RuleManufacture::load(const YAML::Node &node, Mod* mod)
 	_space = node["space"].as<int>(_space);
 	_time = node["time"].as<int>(_time);
 	_cost = node["cost"].as<int>(_cost);
+	_points = node["points"].as<int>(_points);
 	_refund = node["refund"].as<bool>(_refund);
 	mod->loadUnorderedNamesToInt(_name, _requiredItemsNames, node["requiredItems"]);
 	mod->loadUnorderedNamesToInt(_name, _producedItemsNames, node["producedItems"]);

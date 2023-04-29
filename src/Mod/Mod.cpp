@@ -151,6 +151,7 @@ bool Mod::EXTENDED_HWP_LOAD_ORDER;
 int Mod::EXTENDED_MELEE_REACTIONS;
 int Mod::EXTENDED_TERRAIN_MELEE;
 int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
+bool Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM;
 
 constexpr size_t MaxDifficultyLevels = 5;
 
@@ -248,6 +249,7 @@ void Mod::resetGlobalStatics()
 	EXTENDED_MELEE_REACTIONS = 0;
 	EXTENDED_TERRAIN_MELEE = 0;
 	EXTENDED_UNDERWATER_THROW_FACTOR = 0;
+	EXTENDED_EXPERIENCE_AWARD_SYSTEM = true; // FIXME: change default to false in OXCE v8.0+ ?
 }
 
 /**
@@ -363,7 +365,7 @@ Mod::Mod() :
 	_ufoGlancingHitThreshold(0), _ufoBeamWidthParameter(1000),
 	_escortRange(20), _drawEnemyRadarCircles(1), _escortsJoinFightAgainstHK(true), _hunterKillerFastRetarget(true),
 	_crewEmergencyEvacuationSurvivalChance(100), _pilotsEmergencyEvacuationSurvivalChance(100),
-	_soldiersPerSergeant(5), _soldiersPerCaptain(11), _soldiersPerColonel(23), _soldiersPerCommander(30),
+	_soldiersPerRank({-1, -1, 5, 11, 23, 30}),
 	_pilotAccuracyZeroPoint(55), _pilotAccuracyRange(40), _pilotReactionsZeroPoint(55), _pilotReactionsRange(60),
 	_performanceBonusFactor(0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
 	_alienInventoryOffsetX(80), _alienInventoryOffsetBigUnit(32),
@@ -1029,7 +1031,12 @@ void Mod::verifySpriteOffset(const std::string &parent, const int& sprite, const
 		return;
 	}
 
-	checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
+	checkForSoftError(
+		sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr,
+		parent,
+		"Wrong index " + std::to_string(sprite) + " for surface set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+		LOG_ERROR
+	);
 }
 
 /**
@@ -1056,7 +1063,12 @@ void Mod::verifySpriteOffset(const std::string &parent, const std::vector<int>& 
 
 	for (int sprite : sprites)
 	{
-		checkForSoftError(sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr, parent, "Wrong index " + std::to_string(sprite) + " for surface set " + set, LOG_ERROR);
+		checkForSoftError(
+			sprite != Mod::NO_SURFACE && s->getFrame(sprite) == nullptr,
+			parent,
+			"Wrong index " + std::to_string(sprite) + " for surface set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+			LOG_ERROR
+		);
 	}
 }
 
@@ -1073,7 +1085,12 @@ void Mod::verifySoundOffset(const std::string &parent, const int& sound, const s
 
 	auto* s = getSoundSet(set);
 
-	checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
+	checkForSoftError(
+		sound != Mod::NO_SOUND && s->getSound(sound) == nullptr,
+		parent,
+		"Wrong index " + std::to_string(sound) + " for sound set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+		LOG_ERROR
+	);
 }
 
 /**
@@ -1091,7 +1108,12 @@ void Mod::verifySoundOffset(const std::string &parent, const std::vector<int>& s
 
 	for (int sound : sounds)
 	{
-		checkForSoftError(sound != Mod::NO_SOUND && s->getSound(sound) == nullptr, parent, "Wrong index " + std::to_string(sound) + " for sound set " + set, LOG_ERROR);
+		checkForSoftError(
+			sound != Mod::NO_SOUND && s->getSound(sound) == nullptr,
+			parent,
+			"Wrong index " + std::to_string(sound) + " for sound set " + set + " (please note that the index in the ruleset is smaller, by several thousands)",
+			LOG_ERROR
+		);
 	}
 }
 
@@ -2186,7 +2208,13 @@ void Mod::loadAll()
 		{
 			if (_finalResearch != nullptr)
 			{
-				checkForSoftError(true, "mod", "Both '" + _finalResearch->getName() + "' and '" + r.second->getName() + "' research are marked as 'unlockFinalMission: true'", LOG_WARNING);
+				checkForSoftError(true, "mod", "Both '" + _finalResearch->getName() + "' and '" + r.second->getName() + "' research are marked as 'unlockFinalMission: true'", LOG_INFO);
+
+				// to make old mods semi-compatible with new code we decide that last updated rule will be consider final research. This could make false-positive as last update could not touch this flag.
+				if (getModLastUpdatingRule(r.second)->offset < getModLastUpdatingRule(_finalResearch)->offset)
+				{
+					continue;
+				}
 			}
 			_finalResearch = r.second;
 		}
@@ -2401,19 +2429,61 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 			const YAML::Node& c = (*i)["colors"];
 			if (c.IsSequence())
 			{
-				for (YAML::const_iterator j = c.begin(); j != c.end(); ++j)
+				for (YAML::const_iterator j = c.begin(); j != c.end(); ++j, ++curr)
 				{
 					if (curr == limit)
 					{
 						throw Exception("transparencyLUTs mod limit reach");
 					}
-					SDL_Color color;
-					color.r = (*j)[0].as<int>(0);
-					color.g = (*j)[1].as<int>(0);
-					color.b = (*j)[2].as<int>(0);
-					color.a = (*j)[3].as<int>(2);
-					// technically it's a breaking change as it always overwrites from offset `start + 0` but no two mods could work correctly before this change.
-					_transparencies[start + curr++] = color;
+
+					auto loadByteValue = [&](const YAML::Node& n)
+					{
+						int v = n.as<int>(-1);
+						checkForSoftError(v < 0 || v > 255, "transparencyLUTs", n, "value outside allowed range");
+						return Clamp(v, 0, 255);
+					};
+
+					if ((*j)[0].IsScalar())
+					{
+						SDL_Color color;
+						color.r = loadByteValue((*j)[0]);
+						color.g = loadByteValue((*j)[1]);
+						color.b = loadByteValue((*j)[2]);
+						color.a = (*j)[3] ? loadByteValue((*j)[3]): 2;
+
+
+						for (int opacity = 0; opacity < TransparenciesOpacityLevels; ++opacity)
+						{
+							// pseudo interpolation of palette color with tint
+							// for small values `op` its should behave same as original TFTD
+							// but for bigger values it make result closer to tint color
+							const int op = Clamp((opacity+1) * color.a, 0, 64);
+							const float co = 1.0f - Sqr(op / 64.0f); // 1.0 -> 0.0
+							const float to = op * 1.0f; // 0.0 -> 64.0
+
+							SDL_Color taint;
+							taint.r = color.r * to;
+							taint.g = color.g * to;
+							taint.b = color.b * to;
+							taint.a = 255 * co;
+							_transparencies[start + curr][opacity] = taint;
+						};
+					}
+					else
+					{
+						for (int opacity = 0; opacity < TransparenciesOpacityLevels; ++opacity)
+						{
+							const YAML::Node& n = (*j)[opacity];
+
+							SDL_Color taint;
+							taint.r = loadByteValue(n[0]);
+							taint.g = loadByteValue(n[1]);
+							taint.b = loadByteValue(n[2]);
+							taint.a = 255 - loadByteValue(n[3]);
+							_transparencies[start + curr][opacity] = taint;
+						};
+						std::reverse(std::begin(_transparencies[start + curr]), std::end(_transparencies[start + curr]));
+					}
 				}
 			}
 			else
@@ -2481,6 +2551,7 @@ void Mod::loadConstants(const YAML::Node &node)
 	EXTENDED_MELEE_REACTIONS = node["extendedMeleeReactions"].as<int>(EXTENDED_MELEE_REACTIONS);
 	EXTENDED_TERRAIN_MELEE = node["extendedTerrainMelee"].as<int>(EXTENDED_TERRAIN_MELEE);
 	EXTENDED_UNDERWATER_THROW_FACTOR = node["extendedUnderwaterThrowFactor"].as<int>(EXTENDED_UNDERWATER_THROW_FACTOR);
+	EXTENDED_EXPERIENCE_AWARD_SYSTEM = node["extendedExperienceAwardSystem"].as<bool>(EXTENDED_EXPERIENCE_AWARD_SYSTEM);
 }
 
 /**
@@ -3002,10 +3073,10 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_hunterKillerFastRetarget = doc["hunterKillerFastRetarget"].as<bool>(_hunterKillerFastRetarget);
 	_crewEmergencyEvacuationSurvivalChance = doc["crewEmergencyEvacuationSurvivalChance"].as<int>(_crewEmergencyEvacuationSurvivalChance);
 	_pilotsEmergencyEvacuationSurvivalChance = doc["pilotsEmergencyEvacuationSurvivalChance"].as<int>(_pilotsEmergencyEvacuationSurvivalChance);
-	_soldiersPerSergeant = doc["soldiersPerSergeant"].as<int>(_soldiersPerSergeant);
-	_soldiersPerCaptain = doc["soldiersPerCaptain"].as<int>(_soldiersPerCaptain);
-	_soldiersPerColonel = doc["soldiersPerColonel"].as<int>(_soldiersPerColonel);
-	_soldiersPerCommander = doc["soldiersPerCommander"].as<int>(_soldiersPerCommander);
+	_soldiersPerRank[RANK_SERGEANT] = doc["soldiersPerSergeant"].as<int>(_soldiersPerRank[RANK_SERGEANT]);
+	_soldiersPerRank[RANK_CAPTAIN] = doc["soldiersPerCaptain"].as<int>(_soldiersPerRank[RANK_CAPTAIN]);
+	_soldiersPerRank[RANK_COLONEL] = doc["soldiersPerColonel"].as<int>(_soldiersPerRank[RANK_COLONEL]);
+	_soldiersPerRank[RANK_COMMANDER] = doc["soldiersPerCommander"].as<int>(_soldiersPerRank[RANK_COMMANDER]);
 	_pilotAccuracyZeroPoint = doc["pilotAccuracyZeroPoint"].as<int>(_pilotAccuracyZeroPoint);
 	_pilotAccuracyRange = doc["pilotAccuracyRange"].as<int>(_pilotAccuracyRange);
 	_pilotReactionsZeroPoint = doc["pilotReactionsZeroPoint"].as<int>(_pilotReactionsZeroPoint);
@@ -3345,7 +3416,7 @@ static void refNodeTestDeepth(const YAML::Node &node, const std::string &name, i
  * @return Pointer to new rule if one was created, or NULL if one was removed.
  */
 template <typename T, typename F>
-T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index, const std::string &key, F&& factory) const
+T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index, const std::string &key, F&& factory)
 {
 	T *rule = 0;
 
@@ -3370,6 +3441,14 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 			throw Exception("Invalid value for main node '" + key + "' at line " + std::to_string(node[key].Mark().line));
 		}
 		return name;
+	};
+	auto addTracking = [&](std::unordered_map<const void*, const ModData*>& track, const auto* t)
+	{
+		track[static_cast<const void*>(t)] = _modCurrent;
+	};
+	auto removeTracking = [&]( std::unordered_map<const void*, const ModData*>& track, const auto* t)
+	{
+		track.erase(static_cast<const void*>(t));
 	};
 
 	const auto defaultNode = getNode(node, key);
@@ -3410,6 +3489,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		else
 		{
 			rule = factory(type);
+			addTracking(_ruleCreationTracking, rule);
 			(*map)[type] = rule;
 			if (index != 0)
 			{
@@ -3419,6 +3499,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 
 		// protection from self referencing refNode node
 		refNodeTestDeepth(node, type, 0);
+		addTracking(_ruleLastUpdateTracking, rule);
 	}
 	else if (haveNode(deleteNode))
 	{
@@ -3427,6 +3508,8 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		auto i = map->find(type);
 		if (i != map->end())
 		{
+			removeTracking(_ruleCreationTracking, i->second);
+			removeTracking(_ruleLastUpdateTracking, i->second);
 			delete i->second;
 			map->erase(i);
 		}
@@ -3451,6 +3534,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		else
 		{
 			rule = factory(type);
+			addTracking(_ruleCreationTracking, rule);
 			(*map)[type] = rule;
 			if (index != 0)
 			{
@@ -3459,6 +3543,7 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 
 			// protection from self referencing refNode node
 			refNodeTestDeepth(node, type, 0);
+			addTracking(_ruleLastUpdateTracking, rule);
 		}
 	}
 	else if (haveNode(overrideNode))
@@ -3468,22 +3553,16 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 		auto i = map->find(type);
 		if (i != map->end())
 		{
-			delete i->second;
-			rule = factory(type);
-			(*map)[type] = rule;
+			rule = i->second;
+
+			// protection from self referencing refNode node
+			refNodeTestDeepth(node, type, 0);
+			addTracking(_ruleLastUpdateTracking, rule);
 		}
 		else
 		{
-			rule = factory(type);
-			(*map)[type] = rule;
-			if (index != 0)
-			{
-				index->push_back(type);
-			}
+			checkForSoftError(true, type, "Rule named '" + type  + "' do not exist for " + getDescriptionNode(overrideNode), LOG_ERROR);
 		}
-
-		// protection from self referencing refNode node
-		refNodeTestDeepth(node, type, 0);
 	}
 	else if (haveNode(updateNode))
 	{
@@ -3496,10 +3575,11 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 
 			// protection from self referencing refNode node
 			refNodeTestDeepth(node, type, 0);
+			addTracking(_ruleLastUpdateTracking, rule);
 		}
 		else
 		{
-			checkForSoftError(true, type, "Rule named '" + type  + "' do not exist for " + getDescriptionNode(newNode), LOG_ERROR);
+			Log(LOG_INFO) << "Rule named '" << type  << "' do not exist for " << getDescriptionNode(updateNode);
 		}
 	}
 	else
@@ -4849,11 +4929,6 @@ const std::map<std::string, SoundDefinition *> *Mod::getSoundDefinitions() const
 	return &_soundDefs;
 }
 
-const std::vector<SDL_Color> *Mod::getTransparencies() const
-{
-	return &_transparencies;
-}
-
 const std::vector<MapScript*> *Mod::getMapScript(const std::string& id) const
 {
 	auto i = _mapScripts.find(id);
@@ -6079,39 +6154,31 @@ Music* Mod::loadMusic(MusicFormat fmt, RuleMusic* rule, CatFile* adlibcat, CatFi
  */
 void Mod::createTransparencyLUT(Palette *pal)
 {
-	const int opacityMax = 4;
 	const SDL_Color* palColors = pal->getColors(0);
 	std::vector<Uint8> lookUpTable;
 	// start with the color sets
-	lookUpTable.reserve(_transparencies.size() * 256 * opacityMax);
-	for (const auto& tint : _transparencies)
+	lookUpTable.reserve(_transparencies.size() * TransparenciesPaletteColors * TransparenciesOpacityLevels);
+	for (const auto& tintLevels : _transparencies)
 	{
 		// then the opacity levels, using the alpha channel as the step
-		for (int opacity = 1; opacity <= opacityMax; ++opacity)
+		for (const SDL_Color& tint : tintLevels)
 		{
-			// pseudo interpolation of palette color with tint
-			// for small values `op` its should behave same as original TFTD
-			// but for bigger values it make result closer to tint color
-			const int op = Clamp(opacity * tint.a, 0, 64);
-			const float co = 1.0f - Sqr(op / 64.0f); // 1.0 -> 0.0
-			const float to = op * 1.0f; // 0.0 -> 64.0
-
 			// then the palette itself
-			for (int currentColor = 0; currentColor < 256; ++currentColor)
+			for (int currentColor = 0; currentColor < TransparenciesPaletteColors; ++currentColor)
 			{
 				SDL_Color desiredColor;
 
-				desiredColor.r = std::min(255, (int)Round((palColors[currentColor].r * co) + (tint.r * to)));
-				desiredColor.g = std::min(255, (int)Round((palColors[currentColor].g * co) + (tint.g * to)));
-				desiredColor.b = std::min(255, (int)Round((palColors[currentColor].b * co) + (tint.b * to)));
+				desiredColor.r = std::min(255, (palColors[currentColor].r * tint.a / 255) + tint.r);
+				desiredColor.g = std::min(255, (palColors[currentColor].g * tint.a / 255) + tint.g);
+				desiredColor.b = std::min(255, (palColors[currentColor].b * tint.a / 255) + tint.b);
 
 				Uint8 closest = currentColor;
 				int lowestDifference = INT_MAX;
-				// if opacity is zero then we stay with current color, transparet color will stay same too
-				if (op != 0 && currentColor != 0)
+				// if opacity is zero then we stay with current color, transparent color will stay same too
+				if (tint.a != 0 && currentColor != 0)
 				{
 					// now compare each color in the palette to find the closest match to our desired one
-					for (int comparator = 1; comparator < 256; ++comparator)
+					for (int comparator = 1; comparator < TransparenciesPaletteColors; ++comparator)
 					{
 						int currentDifference = Sqr(desiredColor.r - palColors[comparator].r) +
 							Sqr(desiredColor.g - palColors[comparator].g) +
@@ -6128,7 +6195,7 @@ void Mod::createTransparencyLUT(Palette *pal)
 			}
 		}
 	}
-	_transparencyLUTs.push_back(lookUpTable);
+	_transparencyLUTs.push_back(std::move(lookUpTable));
 }
 
 StatAdjustment *Mod::getStatAdjustment(int difficulty)

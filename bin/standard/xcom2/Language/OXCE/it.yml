@@ -20,4 +20,8 @@ it:
   GMGEO6: "Traccia Geoscape #6"
   GMTACDRY: "Traccia Battlescape (Terra)"
   GMTACWET: "Traccia Battlescape (Acqua)"
+  GMINTER0: "Traccia Intercettazione #0"
+  GMINTER1: "Traccia Intercettazione #1"
+  GMINTER2: "Traccia Intercettazione #2"
+  GMINTER3: "Traccia Intercettazione #3"
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

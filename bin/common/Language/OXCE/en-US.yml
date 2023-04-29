@@ -63,6 +63,14 @@ en-US:
   STR_PRODUCTION_OVERVIEW: "PRODUCTION OVERVIEW"
 #GlobalResearchState.cpp
   STR_RESEARCH_OVERVIEW: "RESEARCH OVERVIEW"
+#GlobalAlienContainmentState.cpp
+  STR_PRISONER_OVERVIEW: "PRISONER OVERVIEW"
+  STR_PRISONER: "PRISONER"
+  STR_PRISONER_AMOUNT: "AMOUNT"
+  STR_PRISONER_INTERROGATED: "INTERROGATED"
+  STR_TOTAL_IN_PRISON: "Space Used>{ALT}{0}"
+  STR_TOTAL_INTERROGATED: "Interrogated>{ALT}{0}"
+  STR_PRISON_TYPE: "Alien Containment"
 #ManageAlienContainmentState.cpp
   STR_KILL_SELECTED: "Kill"
   STR_SELL_SELECTED: "Sell"
@@ -116,6 +124,10 @@ en-US:
   STR_MANA_RECOVERY: "MANA RECOVERY> {ALT}{0}"
   STR_HEALTH_RECOVERY: "HEALTH RECOVERY> {ALT}{0}"
   STR_BONUSES_BUTTON: "+"
+#SoldierRankState.cpp
+  STR_PROMOTE_SOLDIER: "PROMOTE/DEMOTE{NEWLINE}{0} {1}"
+  STR_RANK_HEADER: "RANK"
+  STR_OPENINGS_HEADER: "OPENINGS"
 #SoldierDiaryOverviewState.cpp
   STR_KILLER_AND_WEAPON: "{0}, {1}"
 #SoldiersState.h
@@ -313,6 +325,10 @@ en-US:
   STR_REMEMBER_DISABLED_CRAFT_WEAPONS_DESC: "Craft weapons disabled during a dogfight will stay disabled. They will also not be rearmed at the base."
   STR_OFF_CENTRE_SHOOTING: "Off-center shooting"
   STR_OFF_CENTRE_SHOOTING_DESC: "Soldiers will automatically try to adjust the firing angle slightly in case there is no line of fire."
+  STR_MANUALPROMOTIONS: "Manual promotions"
+  STR_MANUALPROMOTIONS_DESC: "If enabled, soldiers can be manually promoted (or demoted) by clicking on the rank icon."
+  STR_AUTOMATICPROMOTIONS: "Automatic promotions"
+  STR_AUTOMATICPROMOTIONS_DESC: "If enabled, soldiers are automatically promoted after a mission."
 #===================
   STR_GRAPHS_ZOOM_IN: "Zoom In (Graphs)"
   STR_GRAPHS_ZOOM_OUT: "Zoom Out (Graphs)"
@@ -428,6 +444,9 @@ en-US:
 #MainMenuState.cpp
   STR_UPDATE: "Update"
   STR_LATEST_VERSION_INFO: "You are using the latest OpenXcom version."
+#ModConfirmExtendedState.cpp
+  STR_MASTER_MOD_VERSION_REQUIRED_QUESTION: "This mod requires base game v{0} to run correctly. Enable this mod?"
+  STR_VERSION_REQUIRED_QUESTION: "This mod requires OXCE v{0} to run correctly. Enable this mod?"
 #NotesState.cpp
   STR_NOTES: "Notes"
   STR_NEW_NOTE: "<NEW NOTE>"
@@ -443,16 +462,11 @@ en-US:
   STR_USER_FOLDER: "User Folder (mods, openxcom.log)"
   STR_SAVE_FOLDER: "Save Folder (saved games, screenshots)"
   STR_CONFIG_FOLDER: "Config Folder (options.cfg)"
-  STR_DATA_FOLDER_DESC: "This is where OpenXcom looks for the original game resources (UFO and/or TFTD) and also where the OpenXcom built-in mods are stored."
+  STR_DATA_FOLDER_DESC_1: "This is where OpenXcom looks for the original game resources (UFO and/or TFTD)."
+  STR_DATA_FOLDER_DESC_2: "OpenXcom internal resources are in the 'common' folder. OpenXcom built-in mods are in the 'standard' folder."
   STR_USER_FOLDER_DESC: "The log file ('openxcom.log') is stored here. All custom mods belong here too (in the 'mods' sub-folder)."
   STR_SAVE_FOLDER_DESC: "Your saved games are located here. Also, the mission generator settings ('battle.cfg') can be found here."
   STR_CONFIG_FOLDER_DESC: "This is where OpenXcom settings ('options.cfg') are stored. Normally the same as the User Folder."
-#OptionsInformExtendedState.cpp
-  STR_VERSION_REQUIRED_QUESTION: "This mod requires OXCE v{0} to run correctly. Enable this mod?"
-#OptionsVideoState.cpp
-  STR_FOURTH_DISPLAY: "1/4 Display"
-  STR_FIFTH_DISPLAY: "1/5 Display"
-  STR_SIXTH_DISPLAY: "1/6 Display"
 #TestState.cpp
   STR_TEST_SCREEN: "TEST SCREEN"
   STR_PALETTE: "Palette:"
