@@ -71,6 +71,9 @@
 		5BD535AE2461B54C0041673F /* DogfightExperienceState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BD535AC2461B54B0041673F /* DogfightExperienceState.cpp */; };
 		5BF12464262E0D8500A20BF1 /* ModConfirmExtendedState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF12461262E0D8500A20BF1 /* ModConfirmExtendedState.cpp */; };
 		5BF12465262E0D8500A20BF1 /* ModListState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF12463262E0D8500A20BF1 /* ModListState.cpp */; };
+		5BF23CF329FD071E00A5C239 /* RankCount.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF23CF229FD071E00A5C239 /* RankCount.cpp */; };
+		5BF23CF729FD073100A5C239 /* GlobalAlienContainmentState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF23CF529FD073100A5C239 /* GlobalAlienContainmentState.cpp */; };
+		5BF23CFB29FD076900A5C239 /* SoldierRankState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF23CF929FD076900A5C239 /* SoldierRankState.cpp */; };
 		B235EF4A201C4DF200FF7AC3 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
 		B235EF51201C4DF200FF7AC3 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D31D8B5E5600915323 /* AVFoundation.framework */; };
 		B235EF52201C4DF200FF7AC3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE0E9691BAF96A00098DFA4 /* GameController.framework */; };
@@ -640,6 +643,13 @@
 		5BF12461262E0D8500A20BF1 /* ModConfirmExtendedState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModConfirmExtendedState.cpp; sourceTree = "<group>"; };
 		5BF12462262E0D8500A20BF1 /* ModListState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModListState.h; sourceTree = "<group>"; };
 		5BF12463262E0D8500A20BF1 /* ModListState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModListState.cpp; sourceTree = "<group>"; };
+		5BF23CE629FD070900A5C239 /* LoadYaml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadYaml.h; sourceTree = "<group>"; };
+		5BF23CF129FD071E00A5C239 /* RankCount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RankCount.h; sourceTree = "<group>"; };
+		5BF23CF229FD071E00A5C239 /* RankCount.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RankCount.cpp; sourceTree = "<group>"; };
+		5BF23CF529FD073100A5C239 /* GlobalAlienContainmentState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalAlienContainmentState.cpp; sourceTree = "<group>"; };
+		5BF23CF629FD073100A5C239 /* GlobalAlienContainmentState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalAlienContainmentState.h; sourceTree = "<group>"; };
+		5BF23CF929FD076900A5C239 /* SoldierRankState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoldierRankState.cpp; sourceTree = "<group>"; };
+		5BF23CFA29FD076900A5C239 /* SoldierRankState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoldierRankState.h; sourceTree = "<group>"; };
 		5BF48A3624F16E47003E3156 /* Functions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Functions.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B235EF5E201C4DF200FF7AC3 /* Game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Game.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1745,6 +1755,8 @@
 		B28342C3201F6D9C00BAEC9D /* Savegame */ = {
 			isa = PBXGroup;
 			children = (
+				5BF23CF229FD071E00A5C239 /* RankCount.cpp */,
+				5BF23CF129FD071E00A5C239 /* RankCount.h */,
 				5B7C32CF23BA240A0070A6D9 /* HitLog.cpp */,
 				5B7C32DA23BA240A0070A6D9 /* HitLog.h */,
 				5B95F040233D1BB20018C910 /* GeoscapeEvent.cpp */,
@@ -2050,6 +2062,10 @@
 		B28343BD201F6D9D00BAEC9D /* Basescape */ = {
 			isa = PBXGroup;
 			children = (
+				5BF23CF929FD076900A5C239 /* SoldierRankState.cpp */,
+				5BF23CFA29FD076900A5C239 /* SoldierRankState.h */,
+				5BF23CF529FD073100A5C239 /* GlobalAlienContainmentState.cpp */,
+				5BF23CF629FD073100A5C239 /* GlobalAlienContainmentState.h */,
 				5B498CC725404F5C00D97DF7 /* SoldierTransformationListState.cpp */,
 				5B498CD225404F5C00D97DF7 /* SoldierTransformationListState.h */,
 				5B95F026233D1AA80018C910 /* SoldierBonusState.cpp */,
@@ -2165,6 +2181,7 @@
 		B283440E201F6D9D00BAEC9D /* Mod */ = {
 			isa = PBXGroup;
 			children = (
+				5BF23CE629FD070900A5C239 /* LoadYaml.h */,
 				5BD535AF2461B5590041673F /* RuleBaseFacilityFunctions.h */,
 				5B189CEB241CBF2C00E11BE9 /* RuleManufactureShortcut.cpp */,
 				5B189CE0241CBF2C00E11BE9 /* RuleManufactureShortcut.h */,
@@ -2493,6 +2510,7 @@
 				B28344CB201F6D9E00BAEC9D /* Surface.cpp in Sources */,
 				5B95F03B233D1B770018C910 /* RuleEvent.cpp in Sources */,
 				B2834483201F6D9D00BAEC9D /* AbandonGameState.cpp in Sources */,
+				5BF23CFB29FD076900A5C239 /* SoldierRankState.cpp in Sources */,
 				B28344B9201F6D9E00BAEC9D /* hq4x.cpp in Sources */,
 				B2834465201F6D9D00BAEC9D /* ErrorMessageState.cpp in Sources */,
 				B28344D6201F6D9E00BAEC9D /* Vehicle.cpp in Sources */,
@@ -2722,6 +2740,7 @@
 				B283451A201F6D9E00BAEC9D /* PathfindingNode.cpp in Sources */,
 				B2834496201F6D9D00BAEC9D /* NewPossibleManufactureState.cpp in Sources */,
 				B2834477201F6D9D00BAEC9D /* StatisticsState.cpp in Sources */,
+				5BF23CF729FD073100A5C239 /* GlobalAlienContainmentState.cpp in Sources */,
 				B2834491201F6D9D00BAEC9D /* AllocatePsiTrainingState.cpp in Sources */,
 				5BD0BAD72242E009008E6DFB /* TechTreeViewerState.cpp in Sources */,
 				B2834506201F6D9E00BAEC9D /* CommendationLateState.cpp in Sources */,
@@ -2784,6 +2803,7 @@
 				5BD0BB392242E0C1008E6DFB /* CustomPalettes.cpp in Sources */,
 				5BD0BAF52242E02A008E6DFB /* AlienInventory.cpp in Sources */,
 				5BF12465262E0D8500A20BF1 /* ModListState.cpp in Sources */,
+				5BF23CF329FD071E00A5C239 /* RankCount.cpp in Sources */,
 				B28344F8201F6D9E00BAEC9D /* UnitInfoState.cpp in Sources */,
 				B2834550201F6D9E00BAEC9D /* PurchaseState.cpp in Sources */,
 				5BD0BAD92242E009008E6DFB /* ManufactureDependenciesTreeState.cpp in Sources */,
