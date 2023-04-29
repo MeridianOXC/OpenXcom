@@ -80,6 +80,8 @@ public:
 
 	/// Default move cost for tile that have floor with 0 cost.
 	static constexpr int DEFAULT_MOVE_COST = 4;
+	/// Default move cost for changing level for fly or gravlift.
+	static constexpr int DEFAULT_MOVE_FLY_COST = 8;
 	/// How much time units one move can have.
 	static constexpr int MAX_MOVE_COST = 100;
 	/// Fake cost representing invalid move.

@@ -281,7 +281,7 @@ ko:
   STR_ALIENBLEEDING: "외계인 출혈"
   STR_ALIENBLEEDING_DESC: "대부분의 외계인이 치명상을 입을 수 있도록 합니다."
   STR_FIELDPROMOTIONS: "전장 진급"
-  STR_FIELDPROMOTIONS_DESC: "임무에 투입된 병사만 진급 기회가 부여됩니다."
+  STR_FIELDPROMOTIONS_DESC: "임무 현장에 투입된 병사만 진급 기회가 부여됩니다."
   STR_MEETINGPOINT: "UFO 경로 예상"
   STR_MEETINGPOINT_DESC: "기체는 UFO의 현재 경로로부터 예상되는 만날 지점으로 비행합니다."
   STR_IRONMAN: "철인"

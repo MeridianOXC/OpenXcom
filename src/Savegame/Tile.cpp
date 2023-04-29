@@ -70,7 +70,9 @@ Tile::Tile(Position pos, SavedBattleGame* save): _save(save), _pos(pos)
 	}
 	_cache.isNoFloor = 1;
 	_cache.isGravLift = 0;
-	_cache.isLadder = 0;
+	_cache.isLadderOnObject = 0;
+	_cache.isLadderOnNorth = 0;
+	_cache.isLadderOnWest = 0;
 }
 
 /**
@@ -252,13 +254,17 @@ void Tile::setMapData(MapData *dat, int mapDataID, int mapDataSetID, TilePart pa
 		}
 		_cache.terrainLevel = level;
 	}
-	if (part == O_WESTWALL || part == O_NORTHWALL || part == O_OBJECT)
+	if (part == O_OBJECT)
 	{
-		_cache.isLadder = (
-			(_objects[O_WESTWALL] && _objects[O_WESTWALL]->isGravLift()) ||
-			(_objects[O_NORTHWALL] && _objects[O_NORTHWALL]->isGravLift()) ||
-			(_objects[O_OBJECT] && _objects[O_OBJECT]->isGravLift())
-		);
+		_cache.isLadderOnObject = _objects[O_OBJECT] && _objects[O_OBJECT]->isGravLift();
+	}
+	if (part == O_NORTHWALL)
+	{
+		_cache.isLadderOnNorth = _objects[O_NORTHWALL] && _objects[O_NORTHWALL]->isGravLift();
+	}
+	if (part == O_WESTWALL)
+	{
+		_cache.isLadderOnWest = _objects[O_WESTWALL] && _objects[O_WESTWALL]->isGravLift();
 	}
 	updateSprite(part);
 }

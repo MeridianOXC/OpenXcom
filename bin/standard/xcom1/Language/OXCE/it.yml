@@ -15,4 +15,5 @@ it:
   GMGEO1: "Traccia Geoscape #1"
   GMGEO2: "Traccia Geoscape #2"
   GMTACTIC: "Traccia Battlescape"
+  GMINTER: "Traccia Intercettazione"
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

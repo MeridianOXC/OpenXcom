@@ -585,7 +585,7 @@ void BattlescapeGenerator::nextStage()
 				if (transformedArmor)
 				{
 					// change battleunit's armor
-					bu->updateArmorFromNonSoldier(_game->getMod(), transformedArmor, _save->getDepth(), _save->getStartingCondition());
+					bu->updateArmorFromNonSoldier(_game->getMod(), transformedArmor, _save->getDepth(), true, _save->getStartingCondition());
 				}
 			}
 		}

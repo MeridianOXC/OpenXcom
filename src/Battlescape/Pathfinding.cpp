@@ -157,7 +157,7 @@ void Pathfinding::calculate(BattleUnit *unit, Position endPosition, BattleAction
 	}
 
 	// look for a possible fast and accurate bresenham path and skip A*
-	if (startPosition.z == endPosition.z && bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
+	if (bresenhamPath(startPosition, endPosition, bam, missileTarget, sneak))
 	{
 		std::reverse(_path.begin(), _path.end()); //paths are stored in reverse order
 		return;
@@ -269,6 +269,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	int maskOfPartsFalling = 0x0;
 	int maskOfPartsFlying = 0x0;
 	int maskOfPartsGround = 0x0;
+	int maskOfPartsClimb = 0x0;
 	int maskArmor = size ? 0xF : 0x1;
 
 	Position offsets[4] =
@@ -348,6 +349,11 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 				maskOfPartsFalling |= maskCurrentPart;
 			}
 		}
+		if (movementType != MT_FLY && checkClimbing && direction >= DIR_UP && startTile[i]->hasLadder())
+		{
+			//TODO: need check interaction with GravLift and other corner cases
+			maskOfPartsClimb |= maskCurrentPart;
+		}
 		if (movementType == MT_FLY && (canFallDown(startTile[i]) || canFallDown(destinationTile[i])))
 		{
 			maskOfPartsFlying |= maskCurrentPart;
@@ -362,6 +368,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 	const bool triedStairsDown = (maskOfPartsGround == 0 && ((maskOfPartsGoingDown | maskOfPartsFalling) == maskArmor));
 	const bool fallingDown = (maskOfPartsFalling == maskArmor);
 	const bool flying =  (maskOfPartsFlying == maskArmor);
+	const bool climb = (maskOfPartsClimb == maskArmor) && (bam != BAM_MISSILE);
 
 	if (movementType != MT_FLY && fallingDown)
 	{
@@ -436,7 +443,32 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			// check if we can go up or down through gravlift or fly
 			if (validateUpDown(unit, startTile[i]->getPosition(), direction, (bam == BAM_MISSILE)))
 			{
-				cost = 8; // vertical movement by flying suit or grav lift
+				if (climb)
+				{
+					int minCost = INVALID_MOVE_COST;
+					auto calcMin = [&](bool ladder, TilePart p)
+					{
+						if (ladder)
+						{
+							int value = startTile[i]->getTUCost(p, movementType);
+							minCost = std::min(minCost, value ? value : DEFAULT_MOVE_FLY_COST);
+						}
+					};
+
+					calcMin(startTile[i]->hasLadderOnObject(), O_OBJECT);
+					calcMin(startTile[i]->hasLadderOnNorthWall(), O_NORTHWALL);
+					calcMin(startTile[i]->hasLadderOnWestWall(), O_WESTWALL);
+
+					if (minCost >= INVALID_MOVE_COST)
+					{
+						return {{INVALID_MOVE_COST, 0}};
+					}
+					cost = minCost;
+				}
+				else
+				{
+					cost = DEFAULT_MOVE_FLY_COST; // vertical movement by flying suit or grav lift
+				}
 			}
 			else
 			{
@@ -460,13 +492,13 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		int wallcost = 0; // walking through rubble walls, but don't charge for walking diagonally through doors (which is impossible),
 						// they're a special case unto themselves, if we can walk past them diagonally, it means we can go around,
 						// as there is no wall blocking us.
-		if (direction == 0 || direction == 7 || direction == 1)
+		if ((direction == 0 || direction == 7 || direction == 1) && startTile[i]->hasLadderOnNorthWall())
 			wallcost += startTile[i]->getTUCost(O_NORTHWALL, movementType);
-		if (!triedStairsDown && (direction == 2 || direction == 1 || direction == 3))
+		if (!triedStairsDown && (direction == 2 || direction == 1 || direction == 3) && destinationTile[i]->hasLadderOnWestWall())
 			wallcost += destinationTile[i]->getTUCost(O_WESTWALL, movementType);
-		if (!triedStairsDown && (direction == 4 || direction == 3 || direction == 5))
+		if (!triedStairsDown && (direction == 4 || direction == 3 || direction == 5) && destinationTile[i]->hasLadderOnNorthWall())
 			wallcost += destinationTile[i]->getTUCost(O_NORTHWALL, movementType);
-		if (direction == 6 || direction == 5 || direction == 7)
+		if ((direction == 6 || direction == 5 || direction == 7) && startTile[i]->hasLadderOnWestWall())
 			wallcost += startTile[i]->getTUCost(O_WESTWALL, movementType);
 
 		// for backward compatiblity (100 + 100 + 100 > 255) or for (255 + 10 > 255)
@@ -485,7 +517,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		if (direction < DIR_UP)
 		{
 			cost += destinationTile[i]->getTUCost(O_FLOOR, movementType);
-			if (!triedStairsDown && !triedStairs && destinationTile[i]->getMapData(O_OBJECT))
+			if (!triedStairsDown && !triedStairs && destinationTile[i]->getMapData(O_OBJECT) && !destinationTile[i]->hasLadderOnObject())
 			{
 				cost += destinationTile[i]->getTUCost(O_OBJECT, movementType);
 			}
@@ -594,7 +626,11 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 
 	cost *= unit->getMoveCostBase();
 
-	if (flying)
+	if (climb)
+	{
+		cost *= unit->getMoveCostBaseClimb();
+	}
+	else if (flying)
 	{
 		cost *= unit->getMoveCostBaseFly();
 	}
@@ -605,7 +641,18 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 
 	if (direction >= Pathfinding::DIR_UP)
 	{
-		if (flying)
+		if (climb)
+		{
+			if (direction == Pathfinding::DIR_UP)
+			{
+				cost *= armor->getMoveCostClimbUp();
+			}
+			else
+			{
+				cost *= armor->getMoveCostClimbDown();
+			}
+		}
+		else if (flying)
 		{
 			if (direction == Pathfinding::DIR_UP)
 			{
@@ -1306,6 +1353,17 @@ bool Pathfinding::bresenhamPath(Position origin, Position target, BattleActionMo
 			for (dir = 0; dir < 8; ++dir)
 			{
 				if (xd[dir] == cx-lastPoint.x && yd[dir] == cy-lastPoint.y) break;
+			}
+			if (dir == 8)
+			{
+				if (cz-lastPoint.z > 0)
+				{
+					dir = DIR_UP;
+				}
+				else
+				{
+					dir = DIR_DOWN;
+				}
 			}
 			PathfindingStep r = getTUCost(lastPoint, dir, _unit, missileTarget, bam);
 			nextPoint = r.pos;

@@ -118,6 +118,7 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	{
 		_moveCostBase.load(move["basePercent"]);
 		_moveCostBaseFly.load(move["baseFlyPercent"]);
+		_moveCostBaseClimb.load(move["baseClimbPercent"]);
 		_moveCostBaseNormal.load(move["baseNormalPercent"]);
 
 		_moveCostWalk.load(move["walkPercent"]);
@@ -131,6 +132,9 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 
 		_moveCostFlyUp.load(move["flyUpPercent"]);
 		_moveCostFlyDown.load(move["flyDownPercent"]);
+
+		_moveCostClimbUp.load(move["climbUpPercent"]);
+		_moveCostClimbDown.load(move["climbDownPercent"]);
 
 		_moveCostGravLift.load(move["gravLiftPercent"]);
 	}

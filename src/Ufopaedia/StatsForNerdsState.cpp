@@ -2248,13 +2248,19 @@ void StatsForNerdsState::initItemList()
 			endHeading();
 		}
 		addIntegerPercent(ss, itemRule->getSpecialChance(), "specialChance", 100);
+
+		addSection("{Spawning}", "", _white);
 		addBoolean(ss, !itemRule->getZombieUnitByArmorMaleRaw().empty(), "zombieUnitByArmorMale*", false); // just say if there are any or not
 		addBoolean(ss, !itemRule->getZombieUnitByArmorFemaleRaw().empty(), "zombieUnitByArmorFemale*", false); // just say if there are any or not
 		addBoolean(ss, !itemRule->getZombieUnitByTypeRaw().empty(), "zombieUnitByType*", false); // just say if there are any or not
 		addSingleString(ss, itemRule->getZombieUnit(nullptr), "zombieUnit");
+		addIntegerPercent(ss, itemRule->getZombieUnitChance(), "zombieUnitChance", 100); // default -1 means same as "specialChance"
+		addInteger(ss, itemRule->getZombieUnitFaction(), "zombieUnitFaction", 1); // hostile
 		addRule(ss, itemRule->getSpawnUnit(), "spawnUnit");
-		addInteger(ss, itemRule->getSpawnUnitFaction(), "spawnUnitFaction", -1);
+		addIntegerPercent(ss, itemRule->getSpawnUnitChance(), "spawnUnitChance", 100); // default -1 means same as "specialChance"
+		addInteger(ss, itemRule->getSpawnUnitFaction(), "spawnUnitFaction", -1); // none (i.e. same faction as attacker)
 		addRule(ss, itemRule->getSpawnItem(), "spawnItem");
+		addIntegerPercent(ss, itemRule->getSpawnItemChance(), "spawnItemChance", 100); // default -1 means same as "specialChance"
 
 		addSection("{Sprites}", "", _white);
 		addBoolean(ss, itemRule->getFixedShow(), "fixedWeaponShow");
@@ -2830,6 +2836,7 @@ void StatsForNerdsState::initArmorList()
 		{
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBase(), "basePercent", { 100, 100 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseFly(), "baseFlyPercent", { 100, 100 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseClimb(), "baseClimbPercent", { 100, 100 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostBaseNormal(), "baseNormalPercent", { 100, 100 });
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostWalk(), "walkPercent", { 100, 50 });
@@ -2843,6 +2850,9 @@ void StatsForNerdsState::initArmorList()
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyUp(), "flyUpPercent", { 100, 0 });
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostFlyDown(), "flyDownPercent", { 100, 0 });
+
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostClimbUp(), "climbUpPercent", { 100, 50 });
+			addRuleArmorMoveCost(ss, armorRule->getMoveCostClimbDown(), "climbDownPercent", { 100, 50 });
 
 			addRuleArmorMoveCost(ss, armorRule->getMoveCostGravLift(), "gravLiftPercent", { 100, 0 });
 
