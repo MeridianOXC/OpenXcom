@@ -459,7 +459,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		if (mod->getCountry(type))
 		{
 			Country *c = new Country(mod->getCountry(type), false);
-			c->load(*i);
+			c->load(*i, mod->getScriptGlobal());
 			_countries.push_back(c);
 		}
 		else
@@ -877,7 +877,7 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	node["ids"] = _ids;
 	for (const auto* country : _countries)
 	{
-		node["countries"].push_back(country->save());
+		node["countries"].push_back(country->save(mod->getScriptGlobal()));
 	}
 	for (const auto* region : _regions)
 	{

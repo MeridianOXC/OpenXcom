@@ -4687,6 +4687,12 @@ void BattleUnit::adjustStats(const StatAdjustment &adjustment)
 		_maxArmor[i] *= adjustment.armorMultiplier;
 		_currentArmor[i] = _maxArmor[i];
 	}
+
+	// update base stats again as they could be altered by `adjustment`.
+	_tu = _stats.tu;
+	_energy = _stats.stamina;
+	_health = _stats.health;
+	_mana = _stats.mana;
 }
 
 /**

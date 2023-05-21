@@ -194,6 +194,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 
 	PUSH_IN("STR_ID", idStat);
 	PUSH_IN("STR_NAME_UC", nameStat);
+	PUSH_IN("STR_CRAFT", craftIdStat);
 	PUSH_IN("STR_SOLDIER_TYPE", typeStat);
 	PUSH_IN("STR_RANK", rankStat);
 	PUSH_IN("STR_IDLE_DAYS", idleDaysStat);
@@ -268,7 +269,7 @@ void SoldiersState::cbxSortByChange(Action *action)
 	_dynGetter = NULL;
 	if (compFunc)
 	{
-		if (selIdx != 2)
+		if (selIdx != 2 && selIdx != 3)
 		{
 			_dynGetter = compFunc->getGetter();
 		}
@@ -282,6 +283,33 @@ void SoldiersState::cbxSortByChange(Action *action)
 					[](const Soldier* a, const Soldier* b)
 					{
 						return Unicode::naturalCompare(a->getName(), b->getName());
+					}
+				);
+			}
+			else if (selIdx == 3)
+			{
+				std::stable_sort(_base->getSoldiers()->begin(), _base->getSoldiers()->end(),
+					[](const Soldier* a, const Soldier* b)
+					{
+						if (a->getCraft())
+						{
+							if (b->getCraft())
+							{
+								if (a->getCraft()->getRules() == b->getCraft()->getRules())
+								{
+									return a->getCraft()->getId() < b->getCraft()->getId();
+								}
+								else
+								{
+									return a->getCraft()->getRules() < b->getCraft()->getRules();
+								}
+							}
+							else
+							{
+								return true; // a < b
+							}
+						}
+						return false; // b > a
 					}
 				);
 			}

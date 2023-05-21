@@ -42,7 +42,7 @@ private:
 	TextList *_lstManufacture;
 
 	std::vector<Base*> _bases;
-	std::vector<RuleManufacture*> _topics;
+	std::vector<const RuleManufacture*> _topics;
 	bool _openedFromBasescape;
 public:
 	/// Creates the GlobalManufacture state.

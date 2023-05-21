@@ -111,7 +111,7 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
 	_txtQuantity->setVisible(false);
 	_lstTransfers->setVisible(false);
 
-	if (_lstTransfers->getTexts() == 0)
+	if (_lstTransfers->getTexts() == 0 || !Options::oxceGeoscapeEventsInstantDelivery)
 	{
 		_btnOk->setX((_btnOk->getX() + _btnItemsArriving->getX()) / 2);
 		_btnItemsArriving->setVisible(false);
@@ -287,7 +287,16 @@ void GeoscapeEventState::eventLogic()
 
 	for (auto& ti : itemsToTransfer)
 	{
-		hq->getStorageItems()->addItem(ti.first, ti.second);
+		if (Options::oxceGeoscapeEventsInstantDelivery)
+		{
+			hq->getStorageItems()->addItem(ti.first, ti.second);
+		}
+		else
+		{
+			Transfer* t = new Transfer(1);
+			t->setItems(ti.first, ti.second);
+			hq->getTransfers()->push_back(t);
+		}
 
 		std::ostringstream ss;
 		ss << ti.second;

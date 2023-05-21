@@ -133,6 +133,7 @@ OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableInventoryTuCost;
 OPT bool oxceShowBaseNameInPopups;
 OPT int oxceGeoscapeDebugLogMaxEntries;
+OPT bool oxceGeoscapeEventsInstantDelivery;
 
 // System-specific options
 OPT bool swipeToTurn, holdToTurn;

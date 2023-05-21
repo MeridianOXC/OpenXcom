@@ -46,6 +46,7 @@
 #include "../Mod/RuleInterface.h"
 #include "../Mod/Armor.h"
 #include "../Interface/ComboBox.h"
+#include "TechTreeViewerState.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Battlescape/DebriefingState.h"
 
@@ -792,7 +793,18 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 			if (rule != 0)
 			{
 				std::string articleId = rule->getUfopediaType();
-				Ufopaedia::openArticle(_game, articleId);
+				if (_game->isCtrlPressed())
+				{
+					Ufopaedia::openArticle(_game, articleId);
+				}
+				else
+				{
+					const RuleResearch* selectedTopic = _game->getMod()->getResearch(articleId, false);
+					if (selectedTopic)
+					{
+						_game->pushState(new TechTreeViewerState(selectedTopic, 0));
+					}
+				}
 			}
 		}
 		else if (getRow().type == TRANSFER_CRAFT)
@@ -801,7 +813,14 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 			if (rule != 0)
 			{
 				std::string articleId = rule->getRules()->getType();
-				Ufopaedia::openArticle(_game, articleId);
+				if (_game->isCtrlPressed())
+				{
+					Ufopaedia::openArticle(_game, articleId);
+				}
+				else
+				{
+					_game->pushState(new TechTreeViewerState(0, 0, 0, rule->getRules()));
+				}
 			}
 		}
 	}

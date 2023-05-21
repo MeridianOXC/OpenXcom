@@ -184,7 +184,7 @@ public:
 	/// Sets the alien item level.
 	void setAlienItemLevel(int itemLevel) { _alienItemLevel = itemLevel; }
 	/// Gets the alien item level.
-	int getAlienItemLevel() { return _alienItemLevel; }
+	int getAlienItemLevel() const { return _alienItemLevel; }
 
 	/// Sets the alien deployment to use for reinforcements.
 	void setReinforcementsDeployment(const std::string &reinforcementsDeployment) { _reinforcementsDeployment = reinforcementsDeployment; }
