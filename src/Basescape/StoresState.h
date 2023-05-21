@@ -24,6 +24,7 @@ namespace OpenXcom
 {
 
 class Base;
+class RuleItem;
 class TextButton;
 class ToggleTextButton;
 class Window;
@@ -48,10 +49,11 @@ enum ItemSort
 
 struct StoredItem
 {
-	StoredItem(const std::string &_name, int _quantity, double _size, double _spaceUsed)
-		: name(_name), quantity(_quantity), size(_size), spaceUsed(_spaceUsed)
+	StoredItem(RuleItem* _rule, const std::string &_name, int _quantity, double _size, double _spaceUsed)
+		: rule(_rule), name(_name), quantity(_quantity), size(_size), spaceUsed(_spaceUsed)
 	{
 	}
+	RuleItem* rule;
 	std::string name;
 	int quantity;
 	double size;
@@ -105,6 +107,8 @@ public:
 	void sortSizeClick(Action *action);
 	/// Handler for clicking the Space Used arrow.
 	void sortSpaceUsedClick(Action *action);
+	/// Handler for clicking the Stores list.
+	void lstStoresClick(Action* action);
 };
 
 }

@@ -40,6 +40,7 @@
 #include "../Mod/Mod.h"
 #include "../Mod/RuleItem.h"
 #include "../Mod/RuleResearch.h"
+#include "../Ufopaedia/Ufopaedia.h"
 #include <algorithm>
 #include <locale>
 
@@ -179,6 +180,7 @@ StoresState::StoresState(Base *base) : _base(base)
 	_lstStores->setSelectable(true);
 	_lstStores->setBackground(_window);
 	_lstStores->setMargin(2);
+	_lstStores->onMouseClick((ActionHandler)&StoresState::lstStoresClick, SDL_BUTTON_MIDDLE);
 
 	_sortName->setX(_sortName->getX() + _txtItem->getTextWidth() + 4);
 	_sortName->onMouseClick((ActionHandler)&StoresState::sortNameClick);
@@ -344,7 +346,7 @@ void StoresState::initList(bool grandTotal)
 
 		if (qty > 0)
 		{
-			_itemList.push_back(StoredItem(tr(itemType), qty, rule->getSize(), qty * rule->getSize()));
+			_itemList.push_back(StoredItem(rule, tr(itemType), qty, rule->getSize(), qty * rule->getSize()));
 		}
 	}
 
@@ -541,6 +543,21 @@ void StoresState::sortSpaceUsedClick(Action *)
 	updateArrows();
 	_lstStores->clearList();
 	sortList(itemOrder);
+}
+
+/**
+ * Handles mouse clicks.
+ * @param action Pointer to an action.
+ */
+void StoresState::lstStoresClick(Action* action)
+{
+	if (_game->isMiddleClick(action))
+	{
+		auto* rule = _itemList[_lstStores->getSelectedRow()].rule;
+
+		std::string articleId = rule->getUfopediaType();
+		Ufopaedia::openArticle(_game, articleId);
+	}
 }
 
 }

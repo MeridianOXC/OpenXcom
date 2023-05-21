@@ -35,6 +35,7 @@
 #include "GlobalManufactureState.h"
 #include "ManufactureInfoState.h"
 #include "TechTreeViewerState.h"
+#include "../Ufopaedia/Ufopaedia.h"
 #include <algorithm>
 
 namespace OpenXcom
@@ -247,7 +248,15 @@ void ManufactureState::lstManufactureClickMiddle(Action *)
 {
 	const std::vector<Production*> productions(_base->getProductions());
 	const RuleManufacture *selectedTopic = productions[_lstManufacture->getSelectedRow()]->getRules();
-	_game->pushState(new TechTreeViewerState(0, selectedTopic));
+	if (_game->isCtrlPressed())
+	{
+		std::string articleId = selectedTopic->getName();
+		Ufopaedia::openArticle(_game, articleId);
+	}
+	else
+	{
+		_game->pushState(new TechTreeViewerState(0, selectedTopic));
+	}
 }
 
 /**

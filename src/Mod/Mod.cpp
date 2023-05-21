@@ -1495,7 +1495,7 @@ void loadRuleInfoHelper(const YAML::Node &node, const char* nodeName, const char
 	if (node.Tag() == InfoTag)
 	{
 		Logger info;
-		info.get() << "Main node names available for " << nodeName << " at line " << node.Mark().line << " are: ";
+		info.get() << "Main node names available for '" << nodeName << ":' at line " << node.Mark().line << " are: ";
 		info.get() << " '" << YamlRuleNodeDelete << ":',";
 		info.get() << " '" << YamlRuleNodeNew << ":',";
 		info.get() << " '" << YamlRuleNodeOverride << ":',";
@@ -2462,9 +2462,9 @@ void Mod::loadResourceConfigFile(const FileMap::FileRecord &filerec)
 							const float to = op * 1.0f; // 0.0 -> 64.0
 
 							SDL_Color taint;
-							taint.r = color.r * to;
-							taint.g = color.g * to;
-							taint.b = color.b * to;
+							taint.r = Clamp((int)(color.r * to), 0, 255);
+							taint.g = Clamp((int)(color.g * to), 0, 255);
+							taint.b = Clamp((int)(color.b * to), 0, 255);
 							taint.a = 255 * co;
 							_transparencies[start + curr][opacity] = taint;
 						};
@@ -2564,7 +2564,18 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 {
 	auto doc = filerec.getYAML();
 
-	if (const YAML::Node &extended = doc["extended"])
+	auto loadDocInfoHelper = [&](const char* nodeName)
+	{
+		if (doc.Tag() == InfoTag)
+		{
+			Logger info;
+			info.get() << "Available rule '" << nodeName << ":'";
+		}
+
+		return doc[nodeName];
+	};
+
+	if (const YAML::Node &extended = loadDocInfoHelper("extended"))
 	{
 		if (const YAML::Node& t = extended["tagsFile"])
 		{
@@ -2588,9 +2599,16 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 	auto iterateRules = [&](const char* nodeName, const char* type)
 	{
-		const YAML::Node& node = doc[nodeName];
+		const YAML::Node& node = loadDocInfoHelper(nodeName);
 
 		loadRuleInfoHelper(node, nodeName, type);
+
+		return Collections::rangeValueUncheck(node.begin(), node.end());
+	};
+
+	auto iterateRulesSpecific = [&](const char* nodeName)
+	{
+		const YAML::Node& node = loadDocInfoHelper(nodeName);
 
 		return Collections::rangeValueUncheck(node.begin(), node.end());
 	};
@@ -2602,7 +2620,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		RuleCountry *rule = loadRule(*i, &_countries, &_countriesIndex);
 		if (rule != 0)
 		{
-			rule->load(*i);
+			rule->load(*i, parsers);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("extraGlobeLabels", "type"))
@@ -2610,7 +2628,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		RuleCountry *rule = loadRule(*i, &_extraGlobeLabels, &_extraGlobeLabelsIndex);
 		if (rule != 0)
 		{
-			rule->load(*i);
+			rule->load(*i, parsers);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("regions", "type"))
@@ -2852,7 +2870,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 
 
-	for (YAML::const_iterator i = doc["mapScripts"].begin(); i != doc["mapScripts"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("mapScripts"))
 	{
 		std::string type = (*i)["type"].as<std::string>();
 		if ((*i)["delete"])
@@ -2873,7 +2891,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 
 
-	for (YAML::const_iterator i = doc["ufopaedia"].begin(); i != doc["ufopaedia"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("ufopaedia"))
 	{
 		if ((*i)["id"])
 		{
@@ -2937,10 +2955,10 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 
 
-	auto loadStartingBase = [](YAML::Node &docRef, const std::string &startingBaseType, YAML::Node &destRef)
+	auto loadStartingBase = [&](const char* startingBaseType, YAML::Node &destRef)
 	{
 		// Bases can't be copied, so for savegame purposes we store the node instead
-		YAML::Node base = docRef[startingBaseType];
+		YAML::Node base = loadDocInfoHelper(startingBaseType);
 		if (base)
 		{
 			if (isMapHelper(base))
@@ -2956,12 +2974,12 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			}
 		}
 	};
-	loadStartingBase(doc, "startingBase", _startingBaseDefault);
-	loadStartingBase(doc, "startingBaseBeginner", _startingBaseBeginner);
-	loadStartingBase(doc, "startingBaseExperienced", _startingBaseExperienced);
-	loadStartingBase(doc, "startingBaseVeteran", _startingBaseVeteran);
-	loadStartingBase(doc, "startingBaseGenius", _startingBaseGenius);
-	loadStartingBase(doc, "startingBaseSuperhuman", _startingBaseSuperhuman);
+	loadStartingBase("startingBase", _startingBaseDefault);
+	loadStartingBase("startingBaseBeginner", _startingBaseBeginner);
+	loadStartingBase("startingBaseExperienced", _startingBaseExperienced);
+	loadStartingBase("startingBaseVeteran", _startingBaseVeteran);
+	loadStartingBase("startingBaseGenius", _startingBaseGenius);
+	loadStartingBase("startingBaseSuperhuman", _startingBaseSuperhuman);
 
 	if (doc["startingTime"])
 	{
@@ -2991,7 +3009,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 	_aiUseDelayGrenade = doc["turnAIUseGrenade"].as<int>(_aiUseDelayGrenade);
 	_aiUseDelayBlaster = doc["turnAIUseBlaster"].as<int>(_aiUseDelayBlaster);
-	if (const YAML::Node &nodeAI = doc["ai"])
+	if (const YAML::Node &nodeAI = loadDocInfoHelper("ai"))
 	{
 		_aiUseDelayBlaster = nodeAI["useDelayBlaster"].as<int>(_aiUseDelayBlaster);
 		_aiUseDelayFirearm = nodeAI["useDelayFirearm"].as<int>(_aiUseDelayFirearm);
@@ -3032,7 +3050,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_bughuntTimeUnitsLeft = doc["bughuntTimeUnitsLeft"].as<int>(_bughuntTimeUnitsLeft);
 
 
-	if (const YAML::Node &nodeMana = doc["mana"])
+	if (const YAML::Node &nodeMana = loadDocInfoHelper("mana"))
 	{
 		_manaEnabled = nodeMana["enabled"].as<bool>(_manaEnabled);
 		_manaBattleUI = nodeMana["battleUI"].as<bool>(_manaBattleUI);
@@ -3043,14 +3061,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		_manaMissingWoundThreshold = nodeMana["woundThreshold"].as<int>(_manaMissingWoundThreshold);
 		_manaReplenishAfterMission = nodeMana["replenishAfterMission"].as<bool>(_manaReplenishAfterMission);
 	}
-	if (const YAML::Node &nodeHealth = doc["health"])
+	if (const YAML::Node &nodeHealth = loadDocInfoHelper("health"))
 	{
 		_healthMissingWoundThreshold = nodeHealth["woundThreshold"].as<int>(_healthMissingWoundThreshold);
 		_healthReplenishAfterMission = nodeHealth["replenishAfterMission"].as<bool>(_healthReplenishAfterMission);
 	}
 
 
-	if (const YAML::Node &nodeGameOver = doc["gameOver"])
+	if (const YAML::Node &nodeGameOver = loadDocInfoHelper("gameOver"))
 	{
 		_loseMoney = nodeGameOver["loseMoney"].as<std::string>(_loseMoney);
 		_loseRating = nodeGameOver["loseRating"].as<std::string>(_loseRating);
@@ -3120,7 +3138,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	loadUnorderedNames("mod", _operationNamesLast, doc["operationNamesLast"]);
 	_disableUnderwaterSounds = doc["disableUnderwaterSounds"].as<bool>(_disableUnderwaterSounds);
 	_enableUnitResponseSounds = doc["enableUnitResponseSounds"].as<bool>(_enableUnitResponseSounds);
-	for (YAML::const_iterator i = doc["unitResponseSounds"].begin(); i != doc["unitResponseSounds"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("unitResponseSounds"))
 	{
 		std::string type = (*i)["name"].as<std::string>();
 		if ((*i)["selectUnitSound"])
@@ -3145,7 +3163,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	_defeatFunds = doc["defeatFunds"].as<int>(_defeatFunds);
 	_difficultyDemigod = doc["difficultyDemigod"].as<bool>(_difficultyDemigod);
 
-	if (const YAML::Node& difficultyCoefficientOverrides = doc["difficultyCoefficientOverrides"])
+	if (const YAML::Node& difficultyCoefficientOverrides = loadDocInfoHelper("difficultyCoefficientOverrides"))
 	{
 		_monthlyRatingThresholds = difficultyCoefficientOverrides["monthlyRatingThresholds"].as< std::vector<int> >(_monthlyRatingThresholds);
 		_ufoFiringRateCoefficients = difficultyCoefficientOverrides["ufoFiringRateCoefficients"].as< std::vector<int> >(_ufoFiringRateCoefficients);
@@ -3199,7 +3217,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 
 
-	for (YAML::const_iterator i = doc["MCDPatches"].begin(); i != doc["MCDPatches"].end(); ++i)
+	for (YAML::const_iterator i = doc["MCDPatches"].begin(); i != doc["MCDPatches"].end(); ++i) //this should not be used by mods
 	{
 		std::string type = (*i)["type"].as<std::string>();
 		if (_MCDPatches.find(type) != _MCDPatches.end())
@@ -3213,7 +3231,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			_MCDPatches[type] = patch;
 		}
 	}
-	for (YAML::const_iterator i = doc["extraSprites"].begin(); i != doc["extraSprites"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("extraSprites"))
 	{
 		if ((*i)["type"] || (*i)["typeSingle"])
 		{
@@ -3241,7 +3259,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			}
 		}
 	}
-	for (YAML::const_iterator i = doc["customPalettes"].begin(); i != doc["customPalettes"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("customPalettes"))
 	{
 		CustomPalettes *rule = loadRule(*i, &_customPalettes, &_customPalettesIndex);
 		if (rule != 0)
@@ -3249,14 +3267,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["extraSounds"].begin(); i != doc["extraSounds"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("extraSounds"))
 	{
 		std::string type = (*i)["type"].as<std::string>();
 		ExtraSounds *extraSounds = new ExtraSounds();
 		extraSounds->load(*i, _modCurrent);
 		_extraSounds.push_back(std::make_pair(type, extraSounds));
 	}
-	for (YAML::const_iterator i = doc["extraStrings"].begin(); i != doc["extraStrings"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("extraStrings"))
 	{
 		std::string type = (*i)["type"].as<std::string>();
 		if (_extraStrings.find(type) != _extraStrings.end())
@@ -3271,14 +3289,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		}
 	}
 
-	for (YAML::const_iterator i = doc["statStrings"].begin(); i != doc["statStrings"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("statStrings"))
 	{
 		StatString *statString = new StatString();
 		statString->load(*i);
 		_statStrings.push_back(statString);
 	}
 
-	for (YAML::const_iterator i = doc["interfaces"].begin(); i != doc["interfaces"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("interfaces"))
 	{
 		RuleInterface *rule = loadRule(*i, &_interfaces);
 		if (rule != 0)
@@ -3287,7 +3305,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		}
 	}
 
-	for (YAML::const_iterator i = doc["cutscenes"].begin(); i != doc["cutscenes"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("cutscenes"))
 	{
 		RuleVideo *rule = loadRule(*i, &_videos);
 		if (rule != 0)
@@ -3295,7 +3313,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i);
 		}
 	}
-	for (YAML::const_iterator i = doc["musics"].begin(); i != doc["musics"].end(); ++i)
+	for (YAML::const_iterator i : iterateRulesSpecific("musics"))
 	{
 		RuleMusic *rule = loadRule(*i, &_musicDefs);
 		if (rule != 0)
@@ -3372,7 +3390,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			_statAdjustment[i].statGrowth = _statAdjustment[0].statGrowth;
 		}
 	}
-	if (const YAML::Node &lighting = doc["lighting"])
+	if (const YAML::Node &lighting = loadDocInfoHelper("lighting"))
 	{
 		_maxStaticLightDistance = lighting["maxStatic"].as<int>(_maxStaticLightDistance);
 		_maxDynamicLightDistance = lighting["maxDynamic"].as<int>(_maxDynamicLightDistance);

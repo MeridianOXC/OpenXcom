@@ -135,6 +135,14 @@ int OpenXcom::nameStat(const Game *game, const Soldier *s)
 {
 	return 0;
 }
+int OpenXcom::craftIdStat(const Game *game, const Soldier *s)
+{
+	if (s->getCraft())
+	{
+		return s->getCraft()->getId();
+	}
+	return 0;
+}
 int OpenXcom::typeStat(const Game *game, const Soldier *s)
 {
 	return s->getRules()->getListOrder();

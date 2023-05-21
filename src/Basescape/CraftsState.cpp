@@ -35,6 +35,7 @@
 #include "SellState.h"
 #include "../Savegame/SavedGame.h"
 #include "../Mod/RuleInterface.h"
+#include "../Ufopaedia/Ufopaedia.h"
 
 namespace OpenXcom
 {
@@ -103,6 +104,7 @@ CraftsState::CraftsState(Base *base) : _base(base)
 	_lstCrafts->setMargin(8);
 	_lstCrafts->onMouseClick((ActionHandler)&CraftsState::lstCraftsClick);
 	_lstCrafts->onMouseClick((ActionHandler)&CraftsState::lstCraftsClick, SDL_BUTTON_RIGHT);
+	_lstCrafts->onMouseClick((ActionHandler)&CraftsState::lstCraftsClick, SDL_BUTTON_MIDDLE);
 }
 
 /**
@@ -180,6 +182,11 @@ void CraftsState::lstCraftsClick(Action *action)
 			// reload the UI
 			init();
 		}
+	}
+	else if (_game->isMiddleClick(action))
+	{
+		std::string articleId = crafts[row]->getRules()->getType();
+		Ufopaedia::openArticle(_game, articleId);
 	}
 }
 

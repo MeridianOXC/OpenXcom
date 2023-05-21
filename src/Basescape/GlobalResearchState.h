@@ -42,7 +42,7 @@ private:
 	TextList *_lstResearch;
 
 	std::vector<Base*> _bases;
-	std::vector<RuleResearch*> _topics;
+	std::vector<const RuleResearch*> _topics;
 	bool _openedFromBasescape;
 public:
 	/// Creates the GlobalResearchState.

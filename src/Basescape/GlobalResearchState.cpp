@@ -197,7 +197,7 @@ void GlobalResearchState::fillProjectList()
 			_lstResearch->addRow(3, wstr.c_str(), sstr.str().c_str(), tr(proj->getResearchProgress()).c_str());
 
 			_bases.push_back(xbase);
-			_topics.push_back(_game->getMod()->getResearch(r->getName()));
+			_topics.push_back(r);
 		}
 
 		availableScientists += xbase->getAvailableScientists();
