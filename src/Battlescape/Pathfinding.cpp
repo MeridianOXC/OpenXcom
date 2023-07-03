@@ -492,13 +492,13 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		int wallcost = 0; // walking through rubble walls, but don't charge for walking diagonally through doors (which is impossible),
 						// they're a special case unto themselves, if we can walk past them diagonally, it means we can go around,
 						// as there is no wall blocking us.
-		if ((direction == 0 || direction == 7 || direction == 1) && startTile[i]->hasLadderOnNorthWall())
+		if ((direction == 0 || direction == 7 || direction == 1) && !startTile[i]->hasLadderOnNorthWall())
 			wallcost += startTile[i]->getTUCost(O_NORTHWALL, movementType);
-		if (!triedStairsDown && (direction == 2 || direction == 1 || direction == 3) && destinationTile[i]->hasLadderOnWestWall())
+		if (!triedStairsDown && (direction == 2 || direction == 1 || direction == 3) && !destinationTile[i]->hasLadderOnWestWall())
 			wallcost += destinationTile[i]->getTUCost(O_WESTWALL, movementType);
-		if (!triedStairsDown && (direction == 4 || direction == 3 || direction == 5) && destinationTile[i]->hasLadderOnNorthWall())
+		if (!triedStairsDown && (direction == 4 || direction == 3 || direction == 5) && !destinationTile[i]->hasLadderOnNorthWall())
 			wallcost += destinationTile[i]->getTUCost(O_NORTHWALL, movementType);
-		if ((direction == 6 || direction == 5 || direction == 7) && startTile[i]->hasLadderOnWestWall())
+		if ((direction == 6 || direction == 5 || direction == 7) && !startTile[i]->hasLadderOnWestWall())
 			wallcost += startTile[i]->getTUCost(O_WESTWALL, movementType);
 
 		// for backward compatiblity (100 + 100 + 100 > 255) or for (255 + 10 > 255)

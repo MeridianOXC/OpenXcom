@@ -938,6 +938,11 @@ public:
 
 	}
 
+	/// Copy assignment.
+	constexpr ScriptRef& operator=(const ScriptRef& r) = default;
+
+
+
 	/// Find first occurrence of character in string range.
 	constexpr size_t find(char c) const
 	{

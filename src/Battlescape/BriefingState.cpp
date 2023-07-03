@@ -68,9 +68,7 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 	_txtCraft = new Text(300, 17, 16, 56);
 	_txtBriefing = new Text(274, 94, 16, 72);
 
-	// set random hidden movement/next turn background for this mission
 	auto* battleSave = _game->getSavedGame()->getSavedBattle();
-	battleSave->setRandomHiddenMovementBackground(_game->getMod());
 
 	std::string mission = battleSave->getMissionType();
 	AlienDeployment *deployment = _game->getMod()->getDeployment(mission);

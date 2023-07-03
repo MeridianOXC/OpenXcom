@@ -352,9 +352,14 @@ void Map::setPalette(const SDL_Color *colors, int firstcolor, int ncolors)
 		mds->getSurfaceset()->setPalette(colors, firstcolor, ncolors);
 	}
 	_message->setPalette(colors, firstcolor, ncolors);
-	_message->setBackground(_game->getMod()->getSurface(_save->getHiddenMovementBackground()));
+	refreshHiddenMovementBackground();
 	_message->initText(_game->getMod()->getFont("FONT_BIG"), _game->getMod()->getFont("FONT_SMALL"), _game->getLanguage());
 	_message->setText(_game->getLanguage()->getString("STR_HIDDEN_MOVEMENT"));
+}
+
+void Map::refreshHiddenMovementBackground()
+{
+	_message->setBackground(_game->getMod()->getSurface(_save->getHiddenMovementBackground()));
 }
 
 /**

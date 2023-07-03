@@ -356,19 +356,9 @@ void UnitWalkBState::think()
 			{
 				for (int y = size; y >= 0; --y)
 				{
-					BattleUnit* unitInMyWay = _parent->getSave()->getTile(destination + Position(x,y,0))->getUnit();
-					BattleUnit* unitBelowMyWay = 0;
-					Tile* belowDest = _parent->getSave()->getTile(destination + Position(x,y,-1));
-					if (belowDest)
-					{
-						unitBelowMyWay = belowDest->getUnit();
-					}
+					BattleUnit* unitInMyWay = _parent->getSave()->getTile(destination + Position(x,y,0))->getOverlappingUnit(_parent->getSave(), TUO_IGNORE_SMALL);  // 2+ voxels poking into the tile above, we don't kick people in the head here at XCom.
 					// can't walk into units in this tile, or on top of other units sticking their head into this tile
-					if (!_falling &&
-						((unitInMyWay && unitInMyWay != _unit)
-						|| (belowDest && unitBelowMyWay && unitBelowMyWay != _unit &&
-						(-belowDest->getTerrainLevel() + unitBelowMyWay->getFloatHeight() + unitBelowMyWay->getHeight())
-						>= 28)))  // 4+ voxels poking into the tile above, we don't kick people in the head here at XCom.
+					if (!_falling && unitInMyWay && unitInMyWay != _unit)
 					{
 						_action.clearTU();
 						return cancelCurentMove();
