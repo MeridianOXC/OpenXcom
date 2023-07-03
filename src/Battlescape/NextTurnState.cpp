@@ -66,6 +66,13 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 		return;
 	}
 
+	// set random hidden movement/next turn background for this turn
+	if (_battleGame->getSide() == FACTION_PLAYER)
+	{
+		_battleGame->setRandomHiddenMovementBackground(_game->getMod());
+		state->getMap()->refreshHiddenMovementBackground();
+	}
+
 	_currentTurn = _battleGame->getTurn() < 1 ? 1 : _battleGame->getTurn();
 
 	// Create objects

@@ -83,7 +83,7 @@ SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang, bool isPreview) :
 	_baseItems = new ItemContainer();
 	_hitLog = new HitLog(lang);
 
-	setRandomHiddenMovementBackground(0);
+	setRandomHiddenMovementBackground(_rule);
 }
 
 /**
@@ -3331,7 +3331,7 @@ void SavedBattleGame::setRandomHiddenMovementBackground(const Mod *mod)
  * Gets the hidden movement background ID.
  * @return hidden movement background ID
  */
-std::string SavedBattleGame::getHiddenMovementBackground() const
+const std::string& SavedBattleGame::getHiddenMovementBackground() const
 {
 	return _hiddenMovementBackground;
 }

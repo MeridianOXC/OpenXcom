@@ -243,7 +243,7 @@ struct ParserWriter
 
 	/// Add new reg arg.
 	template<typename T>
-	bool addReg(const ScriptRef& s)
+	ScriptRefData addReg(const ScriptRef& s)
 	{
 		return addReg(s, ScriptParserBase::getArgType<T>());
 	}
