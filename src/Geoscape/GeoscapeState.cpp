@@ -1124,7 +1124,7 @@ void GeoscapeState::time5Seconds()
 					}
 				}
 				// if a transport craft has been shot down, kill all the soldiers on board.
-				if (xcraft->getRules()->getMaxUnits() > 0)
+				if (xcraft->getMaxUnits() > 0)
 				{
 					for (auto soldierIt = xbase->getSoldiers()->begin(); soldierIt != xbase->getSoldiers()->end();)
 					{

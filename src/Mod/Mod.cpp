@@ -2164,6 +2164,7 @@ void Mod::loadAll()
 	afterLoadHelper("skills", this, _skills, &RuleSkill::afterLoad);
 	afterLoadHelper("craftWeapons", this, _craftWeapons, &RuleCraftWeapon::afterLoad);
 	afterLoadHelper("countries", this, _countries, &RuleCountry::afterLoad);
+	afterLoadHelper("crafts", this, _crafts, &RuleCraft::afterLoad);
 
 	for (auto& a : _armors)
 	{
@@ -3732,7 +3733,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getMaxUnits())
 					{
 						// Remember transporter as fall-back, but search further for interceptors
 						found = craft;
@@ -3750,7 +3751,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getMaxUnits())
 					{
 						// First available transporter will do
 						found = craft;
