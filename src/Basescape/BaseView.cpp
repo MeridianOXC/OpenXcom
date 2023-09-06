@@ -539,7 +539,7 @@ void BaseView::draw()
 		{
 			for (int x = fac->getX(); x < fac->getX() + fac->getRules()->getSize(); ++x)
 			{
-				if (fac->getRules()->getSize() == 1)
+				if (fac->getRules()->getSpriteEnabled())
 				{
 					Surface *frame = _texture->getFrame(fac->getRules()->getSpriteFacility() + num);
 					int fx = (x * GRID_SIZE);
