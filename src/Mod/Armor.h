@@ -93,7 +93,7 @@ public:
 	static const std::string NONE;
 private:
 	std::string _ufopediaType;
-	std::string _type, _spriteSheet, _spriteInv, _corpseGeoName, _storeItemName, _specWeaponName;
+	std::string _type, _spriteSheet, _spriteInv, _corpseGeoName, _storeItemName, _selfDestructItemName, _specWeaponName;
 	std::string _requiresName;
 	std::string _layersDefaultPrefix;
 	std::map<int, std::string> _layersSpecificPrefix;
@@ -108,6 +108,7 @@ private:
 	const RuleResearch* _requires = nullptr;
 	const RuleItem* _corpseGeo = nullptr;
 	const RuleItem* _storeItem = nullptr;
+	const RuleItem* _selfDestructItem = nullptr;
 	const RuleItem* _specWeapon = nullptr;
 
 	bool _infiniteSupply;
@@ -207,6 +208,8 @@ public:
 	const RuleItem* getCorpseGeoscape() const;
 	/// Gets the Battlescape corpse item.
 	const std::vector<const RuleItem*> &getCorpseBattlescape() const;
+	/// Gets the Geoscape corpse item.
+	const RuleItem* getSelfDestructItem() const { return _selfDestructItem ? _selfDestructItem : _corpseGeo && _corpseGeo->getPower() > 0 ? _corpseGeo : nullptr; }
 	/// Gets the stores item.
 	const RuleItem* getStoreItem() const;
 	/// Gets the special weapon type.

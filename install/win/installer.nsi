@@ -8,6 +8,9 @@
 
 	;Compress the hell out of it
 	SetCompressor /SOLID lzma
+	
+	!addplugindir /x86-ansi ".\plugins\x86-ansi"
+	!addplugindir /x86-unicode ".\plugins\x86-unicode"
 
 ;--------------------------------
 ;Includes
@@ -55,10 +58,6 @@
 	Var XDirTFTD
 	Var XBrowseTFTD
 
-	Var ZDialog
-	Var ZLabelPortable
-	Var ZCheckPortable
-
 	Var StartMenuFolder
 	Var UFO_DIR
 	Var TFTD_DIR
@@ -84,11 +83,11 @@
 
 	!insertmacro MUI_PAGE_WELCOME
 	!insertmacro MUI_PAGE_COMPONENTS
+	!define MUI_PAGE_CUSTOMFUNCTION_PRE PreDirectory
+	!define MUI_PAGE_CUSTOMFUNCTION_LEAVE PostDirectory
 	!insertmacro MUI_PAGE_DIRECTORY
 
 	Page custom XcomFolder ValidateXcom
-
-	Page custom ExtraOptions ExtraOptionsSave
 
 	;Start Menu Folder Page Configuration
 	!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKLM"
@@ -112,46 +111,6 @@
 	
 Function RunAsUser
 	ShellExecAsUser::ShellExecAsUser "open" "$INSTDIR\OpenXcomEx.exe"
-FunctionEnd
-
-${StrStr}
-Function ExtraOptions
-
-	;Don't allow Portable Mode in Program Files
-	${StrStr} $0 $INSTDIR $PROGRAMFILES32
-	StrCmp $0 "" 0 portable_no
-	${StrStr} $0 $INSTDIR $PROGRAMFILES64
-	StrCmp $0 "" portable_yes portable_no
-
-	portable_no:
-	StrCpy $PortableMode ${BST_UNCHECKED}
-	Abort
-
-	portable_yes:
-	!insertmacro MUI_HEADER_TEXT $(SETUP_EXTRA_OPTIONS_TITLE) $(SETUP_EXTRA_OPTIONS_SUBTITLE)
-
-	nsDialogs::Create 1018
-	Pop $ZDialog
-
-	${If} $ZDialog == error
-		Abort
-	${EndIf}
-
-	${NSD_CreateCheckBox} 0 0 100% 10u $(SETUP_PORTABLE)
-	Pop $ZCheckPortable
-	${NSD_SetState} $ZCheckPortable $PortableMode
-
-	${NSD_CreateLabel} 0 15u 100% 20u $(SETUP_PORTABLE_DESC)
-	Pop $ZLabelPortable
-
-	nsDialogs::Show
-
-FunctionEnd
-
-Function ExtraOptionsSave
-
-	${NSD_GetState} $ZCheckPortable $PortableMode
-
 FunctionEnd
 
 Function XcomFolder
@@ -326,7 +285,7 @@ Section "$(SETUP_GAME)" SecMain
 	File /r "..\..\bin\common"
 	File /r "..\..\bin\standard"
 
-${If} $PortableMode == ${BST_CHECKED}
+${If} $PortableMode == ${SF_SELECTED}
 	CreateDirectory "$INSTDIR\user"
 ${EndIf}
 
@@ -356,7 +315,7 @@ ${EndIf}
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${GAME_NAME}.lnk" "$INSTDIR\OpenXcomEx.exe"
 		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_CHANGELOG).lnk" "$INSTDIR\CHANGELOG.txt"
 		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_README).lnk" "$INSTDIR\README.txt"
-${If} $PortableMode == ${BST_CHECKED}
+${If} $PortableMode == ${SF_SELECTED}
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_USER).lnk" "$INSTDIR\user"
 ${Else}
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(SETUP_SHORTCUT_USER).lnk" "$DOCUMENTS\OpenXcom"
@@ -367,61 +326,9 @@ ${EndIf}
 
 SectionEnd
 
-Section "$(SETUP_PATCH)" SecPatch
+Section /o "$(SETUP_PORTABLE)" SecPortable
 
-	;Patch UFO files
-	SetOutPath "$INSTDIR\UFO"
-
-	StrCmp $UFO_DIR "" patch_ufo_no 0
-	IfFileExists "$UFO_DIR\*.*" 0 patch_ufo_no
-
-	;(uses inetc.dll)
-	inetc::get "https://openxcom.org/download/extras/universal-patch-ufo.zip" "$TEMP\universal-patch-ufo.zip" /end
-	Pop $0
-	StrCmp $0 "OK" 0 patch_ufo_fail1
-
-	;(uses nsisunz.dll)
-	nsisunz::UnzipToLog "$TEMP\universal-patch-ufo.zip" "$INSTDIR\UFO"
-	Pop $0
-	StrCmp $0 "success" patch_ufo_yes patch_ufo_fail1
-
-	patch_ufo_fail1:
-	MessageBox MB_ICONEXCLAMATION|MB_YESNO $(SETUP_WARNING_PATCH) /SD IDYES IDYES patch_ufo_yes IDNO patch_ufo_fail2
-	patch_ufo_fail2:
-	Abort "Error"
-
-	patch_ufo_yes:
-	Delete "$TEMP\universal-patch-ufo.zip"
-
-	patch_ufo_no:
-
-	;Patch TFTD files
-	SetOutPath "$INSTDIR\TFTD"
-
-	StrCmp $TFTD_DIR "" patch_tftd_no 0
-	IfFileExists "$TFTD_DIR\*.*" 0 patch_tftd_no
-
-	;(uses inetc.dll)
-	inetc::get "https://openxcom.org/download/extras/universal-patch-tftd.zip" "$TEMP\universal-patch-tftd.zip" /end
-	Pop $0
-	StrCmp $0 "OK" 0 patch_tftd_fail1
-
-	;(uses nsisunz.dll)
-	nsisunz::UnzipToLog "$TEMP\universal-patch-tftd.zip" "$INSTDIR\TFTD"
-	Pop $0
-	StrCmp $0 "success" patch_tftd_yes patch_tftd_fail1
-
-	patch_tftd_fail1:
-	MessageBox MB_ICONEXCLAMATION|MB_YESNO $(SETUP_WARNING_PATCH) /SD IDYES IDYES patch_tftd_yes IDNO patch_tftd_fail2
-	patch_tftd_fail2:
-	Abort "Error"
-
-	patch_tftd_yes:
-	Delete "$TEMP\universal-patch-tftd.zip"
-
-	patch_tftd_no:
-
-	SetOutPath "$INSTDIR"
+	CreateDirectory "$INSTDIR\user"
 
 SectionEnd
 
@@ -439,7 +346,7 @@ SectionEnd
 	;Assign language strings to sections
 	!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 		!insertmacro MUI_DESCRIPTION_TEXT ${SecMain} $(SETUP_GAME_DESC)
-		!insertmacro MUI_DESCRIPTION_TEXT ${SecPatch} $(SETUP_PATCH_DESC)
+		!insertmacro MUI_DESCRIPTION_TEXT ${SecPortable} $(SETUP_PORTABLE_DESC)
 		!insertmacro MUI_DESCRIPTION_TEXT ${SecDesktop} $(SETUP_DESKTOP_DESC)
 	!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
@@ -448,15 +355,8 @@ SectionEnd
 
 Function .onInit
 
-!ifdef NSIS_WIN32_MAKENSIS
-${If} ${RunningX64}
-	StrCpy $INSTDIR "$PROGRAMFILES64\${GAME_NAME}"
-${Else}
-	StrCpy $INSTDIR "$PROGRAMFILES32\${GAME_NAME}"
-${EndIf}
-!endif
 	StrCpy $StartMenuFolder "${GAME_NAME}"
-	StrCpy $PortableMode ${BST_UNCHECKED}
+	StrCpy $PortableMode 0
 
 	; Check for existing X-COM installs
 	StrCpy $UFO_DIR ""
@@ -466,6 +366,44 @@ ${EndIf}
 	Call ScanGOG
 
 	!insertmacro MUI_LANGDLL_DISPLAY
+
+FunctionEnd
+
+Function PreDirectory
+
+	StrCpy $1 "${SecPortable}"
+    SectionGetFlags $1 $0
+    IntOp $PortableMode $0 & ${SF_SELECTED}
+	
+!ifdef NSIS_WIN32_MAKENSIS
+${If} ${RunningX64}
+	StrCpy $INSTDIR "$PROGRAMFILES64\${GAME_NAME}"
+${Else}
+	StrCpy $INSTDIR "$PROGRAMFILES32\${GAME_NAME}"
+${EndIf}
+!endif
+${If} $PortableMode == ${SF_SELECTED}
+	StrCpy $INSTDIR "C:\${GAME_NAME}"
+${EndIf}
+
+FunctionEnd
+
+${StrStr}
+Function PostDirectory
+
+${If} $PortableMode == ${SF_SELECTED}
+	;Don't allow Portable Mode in Program Files
+	${StrStr} $0 $INSTDIR $PROGRAMFILES32
+	StrCmp $0 "" 0 portable_no
+	${StrStr} $0 $INSTDIR $PROGRAMFILES64
+	StrCmp $0 "" portable_yes portable_no
+
+	portable_no:
+	MessageBox MB_ICONSTOP|MB_OK $(SETUP_ERROR_PORTABLE)
+	Abort
+
+	portable_yes:
+${EndIf}
 
 FunctionEnd
 
@@ -482,12 +420,12 @@ Function ScanSteam
 	Call ScanSteamLibrary
 
 	ClearErrors
-	FileOpen $0 "$R1\config\config.vdf" r
+	FileOpen $0 "$R1\config\libraryfolders.vdf" r
 	IfErrors steam_read_done
 	steam_read_loop:
 	FileRead $0 $1
 	IfErrors steam_read_done
-	${StrLoc} $2 $1 "BaseInstallFolder_" ">"
+	${StrLoc} $2 $1 "path" ">"
 	StrCmp $2 "" steam_read_next 0
 	${StrTok} $R1 $1 '"' "3" "1"
 	${StrRep} $R1 $R1 "\\" "\"
@@ -555,8 +493,8 @@ Function ValidateXcom
 	IfFileExists "$UFO_DIR\SOUND\*.*" 0 confirm_ufo
 	IfFileExists "$UFO_DIR\TERRAIN\*.*" 0 confirm_ufo
 	IfFileExists "$UFO_DIR\UFOGRAPH\*.*" 0 confirm_ufo
-	IfFileExists "$UFO_DIR\UFOINTRO\*.*" 0 confirm_ufo
 	IfFileExists "$UFO_DIR\UNITS\*.*" 0 confirm_ufo
+	IfFileExists "$UFO_DIR\GEOGRAPH\UP001.SPK" 0 confirm_ufo ; unique file
 	IfFileExists "$UFO_DIR\XcuSetup.bat" confirm_ufo_xcu
 	Goto validate_ufo_yes
 	confirm_ufo:
@@ -569,7 +507,6 @@ Function ValidateXcom
 
 	; TFTD
 	StrCmp $TFTD_DIR "" validate_tftd_yes
-	IfFileExists "$TFTD_DIR\FLOP_INT\*.*" 0 confirm_tftd
 	IfFileExists "$TFTD_DIR\GEODATA\*.*" 0 confirm_tftd
 	IfFileExists "$TFTD_DIR\GEOGRAPH\*.*" 0 confirm_tftd
 	IfFileExists "$TFTD_DIR\MAPS\*.*" 0 confirm_tftd
@@ -578,6 +515,7 @@ Function ValidateXcom
 	IfFileExists "$TFTD_DIR\TERRAIN\*.*" 0 confirm_tftd
 	IfFileExists "$TFTD_DIR\UFOGRAPH\*.*" 0 confirm_tftd
 	IfFileExists "$TFTD_DIR\UNITS\*.*" 0 confirm_tftd
+	IfFileExists "$TFTD_DIR\GEOGRAPH\UP001.BDY" 0 confirm_tftd ; unique file
 	IfFileExists "$TFTD_DIR\XcuSetup.bat" confirm_tftd_xcu
 	Goto validate_tftd_yes
 	confirm_tftd:

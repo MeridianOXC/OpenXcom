@@ -1343,7 +1343,7 @@ void Map::drawTerrain(Surface *surface)
 											}
 											else
 											{
-												hasLOS = _save->getTileEngine()->isTileInLOS(action, tile);
+												hasLOS = _save->getTileEngine()->isTileInLOS(action, tile, true);
 											}
 											// remember
 											_cacheIsCtrlPressed = isCtrlPressed;

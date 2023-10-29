@@ -57,6 +57,7 @@ private:
 	int _size, _buildCost, _refundValue, _buildTime, _monthlyCost;
 	std::map<std::string, std::pair<int, int> > _buildCostItems;
 	int _storage, _personnel, _aliens, _crafts, _labs, _workshops, _psiLabs;
+	bool _spriteEnabled;
 	int _sightRange, _sightChance;
 	int _radarRange, _radarChance, _defense, _hitRatio, _fireSound, _hitSound, _placeSound;
 	int _ammoNeeded;
@@ -106,6 +107,8 @@ public:
 	int getSpriteShape() const;
 	/// Gets the facility's content sprite.
 	int getSpriteFacility() const;
+	/// Retain sprite over shape behavior for bigger facility?
+	bool getSpriteEnabled() const;
 	/// Should there be connectors leading to this facility?
 	bool connectorsDisabled() const { return _connectorsDisabled; }
 	/// Gets the facility's size.

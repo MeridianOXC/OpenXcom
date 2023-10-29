@@ -281,8 +281,7 @@ void BattlescapeGenerator::nextStage()
 			//spawn corpse/body for unit to recover
 			for (int i = bu->getArmor()->getTotalSize() - 1; i >= 0; --i)
 			{
-				auto* corpse = _save->createItemForTile(bu->getArmor()->getCorpseBattlescape()[i], nullptr);
-				corpse->setUnit(bu);
+				auto* corpse = _save->createItemForTile(bu->getArmor()->getCorpseBattlescape()[i], nullptr, bu);
 				_save->getTileEngine()->itemDrop(bu->getTile(), corpse, false);
 			}
 		}

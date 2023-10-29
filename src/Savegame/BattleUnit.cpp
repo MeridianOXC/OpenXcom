@@ -744,6 +744,9 @@ YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
 	if (_faction == FACTION_PLAYER && _dontReselect)
 		node["dontReselect"] = _dontReselect;
 
+	if (_previousOwner)
+		node["previousOwner"] = _previousOwner->getId();
+
 	if (_spawnUnit)
 	{
 		node["spawnUnit"] = _spawnUnit->getType();
@@ -1873,12 +1876,13 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			}
 		}
 
+		auto* selfDestructItem = getSpecialWeapon(getArmor()->getSelfDestructItem());
 		if (rand.percent(std::get<arg_selfDestructChance>(args.data))
-			&& !hasAlreadyExploded())
+			&& !hasAlreadyExploded() && selfDestructItem)
 		{
 			setAlreadyExploded(true);
 			Position p = getPosition().toVoxel();
-			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, }, 0));
+			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, selfDestructItem, selfDestructItem }, 0));
 		}
 	}
 
@@ -3287,6 +3291,31 @@ void BattleUnit::setInventoryTile(Tile *tile)
 Tile *BattleUnit::getTile() const
 {
 	return _tile;
+}
+
+
+/**
+ * Gets the unit's creator.
+ */
+BattleUnit *BattleUnit::getPreviousOwner()
+{
+	return _previousOwner;
+}
+
+/**
+ * Gets the unit's creator.
+ */
+const BattleUnit *BattleUnit::getPreviousOwner() const
+{
+	return _previousOwner;
+}
+
+/**
+ * Sets the unit's creator.
+ */
+void BattleUnit::setPreviousOwner(BattleUnit *owner)
+{
+	_previousOwner = owner;
 }
 
 /**
@@ -4945,17 +4974,15 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 	const Mod *mod = save->getMod();
 	int i = 0;
 
-	if (_specWeapon[0] && updateFromSave)
-	{
-		// new saves already contain special built-in weapons, we can stop here
-		return;
-		// old saves still need the below functionality to work properly
-	}
-
 	auto addItem = [&](const RuleItem *item)
 	{
 		if (item && i < SPEC_WEAPON_MAX)
 		{
+			if (getBaseStats()->psiSkill <= 0 && item->isPsiRequired())
+			{
+				return;
+			}
+
 			//TODO: move this check to load of ruleset
 			if ((item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE) && !item->getClipSize())
 			{
@@ -4975,6 +5002,16 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 		}
 	};
 
+	if (_specWeapon[0] && updateFromSave)
+	{
+		// for backward compatibility, we try add corpse explosion
+		addItem(getArmor()->getSelfDestructItem());
+
+		// new saves already contain special built-in weapons, we can stop here
+		return;
+		// old saves still need the below functionality to work properly
+	}
+
 	if (getUnitRules())
 	{
 		addItem(mod->getItem(getUnitRules()->getMeleeWeapon()));
@@ -4982,7 +5019,7 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 
 	addItem(getArmor()->getSpecialWeapon());
 
-	if (getBaseStats()->psiSkill > 0 && getOriginalFaction() == FACTION_HOSTILE)
+	if (getUnitRules() && getOriginalFaction() == FACTION_HOSTILE)
 	{
 		addItem(mod->getItem(getUnitRules()->getPsiWeapon()));
 	}
@@ -4990,6 +5027,8 @@ void BattleUnit::setSpecialWeapon(SavedBattleGame *save, bool updateFromSave)
 	{
 		addItem(getGeoscapeSoldier()->getRules()->getSpecialWeapon());
 	}
+
+	addItem(getArmor()->getSelfDestructItem());
 }
 
 /**
@@ -6120,6 +6159,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getSpawnUnitInstantRespawnScript>("getSpawnUnitInstantRespawn", "get state of instant respawn");
 	bu.add<&setSpawnUnitFactionScript>("setSpawnUnitFaction", "set faction of unit that will spawn");
 	bu.add<&getSpawnUnitFactionScript>("getSpawnUnitFaction", "get faction of unit that will spawn");
+
+
+	bu.addPair<BattleUnit, &BattleUnit::getPreviousOwner, &BattleUnit::getPreviousOwner>("getPreviousOwner");
 
 
 	bu.addField<&BattleUnit::_tu>("getTimeUnits");

@@ -29,6 +29,7 @@ namespace OpenXcom
 class Mod;
 class Armor;
 class RuleItem;
+class RuleSoldier;
 class ModScript;
 class ScriptParserBase;
 
@@ -423,7 +424,9 @@ class Unit
 {
 private:
 	std::string _type;
-	std::string _civilianRecoveryType, _spawnedPersonName, _liveAlienName;
+	std::string _civilianRecoveryTypeName, _spawnedPersonName, _liveAlienName;
+	const RuleSoldier* _civilianRecoverySoldierType = nullptr;
+	const RuleItem* _civilianRecoveryItemType = nullptr;
 	YAML::Node _spawnedSoldier;
 	std::string _race;
 	int _showFullNameInAlienInventory;
@@ -468,12 +471,22 @@ public:
 
 	/// Gets the unit's type.
 	const std::string& getType() const;
-	/// Gets the type of staff (soldier/engineer/scientists) or type of item to be recovered when a civilian is saved.
-	const std::string &getCivilianRecoveryType() const { return _civilianRecoveryType; }
+
+	/// Gets if unit can be recovered as civilian.
+	bool isRecoverableAsCivilian() const { return _civilianRecoveryTypeName.empty() == false || _civilianRecoverySoldierType || _civilianRecoveryItemType; }
+	/// Gets if engineer is recovered when a civilian is saved.
+	bool isRecoverableAsEngineer() const { return _civilianRecoveryTypeName == "STR_ENGINEER"; }
+	/// Gets if scientist is recovered when a civilian is saved.
+	bool isRecoverableAsScientist() const { return _civilianRecoveryTypeName == "STR_SCIENTIST"; }
+	/// Gets soldier type that is recovered when a civilian is saved.
+	const RuleSoldier* getCivilianRecoverySoldierType() const { return _civilianRecoverySoldierType; }
+	/// Gets item type that is recovered when a civilian is saved.
+	const RuleItem* getCivilianRecoveryItemType() const { return _civilianRecoveryItemType; }
 	/// Gets the custom name of the "spawned person".
 	const std::string &getSpawnedPersonName() const { return _spawnedPersonName; }
 	/// Gets the spawned soldier template.
 	const YAML::Node &getSpawnedSoldierTemplate() const { return _spawnedSoldier; }
+
 	/// Gets the unit's stats.
 	UnitStats *getStats();
 	/// Gets the unit's height when standing.

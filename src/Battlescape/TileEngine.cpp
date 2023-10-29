@@ -1069,11 +1069,14 @@ void TileEngine::calculateUnitLighting(MapSubset gs)
 		}
 
 		int currLight = 0;
+
 		// add lighting of soldiers
-		if (_personalLighting && unit->getFaction() == FACTION_PLAYER)
+		int personalLight = useIntNullable(unit->getArmor()->getPersonalLight(), (unit->getFaction() == FACTION_PLAYER) ? 15 : 0);
+		if (personalLight && (_personalLighting || unit->getFaction() != FACTION_PLAYER))
 		{
-			currLight = std::max(currLight, unit->getArmor()->getPersonalLight());
+			currLight = std::max(currLight, personalLight);
 		}
+
 		const BattleItem *handWeapons[] = { unit->getLeftHandWeapon(), unit->getRightHandWeapon() };
 		for (const BattleItem *w : handWeapons)
 		{
@@ -1665,7 +1668,7 @@ bool TileEngine::calculateFOV(BattleUnit *unit, bool doTileRecalc, bool doUnitRe
 }
 
 /**
- * Gets the origin voxel of a unit's eyesight (from just one eye or something? Why is it x+7??
+ * Gets the origin voxel of a unit's eyesight
  * @param currentUnit The watcher.
  * @return Approximately an eyeball voxel.
  */
@@ -1676,7 +1679,7 @@ Position TileEngine::getSightOriginVoxel(BattleUnit *currentUnit)
 
 	// determine the origin and target voxels for the raytrace
 	Position originVoxel;
-	originVoxel = pos.toVoxel() + Position(7, 8, 0); // Why is it x+7??
+	originVoxel = pos.toVoxel() + Position(8, 8, 0);
 	originVoxel.z += -tile->getTerrainLevel();
 	originVoxel.z += currentUnit->getHeight() + currentUnit->getFloatHeight() - 1; //one voxel lower (eye level)
 	Tile *tileAbove = _save->getAboveTile(tile);
@@ -1822,7 +1825,7 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
  * @param tile The tile to check for.
  * @return True if visible.
  */
-bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
+bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 {
 	// if there is no tile, we can't see it
 	if (!tile)
@@ -1969,7 +1972,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
 				else if (test == V_UNIT)
 				{
 					BattleUnit *hitUnit = _save->getTile(hitPos)->getUnit();
-					BattleUnit *targetUnit = tile->getUnit();
+					BattleUnit *targetUnit = drawing ? tile->getUnit() : tile->getOverlappingUnit(_save);
 					if (hitUnit != targetUnit)
 					{
 						seen = false;
@@ -2035,7 +2038,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile)
  */
 int TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit *excludeUnit, BattleUnit *excludeAllBut)
 {
-	Position targetVoxel = tile->getPosition().toVoxel() + Position(7, 8, 0);
+	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	Position scanVoxel;
 	std::vector<Position> _trajectory;
 	BattleUnit *otherUnit = tile->getUnit();
@@ -2114,7 +2117,7 @@ int TileEngine::checkVoxelExposure(Position *originVoxel, Tile *tile, BattleUnit
  */
 bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scanVoxel, BattleUnit *excludeUnit, bool rememberObstacles, BattleUnit *potentialUnit)
 {
-	Position targetVoxel = tile->getPosition().toVoxel() + Position(7, 8, 0);
+	Position targetVoxel = tile->getPosition().toVoxel() + Position(8, 8, 0);
 	std::vector<Position> _trajectory;
 	bool hypothetical = potentialUnit != 0;
 	if (potentialUnit == 0)
@@ -4500,13 +4503,14 @@ VoxelType TileEngine::voxelCheck(Position voxel, BattleUnit *excludeUnit, bool e
 			int tz = unitpos.z*24 + unit->getFloatHeight() - terrainHeight; //bottom most voxel, terrain heights are negative, so we subtract.
 			if ((voxel.z > tz) && (voxel.z <= tz + unit->getHeight()) )
 			{
-				int x = voxel.x%16;
+				int x = 15 - voxel.x%16;
 				int y = voxel.y%16;
 				int part = 0;
 				if (unit->isBigUnit())
 				{
 					tilepos = tile->getPosition();
-					part = tilepos.x - unitpos.x + (tilepos.y - unitpos.y)*2;
+					const static int parts[] = {1,0,3,2}; // Change order 0,1,2,3 -> 1,0,3,2  (read commit description)
+					part = parts[tilepos.x - unitpos.x + (tilepos.y - unitpos.y)*2];
 				}
 				int idx = (unit->getLoftemps(part) * 16) + y;
 				if (_voxelData->at(idx) & (1 << x))
@@ -5756,8 +5760,8 @@ Position TileEngine::getOriginVoxel(BattleAction &action, Tile *tile)
 
 			// 2:1 Weighted average of the standard offset and a rotation, either left or right.
 		case BattleActionOrigin::LEFT:
-			originVoxel.x += ((2 * dirXshift[direction] + dirXshift[(direction - 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
-			originVoxel.y += ((2 * dirYshift[direction] + dirYshift[(direction - 1) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
+			originVoxel.x += ((2 * dirXshift[direction] + dirXshift[(direction + 7) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
+			originVoxel.y += ((2 * dirYshift[direction] + dirYshift[(direction + 7) % 8]) * action.actor->getArmor()->getSize() + 1) / 3;
 			break;
 
 		case BattleActionOrigin::RIGHT:

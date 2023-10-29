@@ -919,12 +919,6 @@ public:
 	/// Copy constructor.
 	constexpr ScriptRef(const ScriptRef&) = default;
 
-	/// Constructor from pointer.
-	explicit ScriptRef(ptr p) : ScriptRange{ p , p + strlen(p) }
-	{
-
-	}
-
 	/// Constructor from char array.
 	template<int I>
 	constexpr explicit ScriptRef(const char (&p)[I]) : ScriptRange{ p , p + I - 1 }
@@ -986,6 +980,12 @@ public:
 	static ScriptRef tempFrom(const std::string& s)
 	{
 		return { s.data(), s.data() + s.size() };
+	}
+
+	/// Create pernamet ref based on script.
+	constexpr static ScriptRef staticFrom(ptr p)
+	{
+		return { p, p + std::char_traits<char>::length(p) };
 	}
 
 	/// Compare two ranges.
@@ -1685,7 +1685,7 @@ public:
 					Tag::type(),
 					TagData
 					{
-						ScriptRef{ Tag::Parent::ScriptName },
+						ScriptRef::staticFrom(Tag::Parent::ScriptName),
 						Tag::limit(),
 						[](size_t i) { return ScriptValueData{ Tag::make(i) }; },
 						std::vector<TagValueData>{},

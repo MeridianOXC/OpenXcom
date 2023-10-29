@@ -324,6 +324,31 @@ public:
 		}
 	};
 
+	template<typename ItA, typename ItB>
+	struct ZipTieIterator
+	{
+		ItA first;
+		ItB second;
+
+		auto operator*() -> decltype(std::tie(*first, *second))
+		{
+			static_assert(std::is_reference_v<decltype(*first)>, "First type need be reference");
+			static_assert(std::is_reference_v<decltype(*second)>, "Second type need be reference");
+			return std::tie(*first, *second);
+		}
+
+		void operator++()
+		{
+			++first;
+			++second;
+		}
+
+		bool operator!=(const ZipTieIterator& r)
+		{
+			return first != r.first && second != r.second; //zip will stop when one of ranges ends, this is why `&&` instead of `||`
+		}
+	};
+
 	template<typename It, typename Filter>
 	class FilterIterator
 	{
@@ -483,6 +508,12 @@ public:
 
 	template<typename ItA, typename ItB>
 	static Range<ZipIterator<ItA, ItB>> zip(Range<ItA> a, Range<ItB> b)
+	{
+		return { { a.begin(), b.begin() }, { a.end(), b.end() } };
+	}
+
+	template<typename ItA, typename ItB>
+	static Range<ZipTieIterator<ItA, ItB>> zipTie(Range<ItA> a, Range<ItB> b)
 	{
 		return { { a.begin(), b.begin() }, { a.end(), b.end() } };
 	}

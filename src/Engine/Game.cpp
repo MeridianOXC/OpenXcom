@@ -622,12 +622,15 @@ void Game::run()
  */
 void Game::quit()
 {
+	// Hard-learned lesson: there's a billion+ situations, where this causes a corrupted save and subsequent crashes. It's not worth it!
+#if 0
 	// Always save ironman
 	if (_save != 0 && _save->isIronman() && !_save->getName().empty())
 	{
 		std::string filename = CrossPlatform::sanitizeFilename(_save->getName()) + ".sav";
 		_save->save(filename, _mod);
 	}
+#endif
 	_quit = true;
 }
 

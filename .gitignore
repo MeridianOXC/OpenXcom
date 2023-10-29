@@ -69,14 +69,15 @@ deps/
 docs/html/
 build/
 Dependencies/
+translations/
 *.*.user
+!install/win/plugins/**/*.dll
 #Ignore Vim swap files
 *.swp
 #Ignore NetBeans project directory
 nbproject/
-.tx/
+/makefile
 src/OpenXcom.2010.VC.opendb
 bin/user
-/makefile
 /.kdev4/
 /*.kdev4

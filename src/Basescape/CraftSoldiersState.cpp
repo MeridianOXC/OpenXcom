@@ -18,6 +18,7 @@
  */
 #include "CraftSoldiersState.h"
 #include <algorithm>
+#include <functional>
 #include <climits>
 #include <algorithm>
 #include "../Engine/Action.h"

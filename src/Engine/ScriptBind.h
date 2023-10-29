@@ -1154,8 +1154,8 @@ struct BindFunc : BindFuncImpl<decltype(F), F> //Work araound ICC 19.0.1 bug
 
 struct BindBase
 {
-	constexpr static const char* functionWithoutDescription = "-";
-	constexpr static const char* functionInvisible = "";
+	constexpr static const char functionWithoutDescription[] = "-";
+	constexpr static const char functionInvisible[] = "";
 
 	/// Tag type to choose allowed operations
 	struct SetAndGet{};

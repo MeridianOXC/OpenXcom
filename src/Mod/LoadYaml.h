@@ -101,7 +101,7 @@ inline bool useBoolNullable(int value, bool def)
 	return value == defBoolNullable ? def : value;
 }
 
-inline bool useIntNullable(int value, int def)
+inline int useIntNullable(int value, int def)
 {
 	return value == defIntNullable ? def : value;
 }
