@@ -2382,20 +2382,20 @@ int RuleItem::getMeleePower() const
  * Usage #1: checks the psiamp's allowed targets.
  * - Not used in AI.
  * - Mind control of the same faction is hardcoded disabled.
- * Usage #2: checks if a death trap item applies to a given faction.
+ * Usage #2: checks if a death trap item applies to a given faction (it use `attacker == FACTION_PLAYER`).
  * @return True if allowed, false otherwise.
  */
-bool RuleItem::isTargetAllowed(UnitFaction targetFaction) const
+bool RuleItem::isTargetAllowed(UnitFaction targetFaction, UnitFaction attacker) const
 {
-	if (targetFaction == FACTION_PLAYER)
+	if (targetFaction == attacker) // same faction "attack"
 	{
 		return _targetMatrix & 1;
 	}
-	else if (targetFaction == FACTION_HOSTILE)
+	else if ((targetFaction == FACTION_HOSTILE) || (attacker == FACTION_HOSTILE)) // can't be both true as first `if` cover this case
 	{
 		return _targetMatrix & 2;
 	}
-	else if (targetFaction == FACTION_NEUTRAL)
+	else if ((targetFaction == FACTION_NEUTRAL) || (attacker == FACTION_NEUTRAL)) // only `Player -> Neutral` or `Neutral -> Player` left
 	{
 		return _targetMatrix & 4;
 	}

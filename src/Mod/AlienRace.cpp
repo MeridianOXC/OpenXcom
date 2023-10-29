@@ -19,6 +19,7 @@
 #include "AlienRace.h"
 #include "../Engine/Exception.h"
 #include "../Engine/RNG.h"
+#include "Mod.h"
 
 namespace OpenXcom
 {
@@ -43,11 +44,11 @@ AlienRace::~AlienRace()
  * Loads the alien race from a YAML file.
  * @param node YAML node.
  */
-void AlienRace::load(const YAML::Node &node)
+void AlienRace::load(const YAML::Node &node, const Mod* mod)
 {
 	if (const YAML::Node &parent = node["refNode"])
 	{
-		load(parent);
+		load(parent, mod);
 	}
 
 	_baseCustomDeploy = node["baseCustomDeploy"].as<std::string>(_baseCustomDeploy);
@@ -65,9 +66,9 @@ void AlienRace::load(const YAML::Node &node)
 			_retaliationMissionDistribution.push_back(std::make_pair(nn->first.as<size_t>(0), nw));
 		}
 	}
-	else if (node["retaliationMission"])
+	else if (node["retaliationMission"] && mod->checkForObsoleteErrorByYear( _id, node["retaliationMission"], "use of property 'retaliationMission'", 2024))
 	{
-		// FIXME: backwards-compatibility, remove after mid 2022
+		// FIXME: backwards-compatibility, remove completely after mid 2024
 		std::string retaliationMission = node["retaliationMission"].as<std::string>("");
 
 		WeightedOptions* nw = new WeightedOptions();

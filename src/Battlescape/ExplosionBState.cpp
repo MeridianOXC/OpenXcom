@@ -117,7 +117,14 @@ void ExplosionBState::init()
 		}
 
 		//testing if we hit target
-		if (type == BT_PSIAMP && !_hit)
+		if (action == BA_SELF_DESTRUCT)
+		{
+			if (!RNG::percent(itemRule->getSpecialChance()))
+			{
+				_power = 0;
+			}
+		}
+		else if (type == BT_PSIAMP && !_hit)
 		{
 			if (action != BA_USE)
 			{
@@ -176,25 +183,6 @@ void ExplosionBState::init()
 		_damageType = _parent->getMod()->getDamageType(DT);
 		_radius = _power /10;
 		_areaOfEffect = true;
-	}
-	else if (_attack.type == BA_SELF_DESTRUCT)
-	{
-		_areaOfEffect = true;
-		if (_attack.attacker)
-		{
-			itemRule = _attack.attacker->getArmor()->getCorpseGeoscape(); //TODO: not getCorpseBattlescape ones?
-			_power = itemRule->getPowerBonus(_attack);
-			_damageType = itemRule->getDamageType();
-			_radius = itemRule->getExplosionRadius(_attack);
-			if (!RNG::percent(itemRule->getSpecialChance()))
-			{
-				_power = 0;
-			}
-		}
-		else
-		{
-			_power = 0;
-		}
 	}
 	else
 	{

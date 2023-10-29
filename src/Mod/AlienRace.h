@@ -27,6 +27,8 @@ enum AlienRank{AR_HUMAN = -1, AR_COMMANDER, AR_LEADER, AR_ENGINEER, AR_MEDIC, AR
 namespace OpenXcom
 {
 
+class Mod;
+
 /**
  * Represents a specific race "family", or a "main race" if you wish.
  * Here is defined which ranks it contains and also which accompanying terror units.
@@ -47,7 +49,7 @@ public:
 	/// Cleans up the alien race ruleset.
 	~AlienRace();
 	/// Loads alien race data from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::Node& node, const Mod* mod);
 	/// Gets the alien race's id.
 	const std::string &getId() const;
 	/// Gets the alien base weapon deploy.

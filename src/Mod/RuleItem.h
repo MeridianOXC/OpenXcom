@@ -868,7 +868,7 @@ public:
 	int getSpawnItemChance() const { return _spawnItemChance != -1 ? _spawnItemChance : _specialChance; }
 
 	/// Checks if this item can be used to target a given faction.
-	bool isTargetAllowed(UnitFaction targetFaction) const;
+	bool isTargetAllowed(UnitFaction targetFaction, UnitFaction attacker) const;
 	int getTargetMatrixRaw() const { return _targetMatrix; }
 	/// Check if LOS is required to use this item (only applies to psionic type items)
 	bool isLOSRequired() const;

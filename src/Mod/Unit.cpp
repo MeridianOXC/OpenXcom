@@ -61,7 +61,7 @@ void Unit::load(const YAML::Node &node, Mod *mod)
 		load(parent, mod);
 	}
 
-	mod->loadNameNull(_type, _civilianRecoveryType, node["civilianRecoveryType"]);
+	mod->loadNameNull(_type, _civilianRecoveryTypeName, node["civilianRecoveryType"]);
 	mod->loadNameNull(_type, _spawnedPersonName, node["spawnedPersonName"]);
 	mod->loadNameNull(_type, _liveAlienName, node["liveAlien"]);
 	if (node["spawnedSoldier"])
@@ -145,15 +145,32 @@ void Unit::afterLoad(const Mod* mod)
 		mod->linkRule(_liveAlien, _liveAlienName);
 	}
 
+	if (Mod::isEmptyRuleName(_civilianRecoveryTypeName) == false)
+	{
+		if (!isRecoverableAsEngineer() && !isRecoverableAsScientist())
+		{
+			_civilianRecoverySoldierType = mod->getSoldier(_civilianRecoveryTypeName, false);
+			if (_civilianRecoverySoldierType)
+			{
+				_civilianRecoveryTypeName = "";
+			}
+			else
+			{
+				mod->linkRule(_civilianRecoveryItemType, _civilianRecoveryTypeName);
+			}
+		}
+		assert(isRecoverableAsCivilian() && "Check missing some cases");
+	}
+
 	mod->checkForSoftError(_armor == nullptr, _type, "Unit is missing armor", LOG_ERROR);
 	if (_armor)
 	{
 		if (_capturable && _armor->getCorpseBattlescape().front()->isRecoverable() && _spawnUnit == nullptr)
 		{
 			mod->checkForSoftError(
-				_liveAlien == nullptr,
+				_liveAlien == nullptr && !isRecoverableAsCivilian(),
 				_type,
-				"This unit can be recovered (in theory), but there is no corresponding item to recover.",
+				"This unit can be recovered (in theory), but there is no corresponding 'liveAlien:' or 'civilianRecoveryType:' to recover.",
 				LOG_INFO
 			);
 		}

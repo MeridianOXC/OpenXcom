@@ -21,6 +21,7 @@
 #include <set>
 #include <iomanip>
 #include <algorithm>
+#include <functional>
 #include <ctime>
 #include <yaml-cpp/yaml.h>
 #include "../version.h"

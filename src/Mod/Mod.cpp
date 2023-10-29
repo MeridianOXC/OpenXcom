@@ -19,9 +19,11 @@
 #include "Mod.h"
 #include "ModScript.h"
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <climits>
 #include <cassert>
+#include "../version.h"
 #include "../Engine/CrossPlatform.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/Palette.h"
@@ -1008,6 +1010,41 @@ const std::vector<std::vector<Uint8> > *Mod::getLUTs() const
 	return &_transparencyLUTs;
 }
 
+
+/**
+ * Check for obsolete error based on year.
+ * @param year Year when given function stop be available.
+ * @return True if code still should run.
+ */
+bool Mod::checkForObsoleteErrorByYear(const std::string &parent, const YAML::Node &node, const std::string &error, int year) const
+{
+	SeverityLevel level = LOG_INFO;
+	bool r = true;
+
+	std::string currYearText = OPENXCOM_VERSION_GIT;
+	std::string targetYearText = std::to_string(year);
+	size_t offset = currYearText.find(" (v");
+	if (offset != std::string::npos && currYearText.size() >= offset + 14 && currYearText[offset + 7] == '-' && currYearText[offset + 13] == ')') // check if look like format " (v2023-10-21)"
+	{
+		currYearText = currYearText.substr(offset + 3, 4);
+		if (currYearText < targetYearText)
+		{
+			level = LOG_INFO;
+		}
+		else if (currYearText == targetYearText)
+		{
+			level = LOG_WARNING;
+		}
+		else // after obsolete year functionality is disabled
+		{
+			level = LOG_ERROR;
+			r = false;
+		}
+	}
+	checkForSoftError(true, parent, node, "Obsolete (to removed after year " + targetYearText + ") operation " + error, level);
+
+	return r;
+}
 
 /**
  * Verify if value have defined surface in given set.
@@ -2219,7 +2256,6 @@ void Mod::loadAll()
 			_finalResearch = r.second;
 		}
 	}
-	checkForSoftError(_finalResearch == nullptr, "mod", "Missing final research with 'unlockFinalMission: true'", LOG_INFO);
 
 
 	// check unique listOrder
@@ -2741,7 +2777,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		AlienRace *rule = loadRule(*i, &_alienRaces, &_aliensIndex, "id");
 		if (rule != 0)
 		{
-			rule->load(*i);
+			rule->load(*i, this);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("enviroEffects", "type"))
@@ -4808,7 +4844,7 @@ const std::vector<std::string> &Mod::getPsiRequirements() const
  * @param type The soldier type to generate.
  * @return Newly generated soldier.
  */
-Soldier *Mod::genSoldier(SavedGame *save, RuleSoldier* ruleSoldier, int nationality) const
+Soldier *Mod::genSoldier(SavedGame *save, const RuleSoldier* ruleSoldier, int nationality) const
 {
 	Soldier *soldier = 0;
 	int newId = save->getId("STR_SOLDIER");
@@ -4819,7 +4855,7 @@ Soldier *Mod::genSoldier(SavedGame *save, RuleSoldier* ruleSoldier, int national
 	for (int tries = 0; tries < 10 && duplicate; ++tries)
 	{
 		delete soldier;
-		soldier = new Soldier(ruleSoldier, ruleSoldier->getDefaultArmor(), nationality, newId);
+		soldier = new Soldier(const_cast<RuleSoldier*>(ruleSoldier), ruleSoldier->getDefaultArmor(), nationality, newId);
 		duplicate = false;
 		for (auto* xbase : *save->getBases())
 		{

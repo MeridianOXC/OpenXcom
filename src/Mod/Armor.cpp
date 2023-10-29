@@ -36,7 +36,7 @@ const std::string Armor::NONE = "STR_NONE";
 Armor::Armor(const std::string &type) :
 	_type(type), _infiniteSupply(false), _frontArmor(0), _sideArmor(0), _leftArmorDiff(0), _rearArmor(0), _underArmor(0),
 	_drawingRoutine(0), _drawBubbles(false), _movementType(MT_WALK), _specab(SPECAB_NONE), _turnBeforeFirstStep(false), _turnCost(1), _moveSound(-1), _size(1), _weight(0),
-	_visibilityAtDark(0), _visibilityAtDay(0), _personalLight(15),
+	_visibilityAtDark(0), _visibilityAtDay(0), _personalLight(-1),
 	_camouflageAtDay(0), _camouflageAtDark(0), _antiCamouflageAtDay(0), _antiCamouflageAtDark(0), _heatVision(0), _psiVision(0), _psiCamouflage(0),
 	_deathFrames(3), _constantAnimation(false), _hasInventory(true), _forcedTorso(TORSO_USE_GENDER),
 	_faceColorGroup(0), _hairColorGroup(0), _utileColorGroup(0), _rankColorGroup(0),
@@ -95,6 +95,7 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	mod->loadNames(_type, _builtInWeaponsNames, node["builtInWeapons"]);
 	mod->loadName(_type, _corpseGeoName, node["corpseGeo"]);
 	mod->loadNameNull(_type, _storeItemName, node["storeItem"]);
+	mod->loadNameNull(_type, _selfDestructItemName, node["selfDestructItem"]);
 	mod->loadNameNull(_type, _specWeaponName, node["specialWeapon"]);
 	mod->loadNameNull(_type, _requiresName, node["requires"]);
 
@@ -155,7 +156,7 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_weight = node["weight"].as<int>(_weight);
 	_visibilityAtDark = node["visibilityAtDark"].as<int>(_visibilityAtDark);
 	_visibilityAtDay = node["visibilityAtDay"].as<int>(_visibilityAtDay);
-	_personalLight = node["personalLight"].as<int>(_personalLight);
+	loadIntNullable(_personalLight, node["personalLight"]);
 	_camouflageAtDay = node["camouflageAtDay"].as<int>(_camouflageAtDay);
 	_camouflageAtDark = node["camouflageAtDark"].as<int>(_camouflageAtDark);
 	_antiCamouflageAtDay = node["antiCamouflageAtDay"].as<int>(_antiCamouflageAtDay);
@@ -276,6 +277,7 @@ void Armor::afterLoad(const Mod* mod)
 		_infiniteSupply = true;
 	}
 	mod->linkRule(_storeItem, _storeItemName); //special logic there: "STR_NONE" -> nullptr
+	mod->linkRule(_selfDestructItem, _selfDestructItemName);
 	mod->linkRule(_specWeapon, _specWeaponName);
 
 

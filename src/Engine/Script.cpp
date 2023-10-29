@@ -718,19 +718,26 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 {
 	//groups of different types of ASCII characters
 	using CharClasses = Uint8;
-	constexpr CharClasses CC_none = 0x1;
-	constexpr CharClasses CC_spec = 0x2;
-	constexpr CharClasses CC_digit = 0x4;
-	constexpr CharClasses CC_digitHex = 0x8;
-	constexpr CharClasses CC_charRest = 0x10;
-	constexpr CharClasses CC_digitSign = 0x20;
-	constexpr CharClasses CC_digitHexX = 0x40;
-	constexpr CharClasses CC_quote = 0x80;
+	struct Array // workaround for MSVC v19.20 bug where `std::array` is not `constexpr`
+	{
+		CharClasses arr[256];
 
-	constexpr std::array<CharClasses, 256> charDecoder = (
+		constexpr CharClasses& operator[](size_t t) { return arr[t]; }
+		constexpr const CharClasses& operator[](size_t t) const { return arr[t]; }
+	};
+	static constexpr CharClasses CC_none = 0x1;
+	static constexpr CharClasses CC_spec = 0x2;
+	static constexpr CharClasses CC_digit = 0x4;
+	static constexpr CharClasses CC_digitHex = 0x8;
+	static constexpr CharClasses CC_charRest = 0x10;
+	static constexpr CharClasses CC_digitSign = 0x20;
+	static constexpr CharClasses CC_digitHexX = 0x40;
+	static constexpr CharClasses CC_quote = 0x80;
+
+	static constexpr Array charDecoder = (
 		[]
 		{
-			std::array<CharClasses, 256> r = { };
+			Array r = { };
 			for (int i = 0; i < 256; ++i)
 			{
 				if (i == '#' || i == ' ' || i == '\r' || i == '\n' || i == '\t')	r[i] |= CC_none;
@@ -2616,10 +2623,16 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 
 	auto labelName = addNameRef("label");
 	auto nullName = addNameRef("null");
+	auto phName = addNameRef("_");
+	auto seperatorName = addNameRef("__");
+	auto varName = addNameRef("var");
 
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
 	addSortHelper(_refList, { nullName, ArgNull });
+	addSortHelper(_refList, { phName, ArgInvalid });
+	addSortHelper(_refList, { seperatorName, ArgInvalid });
+	addSortHelper(_refList, { varName, ArgInvalid });
 
 	_shared->initParserGlobals(this);
 }
@@ -3154,10 +3167,10 @@ void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& gro
 			#define MACRO_STRCAT(...) #__VA_ARGS__
 			#define MACRO_ALL_LOG(NAME, Impl, Args, Desc, ...) \
 				if (validOverloadProc(helper::FuncGroup<MACRO_FUNC_ID(NAME)>::overloadType()) && strlen(Desc) != 0) opLog.get(LOG_DEBUG) \
-					<< "Op:    " << std::setw(tabSize*2) << #NAME \
-					<< "OpId:  " << std::setw(tabSize/2) << offset << "  + " <<  std::setw(tabSize) << helper::FuncGroup<MACRO_FUNC_ID(NAME)>::ver() \
-					<< "Args:  " << std::setw(tabSize*5) << displayOverloadProc(this, helper::FuncGroup<MACRO_FUNC_ID(NAME)>::overloadType()) \
-					<< "Desc:  " << Desc \
+					<< "Op:   " << std::setw(tabSize*2) << #NAME \
+					<< "OpId: " << std::setw(tabSize/2) << offset << " .. " <<  std::setw(tabSize) << (offset + helper::FuncGroup<MACRO_FUNC_ID(NAME)>::ver() - 1) \
+					<< "Args: " << std::setw(tabSize*5) << displayOverloadProc(this, helper::FuncGroup<MACRO_FUNC_ID(NAME)>::overloadType()) \
+					<< "Desc: " << Desc \
 					<< "\n"; \
 				offset += helper::FuncGroup<MACRO_FUNC_ID(NAME)>::ver();
 
@@ -3211,7 +3224,7 @@ void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& gro
 		);
 		for (auto& r : temp)
 		{
-			if (!ArgIsReg(r.type) && !ArgIsPtr(r.type) && Logger::reportingLevel() != LOG_VERBOSE)
+			if ((!ArgIsReg(r.type) && !ArgIsPtr(r.type) && Logger::reportingLevel() != LOG_VERBOSE) || ArgBase(r.type) == ArgInvalid)
 			{
 				continue;
 			}
@@ -3244,7 +3257,22 @@ void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& gro
 			{
 				if (p.parserArg != nullptr && p.overloadArg && p.description != ScriptRef{ BindBase::functionInvisible })
 				{
-					refLog.get(LOG_DEBUG) << "Name: " << std::setw(40) << p.name.toString() << "Args: " << std::setw(50) << displayOverloadProc(this, p.overloadArg) << (p.description != ScriptRef{ BindBase::functionWithoutDescription } ? std::string("Desc: ") + p.description.toString() + "\n" : "\n");
+					const auto tabStop = 4; // alignment of next part
+					const auto minSpace = 2; // min space to next part
+
+					auto name = p.name.toString();
+					auto nameTab = std::max(
+						(((int)name.size() + minSpace + tabStop - 1) & -tabStop),
+						40
+					);
+
+					auto args = displayOverloadProc(this, p.overloadArg);
+					auto argsTab = std::max(
+						(((int)args.size() + minSpace + tabStop - 1) & -tabStop),
+						48
+					);
+
+					refLog.get(LOG_DEBUG) << "Name: " << std::setw(nameTab) << name << "Args: " << std::setw(argsTab) << args << (p.description != ScriptRef{ BindBase::functionWithoutDescription } ? std::string("Desc: ") + p.description.toString() + "\n" : "\n");
 				}
 			}
 		}

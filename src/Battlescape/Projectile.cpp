@@ -164,7 +164,7 @@ int Projectile::calculateTrajectory(double accuracy, const Position& originVoxel
 			else if (test == V_UNIT)
 			{
 				BattleUnit *hitUnit = _save->getTile(hitPos)->getUnit();
-				BattleUnit *targetUnit = targetTile->getUnit();
+				BattleUnit *targetUnit = targetTile->getUnit(); // Note: hitPos could be 1 tile lower and hitUnit could be on both tiles; change in OXC?
 				if (hitUnit != targetUnit)
 				{
 					_trajectory.clear();
@@ -391,7 +391,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		{
 			bool hasLOS = false;
 			BattleUnit *bu = _action.actor;
-			BattleUnit *targetUnit = t->getOverlappingUnit(_save);
+			BattleUnit *targetUnit = t->getUnit(); // we can call TileEngine::visible() only if the target unit is on the same tile
 
 			if (targetUnit)
 			{
@@ -399,7 +399,7 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			}
 			else
 			{
-				hasLOS = _save->getTileEngine()->isTileInLOS(&_action, t);
+				hasLOS = _save->getTileEngine()->isTileInLOS(&_action, t, false);
 			}
 
 			if (!hasLOS)

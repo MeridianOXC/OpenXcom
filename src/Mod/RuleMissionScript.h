@@ -27,11 +27,12 @@ namespace OpenXcom
 {
 enum GenerationType { GEN_REGION, GEN_MISSION, GEN_RACE };
 class WeightedOptions;
+
 class RuleMissionScript
 {
 private:
 	std::string _type, _varName;
-	int _firstMonth, _lastMonth, _label, _executionOdds, _targetBaseOdds, _minDifficulty, _maxRuns, _avoidRepeats, _delay, _randomDelay;
+	int _firstMonth, _lastMonth, _label, _executionOdds, _targetBaseOdds, _minDifficulty, _maxDifficulty, _maxRuns, _avoidRepeats, _delay, _randomDelay;
 	int _minScore, _maxScore;
 	int64_t _minFunds, _maxFunds;
 	std::string _missionVarName, _missionMarkerName;
@@ -73,6 +74,8 @@ public:
 	int getTargetBaseOdds() const;
 	/// Gets the minimum difficulty for this command to run
 	int getMinDifficulty() const;
+	/// Gets the maximum difficulty for this command to run.
+	int getMaxDifficulty() const { return _maxDifficulty; }
 	/// Gets the maximum number of times to run a command with this varName
 	int getMaxRuns() const;
 	/// Gets how many previous mission sites to keep track of (to avoid using them again)
