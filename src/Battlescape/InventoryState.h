@@ -133,6 +133,8 @@ public:
 	void onClearInventory(Action *action);
 	/// Handler for hitting the Auto-equip hotkey.
 	void onAutoequip(Action *action);
+	/// Handler for hitting the Generate Backstory hotkey.
+	void onGenerateBackstory(Action *action);
 	/// Handler for clicking on the inventory.
 	void invClick(Action *action);
 	/// Handler for showing item info.

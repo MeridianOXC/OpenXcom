@@ -1,0 +1,3 @@
+ToolSet: 1.0 (local)Options: 
+
+Options:-DCMAKE_MAKE_PROGRAM=/home/yandros/.local/share/JetBrains/Toolbox/apps/clion-nova/bin/ninja/linux/x64/ninja

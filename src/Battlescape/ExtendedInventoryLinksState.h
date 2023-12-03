@@ -55,6 +55,7 @@ public:
 	void btnNotesClick(Action* action);
 	void btnUfopediaClick(Action* action);
 	void btnAutoEquipClick(Action* action);
+	void btnGenerateBackstoryClick(Action* action);
 	void btnOkClick(Action* action);
 };
 

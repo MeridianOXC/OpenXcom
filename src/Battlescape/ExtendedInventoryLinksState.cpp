@@ -133,6 +133,10 @@ ExtendedInventoryLinksState::ExtendedInventoryLinksState(InventoryState* parent,
 	_btnAutoEquip->onMouseClick((ActionHandler)&ExtendedInventoryLinksState::btnAutoEquipClick);
 	_btnAutoEquip->setVisible(beforeMission);
 
+	_btnAutoEquip->setText(tr("STR_BACKSTORY"));
+	_btnAutoEquip->onMouseClick((ActionHandler)&ExtendedInventoryLinksState::btnGenerateBackstoryClick);
+	_btnAutoEquip->setVisible(beforeMission);
+
 	applyBattlescapeTheme("oxceLinks");
 }
 
@@ -188,6 +192,12 @@ void ExtendedInventoryLinksState::btnAutoEquipClick(Action *)
 {
 	_game->popState();
 	_parent->onAutoequip(nullptr);
+}
+
+void ExtendedInventoryLinksState::btnGenerateBackstoryClick(Action *)
+{
+	_game->popState();
+	_parent->onGenerateBackstory(nullptr);
 }
 
 /**

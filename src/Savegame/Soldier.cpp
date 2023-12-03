@@ -346,6 +346,85 @@ YAML::Node Soldier::save(const ScriptGlobal *shared) const
 	return node;
 }
 
+YAML::Node Soldier::asYaml() const
+{
+	YAML::Node node;
+	node["type"] = _rules->getType();
+	node["id"] = _id;
+	node["name"] = _name;
+	if (!_callsign.empty())
+	{
+		node["callsign"] = _callsign;
+	}
+	node["nationality"] = _nationality;
+	node["initialStats"] = _initialStats;
+	node["currentStats"] = _currentStats;
+	if (_dailyDogfightExperienceCache.firing > 0 || _dailyDogfightExperienceCache.reactions > 0 || _dailyDogfightExperienceCache.bravery > 0)
+	{
+		node["dailyDogfightExperienceCache"] = _dailyDogfightExperienceCache;
+	}
+	node["rank"] = (int)_rank;
+	if (_craft != 0)
+	{
+		node["craft"] = _craft->saveId();
+	}
+	node["gender"] = (int)_gender;
+	node["look"] = (int)_look;
+	node["lookVariant"] = _lookVariant;
+	node["missions"] = _missions;
+	node["kills"] = _kills;
+	node["stuns"] = _stuns;
+	if (_manaMissing > 0)
+		node["manaMissing"] = _manaMissing;
+	if (_healthMissing > 0)
+		node["healthMissing"] = _healthMissing;
+	if (_recovery > 0.0f)
+		node["recovery"] = _recovery;
+	node["armor"] = _armor->getType();
+	if (_replacedArmor != 0)
+		node["replacedArmor"] = _replacedArmor->getType();
+	if (_transformedArmor != 0)
+		node["transformedArmor"] = _transformedArmor->getType();
+	if (_psiTraining)
+		node["psiTraining"] = _psiTraining;
+	if (_training)
+		node["training"] = _training;
+	if (_returnToTrainingWhenHealed)
+		node["returnToTrainingWhenHealed"] = _returnToTrainingWhenHealed;
+	node["improvement"] = _improvement;
+	node["psiStrImprovement"] = _psiStrImprovement;
+	if (!_equipmentLayout.empty())
+	{
+		for (const auto* entry : _equipmentLayout)
+			node["equipmentLayout"].push_back(entry->save());
+	}
+	if (!_personalEquipmentLayout.empty())
+	{
+		for (const auto* entry : _personalEquipmentLayout)
+			node["personalEquipmentLayout"].push_back(entry->save());
+	}
+	if (_personalEquipmentArmor)
+	{
+		node["personalEquipmentArmor"] = _personalEquipmentArmor->getType();
+	}
+	if (_death != 0)
+	{
+		node["death"] = _death->save();
+	}
+	if (Options::soldierDiaries && (!_diary->getMissionIdList().empty() || !_diary->getSoldierCommendations()->empty() || _diary->getMonthsService() > 0))
+	{
+		node["diary"] = _diary->save();
+	}
+	if (_corpseRecovered)
+		node["corpseRecovered"] = _corpseRecovered;
+	if (!_previousTransformations.empty())
+		node["previousTransformations"] = _previousTransformations;
+	if (!_transformationBonuses.empty())
+		node["transformationBonuses"] = _transformationBonuses;
+
+	return node;
+}
+
 /**
  * Returns the soldier's full name (and, optionally, statString).
  * @param statstring Add stat string?

@@ -17,48 +17,53 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "InventoryState.h"
-#include "InventoryLoadState.h"
-#include "InventorySaveState.h"
-#include "InventoryPersonalState.h"
-#include <algorithm>
-#include "Inventory.h"
 #include "../Basescape/SoldierArmorState.h"
 #include "../Basescape/SoldierAvatarState.h"
-#include "../Engine/Game.h"
-#include "../Engine/FileMap.h"
-#include "../Mod/Mod.h"
-#include "../Engine/LocalizedText.h"
-#include "../Engine/Screen.h"
-#include "../Engine/Palette.h"
-#include "../Engine/Surface.h"
+#include "../Engine/Action.h"
 #include "../Engine/Collections.h"
+#include "../Engine/FileMap.h"
+#include "../Engine/Game.h"
+#include "../Engine/InteractiveSurface.h"
+#include "../Engine/LocalizedText.h"
+#include "../Engine/Options.h"
+#include "../Engine/Palette.h"
+#include "../Engine/Screen.h"
+#include "../Engine/Sound.h"
+#include "../Engine/Surface.h"
+#include "../Engine/SurfaceSet.h"
+#include "../Interface/BattlescapeButton.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextEdit.h"
-#include "../Interface/BattlescapeButton.h"
-#include "../Engine/Action.h"
-#include "../Engine/InteractiveSurface.h"
-#include "../Engine/Sound.h"
-#include "../Engine/SurfaceSet.h"
-#include "../Savegame/SavedGame.h"
-#include "../Savegame/Tile.h"
-#include "../Savegame/SavedBattleGame.h"
+#include "../Menu/SaveGameState.h"
+#include "../Mod/Armor.h"
+#include "../Mod/Mod.h"
+#include "../Mod/RuleInterface.h"
+#include "../Mod/RuleInventory.h"
+#include "../Mod/RuleItem.h"
+#include "../Mod/RuleSoldier.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Savegame/Craft.h"
 #include "../Savegame/ItemContainer.h"
+#include "../Savegame/SavedBattleGame.h"
+#include "../Savegame/SavedGame.h"
 #include "../Savegame/Soldier.h"
-#include "../Mod/RuleItem.h"
-#include "../Mod/RuleInventory.h"
-#include "../Mod/RuleSoldier.h"
-#include "../Mod/Armor.h"
-#include "../Engine/Options.h"
-#include "UnitInfoState.h"
-#include "BattlescapeState.h"
-#include "BattlescapeGenerator.h"
-#include "ExtendedInventoryLinksState.h"
-#include "TileEngine.h"
-#include "../Mod/RuleInterface.h"
+#include "../Savegame/Tile.h"
 #include "../Ufopaedia/Ufopaedia.h"
+#include "BattlescapeGenerator.h"
+#include "BattlescapeState.h"
+#include "ExtendedInventoryLinksState.h"
+#include "Inventory.h"
+#include "InventoryLoadState.h"
+#include "InventoryPersonalState.h"
+#include "InventorySaveState.h"
+#include "TileEngine.h"
+#include "UnitInfoState.h"
+#include <algorithm>
+
+#include <string>
+#include <fstream>
+#include <iostream>
 
 namespace OpenXcom
 {
@@ -1654,6 +1659,30 @@ void InventoryState::onAutoequip(Action *)
 	std::vector<BattleUnit*> units;
 	units.push_back(unit);
 	BattlescapeGenerator::autoEquip(units, mod, &groundInv, groundRuleInv, worldShade, true, true);
+
+	// refresh ui
+	_inv->arrangeGround();
+	updateStats();
+	refreshMouse();
+
+	// give audio feedback
+	_game->getMod()->getSoundByDepth(_battleGame->getDepth(), Mod::ITEM_DROP)->play();
+}
+
+void InventoryState::onGenerateBackstory(Action *)
+{
+	YAML::Node payloadNode = _battleGame->getSelectedUnit()->getGeoscapeSoldier()->asYaml();
+	std::string command = "generateCharacterBackstory";
+	std::string payloadPath = Options::getMasterUserFolder() + "payload.yaml";
+
+	// Payload
+	std::ofstream outFile(payloadPath);
+	outFile << payloadNode;
+	outFile.close();
+
+	// Command
+	std::string pythonCommand = "python3 " + Options::getMasterUserFolder() + "main.py \"" + command + "\" \"" + payloadPath + "\"";
+	system(pythonCommand.c_str());
 
 	// refresh ui
 	_inv->arrangeGround();

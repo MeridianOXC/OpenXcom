@@ -98,6 +98,8 @@ public:
 	void load(const YAML::Node& node, const Mod *mod, SavedGame *save, const ScriptGlobal *shared, bool soldierTemplate = false);
 	/// Saves the soldier to YAML.
 	YAML::Node save(const ScriptGlobal *shared) const;
+	/// Get the soldier corresponding YAML.
+	YAML::Node asYaml() const;
 	/// Gets the soldier's name.
 	std::string getName(bool statstring = false, unsigned int maxLength = 20) const;
 	/// Sets the soldier's name.

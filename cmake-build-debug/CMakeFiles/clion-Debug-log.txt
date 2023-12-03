@@ -1,0 +1,23 @@
+/home/yandros/.local/share/JetBrains/Toolbox/apps/clion-nova/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/yandros/.local/share/JetBrains/Toolbox/apps/clion-nova/bin/ninja/linux/x64/ninja -G Ninja -S /home/yandros/workspace/openxcom/nightly -B /home/yandros/workspace/openxcom/nightly/cmake-build-debug
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+-- OpenGL libraries: /usr/lib/x86_64-linux-gnu/libGL.so;/usr/lib/x86_64-linux-gnu/libGLU.so
+-- PKG_DEPS_LDFLAGS: -L/usr/lib/x86_64-linux-gnu;-lSDL;-L/usr/lib/x86_64-linux-gnu;-lz;-L/usr/lib/x86_64-linux-gnu;-lSDL_image;-lSDL;-L/usr/lib/x86_64-linux-gnu;-lSDL_gfx;-lSDL;-L/usr/lib/x86_64-linux-gnu;-lSDL_mixer;-lSDL;-L/usr/lib/x86_64-linux-gnu;-lyaml-cpp;/usr/lib/x86_64-linux-gnu/libGL.so;/usr/lib/x86_64-linux-gnu/libGLU.so;dl 
+CMake Warning at CMakeLists.txt:195 (message):
+  Missing OPENXCOM_TARGET for package naming.  Please set it.
+
+
+-- OpenXcom version: 7.9.18--2023-11-05
+CMake Warning at docs/CMakeLists.txt:38 (message):
+  Doxygen not found.  API documentation generation disabled.
+
+
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/yandros/workspace/openxcom/nightly/cmake-build-debug
