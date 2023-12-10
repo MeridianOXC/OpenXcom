@@ -48,11 +48,15 @@ int RankCountBase::getTotalSoldiers() const
  */
 RankCount::RankCount(const std::vector<Soldier*> soldiers)
 {
+	_totalSoldiers = 0;
 	for (auto* soldier : soldiers)
 	{
-		_rankCounts[soldier->getRank()]++;
+		if (soldier->getRules()->getAllowPromotion())
+		{
+			_rankCounts[soldier->getRank()]++;
+			_totalSoldiers++;
+		}
 	}
-	_totalSoldiers = soldiers.size();
 }
 
 /**

@@ -39,6 +39,7 @@ public:
 	void setInfiniteAmount (bool);
 	int getTimeSpent() const;
 	void setTimeSpent (int);
+	bool isQueuedOnly() const;
 	int getAmountProduced() const;
 	int getAssignedEngineers() const;
 	void setAssignedEngineers (int);

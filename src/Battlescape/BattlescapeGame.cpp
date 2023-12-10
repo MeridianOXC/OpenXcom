@@ -1641,6 +1641,7 @@ bool BattlescapeGame::cancelCurrentAction(bool bForce)
 				_currentAction.targeting = false;
 				_currentAction.type = BA_NONE;
 				_currentAction.skillRules = nullptr;
+				_currentAction.result = ""; // TODO
 				setupCursor();
 				_parentState->getGame()->getCursor()->setVisible(true);
 				return true;
@@ -1670,6 +1671,7 @@ void BattlescapeGame::cancelAllActions()
 	_currentAction.targeting = false;
 	_currentAction.type = BA_NONE;
 	_currentAction.skillRules = nullptr;
+	_currentAction.result = ""; // TODO
 	setupCursor();
 	_parentState->getGame()->getCursor()->setVisible(true);
 }

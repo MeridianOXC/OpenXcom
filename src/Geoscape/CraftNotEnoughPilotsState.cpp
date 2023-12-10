@@ -65,6 +65,10 @@ CraftNotEnoughPilotsState::CraftNotEnoughPilotsState(Craft *craft) : _craft(craf
 	_btnAssignPilots->setText(tr("STR_ASSIGN_PILOTS"));
 	_btnAssignPilots->onMouseClick((ActionHandler)&CraftNotEnoughPilotsState::btnAssignPilotsClick);
 	_btnAssignPilots->onKeyboardPress((ActionHandler)&CraftNotEnoughPilotsState::btnAssignPilotsClick, Options::keyOk);
+	if (_craft->getMissionComplete() || _craft->getStatus() == "STR_OUT")
+	{
+		_btnAssignPilots->setVisible(false);
+	}
 
 	_txtMessage->setAlign(ALIGN_CENTER);
 	_txtMessage->setVerticalAlign(ALIGN_MIDDLE);

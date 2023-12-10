@@ -2824,7 +2824,9 @@ void StatsForNerdsState::initArmorList()
 
 		addSection("{Calculations}", "", _white);
 		addVectorOfIntegers(ss, armorRule->getLoftempsSet(), "loftempsSet");
-		addInteger(ss, armorRule->getPersonalLight(), "personalLight", -1);
+		addInteger(ss, armorRule->getPersonalLightFriend(), "personalLight", 15);
+		addInteger(ss, armorRule->getPersonalLightHostile(), "personalLightHostile", 0);
+		addInteger(ss, armorRule->getPersonalLightNeutral(), "personalLightNeutral", 0);
 		addInteger(ss, armorRule->getStandHeight(), "standHeight", -1);
 		addInteger(ss, armorRule->getKneelHeight(), "kneelHeight", -1);
 		addInteger(ss, armorRule->getFloatHeight(), "floatHeight", -1);

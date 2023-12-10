@@ -407,8 +407,12 @@ void NewManufactureListState::fillProductionList(bool refreshCategories)
 			int productionPossible = 10; // max
 			if (manuf->getManufactureCost() > 0)
 			{
-				int byFunds = _game->getSavedGame()->getFunds() / manuf->getManufactureCost();
-				productionPossible = std::min(productionPossible, byFunds);
+				int64_t byFunds = _game->getSavedGame()->getFunds() / manuf->getManufactureCost();
+				if (byFunds < 10LL)
+				{
+					int byFundsInt = (int)byFunds;
+					productionPossible = std::min(productionPossible, byFundsInt);
+				}
 			}
 			for (auto& iter : manuf->getRequiredItems())
 			{

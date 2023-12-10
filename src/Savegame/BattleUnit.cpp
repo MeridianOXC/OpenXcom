@@ -4295,11 +4295,11 @@ int BattleUnit::getMaxViewDistance(int baseVisibility, int nerf, int buff) const
 	return result;
 }
 
-int BattleUnit::getMaxViewDistanceAtDark(const Armor *otherUnitArmor) const
+int BattleUnit::getMaxViewDistanceAtDark(const BattleUnit* otherUnit) const
 {
-	if (otherUnitArmor)
+	if (otherUnit)
 	{
-		return getMaxViewDistance(_maxViewDistanceAtDark, otherUnitArmor->getCamouflageAtDark(), _armor->getAntiCamouflageAtDark());
+		return getMaxViewDistance(_maxViewDistanceAtDark, otherUnit->getArmor()->getCamouflageAtDark(), _armor->getAntiCamouflageAtDark());
 	}
 	else
 	{
@@ -4312,11 +4312,11 @@ int BattleUnit::getMaxViewDistanceAtDarkSquared() const
 	return _maxViewDistanceAtDarkSquared;
 }
 
-int BattleUnit::getMaxViewDistanceAtDay(const Armor *otherUnitArmor) const
+int BattleUnit::getMaxViewDistanceAtDay(const BattleUnit* otherUnit) const
 {
-	if (otherUnitArmor)
+	if (otherUnit)
 	{
-		return getMaxViewDistance(_maxViewDistanceAtDay, otherUnitArmor->getCamouflageAtDay(), _armor->getAntiCamouflageAtDay());
+		return getMaxViewDistance(_maxViewDistanceAtDay, otherUnit->getArmor()->getCamouflageAtDay(), _armor->getAntiCamouflageAtDay());
 	}
 	else
 	{
@@ -4711,9 +4711,12 @@ void BattleUnit::adjustStats(const StatAdjustment &adjustment)
 	_stats += UnitStats::percent(_stats, adjustment.statGrowth, adjustment.growthMultiplier);
 
 	_stats.firing *= adjustment.aimMultiplier;
+	_stats += adjustment.statGrowthAbs;
+
 	for (int i = 0; i < SIDE_MAX; ++i)
 	{
 		_maxArmor[i] *= adjustment.armorMultiplier;
+		_maxArmor[i] += adjustment.armorMultiplierAbs;
 		_currentArmor[i] = _maxArmor[i];
 	}
 
@@ -5734,6 +5737,24 @@ void isFlyingScript(const BattleUnit *bu, int &ret)
 	}
 	ret = 0;
 }
+void isStunnedScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getStatus() == STATUS_UNCONSCIOUS;
+		return;
+	}
+	ret = 0;
+}
+void isKilledScript(const BattleUnit *bu, int &ret)
+{
+	if (bu)
+	{
+		ret = bu->getStatus() == STATUS_DEAD;
+		return;
+	}
+	ret = 0;
+}
 void isCollapsingScript(const BattleUnit *bu, int &ret)
 {
 	if (bu)
@@ -6134,6 +6155,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getRecolorScript>("getRecolor");
 	bu.add<&BattleUnit::isFloating>("isFloating");
 	bu.add<&BattleUnit::isKneeled>("isKneeled");
+	bu.add<&isStunnedScript>("isStunned");
+	bu.add<&isKilledScript>("isKilled");
 	bu.add<&isStandingScript>("isStanding");
 	bu.add<&isWalkingScript>("isWalking");
 	bu.add<&isFlyingScript>("isFlying");
@@ -6151,6 +6174,8 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.add<&BattleUnit::getVisible>("isVisible");
 	bu.add<&makeVisibleScript>("makeVisible");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDark>("getMaxViewDistanceAtDark", "get maximum visibility distance in tiles of another unit at dark");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDay>("getMaxViewDistanceAtDay", "get maximum visibility distance in tiles of another unit at day");
 
 
 	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from current unit, it will reset everything to default (hostile & instant)");
@@ -6479,7 +6504,15 @@ ModScript::ReactionUnitParser::ReactionUnitParser(ScriptGlobal* shared, const st
 /**
  * Constructor of visibility script parser.
  */
-ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name, "current_visibility", "default_visibility", "visibility_mode", "observer_unit", "target_unit", "distance", "distance_max", "smoke_density", "fire_density", }
+ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"current_visibility",
+	"default_visibility",
+	"visibility_mode",
+
+	"observer_unit", "target_unit",
+	"distance", "distance_max",
+	"smoke_density", "fire_density",
+	"smoke_density_near_observer", "fire_density_near_observer" }
 {
 	BindBase b { this };
 

@@ -78,6 +78,7 @@ translations/
 nbproject/
 /makefile
 src/OpenXcom.2010.VC.opendb
+bin/Win32/user
 bin/user
 /.kdev4/
 /*.kdev4

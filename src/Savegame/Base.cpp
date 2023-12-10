@@ -919,7 +919,13 @@ int Base::getUsedWorkshops() const
 	int usedWorkShop = 0;
 	for (const auto* prod : _productions)
 	{
-		usedWorkShop += (prod->getAssignedEngineers() + prod->getRules()->getRequiredSpace());
+		usedWorkShop += prod->getAssignedEngineers();
+
+		// don't count the workshop space yet if the production is only queued (for future)
+		if (!prod->isQueuedOnly())
+		{
+			usedWorkShop += prod->getRules()->getRequiredSpace();
+		}
 	}
 	return usedWorkShop;
 }

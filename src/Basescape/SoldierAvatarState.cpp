@@ -96,14 +96,20 @@ SoldierAvatarState::SoldierAvatarState(Base *base, size_t soldier) : _base(base)
 	std::string prefix = "STR_AVATAR_NAME_";
 	for (int variant = 0; variant <= _game->getMod()->getMaxLookVariant(); ++variant)
 	{
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 1), GENDER_MALE,   LOOK_BLONDE,    variant));
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 2), GENDER_MALE,   LOOK_BROWNHAIR, variant));
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 3), GENDER_MALE,   LOOK_ORIENTAL,  variant));
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 4), GENDER_MALE,   LOOK_AFRICAN,   variant));
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 5), GENDER_FEMALE, LOOK_BLONDE,    variant));
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 6), GENDER_FEMALE, LOOK_BROWNHAIR, variant));
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 7), GENDER_FEMALE, LOOK_ORIENTAL,  variant));
-		_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant*8 + 8), GENDER_FEMALE, LOOK_AFRICAN,   variant));
+		if (!_game->isAltPressed())
+		{
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 1), GENDER_MALE, LOOK_BLONDE, variant));
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 2), GENDER_MALE, LOOK_BROWNHAIR, variant));
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 3), GENDER_MALE, LOOK_ORIENTAL, variant));
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 4), GENDER_MALE, LOOK_AFRICAN, variant));
+		}
+		if (!_game->isCtrlPressed())
+		{
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 5), GENDER_FEMALE, LOOK_BLONDE, variant));
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 6), GENDER_FEMALE, LOOK_BROWNHAIR, variant));
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 7), GENDER_FEMALE, LOOK_ORIENTAL, variant));
+			_avatars.push_back(SoldierAvatar(prefix + std::to_string(variant * 8 + 8), GENDER_FEMALE, LOOK_AFRICAN, variant));
+		}
 	}
 
 	for (const auto& soldierAvatar : _avatars)

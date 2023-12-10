@@ -354,12 +354,27 @@ void ManufactureInfoState::moreEngineer(int change)
 	if (change <= 0) return;
 	int availableEngineer = _base->getAvailableEngineers();
 	int availableWorkSpace = _base->getFreeWorkshops();
+	if (_production->isQueuedOnly())
+	{
+		// start counting the workshop space now
+		availableWorkSpace -= _production->getRules()->getRequiredSpace();
+	}
 	if (availableEngineer > 0 && availableWorkSpace > 0)
 	{
 		change = std::min(std::min(availableEngineer, availableWorkSpace), change);
 		_production->setAssignedEngineers(_production->getAssignedEngineers()+change);
 		_base->setEngineers(_base->getEngineers()-change);
 		setAssignedEngineer();
+	}
+	else if (availableWorkSpace <= 0 && availableEngineer > 0 && _production->isQueuedOnly() && _production->getRules()->getRequiredSpace() > 0)
+	{
+		_game->pushState(new ErrorMessageState(
+			tr("STR_NOT_ENOUGH_WORK_SPACE"),
+			_palette,
+			_game->getMod()->getInterface("basescape")->getElement("errorMessage")->color,
+			"BACK17.SCR",
+			_game->getMod()->getInterface("basescape")->getElement("errorPalette")->color)
+		);
 	}
 }
 
@@ -575,13 +590,17 @@ void ManufactureInfoState::lessUnitClick(Action *action)
 		{
 			if (wasInfinite)
 			{
-				// when infinite amount is decreased by 1, set the amount to maximum possible considering current funds and store supplies
-				int productionPossible = INT_MAX;
+				// when infinite amount is decreased by 1, set the amount to maximum possible (capped at 999) considering current funds and store supplies
+				int productionPossible = 999;
 				auto* manufRule = _production->getRules();
 				if (manufRule->getManufactureCost() > 0)
 				{
-					int byFunds = _game->getSavedGame()->getFunds() / manufRule->getManufactureCost();
-					productionPossible = std::min(productionPossible, byFunds);
+					int64_t byFunds = _game->getSavedGame()->getFunds() / manufRule->getManufactureCost();
+					if (byFunds < 1000LL)
+					{
+						int byFundsInt = (int)byFunds;
+						productionPossible = std::min(productionPossible, byFundsInt);
+					}
 				}
 				for (auto& item : manufRule->getRequiredItems())
 				{
