@@ -711,6 +711,40 @@ public:
 	}
 
 
+	template<typename Callback>
+	constexpr void interateMutate(Callback&& f)
+	{
+		for (auto& p : parts)
+		{
+			if constexpr (std::is_invocable_r_v<bool, Callback, ScriptRef&>)
+			{
+				if (!f(p))
+				{
+					return;
+				}
+			}
+			else
+			{
+				f(p);
+			}
+		}
+	}
+
+	template<typename Callback>
+	constexpr void interate(Callback&& f) const
+	{
+		for (const auto& p : parts)
+		{
+			if (!p)
+			{
+				return;
+			}
+
+			f(p);
+		}
+	}
+
+
 	constexpr bool tryPopBack()
 	{
 		ScriptRef* prev = nullptr;
@@ -807,40 +841,6 @@ public:
 	constexpr operator ScriptRange<ScriptRef>() const
 	{
 		return { parts.data(), parts.data() + parts.size() };
-	}
-
-
-	template<typename Callback>
-	constexpr void interateMutate(Callback&& f)
-	{
-		for (auto& p : parts)
-		{
-			if constexpr (std::is_invocable_r_v<bool, Callback, ScriptRef&>)
-			{
-				if (!f(p))
-				{
-					return;
-				}
-			}
-			else
-			{
-				f(p);
-			}
-		}
-	}
-
-	template<typename Callback>
-	constexpr void interate(Callback&& f) const
-	{
-		for (const auto& p : parts)
-		{
-			if (!p)
-			{
-				return;
-			}
-
-			f(p);
-		}
 	}
 };
 

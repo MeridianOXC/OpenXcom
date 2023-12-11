@@ -26,6 +26,7 @@
 #include <jni.h>
 #endif
 #include <memory>
+#include <utility>
 
 namespace OpenXcom
 {
