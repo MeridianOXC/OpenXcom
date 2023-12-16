@@ -2081,6 +2081,33 @@ static auto dummyRawFile = ([]
 	}
 
 	{
+		char text[] = "test123\0ErrorErrorErrorErrorErrorError";
+		StreamData raw(RawData{text, std::strlen(text), +[](void*){}});
+
+		char dummy1[11] = { };
+
+		raw.clear();
+		raw.seekg(std::strlen(text), std::ios::beg);
+		assert(!!raw);
+		assert(!raw.read(dummy1, 10));
+
+		raw.clear();
+		raw.seekg(20, std::ios::beg);
+		assert(!raw);
+		assert(!raw.read(dummy1, 10));
+
+		raw.clear();
+		raw.seekg(-5, std::ios::beg);
+		assert(!raw);
+		assert(!raw.read(dummy1, 10));
+
+		raw.clear();
+		raw.seekg(0, std::ios::beg);
+		assert(!!raw);
+		assert(raw.read(dummy1, 5));
+	}
+
+	{
 		static int calledDelete = 0;
 		char text[] = "test123";
 		StreamData raw(RawData{text, std::strlen(text), +[](void*){ ++calledDelete; }});

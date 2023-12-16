@@ -213,7 +213,7 @@ NewBattleState::NewBattleState() : _craft(0), _selectType(NewBattleSelectType::M
 	for (auto& craftType : _game->getMod()->getCraftsList())
 	{
 		RuleCraft *rule = _game->getMod()->getCraft(craftType);
-		if (rule->getMaxUnits() > 0 && rule->getAllowLanding())
+		if (rule->getMaxUnitsLimit() > 0 && rule->getAllowLanding())
 		{
 			_crafts.push_back(craftType);
 		}

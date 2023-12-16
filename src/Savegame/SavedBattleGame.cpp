@@ -3550,6 +3550,18 @@ void getTileScript(const SavedBattleGame* sbg, const Tile*& t, int x, int y, int
 	}
 }
 
+void getTileEditableScript(SavedBattleGame* sbg, Tile*& t, int x, int y, int z)
+{
+	if (sbg)
+	{
+		t = sbg->getTile(Position(x, y, z));
+	}
+	else
+	{
+		t = nullptr;
+	}
+}
+
 void setAlienItemLevelScript(SavedBattleGame* sbg, int val)
 {
 	if (sbg)
@@ -3611,6 +3623,7 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.add<&SavedBattleGame::getTurn>("getTurn", "Current turn, 0 - before battle, 1 - first turn, each stage reset this value.");
 	sbg.add<&SavedBattleGame::getAnimFrame>("getAnimFrame");
 	sbg.add<&getTileScript>("getTile", "Get tile on position x, y, z");
+	sbg.add<&getTileEditableScript>("getTile", "Get tile on position x, y, z");
 
 	sbg.add<&SavedBattleGame::getAlienItemLevel>("getAlienItemLevel");
 	sbg.add<&setAlienItemLevelScript>("setAlienItemLevel");

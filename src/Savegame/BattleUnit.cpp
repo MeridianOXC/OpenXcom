@@ -6174,8 +6174,9 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.add<&BattleUnit::getVisible>("isVisible");
 	bu.add<&makeVisibleScript>("makeVisible");
-	bu.add<&BattleUnit::getMaxViewDistanceAtDark>("getMaxViewDistanceAtDark", "get maximum visibility distance in tiles of another unit at dark");
-	bu.add<&BattleUnit::getMaxViewDistanceAtDay>("getMaxViewDistanceAtDay", "get maximum visibility distance in tiles of another unit at day");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDark>("getMaxViewDistanceAtDark", "get maximum visibility distance in tiles to another unit at dark");
+	bu.add<&BattleUnit::getMaxViewDistanceAtDay>("getMaxViewDistanceAtDay", "get maximum visibility distance in tiles to another unit at day");
+	bu.add<&BattleUnit::getMaxViewDistance>("getMaxViewDistance", "calculate maximum visibility distance consider camouflage, first arg is base visibility, second arg is cammo reduction, third arg is anti-cammo boost");
 
 
 	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from current unit, it will reset everything to default (hostile & instant)");
@@ -6509,8 +6510,8 @@ ModScript::VisibilityUnitParser::VisibilityUnitParser(ScriptGlobal* shared, cons
 	"default_visibility",
 	"visibility_mode",
 
-	"observer_unit", "target_unit",
-	"distance", "distance_max",
+	"observer_unit", "target_unit", "target_tile",
+	"distance", "distance_max", "distance_target_max",
 	"smoke_density", "fire_density",
 	"smoke_density_near_observer", "fire_density_near_observer" }
 {

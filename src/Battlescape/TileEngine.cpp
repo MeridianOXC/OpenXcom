@@ -1902,7 +1902,7 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
 		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
-		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), visibleDistanceVoxels, visibleDistanceMaxVoxel, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
+		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), tile, visibleDistanceVoxels, visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
 		unitSeen = 0 < arg.getFirst();
 	}
@@ -1911,7 +1911,7 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 
 /**
  * Checks to see if a tile is visible through darkness, obstacles and smoke.
- * Note: psi vision, heat vision, camouflage/anti-camouflage and Y-scripts are intentionally removed.
+ * Note: psi vision, camouflage/anti-camouflage are intentionally removed.
  * @param action Current battle action.
  * @param tile The tile to check for.
  * @return True if visible.
@@ -1933,7 +1933,7 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 		return false;
 	}
 
-	const auto [visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile] = getVisibleDistanceMaxHelper(this, tile, currentUnit, nullptr);
+	const auto [visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile] = getVisibleDistanceMaxHelper(this, tile, currentUnit, /*targetUnit*/ nullptr);
 
 	// We MUST build a temp action, because current action doesn't yet have updated target (when only aiming)
 	BattleAction tempAction;
@@ -2064,15 +2064,25 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 
 	// LOS check uses sight origin voxel (LOF check uses origin voxel)
 	originVoxel = getSightOriginVoxel(currentUnit);
+
+	// heat vision 100% = smoke effectiveness 0%
+	int smokeDensityFactor = 100 - currentUnit->getArmor()->getHeatVision();
+	// heat vision should be blind by looking directly through fire
+	int fireDensityFactor = currentUnit->getArmor()->getHeatVision();
+
 	if (seen)
 	{
 		const auto [visibleDistanceVoxels, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit] = getTrajectoryDataHelper(this, _save, currentUnit, originVoxel, scanVoxel);
 
 		// 3  - coefficient of calculation (see getTrajectoryDataHelper).
 		// 20 - maximum view distance in vanilla Xcom.
+		// 100 - % for smokeDensityFactor.
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - (densityOfSmoke - densityOfSmokeNearUnit / 2) * visibleDistanceUnitMaxTile/(3 * 20);
-		seen = 0 < visibilityQuality;
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
+		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
+		ModScript::VisibilityUnit::Worker worker{ currentUnit, /*targetUnit*/ nullptr, tile, visibleDistanceVoxels, visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
+		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
+		seen = 0 < arg.getFirst();
 	}
 	return seen;
 }

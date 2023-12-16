@@ -146,12 +146,21 @@ protected:
 		std::streambuf::off_type off, std::ios_base::seekdir dir,
 		std::ios_base::openmode) override
 	{
+		auto pos = gptr();
 		if (dir == std::ios_base::cur)
-			gbump(off);
+			pos += off;
 		else if (dir == std::ios_base::end)
-			setg(eback(), egptr() + off, egptr());
+			pos = egptr() + off;
 		else if (dir == std::ios_base::beg)
-			setg(eback(), eback() + off, egptr());
+			pos = eback() + off;
+
+		// check for invalid moves
+		if (pos < eback())
+			return std::streambuf::pos_type(-1);
+		else if (pos > egptr())
+			return std::streambuf::pos_type(-1);
+
+		setg(eback(), pos, egptr());
 		return gptr() - eback();
 	}
 
