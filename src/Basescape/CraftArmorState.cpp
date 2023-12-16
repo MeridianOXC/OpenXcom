@@ -141,7 +141,6 @@ CraftArmorState::CraftArmorState(Base *base, size_t craft) : _base(base), _craft
 	_cbxSortBy->onChange((ActionHandler)&CraftArmorState::cbxSortByChange);
 	_cbxSortBy->setText(tr("STR_SORT_BY"));
 
-	//_lstSoldiers->setArrowColumn(-1, ARROW_VERTICAL);
 	_lstSoldiers->setColumns(3, 106, 70, 104);
 	_lstSoldiers->setAlign(ALIGN_RIGHT, 3);
 	_lstSoldiers->setSelectable(true);

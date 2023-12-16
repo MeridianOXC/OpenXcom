@@ -2227,25 +2227,17 @@ bool SavedGame::isResearched(const std::vector<const RuleResearch *> &research, 
 		return true;
 	if (considerDebugMode && _debug)
 		return true;
-	std::vector<const RuleResearch *> matches = research;
-	if (skipDisabled)
+
+	for (const auto* res : research)
 	{
-		// ignore all disabled topics (as if they didn't exist)
-		for (auto iter = matches.begin(); iter != matches.end();)
+		if (skipDisabled)
 		{
-			if (isResearchRuleStatusDisabled((*iter)->getName()))
+			// ignore all disabled topics (as if they didn't exist)
+			if (isResearchRuleStatusDisabled(res->getName()))
 			{
-				iter = matches.erase(iter);
-			}
-			else
-			{
-				++iter;
+				continue;
 			}
 		}
-	}
-
-	for (const auto* res : matches)
-	{
 		if (!haveReserchVector(_discovered, res))
 		{
 			return false;

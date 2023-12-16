@@ -411,9 +411,11 @@ struct StatAdjustment
 	static void ScriptRegister(ScriptParserBase* parser);
 
 	UnitStats statGrowth;
+	UnitStats statGrowthAbs;
 	int growthMultiplier;
 	double aimMultiplier;
 	double armorMultiplier;
+	int armorMultiplierAbs;
 };
 
 /**

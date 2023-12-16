@@ -273,10 +273,7 @@ std::unique_ptr<std::istream> FileRecord::getIStream() const
 			Log(LOG_FATAL) << err;
 			throw Exception(err);
 		}
-		std::string a_string((char *)data, size);
-		auto rv = new std::stringstream(a_string);
-		mz_free(data);
-		return std::unique_ptr<std::istream>(rv);
+		return std::unique_ptr<std::istream>(new StreamData(RawData{data, size, mz_free}));
 	} else {
 		return CrossPlatform::readFile(fullpath);
 	}

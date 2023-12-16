@@ -277,11 +277,17 @@ void ManufactureState::lstManufactureMousePress(Action *action)
 
 	if (action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
 	{
+		Production *selectedProject = _base->getProductions()[_lstManufacture->getSelectedRow()];
+		int availableWorkSpace = _base->getFreeWorkshops();
+		if (selectedProject->isQueuedOnly())
+		{
+			// start counting the workshop space now
+			availableWorkSpace -= selectedProject->getRules()->getRequiredSpace();
+		}
 		change = std::min(change, _base->getAvailableEngineers());
-		change = std::min(change, _base->getFreeWorkshops());
+		change = std::min(change, availableWorkSpace);
 		if (change > 0)
 		{
-			Production *selectedProject = _base->getProductions()[_lstManufacture->getSelectedRow()];
 			selectedProject->setAssignedEngineers(selectedProject->getAssignedEngineers() + change);
 			_base->setEngineers(_base->getEngineers() - change);
 			fillProductionList(_lstManufacture->getScroll());

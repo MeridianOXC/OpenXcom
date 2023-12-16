@@ -112,6 +112,43 @@
 namespace OpenXcom
 {
 
+namespace
+{
+
+struct OxceVersionDate
+{
+	int year = 0;
+	int month = 0;
+	int day = 0;
+
+	OxceVersionDate(const std::string& data)
+	{
+		auto correct = false;
+		// check if look like format " (v2023-10-21)"
+		size_t offset = data.find(" (v");
+		if (offset != std::string::npos && data.size() >= offset + 14 && data[offset + 2] == 'v' && data[offset + 7] == '-' && data[offset + 10] == '-' && data[offset + 13] == ')')
+		{
+			correct = (std::sscanf(data.data() + offset, " (v%4d-%2d-%2d)", &year, &month, &day) == 3);
+		}
+
+		if (!correct)
+		{
+			year = 0;
+			month = 0;
+			day = 0;
+		}
+	}
+
+	explicit operator bool() const
+	{
+		return year && month && day;
+	}
+};
+
+
+} //namespace
+
+
 int Mod::DOOR_OPEN;
 int Mod::SLIDING_DOOR_OPEN;
 int Mod::SLIDING_DOOR_CLOSE;
@@ -319,6 +356,9 @@ public:
 		addTagValueType<ModScriptGlobal, &ModScriptGlobal::loadRuleList, &ModScriptGlobal::saveRuleList>("RuleList");
 		addConst("RuleList." + ModNameMaster, (int)0);
 		addConst("RuleList." + ModNameCurrent, (int)0);
+
+		auto v = OxceVersionDate(OPENXCOM_VERSION_GIT);
+		addConst("SCRIPT_VERSION_DATE", (int)(v.year * 10000 + v.month * 100 + v.day));
 	}
 	/// Finishing loading data.
 	void endLoad() override
@@ -498,11 +538,13 @@ Mod::Mod() :
 	_statAdjustment.resize(MaxDifficultyLevels);
 	_statAdjustment[0].aimMultiplier = 0.5;
 	_statAdjustment[0].armorMultiplier = 0.5;
+	_statAdjustment[0].armorMultiplierAbs = 0;
 	_statAdjustment[0].growthMultiplier = 0;
 	for (size_t i = 1; i != MaxDifficultyLevels; ++i)
 	{
 		_statAdjustment[i].aimMultiplier = 1.0;
 		_statAdjustment[i].armorMultiplier = 1.0;
+		_statAdjustment[i].armorMultiplierAbs = 0;
 		_statAdjustment[i].growthMultiplier = (int)i;
 	}
 
@@ -1021,17 +1063,14 @@ bool Mod::checkForObsoleteErrorByYear(const std::string &parent, const YAML::Nod
 	SeverityLevel level = LOG_INFO;
 	bool r = true;
 
-	std::string currYearText = OPENXCOM_VERSION_GIT;
-	std::string targetYearText = std::to_string(year);
-	size_t offset = currYearText.find(" (v");
-	if (offset != std::string::npos && currYearText.size() >= offset + 14 && currYearText[offset + 7] == '-' && currYearText[offset + 13] == ')') // check if look like format " (v2023-10-21)"
+	const static OxceVersionDate currYear = { OPENXCOM_VERSION_GIT };
+	if (currYear)
 	{
-		currYearText = currYearText.substr(offset + 3, 4);
-		if (currYearText < targetYearText)
+		if (currYear.year < year)
 		{
 			level = LOG_INFO;
 		}
-		else if (currYearText == targetYearText)
+		else if (currYear.year == year)
 		{
 			level = LOG_WARNING;
 		}
@@ -1041,7 +1080,7 @@ bool Mod::checkForObsoleteErrorByYear(const std::string &parent, const YAML::Nod
 			r = false;
 		}
 	}
-	checkForSoftError(true, parent, node, "Obsolete (to removed after year " + targetYearText + ") operation " + error, level);
+	checkForSoftError(true, parent, node, "Obsolete (to removed after year " + std::to_string(year) + ") operation " + error, level);
 
 	return r;
 }
@@ -2201,6 +2240,7 @@ void Mod::loadAll()
 	afterLoadHelper("skills", this, _skills, &RuleSkill::afterLoad);
 	afterLoadHelper("craftWeapons", this, _craftWeapons, &RuleCraftWeapon::afterLoad);
 	afterLoadHelper("countries", this, _countries, &RuleCountry::afterLoad);
+	afterLoadHelper("crafts", this, _crafts, &RuleCraft::afterLoad);
 
 	for (auto& a : _armors)
 	{
@@ -3418,6 +3458,18 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		_statAdjustment[count].armorMultiplier = (*i).as<double>(_statAdjustment[count].armorMultiplier);
 		++count;
 	}
+	count = 0;
+	for (YAML::const_iterator i = doc["armorMultipliersAbs"].begin(); i != doc["armorMultipliersAbs"].end() && count < MaxDifficultyLevels; ++i)
+	{
+		_statAdjustment[count].armorMultiplierAbs = (*i).as<double>(_statAdjustment[count].armorMultiplierAbs);
+		++count;
+	}
+	count = 0;
+	for (YAML::const_iterator i = doc["statGrowthMultipliersAbs"].begin(); i != doc["statGrowthMultipliersAbs"].end() && count < MaxDifficultyLevels; ++i)
+	{
+		_statAdjustment[count].statGrowthAbs = (*i).as<UnitStats>(_statAdjustment[count].statGrowthAbs);
+		++count;
+	}
 	if (doc["statGrowthMultipliers"])
 	{
 		_statAdjustment[0].statGrowth = doc["statGrowthMultipliers"].as<UnitStats>(_statAdjustment[0].statGrowth);
@@ -3769,7 +3821,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					if (!found && craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getMaxUnits())
 					{
 						// Remember transporter as fall-back, but search further for interceptors
 						found = craft;
@@ -3787,7 +3839,7 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
-					if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getRules()->getMaxUnits())
+					if (craft->getRules()->getAllowLanding() && craft->getSpaceUsed() < craft->getMaxUnits())
 					{
 						// First available transporter will do
 						found = craft;
@@ -6444,5 +6496,51 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 
 	mod.addScriptValue<&Mod::_scriptGlobal, &ModScriptGlobal::getScriptValues>();
 }
+
+
+#ifdef OXCE_AUTO_TEST
+
+static auto dummyParseDate = ([]
+{
+	assert(OxceVersionDate(OPENXCOM_VERSION_GIT));
+	assert(OxceVersionDate(" (v1976-04-23)"));
+	assert(OxceVersionDate(" (v9999-99-99)")); //accept impossible dates
+	assert(OxceVersionDate(" (v   6-04-23)"));
+	assert(OxceVersionDate(" (v   1- 1- 1)"));
+
+	assert(!OxceVersionDate(" (v21976-04-23)"));
+	assert(!OxceVersionDate(" (v1976-034-22)"));
+	assert(!OxceVersionDate(" (v1976-04-232)"));
+	assert(!OxceVersionDate(" (v1976-b4-23)"));
+
+	assert(!OxceVersionDate(""));
+	assert(!OxceVersionDate(" (v"));
+	assert(!OxceVersionDate(" (v)"));
+	assert(!OxceVersionDate(" (v 1976-04-23)"));
+	assert(!OxceVersionDate(" (v1976- 04-23)"));
+	assert(!OxceVersionDate(" (v1976-04- 23)"));
+	assert(!OxceVersionDate(" (v1976-04-23 )"));
+	assert(!OxceVersionDate(" (v    -  -  )"));
+	assert(!OxceVersionDate(" (v   0- 0- 0)"));
+	assert(!OxceVersionDate(" (v 1 1- 1- 1)"));
+
+	{
+		OxceVersionDate d("   (v1976-04-23)");
+		assert(d && d.year == 1976 && d.month == 04 && d.day == 23);
+	}
+
+	{
+		OxceVersionDate d("   (v1976-04-22)    ");
+		assert(d && d.year == 1976 && d.month == 04 && d.day == 22);
+	}
+
+	{
+		OxceVersionDate d(" aaads  (v1976-04-22)  sdafdfsfsd  ");
+		assert(d && d.year == 1976 && d.month == 04 && d.day == 22);
+	}
+
+	return 0;
+})();
+#endif
 
 }

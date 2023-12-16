@@ -71,6 +71,12 @@ void Production::setTimeSpent (int done)
 	_timeSpent = done;
 }
 
+bool Production::isQueuedOnly() const
+{
+	// no progress made yet and nobody assigned
+	return (getTimeSpent() == 0 && getAssignedEngineers() == 0);
+}
+
 int Production::getAssignedEngineers() const
 {
 	return _engineers;
@@ -148,7 +154,7 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 			{
 				Craft *craft = new Craft(ruleCraft, b, g->getId(ruleCraft->getType()));
 				craft->initFixedWeapons(m);
-				craft->setStatus("STR_REFUELLING");
+				craft->checkup();
 				b->getCrafts()->push_back(craft);
 			}
 			else

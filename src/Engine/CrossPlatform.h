@@ -26,6 +26,7 @@
 #include <jni.h>
 #endif
 #include <memory>
+#include <utility>
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -36,6 +37,148 @@
 
 namespace OpenXcom
 {
+
+using RawDataDeleteFun = void(*)(void*);
+
+/**
+ * Unique pointer with size to raw data buffer.
+ */
+class RawData
+{
+	std::unique_ptr<void, RawDataDeleteFun> _data;
+	std::size_t _size;
+
+
+public:
+
+	/// Default constructor.
+	RawData() : _data{ nullptr, +[](void*){} }, _size{ }
+	{
+
+	}
+
+	/// Create data from pointer and size.
+	RawData(void* data, std::size_t size, RawDataDeleteFun del) : _data{ data, del }, _size{ size }
+	{
+
+	}
+
+	/// Move constructor.
+	RawData(RawData&& d) : RawData()
+	{
+		*this = std::move(d);
+	}
+
+	/// Move assignment.
+	RawData& operator=(RawData&& d)
+	{
+		_data = std::exchange(d._data, std::unique_ptr<void, RawDataDeleteFun>{ nullptr, +[](void*){} });
+		_size = std::exchange(d._size, 0u);
+
+		return *this;
+	}
+
+
+	/// Size of buffer.
+	std::size_t size() const { return _size; }
+
+	/// Data of buffer.
+	const void* data() const { return _data.get(); }
+
+	/// Data of buffer.
+	void* data() { return _data.get(); }
+};
+
+/**
+ * Stream to raw data buffer, owning its data buffer.
+ */
+class StreamData : public std::istream, private std::streambuf
+{
+	RawData _data;
+
+
+public:
+
+	/// Default constructor.
+	StreamData() : std::istream(nullptr)
+	{
+		this->rdbuf(this);
+	}
+
+	/// Constructor from raw data.
+	StreamData(RawData data) : StreamData()
+	{
+		insertRawData(std::move(data));
+	}
+
+	/// Move constructor, move whole state to new object.
+	StreamData(StreamData&& f) : StreamData()
+	{
+		*this = std::move(f);
+	}
+
+	/// Move assignment, move whole state to new object.
+	StreamData& operator=(StreamData&& f)
+	{
+		auto state = f.rdstate();
+		auto pos = f.tellg();
+		insertRawData(f.extractRawData());
+		this->seekg(pos);
+		this->clear(state);
+
+		return *this;
+	}
+
+
+	/// Move out raw data from object.
+	RawData extractRawData()
+	{
+		this->setg(nullptr, nullptr, nullptr);
+		return std::move(_data);
+	}
+
+	/// Insert raw data into object.
+	void insertRawData(RawData data)
+	{
+		_data = std::move(data);
+		this->setg((char*)_data.data(), (char*)_data.data(), (char*)_data.data() + _data.size());
+		this->clear();
+	}
+
+
+protected:
+
+	/// https://stackoverflow.com/questions/35066207/how-to-implement-custom-stdstreambufs-seekoff
+	virtual  std::streambuf::pos_type seekoff(
+		std::streambuf::off_type off, std::ios_base::seekdir dir,
+		std::ios_base::openmode) override
+	{
+		auto pos = gptr();
+		if (dir == std::ios_base::cur)
+			pos += off;
+		else if (dir == std::ios_base::end)
+			pos = egptr() + off;
+		else if (dir == std::ios_base::beg)
+			pos = eback() + off;
+
+		// check for invalid moves
+		if (pos < eback())
+			return std::streambuf::pos_type(-1);
+		else if (pos > egptr())
+			return std::streambuf::pos_type(-1);
+
+		setg(eback(), pos, egptr());
+		return gptr() - eback();
+	}
+
+	/// https://stackoverflow.com/a/46069245/1938348
+	virtual std::streambuf::pos_type seekpos(
+		std::streambuf::pos_type pos,
+		std::ios_base::openmode which) override
+	{
+		return seekoff(pos - std::streambuf::pos_type(std::streambuf::off_type(0)), std::ios_base::beg, which);
+	}
+};
 
 /**
  * Generic purpose functions that need different

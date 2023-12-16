@@ -371,8 +371,8 @@ void TechTreeViewerState::initLists()
 		const std::vector<std::string> &manufactureList = _game->getMod()->getManufactureList();
 
 		// 0. common pre-calculation
-		const std::vector<const RuleResearch*> reqs = rule->getRequirements();
-		const std::vector<const RuleResearch*> deps = rule->getDependencies();
+		const std::vector<const RuleResearch*>& reqs = rule->getRequirements();
+		const std::vector<const RuleResearch*>& deps = rule->getDependencies();
 		std::vector<std::string> unlockedBy;
 		std::vector<std::string> disabledBy;
 		std::vector<std::string> reenabledBy;
@@ -385,10 +385,10 @@ void TechTreeViewerState::initLists()
 		std::vector<std::string> requiredByTransformations;
 		std::vector<std::string> requiredByCrafts;
 		std::vector<std::string> leadsTo;
-		const std::vector<const RuleResearch*> unlocks = rule->getUnlocked();
-		const std::vector<const RuleResearch*> disables = rule->getDisabled();
-		const std::vector<const RuleResearch*> reenables = rule->getReenabled();
-		const std::vector<const RuleResearch*> free = rule->getGetOneFree();
+		const std::vector<const RuleResearch*>& unlocks = rule->getUnlocked();
+		const std::vector<const RuleResearch*>& disables = rule->getDisabled();
+		const std::vector<const RuleResearch*>& reenables = rule->getReenabled();
+		const std::vector<const RuleResearch*>& free = rule->getGetOneFree();
 		auto& freeProtected = rule->getGetOneFreeProtected();
 
 		for (auto& j : manufactureList)

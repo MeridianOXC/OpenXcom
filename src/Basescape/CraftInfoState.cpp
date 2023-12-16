@@ -76,7 +76,7 @@ CraftInfoState::CraftInfoState(Base *base, size_t craftId) : _base(base), _craft
 	if (_game->getSavedGame()->getDebugMode() && _game->getSavedGame()->getMonthsPassed() != -1)
 	{
 		// only the first craft can be used
-		if (_craftId == 0 && _craft->getRules()->getMaxUnits() > 0 && _craft->getRules()->getAllowLanding())
+		if (_craftId == 0 && _craft->getMaxUnits() > 0 && _craft->getRules()->getAllowLanding())
 		{
 			showNewBattle = 1;
 		}
@@ -263,7 +263,7 @@ void CraftInfoState::init()
 	}
 	_txtShield->setText(thirdLine.str());
 
-	if (_craft->getRules()->getMaxUnits() > 0)
+	if (_craft->getMaxUnits() > 0)
 	{
 		_crew->clear();
 		_equip->clear();
@@ -463,7 +463,7 @@ void CraftInfoState::btnNewBattleClick(Action *)
 	for (auto& craftType : _game->getMod()->getCraftsList())
 	{
 		const RuleCraft* rule = _game->getMod()->getCraft(craftType);
-		if (rule->getMaxUnits() > 0 && rule->getAllowLanding())
+		if (rule->getMaxUnitsLimit() > 0 && rule->getAllowLanding())
 		{
 			if (rule == _craft->getRules())
 			{

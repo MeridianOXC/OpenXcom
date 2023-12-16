@@ -302,7 +302,7 @@ void BattlescapeGenerator::nextStage()
 		{
 			if (bu->getOriginalFaction() == FACTION_HOSTILE && !bu->isOut())
 			{
-				if (bu->getOriginalFaction() == bu->getFaction())
+				if (bu->getOriginalFaction() == bu->getFaction() && !bu->isSurrendering())
 				{
 					aliensAlive++;
 				}

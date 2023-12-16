@@ -632,6 +632,11 @@ void Camera::resize()
 	_visibleMapHeight = _map->getHeight() - _map->getIconHeight();
 }
 
+void Camera::stopKeyScrolling()
+{
+	_scrollKeyTimer->stop();
+}
+
 void Camera::stopMouseScrolling()
 {
 	_scrollMouseTimer->stop();

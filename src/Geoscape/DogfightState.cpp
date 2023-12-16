@@ -1453,7 +1453,8 @@ void DogfightState::update()
 			setStatus("STR_INTERCEPTOR_DESTROYED");
 			if (_ufoIsAttacking)
 			{
-				_craft->evacuateCrew(_game->getMod());
+				// Note: this was moved to GeoscapeState.cpp, as it is not 100% reliable here
+				//_craft->evacuateCrew(_game->getMod());
 			}
 			_timeout += 30;
 			_game->getMod()->getSound("GEO.CAT", Mod::INTERCEPTOR_EXPLODE)->play();

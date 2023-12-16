@@ -570,10 +570,10 @@ public:
 	/// Helper method.
 	int getMaxViewDistance(int baseVisibility, int nerf, int buff) const;
 	/// Get maximum view distance at dark.
-	int getMaxViewDistanceAtDark(const Armor *otherUnitArmor) const;
+	int getMaxViewDistanceAtDark(const BattleUnit* otherUnit) const;
 	int getMaxViewDistanceAtDarkSquared() const;
 	/// Get maximum view distance at day.
-	int getMaxViewDistanceAtDay(const Armor *otherUnitArmor) const;
+	int getMaxViewDistanceAtDay(const BattleUnit* otherUnit) const;
 	/// Get the units's special ability.
 	int getSpecialAbility() const;
 

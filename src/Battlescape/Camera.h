@@ -106,6 +106,8 @@ public:
 	bool isOnScreen(Position mapPos, const bool unitWalking, const int unitSize, const bool boundary) const;
 	/// Resize the viewable area.
 	void resize();
+	/// stop key scrolling.
+	void stopKeyScrolling();
 	/// stop mouse scrolling.
 	void stopMouseScrolling();
 };

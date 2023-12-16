@@ -716,6 +716,26 @@ struct ArgNullDef
 	}
 };
 
+struct ArgSepDef
+{
+	using ReturnType = ScriptArgSeparator;
+	static constexpr size_t size = 0;
+	static ReturnType get(ScriptWorkerBase& sw, const Uint8* arg, ProgPos& curr)
+	{
+		return ReturnType{};
+	}
+
+	static bool parse(ParserWriter& ph, const ScriptRefData& t)
+	{
+		return t.type == ArgSep;
+	}
+
+	static ArgEnum type()
+	{
+		return ArgSep;
+	}
+};
+
 ////////////////////////////////////////////////////////////
 //					ArgSelector class
 ////////////////////////////////////////////////////////////
@@ -851,6 +871,14 @@ struct ArgSelector<ScriptNull>
 {
 	using type = Arg<ArgNullDef<ScriptNull>>;
 };
+
+template<>
+struct ArgSelector<ScriptArgSeparator>
+{
+	using type = Arg<ArgSepDef>;
+};
+
+
 
 template<typename T>
 struct GetArgsImpl;

@@ -796,6 +796,13 @@ void TextList::setArrowColumn(int pos, ArrowOrientation type)
 {
 	_arrowPos = pos;
 	_arrowType = type;
+	if (pos == -1)
+	{
+		// turned off
+		_arrowsLeftEdge = 0;
+		_arrowsRightEdge = 0;
+		return;
+	}
 	_arrowsLeftEdge = getX() + _arrowPos;
 	_arrowsRightEdge = _arrowsLeftEdge + 12 + 11;
 }

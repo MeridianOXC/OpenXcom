@@ -145,7 +145,12 @@ private:
 	std::vector<int> _selectWeaponSoundMale, _selectWeaponSoundFemale;
 	std::vector<int> _annoyedSoundMale, _annoyedSoundFemale;
 
-	int _size, _weight, _visibilityAtDark, _visibilityAtDay, _personalLight;
+	int _size, _weight, _visibilityAtDark, _visibilityAtDay;
+
+	int _personalLightFriend = 15;
+	int _personalLightHostile = 0;
+	int _personalLightNeutral = 0;
+
 	int _camouflageAtDay, _camouflageAtDark, _antiCamouflageAtDay, _antiCamouflageAtDark, _heatVision, _psiVision, _psiCamouflage;
 	float _damageModifier[DAMAGE_TYPES];
 	std::vector<int> _loftempsSet;
@@ -366,8 +371,12 @@ public:
 	int getPsiVision() const;
 	/// Gets info about psi camouflage.
 	int getPsiCamouflage() const;
-	/// Gets personal light radius;
-	int getPersonalLight() const;
+	/// Gets personal soldier light radius;
+	int getPersonalLightFriend() const;
+	/// Gets personal alien light radius;
+	int getPersonalLightHostile() const;
+	/// Gets personal civilian light radius;
+	int getPersonalLightNeutral() const;
 	/// Gets if unit should be always visible.
 	bool isAlwaysVisible() const { return _isAlwaysVisible; }
 

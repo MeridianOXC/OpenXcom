@@ -1164,6 +1164,32 @@ void getObjectSpecialTileTypeScript(const Tile *t, int &ret)
 	ret = t ? t->getObjectSpecialTileType() : TILE;
 }
 
+void isDiscoveredScript(const Tile *t, int &ret)
+{
+	if (t)
+	{
+		ret = (
+			(t->isDiscovered(O_FLOOR) << 0) |
+			(t->isDiscovered(O_WESTWALL) << 1) |
+			(t->isDiscovered(O_NORTHWALL) << 2)
+		);
+		return;
+	}
+	ret = 0;
+}
+
+void makeDiscoveredScript(Tile *t, int i)
+{
+	if (t)
+	{
+		if (i & (1<<0)) t->setDiscovered(true, O_FLOOR);
+		if (i & (1<<1)) t->setDiscovered(true, O_WESTWALL);
+		if (i & (1<<2)) t->setDiscovered(true, O_NORTHWALL);
+		return;
+	}
+}
+
+
 void getUnitScript(const Tile *t, const BattleUnit*& ret)
 {
 	ret = t ? t->getUnit() : nullptr;
@@ -1212,6 +1238,10 @@ void Tile::ScriptRegister(ScriptParserBase* parser)
 	t.add<&Tile::getFire>("getFire");
 	t.add<&Tile::getSmoke>("getSmoke");
 	t.add<&Tile::getShade>("getShade");
+
+	t.add<&isDiscoveredScript>("isDiscovered", "Check what part of tile is discovered, 0x1 - floor, 0x2 - westwall, 0x4 - eastwall");
+	t.add<&makeDiscoveredScript>("makeDiscovered", "Make part of tile discovered, 0x1 - floor (will make both walls visible too), 0x2 - westwall, 0x4 - eastwall");
+
 
 	t.add<&getUnitScript>("getUnit");
 

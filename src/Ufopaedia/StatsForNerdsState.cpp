@@ -316,7 +316,7 @@ void StatsForNerdsState::init()
 				return;
 			}
 			RuleCraft* craftRule = _game->getMod()->getCraft(_topicId);
-			if (craftRule->getMaxUnits() > 0 && craftRule->getBattlescapeTerrainData())
+			if (craftRule->getMaxUnitsLimit() > 0 && craftRule->getBattlescapeTerrainData())
 			{
 				auto& data = _game->getSavedGame()->getCustomRuleCraftDeployments();
 				auto find = data.find(craftRule->getType());
@@ -2824,7 +2824,9 @@ void StatsForNerdsState::initArmorList()
 
 		addSection("{Calculations}", "", _white);
 		addVectorOfIntegers(ss, armorRule->getLoftempsSet(), "loftempsSet");
-		addInteger(ss, armorRule->getPersonalLight(), "personalLight", -1);
+		addInteger(ss, armorRule->getPersonalLightFriend(), "personalLight", 15);
+		addInteger(ss, armorRule->getPersonalLightHostile(), "personalLightHostile", 0);
+		addInteger(ss, armorRule->getPersonalLightNeutral(), "personalLightNeutral", 0);
 		addInteger(ss, armorRule->getStandHeight(), "standHeight", -1);
 		addInteger(ss, armorRule->getKneelHeight(), "kneelHeight", -1);
 		addInteger(ss, armorRule->getFloatHeight(), "floatHeight", -1);
@@ -3201,6 +3203,7 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getTransferTime(), "transferTime", 24);
 
 	addInteger(ss, craftRule->getMaxUnits(), "soldiers");
+	addInteger(ss, craftRule->getMaxUnitsLimit(), "maxUnitsLimit");
 	addInteger(ss, craftRule->getPilots(), "pilots");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
 
@@ -3725,6 +3728,8 @@ void StatsForNerdsState::initCraftWeaponList()
 		addInteger(ss, craftWeaponRule->getBonusStats().shieldRecharge, "shieldRecharge");
 		addInteger(ss, craftWeaponRule->getBonusStats().shieldRechargeInGeoscape, "shieldRechargeInGeoscape");
 		addInteger(ss, craftWeaponRule->getBonusStats().shieldBleedThrough, "shieldBleedThrough");
+		addInteger(ss, craftWeaponRule->getBonusStats().soldiers, "soldiers");
+		addInteger(ss, craftWeaponRule->getBonusStats().vehicles, "vehicles");
 		endHeading();
 	}
 

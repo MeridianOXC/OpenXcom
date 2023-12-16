@@ -55,13 +55,13 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
 
 	// Create objects
 	_window = new Window(this, 256, 176, 32, 12, POPUP_BOTH);
-	_txtTitle = new Text(236, 32, 42, 26);
-	_txtMessage = new Text(236, 94, 42, 61);
+	_txtTitle = new Text(236, 32, 42, 23);
+	_txtMessage = new Text(236, 96, 42, 58);
 	_btnOk = new TextButton(108, 18, 48, 158);
 	_btnItemsArriving = new ToggleTextButton(108, 18, 164, 158);
-	_txtItem = new Text(114, 9, 44, 61);
-	_txtQuantity = new Text(94, 9, 182, 61);
-	_lstTransfers = new TextList(216, 80, 42, 72);
+	_txtItem = new Text(114, 9, 44, 58);
+	_txtQuantity = new Text(94, 9, 182, 58);
+	_lstTransfers = new TextList(216, 80, 42, 69);
 
 	// Set palette
 	setInterface("geoscapeEvent");
@@ -88,6 +88,11 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
 	_txtMessage->setVerticalAlign(ALIGN_TOP);
 	_txtMessage->setWordWrap(true);
 	_txtMessage->setText(tr(_eventRule.getDescription()));
+	if (_eventRule.alignBottom())
+	{
+		_txtMessage->setVerticalAlign(ALIGN_BOTTOM);
+	}
+	_txtMessage->setScrollable(true);
 
 	_btnOk->setText(tr("STR_OK"));
 	_btnOk->onMouseClick((ActionHandler)& GeoscapeEventState::btnOkClick);

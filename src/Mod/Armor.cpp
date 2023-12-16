@@ -36,7 +36,7 @@ const std::string Armor::NONE = "STR_NONE";
 Armor::Armor(const std::string &type) :
 	_type(type), _infiniteSupply(false), _frontArmor(0), _sideArmor(0), _leftArmorDiff(0), _rearArmor(0), _underArmor(0),
 	_drawingRoutine(0), _drawBubbles(false), _movementType(MT_WALK), _specab(SPECAB_NONE), _turnBeforeFirstStep(false), _turnCost(1), _moveSound(-1), _size(1), _weight(0),
-	_visibilityAtDark(0), _visibilityAtDay(0), _personalLight(-1),
+	_visibilityAtDark(0), _visibilityAtDay(0),
 	_camouflageAtDay(0), _camouflageAtDark(0), _antiCamouflageAtDay(0), _antiCamouflageAtDark(0), _heatVision(0), _psiVision(0), _psiCamouflage(0),
 	_deathFrames(3), _constantAnimation(false), _hasInventory(true), _forcedTorso(TORSO_USE_GENDER),
 	_faceColorGroup(0), _hairColorGroup(0), _utileColorGroup(0), _rankColorGroup(0),
@@ -156,7 +156,9 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_weight = node["weight"].as<int>(_weight);
 	_visibilityAtDark = node["visibilityAtDark"].as<int>(_visibilityAtDark);
 	_visibilityAtDay = node["visibilityAtDay"].as<int>(_visibilityAtDay);
-	loadIntNullable(_personalLight, node["personalLight"]);
+	_personalLightFriend = node["personalLight"].as<int>(_personalLightFriend);
+	_personalLightHostile = node["personalLightHostile"].as<int>(_personalLightHostile);
+	_personalLightNeutral = node["personalLightNeutral"].as<int>(_personalLightNeutral);
 	_camouflageAtDay = node["camouflageAtDay"].as<int>(_camouflageAtDay);
 	_camouflageAtDark = node["camouflageAtDark"].as<int>(_camouflageAtDark);
 	_antiCamouflageAtDay = node["antiCamouflageAtDay"].as<int>(_antiCamouflageAtDay);
@@ -856,9 +858,27 @@ int Armor::getPsiCamouflage() const
 * Gets personal light radius created by solders.
 * @return Return light radius.
 */
-int Armor::getPersonalLight() const
+int Armor::getPersonalLightFriend() const
 {
-	return _personalLight;
+	return _personalLightFriend;
+}
+
+/**
+* Gets personal light radius created by alien.
+* @return Return light radius.
+*/
+int Armor::getPersonalLightHostile() const
+{
+	return _personalLightHostile;
+}
+
+/**
+* Gets personal light radius created by civilian.
+* @return Return light radius.
+*/
+int Armor::getPersonalLightNeutral() const
+{
+	return _personalLightNeutral;
 }
 
 /**
@@ -1218,7 +1238,14 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 
 	ar.add<&Armor::getVisibilityAtDark>("getVisibilityAtDark");
 	ar.add<&Armor::getVisibilityAtDay>("getVisibilityAtDay");
-	ar.add<&Armor::getPersonalLight>("getPersonalLight");
+	ar.add<&Armor::getCamouflageAtDark>("getCamouflageAtDark");
+	ar.add<&Armor::getCamouflageAtDay>("getCamouflageAtDay");
+	ar.add<&Armor::getAntiCamouflageAtDark>("getAntiCamouflageAtDark");
+	ar.add<&Armor::getAntiCamouflageAtDay>("getAntiCamouflageAtDay");
+	ar.add<&Armor::getHeatVision>("getHeatVision");
+	ar.add<&Armor::getPersonalLightFriend>("getPersonalLight");
+	ar.add<&Armor::getPersonalLightHostile>("getPersonalLightHostile");
+	ar.add<&Armor::getPersonalLightNeutral>("getPersonalLightNeutral");
 	ar.add<&Armor::getSize>("getSize");
 
 	UnitStats::addGetStatsScript<&Armor::_stats>(ar, "Stats.");
