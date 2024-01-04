@@ -18,6 +18,7 @@
  */
 #include "CraftWeaponsState.h"
 #include <sstream>
+#include "../fmath.h"
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
@@ -28,14 +29,14 @@
 #include "../Interface/TextList.h"
 #include "../Savegame/Craft.h"
 #include "../Savegame/CraftWeapon.h"
+#include "../Menu/ErrorMessageState.h"
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleCraftWeapon.h"
+#include "../Mod/RuleInterface.h"
 #include "../Savegame/ItemContainer.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/SavedGame.h"
 #include "../Ufopaedia/Ufopaedia.h"
-#include "../Menu/ErrorMessageState.h"
-#include "../Mod/RuleInterface.h"
 
 namespace OpenXcom
 {
@@ -165,71 +166,137 @@ void CraftWeaponsState::btnCancelClick(Action *)
  */
 void CraftWeaponsState::lstWeaponsClick(Action *)
 {
-	bool allowChange = true;
-	const RuleCraftWeapon* refWeapon = nullptr;
-	const RuleCraftWeapon* currWeapon = nullptr;
-	CraftWeapon* current = _craft->getWeapons()->at(_weapon);
+	CraftWeapon *current = _craft->getWeapons()->at(_weapon);
+
+	const RuleCraftWeapon* refWeapon = _weapons[_lstWeapons->getSelectedRow()];
+	const RuleCraftWeapon* currWeapon = current ? current->getRules() : nullptr;
+	{
+		int refCapBonus1 = refWeapon ? refWeapon->getBonusStats().soldiers : 0;
+		int currCapBonus1 = currWeapon ? currWeapon->getBonusStats().soldiers : 0;
+		int diff1 = (refCapBonus1 - currCapBonus1);
+		if (diff1)
+		{
+			if ((_craft->getMaxUnitsRaw() - _craft->getSpaceUsed() + diff1) < 0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_CARGO_SPACE"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+	}
+	{
+		int refCapBonus2 = refWeapon ? refWeapon->getBonusStats().vehicles : 0;
+		int currCapBonus2 = currWeapon ? currWeapon->getBonusStats().vehicles : 0;
+		int diff2 = (refCapBonus2 - currCapBonus2);
+		if (diff2)
+		{
+			if ((_craft->getMaxVehiclesAndLargeSoldiersRaw() - _craft->getNumVehiclesAndLargeSoldiers() + diff2) < 0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_HWP_CAPACITY"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+	}
+	{
+		int refCapBonus3 = refWeapon ? refWeapon->getBonusStats().maxItems : 0;
+		int currCapBonus3 = currWeapon ? currWeapon->getBonusStats().maxItems : 0;
+		int diff3 = (refCapBonus3 - currCapBonus3);
+
+		double refCapBonus4 = refWeapon ? refWeapon->getBonusStats().maxStorageSpace : 0.0;
+		double currCapBonus4 = currWeapon ? currWeapon->getBonusStats().maxStorageSpace : 0.0;
+		double diff4 = (refCapBonus4 - currCapBonus4);
+		bool diff4_b = !AreSame(refCapBonus4, currCapBonus4); // floating math
+
+		int totalItems = 0;
+		double totalItemStorageSize = 0.0;
+		if (diff3 || diff4_b)
+		{
+			for (auto& itemType : _game->getMod()->getItemsList())
+			{
+				RuleItem* rule = _game->getMod()->getItem(itemType);
+
+				Unit* isVehicle = rule->getVehicleUnit();
+				int cQty = 0;
+				if (isVehicle)
+				{
+					cQty = _craft->getVehicleCount(itemType);
+				}
+				else
+				{
+					cQty = _craft->getItems()->getItem(itemType);
+					totalItems += cQty;
+					totalItemStorageSize += cQty * rule->getSize();
+				}
+			}
+		}
+		if (diff3)
+		{
+			if ((_craft->getMaxItemsRaw() - totalItems + diff3) < 0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_STORAGE_SPACE_1"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+		if (diff4_b)
+		{
+			if ((_craft->getMaxStorageSpaceRaw() - totalItemStorageSize + diff4) < 0.0)
+			{
+				_game->popState();
+				_game->pushState(new ErrorMessageState(
+					tr("STR_NOT_ENOUGH_STORAGE_SPACE_2"),
+					_palette,
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorMessage")->color,
+					"BACK14.SCR",
+					_game->getMod()->getInterface("craftWeapons")->getElement("errorPalette")->color)
+				);
+				return;
+			}
+		}
+	}
+
+	// Remove current weapon
+	if (current != 0)
+	{
+		_base->getStorageItems()->addItem(current->getRules()->getLauncherItem());
+		_base->getStorageItems()->addItem(current->getRules()->getClipItem(), current->getClipsLoaded());
+		_craft->addCraftStats(-current->getRules()->getBonusStats());
+		// Make sure any extra shield is removed from craft too when the shield capacity decreases (exploit protection)
+		_craft->setShield(_craft->getShield());
+		delete current;
+		_craft->getWeapons()->at(_weapon) = 0;
+	}
+
+	// Equip new weapon
 	if (_weapons[_lstWeapons->getSelectedRow()] != 0)
-		refWeapon = _weapons[_lstWeapons->getSelectedRow()];
-	if (current != 0) currWeapon = current->getRules();
-
 	{
-		int refCapBonus = refWeapon != nullptr ? refWeapon->getBonusStats().soldiers : 0;
-		int currCapBonus = currWeapon != nullptr ? currWeapon->getBonusStats().soldiers : 0;
-		int diff = (refCapBonus - currCapBonus);
-		if (diff) // Unit capacity changed, verify that change is allowed
-		{
-			if ((_craft->getMaxUnits() - _craft->getSpaceUsed() + diff) < 0)
-				allowChange = false;
-		}
-	}
-
-	{
-		int refCapBonus = refWeapon != nullptr ? refWeapon->getBonusStats().vehicles : 0;
-		int currCapBonus = currWeapon != nullptr ? currWeapon->getBonusStats().vehicles : 0;
-		int diff = (refCapBonus - currCapBonus);
-		if (diff) // Vehicles capacity changed, verify that change is allowed
-		{
-			if ((_craft->getMaxVehiclesAndLargeSoldiers() - _craft->getNumLargeUnits() + diff) < 0)
-				allowChange = false;
-		}
-	}
-
-	if (allowChange)
-	{
-		// Remove current weapon
-		if (current != 0)
-		{
-			_base->getStorageItems()->addItem(current->getRules()->getLauncherItem());
-			_base->getStorageItems()->addItem(current->getRules()->getClipItem(), current->getClipsLoaded());
-			_craft->addCraftStats(-current->getRules()->getBonusStats());
-			// Make sure any extra shield is removed from craft too when the shield capacity decreases (exploit protection)
-			_craft->setShield(_craft->getShield());
-			delete current;
-			_craft->getWeapons()->at(_weapon) = 0;
-		}
-
-		// Equip new weapon
-		if (_weapons[_lstWeapons->getSelectedRow()] != 0)
-		{
-			CraftWeapon* sel = new CraftWeapon(_weapons[_lstWeapons->getSelectedRow()], 0);
-			_craft->addCraftStats(sel->getRules()->getBonusStats());
-			_base->getStorageItems()->removeItem(sel->getRules()->getLauncherItem());
-			_craft->getWeapons()->at(_weapon) = sel;
-		}
+		CraftWeapon *sel = new CraftWeapon(_weapons[_lstWeapons->getSelectedRow()], 0);
+		_craft->addCraftStats(sel->getRules()->getBonusStats());
+		_base->getStorageItems()->removeItem(sel->getRules()->getLauncherItem());
+		_craft->getWeapons()->at(_weapon) = sel;
 	}
 
 	_craft->checkup();
 	_game->popState();
-
-	if (!allowChange)
-	{
-		std::string errorMessage = "STR_NO_CARGO_SPACE_FOR_REFIT";
-		RuleInterface* menuInterface = _game->getMod()->getInterface("craftWeapons");
-		_game->pushState(new ErrorMessageState(tr(errorMessage), _palette,
-			menuInterface->getElement("window")->color, "BACK14.SCR",
-			menuInterface->getElement("palette")->color));
-	}
 }
 
 /**

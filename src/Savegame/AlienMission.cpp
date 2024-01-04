@@ -59,21 +59,6 @@ AlienMission::~AlienMission()
 	// Empty by design.
 }
 
-class matchById
-{
-	typedef const AlienBase* argument_type;
-	typedef bool result_type;
-
-public:
-	/// Remember ID.
-	matchById(int id, std::string type) : _id(id), _type(type) { /* Empty by design. */ }
-	/// Match with stored ID.
-	bool operator()(const AlienBase *ab) const { return ab->getId() == _id && ab->getDeployment()->getMarkerName() == _type; }
-private:
-	int _id;
-	std::string _type;
-};
-
 /**
  * Loads the alien mission from a YAML file.
  * @param node The YAML node containing the data.
@@ -100,12 +85,20 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
 			id = base["id"].as<int>();
 			type = base["type"].as<std::string>();
 		}
-		auto found = std::find_if(game.getAlienBases()->begin(), game.getAlienBases()->end(), matchById(id, type));
-		if (found == game.getAlienBases()->end())
+		AlienBase* found = nullptr;
+		for (auto* ab : *game.getAlienBases())
+		{
+			if (ab->getId() == id && ab->getDeployment()->getMarkerName() == type)
+			{
+				found = ab;
+				break;
+			}
+		}
+		if (!found)
 		{
 			throw Exception("Corrupted save: Invalid base for mission.");
 		}
-		_base = *found;
+		_base = found;
 	}
 	_missionSiteZoneArea = node["missionSiteZone"].as<int>(_missionSiteZoneArea);
 
@@ -198,7 +191,7 @@ bool AlienMission::isOver() const
 void AlienMission::think(Game &engine, const Globe &globe)
 {
 	// if interrupted, don't generate any more UFOs or anything else
-	if (_interrupted || _multiUfoRetaliationInProgress)
+	if (_interrupted || (_multiUfoRetaliationInProgress && !_rule.isMultiUfoRetaliationExtra()))
 	{
 		return;
 	}
@@ -443,6 +436,10 @@ Base* AlienMission::selectXcomBase(SavedGame& game, const RuleRegion& regionRule
 				if (xb->getRetaliationTarget())
 				{
 					validxcombases.push_back(xb);
+					if (_rule.skipScoutingPhase() || _rule.isMultiUfoRetaliation())
+					{
+						continue; // non-vanilla: let's consider all, for fun
+					}
 					break; // vanilla: the first is enough
 				}
 			}
@@ -522,11 +519,25 @@ Ufo *AlienMission::spawnUfo(SavedGame &game, const Mod &mod, const Globe &globe,
 	if (_rule.getObjective() == OBJECTIVE_RETALIATION || _rule.getObjective() == OBJECTIVE_INSTANT_RETALIATION)
 	{
 		const RuleRegion &regionRules = *mod.getRegion(_region, true);
+
+		// skip the scouting phase of a retaliation mission
+		if (_rule.isMultiUfoRetaliationExtra() && _rule.skipScoutingPhase() && _rule.getObjective() == OBJECTIVE_RETALIATION)
+		{
+			for (auto* xbase : *game.getBases())
+			{
+				if (regionRules.insideRegion(xbase->getLongitude(), xbase->getLatitude()))
+				{
+					xbase->setRetaliationTarget(true);
+					// break; // mark all xcom bases in the region
+				}
+			}
+		}
+
 		Base* xcombase = selectXcomBase(game, regionRules);
 		if (xcombase)
 		{
 			// Spawn a battleship straight for the XCOM base.
-			const RuleUfo &battleshipRule = *mod.getUfo(_rule.getSpawnUfo(), true);
+			const RuleUfo &battleshipRule = _rule.getSpawnUfo().empty() ? *ufoRule : *mod.getUfo(_rule.getSpawnUfo(), true);
 			const UfoTrajectory &assaultTrajectory = *mod.getUfoTrajectory(UfoTrajectory::RETALIATION_ASSAULT_RUN, true);
 			Ufo *ufo = new Ufo(&battleshipRule, game.getId("STR_UFO_UNIQUE"));
 			ufo->setMissionInfo(this, &assaultTrajectory);
@@ -728,6 +739,20 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 		_spawnCountdown = initialCount;
 	}
 
+	// skip the scouting phase of a retaliation mission
+	if (_rule.skipScoutingPhase() && _rule.getObjective() == OBJECTIVE_RETALIATION)
+	{
+		for (auto* xbase : *engine.getSavedGame()->getBases())
+		{
+			RuleRegion* region = engine.getMod()->getRegion(_region, false);
+			if (region && region->insideRegion(xbase->getLongitude(), xbase->getLatitude()))
+			{
+				xbase->setRetaliationTarget(true);
+				// break; // mark all xcom bases in the region
+			}
+		}
+	}
+
 	// Earth-based alien operations
 	if (_rule.getOperationType() != AMOT_SPACE && !_base)
 	{
@@ -824,23 +849,6 @@ void AlienMission::start(Game &engine, const Globe &globe, size_t initialCount)
 	}
 }
 
-/** @brief Match a base from it's coordinates.
- * This function object uses coordinates to match a base.
- */
-class MatchBaseCoordinates
-{
-	typedef const Base* argument_type;
-	typedef bool result_type;
-
-public:
-	/// Remember the query coordinates.
-	MatchBaseCoordinates(double lon, double lat) : _lon(lon), _lat(lat) { /* Empty by design. */ }
-	/// Match with base's coordinates.
-	bool operator()(const Base *base) const { return AreSame(base->getLongitude(), _lon) && AreSame(base->getLatitude(), _lat); }
-private:
-	double _lon, _lat;
-};
-
 /**
  * This function is called when one of the mission's UFOs arrives at it's current destination.
  * It takes care of sending the UFO to the next waypoint, landing UFOs and
@@ -930,14 +938,22 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 			// Ignore what the trajectory might say, this is a base assault.
 			// Remove UFO, replace with Base defense.
 			ufo.setDetected(false);
-			auto found = std::find_if (game.getBases()->begin(), game.getBases()->end(), MatchBaseCoordinates(ufo.getLongitude(), ufo.getLatitude()));
-			if (found == game.getBases()->end())
+			Base* found = nullptr;
+			for (auto* xbase : *game.getBases())
+			{
+				if (AreSame(xbase->getLongitude(), ufo.getLongitude()) && AreSame(xbase->getLatitude(), ufo.getLatitude()))
+				{
+					found = xbase;
+					break;
+				}
+			}
+			if (!found)
 			{
 				ufo.setStatus(Ufo::DESTROYED);
 				// Only spawn mission if the base is still there.
 				return;
 			}
-			ufo.setDestination(*found);
+			ufo.setDestination(found);
 		}
 		else
 		{

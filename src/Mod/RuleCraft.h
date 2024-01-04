@@ -38,7 +38,13 @@ class ScriptParserBase;
  */
 struct RuleCraftStats
 {
-	int fuelMax, damageMax, speedMax, accel, radarRange, radarChance, sightRange, hitBonus, avoidBonus, powerBonus, armor, shieldCapacity, shieldRecharge, shieldRechargeInGeoscape, shieldBleedThrough, soldiers, vehicles;
+	int fuelMax, damageMax, speedMax, accel;
+	int radarRange, radarChance, sightRange;
+	int hitBonus, avoidBonus, powerBonus, armor;
+	int shieldCapacity, shieldRecharge, shieldRechargeInGeoscape, shieldBleedThrough;
+	int soldiers, vehicles;
+	int maxItems;
+	double maxStorageSpace;
 
 	/// Default constructor.
 	RuleCraftStats() :
@@ -46,7 +52,8 @@ struct RuleCraftStats
 		radarRange(0), radarChance(0), sightRange(0),
 		hitBonus(0), avoidBonus(0), powerBonus(0), armor(0),
 		shieldCapacity(0), shieldRecharge(0), shieldRechargeInGeoscape(0), shieldBleedThrough(0),
-		soldiers(0), vehicles(0)
+		soldiers(0), vehicles(0),
+		maxItems(0), maxStorageSpace(0.0)
 	{
 
 	}
@@ -70,6 +77,8 @@ struct RuleCraftStats
 		shieldBleedThrough += r.shieldBleedThrough;
 		soldiers += r.soldiers;
 		vehicles += r.vehicles;
+		maxItems += r.maxItems;
+		maxStorageSpace += r.maxStorageSpace;
 		return *this;
 	}
 	/// Subtract different stats.
@@ -92,6 +101,8 @@ struct RuleCraftStats
 		shieldBleedThrough -= r.shieldBleedThrough;
 		soldiers -= r.soldiers;
 		vehicles -= r.vehicles;
+		maxItems -= r.maxItems;
+		maxStorageSpace -= r.maxStorageSpace;
 		return *this;
 	}
 	/// Gets negative values of stats.
@@ -121,6 +132,8 @@ struct RuleCraftStats
 		shieldBleedThrough = node["shieldBleedThrough"].as<int>(shieldBleedThrough);
 		soldiers = node["soldiers"].as<int>(soldiers);
 		vehicles = node["vehicles"].as<int>(vehicles);
+		maxItems = node["maxItems"].as<int>(maxItems);
+		maxStorageSpace = node["maxStorageSpace"].as<double>(maxStorageSpace);
 	}
 
 	template<auto Stat, typename TBind>
@@ -143,6 +156,8 @@ struct RuleCraftStats
 		b.template addField<Stat, &RuleCraftStats::shieldBleedThrough>(prefix + "getShieldBleedThrough");
 		b.template addField<Stat, &RuleCraftStats::soldiers>(prefix + "getMaxUnits");
 		b.template addField<Stat, &RuleCraftStats::vehicles>(prefix + "getMaxVehiclesAndLargeSoldiers");
+		b.template addField<Stat, &RuleCraftStats::maxItems>(prefix + "getMaxItems");
+		//b.template addField<Stat, &RuleCraftStats::maxStorageSpace>(prefix + "getMaxStorageSpace");
 	}
 };
 
@@ -177,9 +192,9 @@ private:
 	std::string _requiresBuyCountry;
 	int _sprite, _marker;
 	std::vector<int> _skinSprites;
-	int _weapons, _pilots;
+	int _weapons, _maxUnitsLimit, _pilots, _maxVehiclesAndLargeSoldiersLimit;
 	int _maxSmallSoldiers, _maxLargeSoldiers, _maxSmallVehicles, _maxLargeVehicles;
-	int _maxSmallUnits, _maxLargeUnits, _maxSoldiers, _maxVehicles, _maxUnitsLimit;
+	int _maxSmallUnits, _maxLargeUnits, _maxSoldiers, _maxVehicles;
 	int _monthlyBuyLimit;
 	int _costBuy, _costRent, _costSell;
 	char _weaponTypes[WeaponMax][WeaponTypeMax];
@@ -190,8 +205,8 @@ private:
 	RuleTerrain *_battlescapeTerrainData;
 	int _maxSkinIndex;
 	bool _keepCraftAfterFailedMission, _allowLanding, _spacecraft, _notifyWhenRefueled, _autoPatrol, _undetectable;
-	int _listOrder, _maxItems, _maxAltitude;
-	double _maxStorageSpace;
+	int _listOrder, _maxAltitude;
+	std::string _defaultAltitude;
 	RuleCraftDeployment _deployment;
 	std::vector<int> _craftInventoryTile;
 	RuleCraftStats _stats;
@@ -240,12 +255,19 @@ public:
 	/// Gets the craft's weapon capacity.
 	int getWeapons() const;
 
+	/// Checks if this craft is supported in the New Battle mode (and Preview mode).
+	bool isForNewBattle() const;
+
 	/// Gets the craft's maximum unit capacity (soldiers and vehicles, small and large).
 	int getMaxUnits() const;
+	/// Gets the craft's maximum unit capacity (soldiers and vehicles, small and large) *including* any additional weapons module bonuses.
+	int getMaxUnitsLimit() const { return _maxUnitsLimit; }
 	/// Gets the craft's pilot capacity/requirement.
 	int getPilots() const;
 	/// Gets the craft's maximum vehicle capacity (incl. 2x2 soldiers).
 	int getMaxVehiclesAndLargeSoldiers() const;
+	/// Gets the craft's maximum vehicle capacity (incl. 2x2 soldiers) *including* any additional weapons module bonuses.
+	int getMaxVehiclesAndLargeSoldiersLimit() const { return _maxVehiclesAndLargeSoldiersLimit; }
 	/// Gets the craft's maximum supported number of small (size=1) soldiers.
 	int getMaxSmallSoldiers() const { return _maxSmallSoldiers; }
 	/// Gets the craft's maximum supported number of large (size=2) soldiers.
@@ -262,9 +284,6 @@ public:
 	int getMaxSoldiers() const { return _maxSoldiers; }
 	/// Gets the craft's maximum supported number of vehicles (small + large).
 	int getMaxVehicles() const { return _maxVehicles; }
-	/// Gets the craft's unit capacity limit (soldiers and vehicles, small and large).
-	int getMaxUnitsLimit() const { return _maxUnitsLimit; }
-
 	/// Gets the craft's monthly buy limit.
 	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
 	/// Gets the craft's cost.
@@ -326,6 +345,8 @@ public:
 	const RuleCraftStats& getStats() const;
 	/// Gets how high this craft can go.
 	int getMaxAltitude() const;
+	/// Gets the craft's default display altitude.
+	const std::string& getDefaultDisplayAltitude() const;
 	/// Gets if this craft only fights on water.
 	bool isWaterOnly() const;
 	/// Get how many shield points are recharged per hour at base

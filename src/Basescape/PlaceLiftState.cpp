@@ -108,7 +108,7 @@ PlaceLiftState::PlaceLiftState(Base *base, Globe *globe, bool first) : _base(bas
 		_txtHeader->setVisible(false);
 		_window->setVisible(false);
 
-		_view->setSelectable(_lift->getSize());
+		_view->setSelectable(_lift->getSizeX(), _lift->getSizeY());
 		_view->onMouseClick((ActionHandler)&PlaceLiftState::viewClick);
 	}
 
@@ -173,7 +173,7 @@ void PlaceLiftState::lstAccessLiftsClick(Action *action)
 		_txtHeader->setVisible(false);
 		_window->setVisible(false);
 
-		_view->setSelectable(_lift->getSize());
+		_view->setSelectable(_lift->getSizeX(), _lift->getSizeY());
 		_view->onMouseClick((ActionHandler)&PlaceLiftState::viewClick);
 	}
 }

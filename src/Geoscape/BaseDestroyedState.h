@@ -27,6 +27,7 @@ class Window;
 class Text;
 class TextButton;
 class TextList;
+class Ufo;
 
 /**
  * Screen that allows the player
@@ -43,7 +44,7 @@ private:
 	bool _missiles, _partialDestruction;
 public:
 	/// Creates the Select Destination state.
-	BaseDestroyedState(Base *base, bool missiles, bool partialDestruction);
+	BaseDestroyedState(Base *base, const Ufo* ufo, bool missiles, bool partialDestruction);
 	/// Cleans up the Select Destination state.
 	~BaseDestroyedState();
 	/// Handler for clicking the Cydonia mission button.

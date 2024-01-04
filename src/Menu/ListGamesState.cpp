@@ -41,10 +41,6 @@ namespace OpenXcom
 
 struct compareSaveName
 {
-	typedef SaveInfo& first_argument_type;
-	typedef SaveInfo& second_argument_type;
-	typedef bool result_type;
-
 	bool _reverse;
 
 	compareSaveName(bool reverse) : _reverse(reverse) {}
@@ -64,10 +60,6 @@ struct compareSaveName
 
 struct compareSaveTimestamp
 {
-	typedef SaveInfo& first_argument_type;
-	typedef SaveInfo& second_argument_type;
-	typedef bool result_type;
-
 	bool _reverse;
 
 	compareSaveTimestamp(bool reverse) : _reverse(reverse) {}

@@ -60,6 +60,7 @@ void RuleResearch::load(const YAML::Node &node, Mod* mod, const ModScript& parse
 	mod->loadBaseFunction(_name, _requiresBaseFunc, node["requiresBaseFunc"]);
 	_sequentialGetOneFree = node["sequentialGetOneFree"].as<bool>(_sequentialGetOneFree);
 	mod->loadNamesToNames(_name, _getOneFreeProtectedName, node["getOneFreeProtected"]);
+	mod->loadNameNull(_name, _neededItemName, node["neededItem"]);
 	_needItem = node["needItem"].as<bool>(_needItem);
 	_destroyItem = node["destroyItem"].as<bool>(_destroyItem);
 	_unlockFinalMission = node["unlockFinalMission"].as<bool>(_unlockFinalMission);
@@ -80,6 +81,21 @@ void RuleResearch::afterLoad(const Mod* mod)
 	if (_lookup == _name)
 	{
 		_lookup = "";
+	}
+
+	if (_needItem)
+	{
+		// FIXME: this would break all mods unfortunately, maybe one day...
+		//mod->linkRule(_neededItem, _neededItemName.empty() ? _name : _neededItemName);
+
+		if (_neededItemName.empty())
+		{
+			_neededItem = mod->getItem(_name, false); // false, because even vanilla ruleset is a mess
+		}
+		else
+		{
+			_neededItem = mod->getItem(_neededItemName, true);
+		}
 	}
 
 	_dependencies = mod->getResearch(_dependenciesName);

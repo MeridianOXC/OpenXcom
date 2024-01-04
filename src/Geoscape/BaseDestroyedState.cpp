@@ -39,9 +39,16 @@
 namespace OpenXcom
 {
 
-BaseDestroyedState::BaseDestroyedState(Base *base, bool missiles, bool partialDestruction) : _base(base), _missiles(missiles), _partialDestruction(partialDestruction)
+BaseDestroyedState::BaseDestroyedState(Base *base, const Ufo* ufo, bool missiles, bool partialDestruction) :
+	_base(base), _missiles(missiles), _partialDestruction(partialDestruction)
 {
 	_screen = false;
+
+	int soundId = ufo->getRules()->getHitSound();
+	if (soundId != Mod::NO_SOUND)
+	{
+		_customSound = _game->getMod()->getSound("GEO.CAT", soundId);
+	}
 
 	// Create objects
 	_window = new Window(this, 256, 160, 32, 20);
@@ -60,7 +67,14 @@ BaseDestroyedState::BaseDestroyedState(Base *base, bool missiles, bool partialDe
 	centerAllSurfaces();
 
 	// Set up objects
-	setWindowBackground(_window, "baseDestroyed");
+	if (ufo->getRules()->getHitImage().empty())
+	{
+		setWindowBackground(_window, "baseDestroyed");
+	}
+	else
+	{
+		setWindowBackgroundImage(_window, ufo->getRules()->getHitImage());
+	}
 
 	_btnOk->setText(tr("STR_OK"));
 	_btnOk->onMouseClick((ActionHandler)&BaseDestroyedState::btnOkClick);

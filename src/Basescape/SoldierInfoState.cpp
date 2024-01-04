@@ -586,6 +586,27 @@ void SoldierInfoState::init()
 }
 
 /**
+ * Takes care of any events from the core game engine.
+ * @param action Pointer to an action.
+ */
+void SoldierInfoState::handle(Action* action)
+{
+	State::handle(action);
+
+	if (Options::oxceThumbButtons && action->getDetails()->type == SDL_MOUSEBUTTONDOWN)
+	{
+		if (action->getDetails()->button.button == SDL_BUTTON_X1)
+		{
+			btnNextClick(action);
+		}
+		else if (action->getDetails()->button.button == SDL_BUTTON_X2)
+		{
+			btnPrevClick(action);
+		}
+	}
+}
+
+/**
  * Disables the soldier input.
  * @param action Pointer to an action.
  */

@@ -23,6 +23,7 @@ namespace OpenXcom
 {
 	class Game;
 	class Surface;
+	class NumberText;
 	class Text;
 	class TextList;
 	class ArticleDefinitionItem;
@@ -40,6 +41,7 @@ namespace OpenXcom
 
 	protected:
 		Surface *_image;
+		NumberText *_txtWeaponClipSize;
 		Text *_txtTitle;
 		Text *_txtWeight;
 		Text *_txtInfo;
@@ -54,6 +56,7 @@ namespace OpenXcom
 		Text *_txtAmmoType[3];
 		Text *_txtAmmoDamage[3];
 		Surface *_imageAmmo[3];
+		NumberText *_txtAmmoClipSize[3];
 		Text * _txtArrows;
 		Uint8 _buttonColor, _textColor, _textColor2, _listColor1, _listColor2, _ammoColor, _arrowColor;
 		std::string addRuleStatBonus(const RuleStatBonus &value);

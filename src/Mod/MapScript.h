@@ -243,7 +243,7 @@ public:
 	/// Gets the vertical levels for a command
 	const std::vector<VerticalLevel> &getVerticalLevels() const;
 	/// Sets the vertical levels for a command from a base facility's vertical levels
-	void setVerticalLevels(const std::vector<VerticalLevel> &verticalLevels, int size);
+	void setVerticalLevels(const std::vector<VerticalLevel> &verticalLevels, int sizeX, int sizeY);
 };
 
 }

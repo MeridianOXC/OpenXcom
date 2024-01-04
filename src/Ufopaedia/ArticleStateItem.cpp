@@ -28,6 +28,7 @@
 #include "../Engine/Surface.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Unicode.h"
+#include "../Interface/NumberText.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
@@ -155,7 +156,7 @@ namespace OpenXcom
 
 		// add other elements
 		add(_txtTitle);
-		add(_txtWeight);
+		add(_txtWeight, "weightText", "articleItem", _bg);
 
 		// Set up objects
 		_game->getMod()->getSurface("BACK08.SCR")->blitNShade(_bg, 0, 0);
@@ -175,10 +176,17 @@ namespace OpenXcom
 
 		// IMAGE
 		_image = new Surface(32, 48, 157, 5);
-		add(_image);
+		add(_image, "image", "articleItem", _bg);
 
 		item->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _image);
 
+		_txtWeaponClipSize = new NumberText(30, 5, 157, 5);
+		add(_txtWeaponClipSize, "image", "articleItem", _bg);
+
+		_txtWeaponClipSize->setX(_txtWeaponClipSize->getX() + 2);
+		_txtWeaponClipSize->setColor(_textColor);
+		_txtWeaponClipSize->setValue(item->getClipSize());
+		_txtWeaponClipSize->setVisible(Options::oxcePediaShowClipSize && item->getClipSize() > 0);
 
 		int ammoSlot = defs->getAmmoSlotForPage(_state->current_page);
 		int ammoSlotPrevUsage = defs->getAmmoSlotPrevUsageForPage(_state->current_page);
@@ -327,6 +335,11 @@ namespace OpenXcom
 
 			_imageAmmo[i] = new Surface(32, 48, 280, 16 + i*49);
 			add(_imageAmmo[i]);
+
+			_txtAmmoClipSize[i] = new NumberText(30, 5, 2 + 280, 2 + 16 + i*49);
+			add(_txtAmmoClipSize[i]);
+			_txtAmmoClipSize[i]->setColor(_textColor);
+			_txtAmmoClipSize[i]->setVisible(false);
 		}
 
 		auto addAmmoDamagePower = [&](int pos, const RuleItem *rule)
@@ -382,6 +395,8 @@ namespace OpenXcom
 							addAmmoDamagePower(currShow, type);
 
 							type->drawHandSprite(_game->getMod()->getSurfaceSet("BIGOBS.PCK"), _imageAmmo[currShow]);
+							_txtAmmoClipSize[currShow]->setValue(type->getClipSize());
+							_txtAmmoClipSize[currShow]->setVisible(Options::oxcePediaShowClipSize && type->getClipSize() > 0);
 
 							++currShow;
 							if (currShow == maxShow)

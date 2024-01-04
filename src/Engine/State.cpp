@@ -127,7 +127,17 @@ void State::setInterface(const std::string& category, bool alterPal, SavedBattle
 void State::setWindowBackground(Window *window, const std::string &s)
 {
 	auto& bgImageName = _game->getMod()->getInterface(s)->getBackgroundImage();
-	auto* bgImage = _game->getMod()->getSurface(bgImageName);
+	setWindowBackgroundImage(window, bgImageName);
+}
+
+/**
+ * Set window background by image name (instead of by interface name).
+ * @param window Window handle.
+ * @param s ID of the image.
+ */
+void State::setWindowBackgroundImage(Window* window, const std::string& bgImageName)
+{
+	const auto* bgImage = _game->getMod()->getSurface(bgImageName);
 	window->setBackground(bgImage);
 }
 

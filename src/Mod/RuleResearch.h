@@ -54,6 +54,8 @@ class RuleResearch
 	bool _sequentialGetOneFree;
 	std::vector<std::pair<std::string, std::vector<std::string> > > _getOneFreeProtectedName;
 	std::vector<std::pair<const RuleResearch*, std::vector<const RuleResearch*> > > _getOneFreeProtected;
+	std::string _neededItemName;
+	const RuleItem* _neededItem = nullptr;
 	bool _needItem, _destroyItem, _unlockFinalMission;
 	int _listOrder;
 
@@ -67,6 +69,7 @@ public:
 	static const int RESEARCH_STATUS_NEW = 0;
 	static const int RESEARCH_STATUS_NORMAL = 1;
 	static const int RESEARCH_STATUS_DISABLED = 2;
+	static const int RESEARCH_STATUS_HIDDEN = 3;
 	RuleResearch(const std::string &name, int listOrder);
 
 	/// Loads the research from YAML.
@@ -82,6 +85,8 @@ public:
 	const std::vector<const RuleResearch*> &getDependencies() const;
 	/// Checks if this ResearchProject gives free topics in sequential order (or random order).
 	bool sequentialGetOneFree() const;
+	/// Gets the Item needed for this research.
+	const RuleItem* getNeededItem() const { return _neededItem; }
 	/// Checks if this ResearchProject needs a corresponding Item to be researched.
 	bool needItem() const;
 	/// Checks if this ResearchProject consumes the corresponding Item when research completes.

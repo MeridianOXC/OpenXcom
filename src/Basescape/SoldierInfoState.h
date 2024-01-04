@@ -62,6 +62,8 @@ public:
 	~SoldierInfoState();
 	/// Updates the soldier info.
 	void init() override;
+	/// Handles keypresses.
+	void handle(Action* action) override;
 	/// Set the soldier Id.
 	void setSoldierId(size_t soldier);
 	/// Handler for pressing on the Name edit.

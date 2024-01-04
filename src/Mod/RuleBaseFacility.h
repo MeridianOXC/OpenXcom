@@ -54,7 +54,8 @@ private:
 	int _fakeUnderwater;
 	bool _lift, _hyper, _mind, _grav;
 	int _mindPower;
-	int _size, _buildCost, _refundValue, _buildTime, _monthlyCost;
+	int _sizeX, _sizeY;
+	int _buildCost, _refundValue, _buildTime, _monthlyCost;
 	std::map<std::string, std::pair<int, int> > _buildCostItems;
 	int _storage, _personnel, _aliens, _crafts, _labs, _workshops, _psiLabs;
 	bool _spriteEnabled;
@@ -109,10 +110,15 @@ public:
 	int getSpriteFacility() const;
 	/// Retain sprite over shape behavior for bigger facility?
 	bool getSpriteEnabled() const;
+	bool getSpriteEnabledRaw() const { return _spriteEnabled; }
 	/// Should there be connectors leading to this facility?
 	bool connectorsDisabled() const { return _connectorsDisabled; }
+	/// Gets if the facility's size is 1x1.
+	bool isSmall() const;
 	/// Gets the facility's size.
-	int getSize() const;
+	int getSizeX() const { return _sizeX; }
+	/// Gets the facility's size.
+	int getSizeY() const { return _sizeY; }
 	/// Gets the facility's missile attraction.
 	int getMissileAttraction() const { return _missileAttraction; }
 	/// Is this facility allowed for a given type of base?

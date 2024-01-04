@@ -1,5 +1,7 @@
 en-GB:
 #=================== Basescape ===================
+#CraftWeaponsState.cpp
+  STR_NOT_ENOUGH_HWP_CAPACITY: "NOT ENOUGH HWP CAPACITY AVAILABLE!{SMALLLINE}Use a different module or reduce the number of assigned HWPs."
 #SoldierAvatarState.cpp
   STR_AVATAR_NAME_1: "#01 Male, Blonde"
   STR_AVATAR_NAME_2: "#02 Male, Brown hair"

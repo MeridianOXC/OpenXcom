@@ -179,6 +179,9 @@ void NewGameState::btnOkClick(Action *)
 	auto* base = _game->getSavedGame()->getBases()->back();
 	if (base->getMarker() != -1)
 	{
+		// location known already
+		base->calculateServices(save);
+
 		// center and rotate 35 degrees down (to see the base location while typoing its name)
 		gs->getGlobe()->center(base->getLongitude(), base->getLatitude() + 0.61);
 

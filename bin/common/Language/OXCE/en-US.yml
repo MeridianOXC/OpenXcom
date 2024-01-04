@@ -57,6 +57,10 @@ en-US:
   STR_CRAFT_DEPLOYMENT_PREVIEW_BRIEFING: "This feature allows you to preview and customize the deployment of your units at the beginning of a battle. You have unlimited movement. Press and hold 'Alt' to highlight valid unit positions. Click on the 'Abort Mission' icon to save a custom deployment. Click on the 'End Turn' icon to exit the preview.{NEWLINE}Note that adding any new soldiers or vehicles to the craft automatically invalidates the saved custom deployment. Presence of a custom deployment is indicated by an asterisk on the 'Preview' button."
   STR_CRAFT_DEPLOYMENT_PREVIEW_BRIEFING_DUMMY: "This feature allows you to preview and modify the deployment table of this craft type. Any changes will apply to all your current craft and also to any craft you buy or manufacture later in the campaign. You start with the maximum number of soldiers. Each soldier represents one row in the deployment table. Soldier names correspond to row numbers. To provide space for a 2x2 unit, place 4 soldiers in a 2x2 square. If space is not provided, the 2x2 unit will be missing in a real battle."
   STR_BASE_DEFENSE_BRIEFING_PREVIEW: "This feature allows you to preview your base.{NEWLINE}Have fun!{NEWLINE}{NEWLINE}Click on the 'End Turn' icon to exit the preview."
+#CraftWeaponsState.cpp
+  STR_NOT_ENOUGH_CARGO_SPACE: "NOT ENOUGH CARGO SPACE AVAILABLE!{SMALLLINE}Use a different module or reduce the assigned crew."
+  STR_NOT_ENOUGH_STORAGE_SPACE_1: "NOT ENOUGH STORAGE SPACE AVAILABLE!{SMALLLINE}Too many items! Use a different module or reduce the assigned equipment."
+  STR_NOT_ENOUGH_STORAGE_SPACE_2: "NOT ENOUGH STORAGE SPACE AVAILABLE!{SMALLLINE}The items take up too much space! Use a different module or reduce the size of assigned equipment."
 #DismantleFacilityState.cpp
   STR_REFUND_VALUE: "Sales value> {ALT}{0}"
 #GlobalManufactureState.cpp
@@ -403,6 +407,7 @@ en-US:
   STR_EXTENDED_LINKS: "Links"
 #GeoscapeCraftState.cpp
   STR_AUTO_PATROL: "AUTO-PATROL"
+  STR_ETA: "ETA>{ALT}{0}"
 #GeoscapeState.cpp
   STR_UFO_STARTED_HUNTING: "{0} is on an intercept course with {1}"
   STR_CRAFT_IS_READY: "{0} at {1} is ready."

@@ -32,7 +32,7 @@ RuleSoldierTransformation::RuleSoldierTransformation(const std::string &name, in
 	_allowsDeadSoldiers(false), _allowsLiveSoldiers(false), _allowsWoundedSoldiers(false),
 	_listOrder(listOrder), _cost(0), _transferTime(0), _recoveryTime(0), _minRank(0), _includeBonusesForMinStats(false),
 	_showMinMax(false), _lowerBoundAtMinStats(true), _upperBoundAtMaxStats(false), _upperBoundAtStatCaps(false), _upperBoundType(0),
-	_reset(false)
+	_reset(false), _resetRank(false)
 {
 }
 
@@ -88,6 +88,7 @@ void RuleSoldierTransformation::load(const YAML::Node &node, Mod* mod)
 	_upperBoundAtStatCaps = node["upperBoundAtStatCaps"].as<bool >(_upperBoundAtStatCaps);
 	_upperBoundType = node["upperBoundType"].as<int>(_upperBoundType);
 	_reset = node["reset"].as<bool >(_reset);
+	_resetRank = node["resetRank"].as<bool >(_resetRank);
 	_soldierBonusType = node["soldierBonusType"].as<std::string >(_soldierBonusType);
 }
 
@@ -358,6 +359,15 @@ bool RuleSoldierTransformation::isSoftLimit(bool isSameSoldierType) const
 bool RuleSoldierTransformation::getReset() const
 {
 	return _reset;
+}
+
+/**
+ * Gets whether or not this project should reset the rank of the destination soldier to rookie
+ * @return Reset the rank to rookie?
+ */
+bool RuleSoldierTransformation::getResetRank() const
+{
+	return _resetRank;
 }
 
 /**

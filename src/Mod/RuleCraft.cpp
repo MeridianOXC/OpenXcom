@@ -34,13 +34,13 @@ const std::string RuleCraft::DEFAULT_CRAFT_DEPLOYMENT_PREVIEW = "STR_CRAFT_DEPLO
  * @param type String defining the type.
  */
 RuleCraft::RuleCraft(const std::string &type, int listOrder) :
-	_type(type), _sprite(-1), _marker(-1), _weapons(0), _pilots(0),
+	_type(type), _sprite(-1), _marker(-1), _weapons(0), _maxUnitsLimit(-1), _pilots(0), _maxVehiclesAndLargeSoldiersLimit(-1),
 	_maxSmallSoldiers(-1), _maxLargeSoldiers(-1), _maxSmallVehicles(-1), _maxLargeVehicles(-1),
-	_maxSmallUnits(-1), _maxLargeUnits(-1), _maxSoldiers(-1), _maxVehicles(-1), _maxUnitsLimit(-1),
+	_maxSmallUnits(-1), _maxLargeUnits(-1), _maxSoldiers(-1), _maxVehicles(-1),
 	_monthlyBuyLimit(0), _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
 	_transferTime(24), _score(0), _battlescapeTerrainData(0), _maxSkinIndex(0),
 	_keepCraftAfterFailedMission(false), _allowLanding(true), _spacecraft(false), _notifyWhenRefueled(false), _autoPatrol(false), _undetectable(false),
-	_listOrder(listOrder), _maxItems(0), _maxAltitude(-1), _maxStorageSpace(0.0), _stats(),
+	_listOrder(listOrder), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _stats(),
 	_shieldRechargeAtBase(1000),
 	_mapVisible(true), _forceShowInMonthlyCosts(false), _useAllStartTiles(false)
 {
@@ -52,6 +52,8 @@ RuleCraft::RuleCraft(const std::string &type, int listOrder) :
 	_stats.radarRange = 672;
 	_stats.radarChance = 100;
 	_stats.sightRange = 1696;
+	_stats.maxItems = 999999;
+	_stats.maxStorageSpace = 99999.0;
 	_weaponStrings[0] = "STR_WEAPON_ONE";
 	_weaponStrings[1] = "STR_WEAPON_TWO";
 }
@@ -109,7 +111,9 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 		_marker = mod->getOffset(node["marker"].as<int>(_marker), 8);
 	}
 	_weapons = node["weapons"].as<int>(_weapons);
+	_maxUnitsLimit = node["maxUnitsLimit"].as<int>(_maxUnitsLimit);
 	_pilots = node["pilots"].as<int>(_pilots);
+	_maxVehiclesAndLargeSoldiersLimit = node["maxHWPUnitsLimit"].as<int>(_maxVehiclesAndLargeSoldiersLimit);
 	_maxSmallSoldiers = node["maxSmallSoldiers"].as<int>(_maxSmallSoldiers);
 	_maxLargeSoldiers = node["maxLargeSoldiers"].as<int>(_maxLargeSoldiers);
 	_maxSmallVehicles = node["maxSmallVehicles"].as<int>(_maxSmallVehicles);
@@ -118,7 +122,6 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_maxLargeUnits = node["maxLargeUnits"].as<int>(_maxLargeUnits);
 	_maxSoldiers = node["maxSoldiers"].as<int>(_maxSoldiers);
 	_maxVehicles = node["maxVehicles"].as<int>(_maxVehicles);
-	_maxUnitsLimit = node["maxUnitsLimit"].as<int>(_maxUnitsLimit);
 	_monthlyBuyLimit = node["monthlyBuyLimit"].as<int>(_monthlyBuyLimit);
 	_costBuy = node["costBuy"].as<int>(_costBuy);
 	_costRent = node["costRent"].as<int>(_costRent);
@@ -148,8 +151,7 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_undetectable = node["undetectable"].as<bool>(_undetectable);
 	_listOrder = node["listOrder"].as<int>(_listOrder);
 	_maxAltitude = node["maxAltitude"].as<int>(_maxAltitude);
-	_maxItems = node["maxItems"].as<int>(_maxItems);
-	_maxStorageSpace = node["maxStorageSpace"].as<double>(_maxStorageSpace);
+	_defaultAltitude = node["defaultAltitude"].as<std::string>(_defaultAltitude);
 
 	if (const YAML::Node &types = node["weaponTypes"])
 	{
@@ -203,15 +205,22 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 void RuleCraft::afterLoad(const Mod* mod)
 {
 	// No turning soldiers into antimatter
-	if (_stats.soldiers < 0)
-	{
-		_stats.soldiers = 0;
-	}
-	// Set 'maxUnitsLimit' to 'soldiers' if not defined
-	if (_stats.soldiers >= 0 && _maxUnitsLimit < 0)
+	mod->checkForSoftError(_stats.soldiers < 0, _type, "Default unit capacity cannot be negative.", LOG_ERROR);
+	mod->checkForSoftError(_stats.vehicles < 0, _type, "Default HWP capacity cannot be negative.", LOG_ERROR);
+
+	// Backwards-compatibility
+	if (_maxUnitsLimit < 0)
 	{
 		_maxUnitsLimit = _stats.soldiers;
 	}
+	if (_maxVehiclesAndLargeSoldiersLimit < 0)
+	{
+		_maxVehiclesAndLargeSoldiersLimit = _stats.vehicles;
+	}
+
+	// Sanity checks
+	mod->checkForSoftError(_maxUnitsLimit < _stats.soldiers, _type, "Maximum unit capacity is smaller than the default unit capacity.", LOG_ERROR);
+	mod->checkForSoftError(_maxVehiclesAndLargeSoldiersLimit < _stats.vehicles, _type, "Maximum HWP capacity is smaller than the default HWP capacity.", LOG_ERROR);
 }
 
 /**
@@ -308,6 +317,14 @@ int RuleCraft::getAcceleration() const
 int RuleCraft::getWeapons() const
 {
 	return _weapons;
+}
+
+/**
+ * Checks if this craft is supported in the New Battle mode (and Preview mode).
+ */
+bool RuleCraft::isForNewBattle() const
+{
+	return getBattlescapeTerrainData() && getMaxUnitsLimit() > 0 && getAllowLanding();
 }
 
 /**
@@ -535,7 +552,7 @@ const std::vector<int> &RuleCraft::getCraftInventoryTile() const
  */
 int RuleCraft::getMaxItems() const
 {
-	return _maxItems;
+	return _stats.maxItems;
 }
 
 /**
@@ -544,7 +561,7 @@ int RuleCraft::getMaxItems() const
  */
 double RuleCraft::getMaxStorageSpace() const
 {
-	return _maxStorageSpace;
+	return _stats.maxStorageSpace;
 }
 
 /**
@@ -604,6 +621,15 @@ const RuleCraftStats& RuleCraft::getStats() const
 int RuleCraft::getMaxAltitude() const
 {
 	return _maxAltitude;
+}
+
+/**
+ * Gets the craft's default display altitude.
+ * @return String ID of an altitude for display purposes.
+ */
+const std::string& RuleCraft::getDefaultDisplayAltitude() const
+{
+	return _defaultAltitude;
 }
 
 /**

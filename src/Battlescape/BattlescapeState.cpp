@@ -3095,7 +3095,7 @@ inline void BattlescapeState::handle(Action *action)
 							if (unitUnderTheCursor && !unitUnderTheCursor->isOut())
 							{
 								debug("Bingo!");
-								unitUnderTheCursor->damage(Position(0, 0, 0), 1000, _game->getMod()->getDamageType(stunOnly ? DT_STUN : DT_AP), _save, {});
+								unitUnderTheCursor->damage(Position(0, 0, 0), 1000, _game->getMod()->getDamageType(stunOnly ? DT_STUN : DT_MELEE), _save, {});
 							}
 						}
 						else
@@ -3119,7 +3119,7 @@ inline void BattlescapeState::handle(Action *action)
 								}
 								if (bu->getOriginalFaction() == FACTION_HOSTILE && !bu->isOut())
 								{
-									bu->damage(Position(0, 0, 0), 1000, _game->getMod()->getDamageType(stunOnly ? DT_STUN : DT_AP), _save, { });
+									bu->damage(Position(0, 0, 0), 1000, _game->getMod()->getDamageType(stunOnly ? DT_STUN : DT_MELEE), _save, { });
 								}
 							}
 						}

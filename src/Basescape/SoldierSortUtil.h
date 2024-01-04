@@ -29,10 +29,6 @@ typedef int (*getStatFn_t)(const Game*, const Soldier*);
 
 struct SortFunctor
 {
-	typedef Soldier* first_argument_type;
-	typedef Soldier* second_argument_type;
-	typedef bool result_type;
-
 	Game *_game;
 	getStatFn_t _getStatFn;
 	SortFunctor(Game *game, getStatFn_t getStatFn) : _game(game), _getStatFn(getStatFn) { }

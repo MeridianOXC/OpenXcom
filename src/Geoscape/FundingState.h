@@ -26,6 +26,30 @@ class TextButton;
 class Window;
 class Text;
 class TextList;
+class ArrowButton;
+
+/// Funding country sorting modes.
+enum FundingCountrySort
+{
+	FC_NONE,
+	FC_NAME_ASC,
+	FC_NAME_DESC,
+	FC_FUNDING_ASC,
+	FC_FUNDING_DESC,
+	FC_CHANGE_ASC,
+	FC_CHANGE_DESC
+};
+
+struct FundingCountry
+{
+	FundingCountry(const std::string& _name, int _funding, int _change)
+		: name(_name), funding(_funding), change(_change)
+	{
+	}
+	std::string name;
+	int funding;
+	int change;
+};
 
 /**
  * Funding screen accessible from the Geoscape
@@ -38,6 +62,11 @@ private:
 	Window *_window;
 	Text *_txtTitle, *_txtCountry, *_txtFunding, *_txtChange;
 	TextList *_lstCountries;
+	ArrowButton *_sortName, *_sortFunding, *_sortChange;
+
+	std::vector<FundingCountry> _fundingCountryList;
+	FundingCountrySort _fundingCountryOrder;
+	void updateArrows();
 public:
 	/// Creates the Funding state.
 	FundingState();
@@ -45,6 +74,18 @@ public:
 	~FundingState();
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
+	/// Sets up the funding countries list.
+	void init() override;
+	/// Sorts the funding countries list.
+	void sortList();
+	/// Updates the funding countries list.
+	virtual void updateList();
+	/// Handler for clicking the Name arrow.
+	void sortNameClick(Action* action);
+	/// Handler for clicking the Funding arrow.
+	void sortFundingClick(Action* action);
+	/// Handler for clicking the Change arrow.
+	void sortChangeClick(Action* action);
 };
 
 }

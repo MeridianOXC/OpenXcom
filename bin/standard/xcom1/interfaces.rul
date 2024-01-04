@@ -1343,6 +1343,9 @@ interfaces:
         color: 208   # white
         color2: 241  # pink
         border: 218  # blue
+      - id: listExtended
+        color: 246   # purple
+        color2: 213  # gold
       - id: button
         color: 246   # purple
   - type: allocateResearch
@@ -1776,6 +1779,10 @@ interfaces:
       - id: list
         color: 218   # blue
       - id: button
+        color: 246   # purple
+      - id: errorPalette
+        color: 4     # aqua
+      - id: errorMessage
         color: 246   # purple
   - type: craftSoldiers
     backgroundImage: BACK02.SCR

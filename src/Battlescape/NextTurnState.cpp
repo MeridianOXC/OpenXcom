@@ -69,8 +69,19 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 	// set random hidden movement/next turn background for this turn
 	if (_battleGame->getSide() == FACTION_PLAYER)
 	{
-		_battleGame->setRandomHiddenMovementBackground(_game->getMod());
-		state->getMap()->refreshHiddenMovementBackground();
+		bool change = false;
+		if (Options::oxceHiddenMovementBackgroundChangeFrequency > 0)
+		{
+			if (_battleGame->getTurn() % Options::oxceHiddenMovementBackgroundChangeFrequency == 0)
+			{
+				change = true;
+			}
+		}
+		if (change)
+		{
+			_battleGame->setRandomHiddenMovementBackground(_game->getMod());
+			state->getMap()->refreshHiddenMovementBackground();
+		}
 	}
 
 	_currentTurn = _battleGame->getTurn() < 1 ? 1 : _battleGame->getTurn();

@@ -249,6 +249,7 @@ void BuildNewBaseState::globeClick(Action *action)
 				_base->setFakeUnderwater(fakeUnderwaterTexture);
 				_base->setLongitude(lon);
 				_base->setLatitude(lat);
+				_base->calculateServices(_game->getSavedGame());
 				for (auto* craft : *_base->getCrafts())
 				{
 					craft->setLongitude(lon);

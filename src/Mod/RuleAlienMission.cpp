@@ -68,8 +68,9 @@ namespace OpenXcom
 {
 
 RuleAlienMission::RuleAlienMission(const std::string &type) :
-	_type(type), _points(0), _objective(OBJECTIVE_SCORE), _spawnZone(-1),
-	_retaliationOdds(-1), _endlessInfiltration(true), _multiUfoRetaliation(false), _ignoreBaseDefenses(false), _despawnEvenIfTargeted(false), _showAlienBase(false),
+	_type(type), _skipScoutingPhase(false), _points(0), _objective(OBJECTIVE_SCORE), _spawnZone(-1),
+	_retaliationOdds(-1), _endlessInfiltration(true), _multiUfoRetaliation(false), _multiUfoRetaliationExtra(false),
+	_ignoreBaseDefenses(false), _despawnEvenIfTargeted(false), _showAlienBase(false),
 	_operationType(AMOT_SPACE), _operationSpawnZone(-1),
 	_targetBaseOdds(0)
 {
@@ -105,11 +106,19 @@ void RuleAlienMission::load(const YAML::Node &node)
 	_waves = node["waves"].as< std::vector<MissionWave> >(_waves);
 	_objective = (MissionObjective)node["objective"].as<int>(_objective);
 	_spawnUfo = node["spawnUfo"].as<std::string>(_spawnUfo);
+	_skipScoutingPhase = node["skipScoutingPhase"].as<bool>(_skipScoutingPhase);
 	_spawnZone = node["spawnZone"].as<int>(_spawnZone);
 	_weights = node["missionWeights"].as< std::map<size_t, int> >(_weights);
 	_retaliationOdds = node["retaliationOdds"].as<int>(_retaliationOdds);
 	_endlessInfiltration = node["endlessInfiltration"].as<bool>(_endlessInfiltration);
 	_multiUfoRetaliation = node["multiUfoRetaliation"].as<bool>(_multiUfoRetaliation);
+	_multiUfoRetaliationExtra = node["multiUfoRetaliationExtra"].as<bool>(_multiUfoRetaliationExtra);
+	if (_multiUfoRetaliationExtra)
+	{
+		// yes, I should have changed _multiUfoRetaliation to int instead, but I'm lazy
+		// I also don't want to break existing mods or handle it in a complicated way
+		_multiUfoRetaliation = true;
+	}
 	_ignoreBaseDefenses = node["ignoreBaseDefenses"].as<bool>(_ignoreBaseDefenses);
 	_despawnEvenIfTargeted = node["despawnEvenIfTargeted"].as<bool>(_despawnEvenIfTargeted);
 	_showAlienBase = node["showAlienBase"].as<bool>(_showAlienBase);

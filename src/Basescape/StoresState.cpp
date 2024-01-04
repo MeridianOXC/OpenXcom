@@ -49,14 +49,6 @@ namespace OpenXcom
 
 struct compareItemName
 {
-	typedef StoredItem& first_argument_type;
-	typedef StoredItem& second_argument_type;
-	typedef bool result_type;
-
-	bool _reverse;
-
-	compareItemName(bool reverse) : _reverse(reverse) {}
-
 	bool operator()(const StoredItem &a, const StoredItem &b) const
 	{
 		return Unicode::naturalCompare(a.name, b.name);
@@ -65,56 +57,31 @@ struct compareItemName
 
 struct compareItemQuantity
 {
-	typedef StoredItem& first_argument_type;
-	typedef StoredItem& second_argument_type;
-	typedef bool result_type;
-
-	bool _reverse;
-
-	compareItemQuantity(bool reverse) : _reverse(reverse) {}
-
 	bool operator()(const StoredItem &a, const StoredItem &b) const
 	{
-		return (a.quantity < b.quantity) || ((a.quantity == b.quantity) && Unicode::naturalCompare(a.name, b.name));
+		return a.quantity < b.quantity;
 	}
 };
 
 struct compareItemSize
 {
-	typedef StoredItem& first_argument_type;
-	typedef StoredItem& second_argument_type;
-	typedef bool result_type;
-
-	bool _reverse;
-
-	compareItemSize(bool reverse) : _reverse(reverse) {}
-
 	bool operator()(const StoredItem &a, const StoredItem &b) const
 	{
-		return (a.size < b.size) || ((a.size == b.size) && Unicode::naturalCompare(a.name, b.name));
+		return a.size < b.size;
 	}
 };
 
 struct compareItemSpaceUsed
 {
-	typedef StoredItem& first_argument_type;
-	typedef StoredItem& second_argument_type;
-	typedef bool result_type;
-
-	bool _reverse;
-
-	compareItemSpaceUsed(bool reverse) : _reverse(reverse) {}
-
 	bool operator()(const StoredItem &a, const StoredItem &b) const
 	{
-		return (a.spaceUsed < b.spaceUsed) || ((a.spaceUsed == b.spaceUsed) && Unicode::naturalCompare(a.name, b.name));
+		return a.spaceUsed < b.spaceUsed;
 	}
 };
 
 
 /**
  * Initializes all the elements in the Stores window.
- * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
 StoresState::StoresState(Base *base) : _base(base)
@@ -194,8 +161,7 @@ StoresState::StoresState(Base *base) : _base(base)
 	_sortSpaceUsed->setX(_sortSpaceUsed->getX() + _txtSpaceUsed->getTextWidth() + 4);
 	_sortSpaceUsed->onMouseClick((ActionHandler)&StoresState::sortSpaceUsedClick);
 
-	itemOrder = ITEM_SORT_NONE;
-	updateArrows();
+	_itemOrder = ITEM_SORT_NONE;
 
 	_btnQuickSearch->setText(""); // redraw
 	_btnQuickSearch->onEnter((ActionHandler)&StoresState::btnQuickSearchApply);
@@ -214,7 +180,6 @@ StoresState::~StoresState()
 
 /**
  * Returns to the previous screen.
- * @param action Pointer to an action.
  */
 void StoresState::btnOkClick(Action *)
 {
@@ -242,23 +207,23 @@ void StoresState::btnQuickSearchToggle(Action *action)
 
 /**
 * Quick search.
-* @param action Pointer to an action.
 */
 void StoresState::btnQuickSearchApply(Action *)
 {
-	initList(_btnGrandTotal->getPressed());
+	initList();
 }
 
 /**
  * Reloads the item list.
  */
-void StoresState::initList(bool grandTotal)
+void StoresState::initList()
 {
+	bool grandTotal = _btnGrandTotal->getPressed();
+
 	std::string searchString = _btnQuickSearch->getText();
 	Unicode::upperCase(searchString);
 
 	// clear everything
-	_lstStores->clearList();
 	_itemList.clear();
 
 	// find relevant items
@@ -309,9 +274,10 @@ void StoresState::initList(bool grandTotal)
 				// 4. items/aliens in research
 				for (const auto* research : xbase->getResearch())
 				{
-					if (research->getRules()->needItem() && research->getRules()->getName() == itemType)
+					const auto* rrule = research->getRules();
+					if (rrule->needItem() && rrule->destroyItem())
 					{
-						if (research->getRules()->destroyItem())
+						if (rrule->getNeededItem() && rrule->getNeededItem()->getType() == itemType)
 						{
 							qty += 1;
 							break;
@@ -350,7 +316,7 @@ void StoresState::initList(bool grandTotal)
 		}
 	}
 
-	sortList(itemOrder);
+	sortList();
 }
 
 /**
@@ -360,21 +326,19 @@ void StoresState::init()
 {
 	State::init();
 
-	initList(false);
+	initList();
 }
 
 /**
  * Includes items from all bases.
- * @param action Pointer to an action.
  */
-void StoresState::btnGrandTotalClick(Action *action)
+void StoresState::btnGrandTotalClick(Action *)
 {
-	initList(_btnGrandTotal->getPressed());
+	initList();
 }
 
 /**
- * Updates the sorting arrows based
- * on the current setting.
+ * Updates the sorting arrows based on the current setting.
  */
 void StoresState::updateArrows()
 {
@@ -382,7 +346,7 @@ void StoresState::updateArrows()
 	_sortQuantity->setShape(ARROW_NONE);
 	_sortSize->setShape(ARROW_NONE);
 	_sortSpaceUsed->setShape(ARROW_NONE);
-	switch (itemOrder)
+	switch (_itemOrder)
 	{
 	case ITEM_SORT_NONE:
 		break;
@@ -417,48 +381,51 @@ void StoresState::updateArrows()
 
 /**
  * Sorts the item list.
- * @param sort Order to sort the items in.
  */
-void StoresState::sortList(ItemSort sort)
+void StoresState::sortList()
 {
-	switch (sort)
+	updateArrows();
+
+	switch (_itemOrder)
 	{
 	case ITEM_SORT_NONE:
 		break;
 	case ITEM_SORT_NAME_ASC:
-		std::sort(_itemList.begin(), _itemList.end(), compareItemName(false));
+		std::stable_sort(_itemList.begin(), _itemList.end(), compareItemName());
 		break;
 	case ITEM_SORT_NAME_DESC:
-		std::sort(_itemList.rbegin(), _itemList.rend(), compareItemName(true));
+		std::stable_sort(_itemList.rbegin(), _itemList.rend(), compareItemName());
 		break;
 	case ITEM_SORT_QUANTITY_ASC:
-		std::sort(_itemList.begin(), _itemList.end(), compareItemQuantity(false));
+		std::stable_sort(_itemList.begin(), _itemList.end(), compareItemQuantity());
 		break;
 	case ITEM_SORT_QUANTITY_DESC:
-		std::sort(_itemList.rbegin(), _itemList.rend(), compareItemQuantity(true));
+		std::stable_sort(_itemList.rbegin(), _itemList.rend(), compareItemQuantity());
 		break;
 	case ITEM_SORT_SIZE_ASC:
-		std::sort(_itemList.begin(), _itemList.end(), compareItemSize(false));
+		std::stable_sort(_itemList.begin(), _itemList.end(), compareItemSize());
 		break;
 	case ITEM_SORT_SIZE_DESC:
-		std::sort(_itemList.rbegin(), _itemList.rend(), compareItemSize(true));
+		std::stable_sort(_itemList.rbegin(), _itemList.rend(), compareItemSize());
 		break;
 	case ITEM_SORT_SPACE_USED_ASC:
-		std::sort(_itemList.begin(), _itemList.end(), compareItemSpaceUsed(false));
+		std::stable_sort(_itemList.begin(), _itemList.end(), compareItemSpaceUsed());
 		break;
 	case ITEM_SORT_SPACE_USED_DESC:
-		std::sort(_itemList.rbegin(), _itemList.rend(), compareItemSpaceUsed(true));
+		std::stable_sort(_itemList.rbegin(), _itemList.rend(), compareItemSpaceUsed());
 		break;
 	}
+
 	updateList();
 }
 
 /**
- * Updates the item list with the current list
- * of available items.
+ * Updates the item list with the current list of available items.
  */
 void StoresState::updateList()
 {
+	_lstStores->clearList();
+
 	for (const auto& item : _itemList)
 	{
 		std::ostringstream ss, ss2, ss3;
@@ -471,78 +438,38 @@ void StoresState::updateList()
 
 /**
  * Sorts the items by name.
- * @param action Pointer to an action.
  */
 void StoresState::sortNameClick(Action *)
 {
-	if (itemOrder == ITEM_SORT_NAME_ASC)
-	{
-		itemOrder = ITEM_SORT_NAME_DESC;
-	}
-	else
-	{
-		itemOrder = ITEM_SORT_NAME_ASC;
-	}
-	updateArrows();
-	_lstStores->clearList();
-	sortList(itemOrder);
+	_itemOrder = _itemOrder == ITEM_SORT_NAME_ASC ? ITEM_SORT_NAME_DESC : ITEM_SORT_NAME_ASC;
+	sortList();
 }
 
 /**
  * Sorts the items by quantity.
- * @param action Pointer to an action.
  */
 void StoresState::sortQuantityClick(Action *)
 {
-	if (itemOrder == ITEM_SORT_QUANTITY_ASC)
-	{
-		itemOrder = ITEM_SORT_QUANTITY_DESC;
-	}
-	else
-	{
-		itemOrder = ITEM_SORT_QUANTITY_ASC;
-	}
-	updateArrows();
-	_lstStores->clearList();
-	sortList(itemOrder);
+	_itemOrder = _itemOrder == ITEM_SORT_QUANTITY_ASC ? ITEM_SORT_QUANTITY_DESC : ITEM_SORT_QUANTITY_ASC;
+	sortList();
 }
 
 /**
  * Sorts the items by size.
- * @param action Pointer to an action.
  */
 void StoresState::sortSizeClick(Action *)
 {
-	if (itemOrder == ITEM_SORT_SIZE_ASC)
-	{
-		itemOrder = ITEM_SORT_SIZE_DESC;
-	}
-	else
-	{
-		itemOrder = ITEM_SORT_SIZE_ASC;
-	}
-	updateArrows();
-	_lstStores->clearList();
-	sortList(itemOrder);
+	_itemOrder = _itemOrder == ITEM_SORT_SIZE_ASC ? ITEM_SORT_SIZE_DESC : ITEM_SORT_SIZE_ASC;
+	sortList();
 }
 
 /**
  * Sorts the items by space used.
- * @param action Pointer to an action.
  */
 void StoresState::sortSpaceUsedClick(Action *)
 {
-	if (itemOrder == ITEM_SORT_SPACE_USED_ASC)
-	{
-		itemOrder = ITEM_SORT_SPACE_USED_DESC;
-	}
-	else
-	{
-		itemOrder = ITEM_SORT_SPACE_USED_ASC;
-	}
-	updateArrows();
-	_lstStores->clearList();
-	sortList(itemOrder);
+	_itemOrder = _itemOrder == ITEM_SORT_SPACE_USED_ASC ? ITEM_SORT_SPACE_USED_DESC : ITEM_SORT_SPACE_USED_ASC;
+	sortList();
 }
 
 /**

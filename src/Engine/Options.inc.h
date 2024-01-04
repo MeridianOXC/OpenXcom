@@ -134,6 +134,11 @@ OPT bool oxceDisableInventoryTuCost;
 OPT bool oxceShowBaseNameInPopups;
 OPT int oxceGeoscapeDebugLogMaxEntries;
 OPT bool oxceGeoscapeEventsInstantDelivery;
+OPT int oxceHiddenMovementBackgroundChangeFrequency;
+OPT bool oxcePediaShowClipSize;
+OPT int oxceShowETAMode;
+OPT bool oxceBaseInfoScaleEnabled;
+OPT int oxceBaseInfoDefenseScaleMultiplier;
 
 // System-specific options
 OPT bool swipeToTurn, holdToTurn;

@@ -39,6 +39,7 @@ private:
 	Target *_target;
 	Window *_window;
 	Text *_txtTarget;
+	Text *_txtETA;
 	TextButton *_btnOk, *_btnTransfer, *_btnCancel;
 	// Checks the starting condition
 	std::string checkStartingCondition();

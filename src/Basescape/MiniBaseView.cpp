@@ -123,8 +123,8 @@ void MiniBaseView::draw()
 
 				r.x = i * (MINI_SIZE + 2) + 2 + fac->getX() * 2;
 				r.y = 2 + fac->getY() * 2;
-				r.w = fac->getRules()->getSize() * 2;
-				r.h = fac->getRules()->getSize() * 2;
+				r.w = fac->getRules()->getSizeX() * 2;
+				r.h = fac->getRules()->getSizeY() * 2;
 				drawRect(&r, color+3);
 				r.x++;
 				r.y++;

@@ -22,6 +22,7 @@
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Unicode.h"
+#include "../Interface/ArrowButton.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
@@ -33,6 +34,30 @@
 
 namespace OpenXcom
 {
+
+struct compareFundingCountryName
+{
+	bool operator()(const FundingCountry &a, const FundingCountry &b) const
+	{
+		return Unicode::naturalCompare(a.name, b.name);
+	}
+};
+
+struct compareFundingCountryFunding
+{
+	bool operator()(const FundingCountry &a, const FundingCountry &b) const
+	{
+		return a.funding < b.funding;
+	}
+};
+
+struct compareFundingCountryChange
+{
+	bool operator()(const FundingCountry &a, const FundingCountry &b) const
+	{
+		return a.change < b.change;
+	}
+};
 
 /**
  * Initializes all the elements in the Funding screen.
@@ -50,6 +75,9 @@ FundingState::FundingState()
 	_txtFunding = new Text(100, 9, 140, 30);
 	_txtChange = new Text(72, 9, 240, 30);
 	_lstCountries = new TextList(260, 136, 32, 40);
+	_sortName = new ArrowButton(ARROW_NONE, 11, 8, 32, 30);
+	_sortFunding = new ArrowButton(ARROW_NONE, 11, 8, 140, 30);
+	_sortChange = new ArrowButton(ARROW_NONE, 11, 8, 240, 30);
 
 	// Set palette
 	setInterface("fundingWindow");
@@ -61,6 +89,9 @@ FundingState::FundingState()
 	add(_txtFunding, "text2", "fundingWindow");
 	add(_txtChange, "text2", "fundingWindow");
 	add(_lstCountries, "list", "fundingWindow");
+	add(_sortName, "text2", "fundingWindow");
+	add(_sortFunding, "text2", "fundingWindow");
+	add(_sortChange, "text2", "fundingWindow");
 
 	centerAllSurfaces();
 
@@ -85,27 +116,26 @@ FundingState::FundingState()
 
 	_lstCountries->setColumns(3, 108, 100, 52);
 	_lstCountries->setDot(true);
+
+	_sortName->setX(_sortName->getX() + _txtCountry->getTextWidth() + 4);
+	_sortName->onMouseClick((ActionHandler)&FundingState::sortNameClick);
+
+	_sortFunding->setX(_sortFunding->getX() + _txtFunding->getTextWidth() + 4);
+	_sortFunding->onMouseClick((ActionHandler)&FundingState::sortFundingClick);
+
+	_sortChange->setX(_sortChange->getX() + _txtChange->getTextWidth() + 4);
+	_sortChange->onMouseClick((ActionHandler)&FundingState::sortChangeClick);
+
+	_fundingCountryOrder = FC_NONE;
+
 	for (auto* country : *_game->getSavedGame()->getCountries())
 	{
-		std::ostringstream ss, ss2;
-		ss << Unicode::TOK_COLOR_FLIP << Unicode::formatFunding(country->getFunding().at(country->getFunding().size()-1)) << Unicode::TOK_COLOR_FLIP;
-		if (country->getFunding().size() > 1)
-		{
-			ss2 << Unicode::TOK_COLOR_FLIP;
-			int change = country->getFunding().back() - country->getFunding().at(country->getFunding().size()-2);
-			if (change > 0)
-				ss2 << '+';
-			ss2 << Unicode::formatFunding(change);
-			ss2 << Unicode::TOK_COLOR_FLIP;
-		}
-		else
-		{
-			ss2 << Unicode::formatFunding(0);
-		}
-		_lstCountries->addRow(3, tr(country->getRules()->getType()).c_str(), ss.str().c_str(), ss2.str().c_str());
+		_fundingCountryList.push_back(FundingCountry(
+			tr(country->getRules()->getType()),
+			country->getFunding().back(),
+			country->getFunding().size() > 1 ? country->getFunding().back() - country->getFunding().at(country->getFunding().size() - 2) : 0)
+		);
 	}
-	_lstCountries->addRow(2, tr("STR_TOTAL_UC").c_str(), Unicode::formatFunding(_game->getSavedGame()->getCountryFunding()).c_str());
-	_lstCountries->setRowColor(_game->getSavedGame()->getCountries()->size(), _txtCountry->getColor());
 }
 
 /**
@@ -123,6 +153,135 @@ FundingState::~FundingState()
 void FundingState::btnOkClick(Action *)
 {
 	_game->popState();
+}
+
+/**
+ * Refreshes the funding countries list.
+ */
+void FundingState::init()
+{
+	State::init();
+
+	sortList();
+}
+
+/**
+ * Updates the sorting arrows based on the current setting.
+ */
+void FundingState::updateArrows()
+{
+	_sortName->setShape(ARROW_NONE);
+	_sortFunding->setShape(ARROW_NONE);
+	_sortChange->setShape(ARROW_NONE);
+	switch (_fundingCountryOrder)
+	{
+	case FC_NONE:
+		break;
+	case FC_NAME_ASC:
+		_sortName->setShape(ARROW_SMALL_UP);
+		break;
+	case FC_NAME_DESC:
+		_sortName->setShape(ARROW_SMALL_DOWN);
+		break;
+	case FC_FUNDING_ASC:
+		_sortFunding->setShape(ARROW_SMALL_UP);
+		break;
+	case FC_FUNDING_DESC:
+		_sortFunding->setShape(ARROW_SMALL_DOWN);
+		break;
+	case FC_CHANGE_ASC:
+		_sortChange->setShape(ARROW_SMALL_UP);
+		break;
+	case FC_CHANGE_DESC:
+		_sortChange->setShape(ARROW_SMALL_DOWN);
+		break;
+	default:
+		break;
+	}
+}
+
+/**
+ * Sorts the funding countries list.
+ */
+void FundingState::sortList()
+{
+	updateArrows();
+
+	switch (_fundingCountryOrder)
+	{
+	case FC_NONE:
+		break;
+	case FC_NAME_ASC:
+		std::stable_sort(_fundingCountryList.begin(), _fundingCountryList.end(), compareFundingCountryName());
+		break;
+	case FC_NAME_DESC:
+		std::stable_sort(_fundingCountryList.rbegin(), _fundingCountryList.rend(), compareFundingCountryName());
+		break;
+	case FC_FUNDING_ASC:
+		std::stable_sort(_fundingCountryList.begin(), _fundingCountryList.end(), compareFundingCountryFunding());
+		break;
+	case FC_FUNDING_DESC:
+		std::stable_sort(_fundingCountryList.rbegin(), _fundingCountryList.rend(), compareFundingCountryFunding());
+		break;
+	case FC_CHANGE_ASC:
+		std::stable_sort(_fundingCountryList.begin(), _fundingCountryList.end(), compareFundingCountryChange());
+		break;
+	case FC_CHANGE_DESC:
+		std::stable_sort(_fundingCountryList.rbegin(), _fundingCountryList.rend(), compareFundingCountryChange());
+		break;
+	}
+
+	updateList();
+}
+
+/**
+ * Updates the funding countries list.
+ */
+void FundingState::updateList()
+{
+	_lstCountries->clearList();
+	for (const auto& country : _fundingCountryList)
+	{
+		std::ostringstream ss;
+		ss << Unicode::TOK_COLOR_FLIP << Unicode::formatFunding(country.funding) << Unicode::TOK_COLOR_FLIP;
+
+		std::ostringstream ss2;
+		if (country.change != 0) ss2 << Unicode::TOK_COLOR_FLIP;
+		if (country.change > 0)  ss2 << '+';
+		ss2 << Unicode::formatFunding(country.change);
+		if (country.change != 0) ss2 << Unicode::TOK_COLOR_FLIP;
+
+		_lstCountries->addRow(3, country.name.c_str(), ss.str().c_str(), ss2.str().c_str());
+	}
+	_lstCountries->addRow(2, tr("STR_TOTAL_UC").c_str(), Unicode::formatFunding(_game->getSavedGame()->getCountryFunding()).c_str());
+	_lstCountries->setRowColor(_game->getSavedGame()->getCountries()->size(), _txtCountry->getColor());
+}
+
+/**
+ * Sorts the funding countries by name.
+ */
+void FundingState::sortNameClick(Action*)
+{
+	_fundingCountryOrder = _fundingCountryOrder == FC_NAME_ASC ? FC_NAME_DESC : FC_NAME_ASC;
+	sortList();
+}
+
+/**
+ * Sorts the funding countries by funding.
+ */
+void FundingState::sortFundingClick(Action*)
+{
+	_fundingCountryOrder = _fundingCountryOrder == FC_FUNDING_ASC ? FC_FUNDING_DESC : FC_FUNDING_ASC;
+	sortList();
+}
+
+/**
+ * Sorts the funding countries by funding change.
+ */
+void FundingState::sortChangeClick(Action*)
+{
+	_fundingCountryOrder = _fundingCountryOrder == FC_CHANGE_ASC ? FC_CHANGE_DESC : FC_CHANGE_ASC;
+	sortList();
 }
 
 }

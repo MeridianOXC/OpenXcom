@@ -38,6 +38,8 @@ class Bar;
 class BaseInfoState : public State
 {
 private:
+	static const int MAX_BAR_WIDTH = 140;
+
 	Base *_base;
 	BasescapeState *_state;
 

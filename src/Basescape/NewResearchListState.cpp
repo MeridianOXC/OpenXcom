@@ -31,6 +31,7 @@
 #include "../Interface/TextList.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Base.h"
+#include "../Mod/RuleInterface.h"
 #include "../Mod/RuleResearch.h"
 #include "ResearchInfoState.h"
 #include "TechTreeViewerState.h"
@@ -55,7 +56,7 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	_window = new Window(this, 230, 140, 45, 30, POPUP_BOTH);
 	_btnQuickSearch = new TextEdit(this, 48, 9, 53, 38);
 	_btnOK = new TextButton(103, 16, 164, 146);
-	_cbxSort = new ComboBox(this, 103, 16, 53, 146);
+	_cbxSort = new ComboBox(this, 103, 16, 53, 146, true);
 	_btnShowOnlyNew = new ToggleTextButton(103, 16, 53, 146);
 	_txtTitle = new Text(214, 16, 53, 38);
 	_lstResearch = new TextList(198, 88, 53, 54);
@@ -66,13 +67,14 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	add(_window, "window", "selectNewResearch");
 	add(_btnQuickSearch, "button", "selectNewResearch");
 	add(_btnOK, "button", "selectNewResearch");
-	add(_cbxSort, "button", "selectNewResearch");
 	add(_btnShowOnlyNew, "button", "selectNewResearch");
 	add(_txtTitle, "text", "selectNewResearch");
 	add(_lstResearch, "list", "selectNewResearch");
+	add(_cbxSort, "button", "selectNewResearch");
 
 	_colorNormal = _lstResearch->getColor();
 	_colorNew = Options::oxceHighlightNewTopicsHidden ? _lstResearch->getSecondaryColor() : _colorNormal;
+	_colorHidden = _game->getMod()->getInterface("selectNewResearch")->getElement("listExtended")->color;
 
 	centerAllSurfaces();
 
@@ -84,7 +86,8 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	_btnOK->onKeyboardPress((ActionHandler)&NewResearchListState::btnOKClick, Options::keyCancel);
 	_btnOK->onKeyboardPress((ActionHandler)&NewResearchListState::btnMarkAllAsSeenClick, Options::keyMarkAllAsSeen);
 
-	if (_game->getMod()->getEnableNewResearchSorting())
+	_isSortingEnabled = _game->getMod()->getEnableNewResearchSorting();
+	if (_isSortingEnabled)
 	{
 		_btnShowOnlyNew->setVisible(false);
 		std::vector<std::string> sortOptions;
@@ -92,6 +95,7 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 		sortOptions.push_back("STR_SORT_BY_COST");
 		sortOptions.push_back("STR_SORT_BY_NAME");
 		sortOptions.push_back("STR_SHOW_ONLY_NEW"); // this is a filter, replacement for the hidden "Show Only New" toggle button
+		sortOptions.push_back("STR_FILTER_HIDDEN"); // this is a filter
 		_cbxSort->setOptions(sortOptions, true);
 		if (_sortByCost)
 		{
@@ -150,22 +154,39 @@ void NewResearchListState::onSelectProject(Action *)
 */
 void NewResearchListState::onToggleProjectStatus(Action *)
 {
-	if (!Options::oxceHighlightNewTopicsHidden)
+	if (!Options::oxceHighlightNewTopicsHidden && !_isSortingEnabled)
+	{
+		// there are no statuses to toggle
 		return;
+	}
 
 	// change status
-	const std::string rule = _projects[_lstResearch->getSelectedRow()]->getName();
-	if (_game->getSavedGame()->isResearchRuleStatusNew(rule))
+	const std::string& rule = _projects[_lstResearch->getSelectedRow()]->getName();
+	int oldState = _game->getSavedGame()->getResearchRuleStatus(rule);
+	int newState = RuleResearch::RESEARCH_STATUS_NEW;
+
+	if (oldState == RuleResearch::RESEARCH_STATUS_NEW)
 	{
-		// new -> normal
-		_game->getSavedGame()->setResearchRuleStatus(rule, RuleResearch::RESEARCH_STATUS_NORMAL);
-		_lstResearch->setRowColor(_lstResearch->getSelectedRow(), _colorNormal);
+		newState = Options::oxceHighlightNewTopicsHidden ? RuleResearch::RESEARCH_STATUS_NORMAL : RuleResearch::RESEARCH_STATUS_HIDDEN;
+	}
+	else if (oldState == RuleResearch::RESEARCH_STATUS_NORMAL)
+	{
+		newState = _isSortingEnabled ? RuleResearch::RESEARCH_STATUS_HIDDEN : RuleResearch::RESEARCH_STATUS_NEW;
+	}
+
+	_game->getSavedGame()->setResearchRuleStatus(rule, newState);
+
+	if (newState == RuleResearch::RESEARCH_STATUS_HIDDEN)
+	{
+		_lstResearch->setRowColor(_lstResearch->getSelectedRow(), _colorHidden);
+	}
+	else if (newState == RuleResearch::RESEARCH_STATUS_NEW)
+	{
+		_lstResearch->setRowColor(_lstResearch->getSelectedRow(), _colorNew);
 	}
 	else
 	{
-		// normal/disabled -> new
-		_game->getSavedGame()->setResearchRuleStatus(rule, RuleResearch::RESEARCH_STATUS_NEW);
-		_lstResearch->setRowColor(_lstResearch->getSelectedRow(), _colorNew);
+		_lstResearch->setRowColor(_lstResearch->getSelectedRow(), _colorNormal);
 	}
 }
 
@@ -273,14 +294,32 @@ void NewResearchListState::fillProjectList(bool markAllAsSeen)
 	RuleResearch* rule = nullptr;
 	int row = 0;
 	bool hasUnseen = false;
+	int ruleStatus = 0;
 	while (researchRuleIt != _projects.end())
 	{
 		rule = (*researchRuleIt);
+		ruleStatus = _game->getSavedGame()->getResearchRuleStatus(rule->getName());
 
 		// filter
 		if (_btnShowOnlyNew->getPressed() || selectedSort == 3)
 		{
-			if (!_game->getSavedGame()->isResearchRuleStatusNew(rule->getName()))
+			if (ruleStatus != RuleResearch::RESEARCH_STATUS_NEW)
+			{
+				researchRuleIt = _projects.erase(researchRuleIt);
+				continue;
+			}
+		}
+		else if (selectedSort <= 2)
+		{
+			if (ruleStatus == RuleResearch::RESEARCH_STATUS_HIDDEN)
+			{
+				researchRuleIt = _projects.erase(researchRuleIt);
+				continue;
+			}
+		}
+		else if (selectedSort == 4)
+		{
+			if (ruleStatus != RuleResearch::RESEARCH_STATUS_HIDDEN)
 			{
 				researchRuleIt = _projects.erase(researchRuleIt);
 				continue;
@@ -318,13 +357,20 @@ void NewResearchListState::fillProjectList(bool markAllAsSeen)
 			_lstResearch->addRow(1, tr(rule->getName()).c_str());
 			if (markAllAsSeen)
 			{
-				// mark all (new) research items as normal
+				// mark all (filtered) research items as normal
 				_game->getSavedGame()->setResearchRuleStatus(rule->getName(), RuleResearch::RESEARCH_STATUS_NORMAL);
 			}
-			else if (_game->getSavedGame()->isResearchRuleStatusNew(rule->getName()))
+			else
 			{
-				_lstResearch->setRowColor(row, _colorNew);
-				hasUnseen = true;
+				if (ruleStatus == RuleResearch::RESEARCH_STATUS_NEW)
+				{
+					_lstResearch->setRowColor(row, _colorNew);
+					hasUnseen = true;
+				}
+				else if (ruleStatus == RuleResearch::RESEARCH_STATUS_HIDDEN)
+				{
+					_lstResearch->setRowColor(row, _colorHidden);
+				}
 			}
 			row++;
 			++researchRuleIt;

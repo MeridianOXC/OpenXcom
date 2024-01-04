@@ -130,7 +130,7 @@ void ResearchInfoState::buildUi()
 		_base->addResearch(_project);
 		if (_rule->needItem() && _rule->destroyItem())
 		{
-			_base->getStorageItems()->removeItem(_rule->getName(), 1);
+			_base->getStorageItems()->removeItem(_rule->getNeededItem(), 1);
 		}
 	}
 	setAssignedScientist();
@@ -164,11 +164,8 @@ void ResearchInfoState::buildUi()
 
 	if (_rule)
 	{
-		// mark new as normal
-		if (_game->getSavedGame()->isResearchRuleStatusNew(_rule->getName()))
-		{
-			_game->getSavedGame()->setResearchRuleStatus(_rule->getName(), RuleResearch::RESEARCH_STATUS_NORMAL);
-		}
+		// mark new/hidden as normal
+		_game->getSavedGame()->setResearchRuleStatus(_rule->getName(), RuleResearch::RESEARCH_STATUS_NORMAL);
 	}
 }
 

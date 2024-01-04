@@ -69,6 +69,8 @@ public:
 	void setInterface(const std::string &s, bool alterPal = false, SavedBattleGame *battleGame = 0);
 	/// Set window background.
 	void setWindowBackground(Window *window, const std::string &s);
+	/// Set window background by image name (instead of by interface name).
+	void setWindowBackgroundImage(Window* window, const std::string& bgImageName);
 	/// Adds a child element to the state.
 	void add(Surface *surface);
 	/// Adds a child element to the state.
