@@ -39,7 +39,7 @@ RuleBaseFacility::RuleBaseFacility(const std::string &type, int listOrder) :
 	_type(type), _spriteShape(-1), _spriteFacility(-1), _connectorsDisabled(false),
 	_missileAttraction(100), _fakeUnderwater(-1),
 	_lift(false), _hyper(false), _mind(false), _grav(false), _mindPower(1),
-	_size(1), _buildCost(0), _refundValue(0), _buildTime(0), _monthlyCost(0),
+	_sizeX(1), _sizeY(1), _buildCost(0), _refundValue(0), _buildTime(0), _monthlyCost(0),
 	_storage(0), _personnel(0), _aliens(0), _crafts(0), _labs(0), _workshops(0), _psiLabs(0),
 	_spriteEnabled(false),
 	_sightRange(0), _sightChance(0), _radarRange(0), _radarChance(0),
@@ -86,7 +86,14 @@ void RuleBaseFacility::load(const YAML::Node &node, Mod *mod)
 	_mind = node["mind"].as<bool>(_mind);
 	_grav = node["grav"].as<bool>(_grav);
 	_mindPower = node["mindPower"].as<int>(_mindPower);
-	_size = node["size"].as<int>(_size);
+	if (node["size"])
+	{
+		// backwards-compatibility
+		_sizeX = node["size"].as<int>(_sizeX);
+		_sizeY = node["size"].as<int>(_sizeY);
+	}
+	_sizeX = node["sizeX"].as<int>(_sizeX);
+	_sizeY = node["sizeY"].as<int>(_sizeY);
 	_buildCost = node["buildCost"].as<int>(_buildCost);
 	_refundValue = node["refundValue"].as<int>(_refundValue);
 	_buildTime = node["buildTime"].as<int>(_buildTime);
@@ -183,7 +190,7 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 	if (!_destroyedFacilityName.empty())
 	{
 		mod->linkRule(_destroyedFacility, _destroyedFacilityName);
-		if (_destroyedFacility->getSize() != _size)
+		if (_destroyedFacility->getSizeX() != _sizeX || _destroyedFacility->getSizeY() != _sizeY)
 		{
 			throw Exception("Destroyed version of a facility must have the same size as the original facility.");
 		}
@@ -192,7 +199,7 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 	{
 		_leavesBehindOnSell.reserve(_leavesBehindOnSellNames.size());
 		auto* first = mod->getBaseFacility(_leavesBehindOnSellNames.at(0), true);
-		if (first->getSize() == _size)
+		if (first->getSizeX() == _sizeX && first->getSizeY() == _sizeY)
 		{
 			if (_leavesBehindOnSellNames.size() != 1)
 			{
@@ -205,7 +212,7 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 			for (const auto& n : _leavesBehindOnSellNames)
 			{
 				auto* r = mod->getBaseFacility(n, true);
-				if (r->getSize() != 1)
+				if (!r->isSmall())
 				{
 					throw Exception("All replacement facilities must have size=1 (when using different size as the original facility).");
 				}
@@ -226,11 +233,12 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 	{
 		if (_storageTiles.size() != 1 || _storageTiles[0] != TileEngine::invalid)
 		{
-			const int size = 10 * _size;
+			const int sizeX = 10 * _sizeX;
+			const int sizeY = 10 * _sizeY;
 			for (const auto& p : _storageTiles)
 			{
-				if (p.x < 0 || p.x > size ||
-					p.y < 0 || p.y > size ||
+				if (p.x < 0 || p.x > sizeX ||
+					p.y < 0 || p.y > sizeY ||
 					p.z < 0 || p.z > 8) // accurate max z will be check during map creation when we know map heigth, now we only check for very bad values.
 				{
 					if (p == TileEngine::invalid)
@@ -291,12 +299,12 @@ int RuleBaseFacility::getSpriteFacility() const
 }
 
 /**
- * Gets the size of the facility on the base grid.
- * @return The length in grid squares.
+ * Gets if the facility's size is 1x1.
+ * @return True if facility size is 1x1.
  */
-int RuleBaseFacility::getSize() const
+bool RuleBaseFacility::isSmall() const
 {
-	return _size;
+	return _sizeX == 1 && _sizeY == 1;
 }
 
 /**
@@ -305,7 +313,7 @@ int RuleBaseFacility::getSize() const
  */
 bool RuleBaseFacility::getSpriteEnabled() const
 {
-	return getSize() == 1 || _spriteEnabled;
+	return isSmall() || _spriteEnabled;
 }
 
 /**

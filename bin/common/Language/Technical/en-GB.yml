@@ -352,6 +352,8 @@ en-GB:
   rearArmor: "Rear Armor"
   underArmor: "Under Armor"
 #
+  sizeX: "Size X"
+  sizeY: "Size Y"
   buildCost: "Build cost"
   buildCostItems: "Build materials:"
   buildTime: "Build time"
@@ -405,8 +407,10 @@ en-GB:
 #
   costRent: "Rent cost"
   soldiers: "Cargo space"
+  maxUnitsLimit: "Max cargo space"
   pilots: "Cockpit size"
   vehicles: "HWP capacity"
+  maxHWPUnitsLimit: "Max HWP capacity"
   maxSmallSoldiers: "Max small soldiers"
   maxLargeSoldiers: "Max large soldiers"
   maxSmallVehicles: "Max small vehicles"

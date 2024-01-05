@@ -316,7 +316,7 @@ void StatsForNerdsState::init()
 				return;
 			}
 			RuleCraft* craftRule = _game->getMod()->getCraft(_topicId);
-			if (craftRule->getMaxUnitsLimit() > 0 && craftRule->getBattlescapeTerrainData())
+			if (craftRule->isForNewBattle())
 			{
 				auto& data = _game->getSavedGame()->getCustomRuleCraftDeployments();
 				auto find = data.find(craftRule->getType());
@@ -430,9 +430,9 @@ void StatsForNerdsState::btnPreviewClick(Action *)
 		for (auto& craftType : mod->getCraftsList())
 		{
 			auto* cRule = mod->getCraft(craftType);
-			if (cRule->getMaxUnits() > biggest)
+			if (cRule->getMaxUnitsLimit() > biggest)
 			{
-				biggest = cRule->getMaxUnits();
+				biggest = cRule->getMaxUnitsLimit();
 			}
 		}
 		for (int i = 0; i < biggest; ++i)
@@ -461,7 +461,7 @@ void StatsForNerdsState::btnPreviewClick(Action *)
 	Craft* c = new Craft(craftRule, base, RuleCraft::DUMMY_CRAFT_ID); // a negative integer
 	base->getCrafts()->push_back(c);
 	c->setName(tr(craftRule->getType()));
-	int max = craftRule->getMaxUnits();
+	int max = craftRule->getMaxUnitsLimit();
 	for (auto* soldier : *base->getSoldiers())
 	{
 		soldier->setCraft(c);
@@ -3060,7 +3060,15 @@ void StatsForNerdsState::initFacilityList()
 
 	addVectorOfStrings(ss, facilityRule->getRequirements(), "requires");
 
-	addInteger(ss, facilityRule->getSize(), "size", 1);
+	if (facilityRule->getSizeX() == facilityRule->getSizeY())
+	{
+		addInteger(ss, facilityRule->getSizeX(), "size", 1);
+	}
+	else
+	{
+		addInteger(ss, facilityRule->getSizeX(), "sizeX", 0);
+		addInteger(ss, facilityRule->getSizeY(), "sizeY", 0);
+	}
 	addInteger(ss, facilityRule->getBuildCost(), "buildCost", 0, true);
 	addHeading("buildCostItems");
 	{
@@ -3138,6 +3146,7 @@ void StatsForNerdsState::initFacilityList()
 		addInteger(ss, facilityRule->getSpriteFacility(), "spriteFacility", -1);
 		addSpriteResourcePath(ss, mod, "BASEBITS.PCK", facilityRule->getSpriteFacility());
 
+		addBoolean(ss, facilityRule->getSpriteEnabledRaw(), "spriteEnabled");
 		addBoolean(ss, facilityRule->connectorsDisabled(), "connectorsDisabled");
 
 		addSection("{Sounds}", "", _white);
@@ -3203,9 +3212,10 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getTransferTime(), "transferTime", 24);
 
 	addInteger(ss, craftRule->getMaxUnits(), "soldiers");
-	addInteger(ss, craftRule->getMaxUnitsLimit(), "maxUnitsLimit");
+	addInteger(ss, craftRule->getMaxUnitsLimit(), "maxUnitsLimit", craftRule->getMaxUnits());
 	addInteger(ss, craftRule->getPilots(), "pilots");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
+	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiersLimit(), "maxHWPUnitsLimit", craftRule->getMaxVehiclesAndLargeSoldiers());
 
 	addInteger(ss, craftRule->getMaxSmallSoldiers(), "maxSmallSoldiers", -1);
 	addInteger(ss, craftRule->getMaxLargeSoldiers(), "maxLargeSoldiers", -1);
@@ -3216,8 +3226,8 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getMaxSoldiers(), "maxSoldiers", -1);
 	addInteger(ss, craftRule->getMaxVehicles(), "maxVehicles", -1);
 
-	addInteger(ss, craftRule->getMaxItems(), "maxItems");
-	addDouble(ss, craftRule->getMaxStorageSpace(), "maxStorageSpace");
+	addInteger(ss, craftRule->getMaxItems(), "maxItems", 999999);
+	addDouble(ss, craftRule->getMaxStorageSpace(), "maxStorageSpace", 99999.0);
 
 	addInteger(ss, craftRule->getMaxAltitude(), "maxAltitude", -1);
 	addInteger(ss, craftRule->getWeapons(), "weapons");
@@ -3730,6 +3740,8 @@ void StatsForNerdsState::initCraftWeaponList()
 		addInteger(ss, craftWeaponRule->getBonusStats().shieldBleedThrough, "shieldBleedThrough");
 		addInteger(ss, craftWeaponRule->getBonusStats().soldiers, "soldiers");
 		addInteger(ss, craftWeaponRule->getBonusStats().vehicles, "vehicles");
+		addInteger(ss, craftWeaponRule->getBonusStats().maxItems, "maxItems", 0);
+		addDouble(ss, craftWeaponRule->getBonusStats().maxStorageSpace, "maxStorageSpace", 0.0);
 		endHeading();
 	}
 

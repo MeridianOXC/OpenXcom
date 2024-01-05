@@ -78,8 +78,8 @@ private:
 	ArrowButton *_sortName, *_sortQuantity, *_sortSize, *_sortSpaceUsed;
 
 	std::vector<StoredItem> _itemList;
-	void initList(bool grandTotal);
-	ItemSort itemOrder;
+	void initList();
+	ItemSort _itemOrder;
 	void updateArrows();
 public:
 	/// Creates the Stores state.
@@ -96,7 +96,7 @@ public:
 	/// Sets up the item list.
 	void init() override;
 	/// Sorts the item list.
-	void sortList(ItemSort sort);
+	void sortList();
 	/// Updates the item list.
 	virtual void updateList();
 	/// Handler for clicking the Name arrow.

@@ -126,8 +126,9 @@ void BaseFacility::setY(int y)
  */
 BaseAreaSubset BaseFacility::getPlacement() const
 {
-	int size = _rules->getSize();
-	return BaseAreaSubset(size, size).offset(_x, _y);
+	int sizeX = _rules->getSizeX();
+	int sizeY = _rules->getSizeY();
+	return BaseAreaSubset(sizeX, sizeY).offset(_x, _y);
 }
 
 /**

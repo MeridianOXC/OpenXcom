@@ -18,6 +18,7 @@
  */
 #include "GeoscapeCraftState.h"
 #include <sstream>
+#include "../fmath.h"
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
 #include "../Engine/LocalizedText.h"
@@ -88,6 +89,7 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 		_txtWeaponAmmo[i] = new Text(80, 9, 164, offset_upper + 92 + 8*i);
 	}
 	_txtRedirect = new Text(230, 17, 13, offset_lower + 0);
+	_txtETA = new Text(230, 9, 13, offset_lower + 4);
 	_btnBase = new TextButton(192, 12, 32, offset_lower + 14);
 	_btnTarget = new TextButton(192, 12, 32, offset_lower + 28);
 	_btnPatrol = new TextButton(192, 12, 32, offset_lower + 42);
@@ -116,6 +118,7 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 		add(_txtWeaponAmmo[i], "text3", "geoCraft");
 	}
 	add(_txtRedirect, "text3", "geoCraft");
+	add(_txtETA, "text3", "geoCraft");
 	add(_txtSoldier, "text3", "geoCraft");
 	add(_txtHWP, "text3", "geoCraft");
 
@@ -202,7 +205,7 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 
 	_txtMaxSpeed->setText(tr("STR_MAXIMUM_SPEED_UC").arg(Unicode::formatNumber(_craft->getCraftStats().speedMax)));
 
-	std::string altitude = _craft->getAltitude() == "STR_GROUND" ? "STR_GROUNDED" : _craft->getAltitude();
+	std::string altitude = _craft->getAltitude();
 	if (_craft->getRules()->isWaterOnly() && !_globe->insideLand(_craft->getLongitude(), _craft->getLatitude()))
 	{
 		altitude = "STR_AIRBORNE";
@@ -257,6 +260,33 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 	if (_waypoint == 0)
 	{
 		_txtRedirect->setVisible(false);
+
+		// ETA display
+		if (Options::oxceShowETAMode > 0 && _craft->getDestination())
+		{
+			MovingTarget* mt = dynamic_cast<MovingTarget*>(_craft->getDestination());
+			if (Options::oxceShowETAMode == 1 && mt && mt->getSpeed() > 0)
+			{
+				// don't show ETA for moving targets (i.e. UFOs and crafts)
+			}
+			else
+			{
+				int speed = _craft->getCraftStats().speedMax;
+				int distance = XcomDistance(_craft->getDistance(_craft->getDestination()));
+				int etaInHoursHelper = (distance + (speed / 2)) / speed;
+				int days = etaInHoursHelper / 24;
+				int hours = etaInHoursHelper % 24;
+				std::ostringstream ssStatus;
+				if (days > 0) ssStatus << tr("STR_DAY_SHORT").arg(days);
+				if (hours > 0 || days == 0)
+				{
+					if (days > 0) ssStatus << "/";
+					ssStatus << tr("STR_HOUR_SHORT").arg(hours);
+				}
+				_txtETA->setAlign(ALIGN_CENTER);
+				_txtETA->setText(tr("STR_ETA").arg(ssStatus.str()));
+			}
+		}
 	}
 	else
 	{
@@ -270,9 +300,9 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 		_btnPatrol->setVisible(false);
 	}
 
-	if (_craft->getMaxUnits() == 0)
+	if (_craft->getRules()->getMaxUnitsLimit() == 0)
 		_txtSoldier->setVisible(false);
-	if (_craft->getMaxVehiclesAndLargeSoldiers() == 0)
+	if (_craft->getRules()->getMaxVehiclesAndLargeSoldiersLimit() == 0)
 		_txtHWP->setVisible(false);
 }
 

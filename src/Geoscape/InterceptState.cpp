@@ -278,6 +278,34 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 					ssStatus << ")";
 				}
 			}
+			else
+			{
+				// ETA display
+				if (Options::oxceShowETAMode > 0 && xcraft->getDestination() && Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
+				{
+					MovingTarget* mt = dynamic_cast<MovingTarget*>(xcraft->getDestination());
+					if (Options::oxceShowETAMode == 1 && mt && mt->getSpeed() > 0)
+					{
+						// don't show ETA for moving targets (i.e. UFOs and crafts)
+					}
+					else
+					{
+						int speed = xcraft->getCraftStats().speedMax;
+						int distance = XcomDistance(xcraft->getDistance(xcraft->getDestination()));
+						int etaInHoursHelper = (distance + (speed / 2)) / speed;
+						int days = etaInHoursHelper / 24;
+						int hours = etaInHoursHelper % 24;
+						ssStatus << " (";
+						if (days > 0) ssStatus << tr("STR_DAY_SHORT").arg(days);
+						if (hours > 0 || days == 0)
+						{
+							if (days > 0) ssStatus << "/";
+							ssStatus << tr("STR_HOUR_SHORT").arg(hours);
+						}
+						ssStatus << ")";
+					}
+				}
+			}
 
 			std::ostringstream ss;
 			if (xcraft->getNumWeapons() > 0)

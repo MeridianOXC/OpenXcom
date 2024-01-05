@@ -143,6 +143,8 @@ public:
 	MissionObjective getObjective() const { return _objective; }
 	/// Gets the UFO type for special spawns.
 	const std::string &getSpawnUfo() const { return _spawnUfo; }
+	/// Should the scouting phase of the retaliation mission be skipped?
+	bool skipScoutingPhase() const { return _skipScoutingPhase; }
 	/// Gets the zone for spawning an alien site or base.
 	int getSpawnZone() const { return _spawnZone; }
 	/// Gets the chances of this mission based on the game time.
@@ -153,6 +155,8 @@ public:
 	bool isEndlessInfiltration() const;
 	/// Should the retaliation mission end after the first base defense or continue until all already spawned UFOs disappear?
 	bool isMultiUfoRetaliation() const { return _multiUfoRetaliation; }
+	/// Should the retaliation mission continue generating UFOs even after the first base defense?
+	bool isMultiUfoRetaliationExtra() const { return _multiUfoRetaliationExtra; }
 	/// Should the retaliation UFO ignore xcom base defenses?
 	bool ignoreBaseDefenses() const { return _ignoreBaseDefenses; }
 	/// Should the mission site despawn even if targeted?
@@ -180,6 +184,8 @@ private:
 	std::string _type;
 	/// The UFO to use for spawning.
 	std::string _spawnUfo;
+	/// Should the scouting phase of the retaliation mission be skipped?
+	bool _skipScoutingPhase;
 	/// The race distribution over game time.
 	std::vector<std::pair<size_t, WeightedOptions*> > _raceDistribution;
 	/// The mission's weights.
@@ -198,6 +204,8 @@ private:
 	bool _endlessInfiltration;
 	/// Should the retaliation mission end after the first base defense or continue until all already spawned UFOs disappear?
 	bool _multiUfoRetaliation;
+	/// Should the retaliation mission continue generating UFOs even after the first base defense?
+	bool _multiUfoRetaliationExtra;
 	/// Should the retaliation UFO ignore xcom base defenses?
 	bool _ignoreBaseDefenses;
 	/// Should the mission site despawn even if targeted?

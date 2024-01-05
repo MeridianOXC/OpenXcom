@@ -34,8 +34,22 @@ class TextList;
 class OptionsControlsState : public OptionsBaseState
 {
 private:
+	TextButton *_btnOXC, *_btnOXCE, *_btnOTHER;
+	TextButton *_owner;
 	TextList *_lstControls;
-	std::vector<OptionInfo> _controlsGeneral, _controlsGeo, _controlsBattle, _controlsOxce;
+	std::vector<OptionInfo> _controlsGeneral[OPTION_OWNER_MAX];
+	std::vector<OptionInfo> _controlsGeo[OPTION_OWNER_MAX];
+	std::vector<OptionInfo> _controlsBase[OPTION_OWNER_MAX];
+	std::vector<OptionInfo> _controlsBattle[OPTION_OWNER_MAX];
+	int _offsetGeneralMin = -1;
+	int _offsetGeneralMax = -1;
+	int _offsetGeoMin = -1;
+	int _offsetGeoMax = -1;
+	int _offsetBaseMin = -1;
+	int _offsetBaseMax = -1;
+	int _offsetBattleMin = -1;
+	int _offsetBattleMax = -1;
+
 	int _selected;
 	OptionInfo *_selKey;
 	Uint8 _colorGroup, _colorSel, _colorNormal;
@@ -48,12 +62,16 @@ public:
 	OptionsControlsState(OptionsOrigin origin);
 	/// Cleans up the Controls state.
 	~OptionsControlsState();
-	/// Fills controls list.
+	/// Refreshes the UI.
 	void init() override;
+	/// Fills controls list.
+	void updateList();
 	/// Handler for clicking the Controls list.
 	void lstControlsClick(Action *action);
 	/// Handler for pressing a key in the Controls list.
 	void lstControlsKeyPress(Action *action);
+	/// Handler for clicking buttons.
+	void btnGroupPress(Action* action);
 };
 
 }

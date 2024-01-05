@@ -109,6 +109,8 @@ private:
 	std::vector<Vehicle*> _vehiclesFromBase;
 	std::vector<BaseFacility*> _defenses;
 	std::map<const RuleBaseFacility*, int> _destroyedFacilitiesCache;
+	RuleBaseFacilityFunctions _provideBaseFunc = 0;
+	RuleBaseFacilityFunctions _forbiddenBaseFunc = 0;
 
 	using Target::load;
 public:
@@ -120,6 +122,7 @@ public:
 	void load(const YAML::Node& node, SavedGame *save, bool newGame, bool newBattleGame = false);
 	/// Finishes loading the base (more specifically all craft in the base) from YAML.
 	void finishLoading(const YAML::Node& node, SavedGame *save);
+	void calculateServices(SavedGame* save);
 	/// Tests whether the base facilities are within the base boundaries and not overlapping.
 	bool isOverlappingOrOverflowing();
 	/// Saves the base to YAML.

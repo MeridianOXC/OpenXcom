@@ -73,21 +73,15 @@ namespace OpenXcom
 		int x_pos, y_pos;
 		int num;
 
-		if (facility->getSize()==1)
-		{
-			x_offset = y_offset = tile_size/2;
-		}
-		else
-		{
-			x_offset = y_offset = 0;
-		}
+		x_offset = facility->getSizeX() == 1 ? tile_size / 2 : 0;
+		y_offset = facility->getSizeY() == 1 ? tile_size / 2 : 0;
 
 		num = 0;
 		y_pos = y_offset;
-		for (int y = 0; y < facility->getSize(); ++y)
+		for (int y = 0; y < facility->getSizeY(); ++y)
 		{
 			x_pos = x_offset;
-			for (int x = 0; x < facility->getSize(); ++x)
+			for (int x = 0; x < facility->getSizeX(); ++x)
 			{
 				frame = graphic->getFrame(facility->getSpriteShape() + num);
 				frame->blitNShade(_image, x_pos, y_pos);

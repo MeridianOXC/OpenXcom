@@ -22,6 +22,7 @@
 #include <yaml-cpp/yaml.h>
 #include "../fmath.h"
 #include "../Savegame/WeightedOptions.h"
+#include "RuleBaseFacilityFunctions.h"
 
 namespace OpenXcom
 {
@@ -63,6 +64,8 @@ struct MissionZone
 };
 
 class City;
+class Mod;
+
 
 /**
  * Represents a specific region of the world.
@@ -84,13 +87,15 @@ private:
 	std::vector<MissionZone> _missionZones;
 	/// Do missions in the region defined by this string instead.
 	std::string _missionRegion;
+	RuleBaseFacilityFunctions _provideBaseFunc = 0;
+	RuleBaseFacilityFunctions _forbiddenBaseFunc = 0;
 public:
 	/// Creates a blank region ruleset.
 	RuleRegion(const std::string &type);
 	/// Cleans up the region ruleset.
 	~RuleRegion();
 	/// Loads the region from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::Node& node, Mod* mod);
 	/// Gets the region's type.
 	const std::string& getType() const;
 	/// Gets the region's base cost.
@@ -117,6 +122,10 @@ public:
 	const std::vector<double> &getLatMin() const { return _latMin; }
 	/// Gets a list of MissionZones.
 	const std::vector<MissionZone> &getMissionZones() const;
+	/// Gets the functions provided by the region.
+	RuleBaseFacilityFunctions getProvidedBaseFunc() const { return _provideBaseFunc; }
+	/// Gets the functions forbidden by the region.
+	RuleBaseFacilityFunctions getForbiddenBaseFunc() const { return _forbiddenBaseFunc; }
 };
 
 }

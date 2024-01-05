@@ -24,6 +24,7 @@
 #include "../Engine/LocalizedText.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
+#include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
 #include "../Engine/Options.h"
 #include "../Engine/Action.h"
@@ -42,7 +43,12 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 	setCategory(_btnAdvanced);
 
 	// Create objects
-	_lstOptions = new TextList(200, 136, 94, 8);
+	_btnOXC = new TextButton(70, 16, 94, 8);
+	_btnOXCE = new TextButton(70, 16, 168, 8);
+	_btnOTHER = new TextButton(70, 16, 242, 8);
+	_lstOptions = new TextList(200, 120, 94, 26);
+
+	_owner = _btnOXC;
 
 	_isTFTD = false;
 	for (const auto& pair : Options::mods)
@@ -57,6 +63,10 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 		}
 	}
 
+	add(_btnOXC, "button", "advancedMenu");
+	add(_btnOXCE, "button", "advancedMenu");
+	add(_btnOTHER, "button", "advancedMenu");
+
 	if (origin != OPT_BATTLESCAPE)
 	{
 		_greyedOutColor = _game->getMod()->getInterface("advancedMenu")->getElement("disabledUserOption")->color;
@@ -67,7 +77,21 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 		_greyedOutColor = _game->getMod()->getInterface("battlescape")->getElement("disabledUserOption")->color;
 		add(_lstOptions, "optionLists", "battlescape");
 	}
+
 	centerAllSurfaces();
+
+	_btnOXC->setText(tr("STR_ENGINE_OXC"));
+	_btnOXC->setGroup(&_owner);
+	_btnOXC->onMousePress((ActionHandler)&OptionsAdvancedState::btnGroupPress, SDL_BUTTON_LEFT);
+
+	_btnOXCE->setText(tr("STR_ENGINE_OXCE"));
+	_btnOXCE->setGroup(&_owner);
+	_btnOXCE->onMousePress((ActionHandler)&OptionsAdvancedState::btnGroupPress, SDL_BUTTON_LEFT);
+
+	_btnOTHER->setText(tr("STR_ENGINE_OTHER")); // rename in your fork
+	_btnOTHER->setGroup(&_owner);
+	_btnOTHER->onMousePress((ActionHandler)&OptionsAdvancedState::btnGroupPress, SDL_BUTTON_LEFT);
+	_btnOTHER->setVisible(false); // enable in your fork
 
 	// how much room do we need for YES/NO
 	Text text = Text(100, 9, 0, 0);
@@ -98,19 +122,23 @@ OptionsAdvancedState::OptionsAdvancedState(OptionsOrigin origin) : OptionsBaseSt
 		{
 			if (optionInfo.category() == "STR_GENERAL")
 			{
-				_settingsGeneral.push_back(optionInfo);
+				_settingsGeneral[optionInfo.owner()].push_back(optionInfo);
 			}
 			else if (optionInfo.category() == "STR_GEOSCAPE")
 			{
-				_settingsGeo.push_back(optionInfo);
+				_settingsGeo[optionInfo.owner()].push_back(optionInfo);
+			}
+			else if (optionInfo.category() == "STR_BASESCAPE")
+			{
+				_settingsBase[optionInfo.owner()].push_back(optionInfo);
 			}
 			else if (optionInfo.category() == "STR_BATTLESCAPE")
 			{
-				_settingsBattle.push_back(optionInfo);
+				_settingsBattle[optionInfo.owner()].push_back(optionInfo);
 			}
-			else if (optionInfo.category() == "STR_OXCE")
+			else if (optionInfo.category() == "STR_AI")
 			{
-				_settingsOxce.push_back(optionInfo);
+				_settingsAI[optionInfo.owner()].push_back(optionInfo);
 			}
 		}
 	}
@@ -125,27 +153,91 @@ OptionsAdvancedState::~OptionsAdvancedState()
 }
 
 /**
- * Fills the settings list based on category.
+ * Refreshes the UI.
  */
 void OptionsAdvancedState::init()
 {
 	OptionsBaseState::init();
+
+	updateList();
+}
+
+/**
+ * Fills the settings list based on category.
+ */
+void OptionsAdvancedState::updateList()
+{
+	OptionOwner idx = _owner == _btnOXC ? OPTION_OXC : _owner == _btnOXCE ? OPTION_OXCE : OPTION_OTHER;
+
+	_offsetGeneralMin = -1;
+	_offsetGeneralMax = -1;
+	_offsetGeoMin = -1;
+	_offsetGeoMax = -1;
+	_offsetBaseMin = -1;
+	_offsetBaseMax = -1;
+	_offsetBattleMin = -1;
+	_offsetBattleMax = -1;
+	_offsetAIMin = -1;
+	_offsetAIMax = -1;
+
 	_lstOptions->clearList();
-	_lstOptions->addRow(2, tr("STR_GENERAL").c_str(), "");
-	_lstOptions->setCellColor(0, 0, _colorGroup);
-	addSettings(_settingsGeneral);
-	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_GEOSCAPE").c_str(), "");
-	_lstOptions->setCellColor(_settingsGeneral.size() + 2, 0, _colorGroup);
-	addSettings(_settingsGeo);
-	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_BATTLESCAPE").c_str(), "");
-	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2, 0, _colorGroup);
-	addSettings(_settingsBattle);
-	_lstOptions->addRow(2, "", "");
-	_lstOptions->addRow(2, tr("STR_OXCE").c_str(), "");
-	_lstOptions->setCellColor(_settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2, 0, _colorGroup);
-	addSettings(_settingsOxce);
+
+	int row = -1;
+
+	if (_settingsGeneral[idx].size() > 0)
+	{
+		_lstOptions->addRow(2, tr("STR_GENERAL").c_str(), "");
+		row++;
+		_offsetGeneralMin = row;
+		_lstOptions->setCellColor(_offsetGeneralMin, 0, _colorGroup);
+		addSettings(_settingsGeneral[idx]);
+		row += _settingsGeneral[idx].size();
+		_offsetGeneralMax = row;
+	}
+	if (_settingsGeo[idx].size() > 0)
+	{
+		if (row > -1) { _lstOptions->addRow(2, "", ""); row++; }
+		_lstOptions->addRow(2, tr("STR_GEOSCAPE").c_str(), "");
+		row++;
+		_offsetGeoMin = row;
+		_lstOptions->setCellColor(_offsetGeoMin, 0, _colorGroup);
+		addSettings(_settingsGeo[idx]);
+		row += _settingsGeo[idx].size();
+		_offsetGeoMax = row;
+	}
+	if (_settingsBase[idx].size() > 0)
+	{
+		if (row > -1) { _lstOptions->addRow(2, "", ""); row++; }
+		_lstOptions->addRow(2, tr("STR_BASESCAPE").c_str(), "");
+		row++;
+		_offsetBaseMin = row;
+		_lstOptions->setCellColor(_offsetBaseMin, 0, _colorGroup);
+		addSettings(_settingsBase[idx]);
+		row += _settingsBase[idx].size();
+		_offsetBaseMax = row;
+	}
+	if (_settingsBattle[idx].size() > 0)
+	{
+		if (row > -1) { _lstOptions->addRow(2, "", ""); row++; }
+		_lstOptions->addRow(2, tr("STR_BATTLESCAPE").c_str(), "");
+		row++;
+		_offsetBattleMin = row;
+		_lstOptions->setCellColor(_offsetBattleMin, 0, _colorGroup);
+		addSettings(_settingsBattle[idx]);
+		row += _settingsBattle[idx].size();
+		_offsetBattleMax = row;
+	}
+	if (_settingsAI[idx].size() > 0)
+	{
+		if (row > -1) { _lstOptions->addRow(2, "", ""); row++; }
+		_lstOptions->addRow(2, tr("STR_AI").c_str(), "");
+		row++;
+		_offsetAIMin = row;
+		_lstOptions->setCellColor(_offsetAIMin, 0, _colorGroup);
+		addSettings(_settingsAI[idx]);
+		row += _settingsAI[idx].size();
+		_offsetAIMax = row;
+	}
 }
 
 /**
@@ -186,25 +278,28 @@ void OptionsAdvancedState::addSettings(const std::vector<OptionInfo> &settings)
  */
 OptionInfo *OptionsAdvancedState::getSetting(size_t sel)
 {
-	if (sel > 0 &&
-		sel <= _settingsGeneral.size())
+	int selInt = sel;
+	OptionOwner idx = _owner == _btnOXC ? OPTION_OXC : _owner == _btnOXCE ? OPTION_OXCE : OPTION_OTHER;
+
+	if (selInt > _offsetGeneralMin && selInt <= _offsetGeneralMax)
 	{
-		return &_settingsGeneral[sel - 1];
+		return &_settingsGeneral[idx][selInt - 1 - _offsetGeneralMin];
 	}
-	else if (sel > _settingsGeneral.size() + 2 &&
-			 sel <= _settingsGeneral.size() + 2 + _settingsGeo.size())
+	else if (selInt > _offsetGeoMin && selInt <= _offsetGeoMax)
 	{
-		return &_settingsGeo[sel - 1 - _settingsGeneral.size() - 2];
+		return &_settingsGeo[idx][selInt - 1 - _offsetGeoMin];
 	}
-	else if (sel > _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 &&
-			 sel <= _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size())
+	else if (selInt > _offsetBaseMin && selInt <= _offsetBaseMax)
 	{
-		return &_settingsBattle[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2];
+		return &_settingsBase[idx][selInt - 1 - _offsetBaseMin];
 	}
-	else if (sel > _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 &&
-		sel <= _settingsGeneral.size() + 2 + _settingsGeo.size() + 2 + _settingsBattle.size() + 2 + _settingsOxce.size())
+	else if (selInt > _offsetBattleMin && selInt <= _offsetBattleMax)
 	{
-		return &_settingsOxce[sel - 1 - _settingsGeneral.size() - 2 - _settingsGeo.size() - 2 - _settingsBattle.size() - 2];
+		return &_settingsBattle[idx][selInt - 1 - _offsetBattleMin];
+	}
+	else if (selInt > _offsetAIMin && selInt <= _offsetAIMax)
+	{
+		return &_settingsAI[idx][selInt - 1 - _offsetAIMin];
 	}
 	else
 	{
@@ -348,6 +443,11 @@ void OptionsAdvancedState::lstOptionsMouseOver(Action *)
 void OptionsAdvancedState::lstOptionsMouseOut(Action *)
 {
 	_txtTooltip->setText("");
+}
+
+void OptionsAdvancedState::btnGroupPress(Action*)
+{
+	updateList();
 }
 
 }

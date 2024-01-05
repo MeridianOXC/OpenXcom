@@ -24,6 +24,7 @@
 namespace OpenXcom
 {
 
+class TextButton;
 class TextList;
 
 /**
@@ -33,10 +34,26 @@ class TextList;
 class OptionsAdvancedState : public OptionsBaseState
 {
 private:
+	TextButton *_btnOXC, *_btnOXCE, *_btnOTHER;
+	TextButton *_owner;
 	TextList *_lstOptions;
 	bool _isTFTD;
 	Uint8 _colorGroup, _greyedOutColor;
-	std::vector<OptionInfo> _settingsGeneral, _settingsGeo, _settingsBattle, _settingsOxce;
+	std::vector<OptionInfo> _settingsGeneral[OPTION_OWNER_MAX];
+	std::vector<OptionInfo> _settingsGeo[OPTION_OWNER_MAX];
+	std::vector<OptionInfo> _settingsBase[OPTION_OWNER_MAX];
+	std::vector<OptionInfo> _settingsBattle[OPTION_OWNER_MAX];
+	std::vector<OptionInfo> _settingsAI[OPTION_OWNER_MAX];
+	int _offsetGeneralMin = -1;
+	int _offsetGeneralMax = -1;
+	int _offsetGeoMin = -1;
+	int _offsetGeoMax = -1;
+	int _offsetBaseMin = -1;
+	int _offsetBaseMax = -1;
+	int _offsetBattleMin = -1;
+	int _offsetBattleMax = -1;
+	int _offsetAIMin = -1;
+	int _offsetAIMax = -1;
 
 	void addSettings(const std::vector<OptionInfo> &settings);
 	OptionInfo *getSetting(size_t sel);
@@ -45,14 +62,18 @@ public:
 	OptionsAdvancedState(OptionsOrigin origin);
 	/// Cleans up the Advanced state.
 	~OptionsAdvancedState();
-	/// Fills settings list.
+	/// Refreshes the UI.
 	void init() override;
+	/// Fills settings list.
+	void updateList();
 	/// Handler for clicking a setting on the list.
 	void lstOptionsClick(Action *action);
 	/// Handler for moving the mouse over a setting.
 	void lstOptionsMouseOver(Action *action);
 	/// Handler for moving the mouse outside the settings.
 	void lstOptionsMouseOut(Action *action);
+	/// Handler for clicking buttons.
+	void btnGroupPress(Action* action);
 
 };
 

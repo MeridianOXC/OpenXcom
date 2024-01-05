@@ -879,22 +879,27 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 	}
 	else
 	{
-		if (c->getRules()->getMaxItems() > 0 && _totalItems + change > c->getRules()->getMaxItems())
+		if (_totalItems + change > c->getMaxItemsClamped())
 		{
 			if (!suppressErrors)
 			{
 				_timerRight->stop();
-				LocalizedText msg(tr("STR_NO_MORE_EQUIPMENT_ALLOWED", c->getRules()->getMaxItems()));
+				LocalizedText msg(tr("STR_NO_MORE_EQUIPMENT_ALLOWED", c->getMaxItemsClamped()));
 				_game->pushState(new ErrorMessageState(msg, _palette, _game->getMod()->getInterface("craftEquipment")->getElement("errorMessage")->color, "BACK04.SCR", _game->getMod()->getInterface("craftEquipment")->getElement("errorPalette")->color));
 				_reload = false;
 			}
-			change = c->getRules()->getMaxItems() - _totalItems;
+			change = c->getMaxItemsClamped() - _totalItems;
+			if (change < 0)
+			{
+				// if the player is already over the maximum (e.g. after a mod update), don't go into some ridiculous minus values
+				change = 0;
+			}
 		}
-		if (c->getRules()->getMaxStorageSpace() > 0.0 && _totalItemStorageSize + (change * item->getSize()) > c->getRules()->getMaxStorageSpace() + 0.05)
+		if (_totalItemStorageSize + (change * item->getSize()) > c->getMaxStorageSpaceClamped() + 0.05)
 		{
 			if (item->getSize() > 0.0)
 			{
-				change = (int)floor((c->getRules()->getMaxStorageSpace() + 0.05 - _totalItemStorageSize) / item->getSize());
+				change = (int)floor((c->getMaxStorageSpaceClamped() + 0.05 - _totalItemStorageSize) / item->getSize());
 			}
 			if (change < 0)
 			{
@@ -904,7 +909,7 @@ void CraftEquipmentState::moveRightByValue(int change, bool suppressErrors)
 			if (!suppressErrors)
 			{
 				_timerRight->stop();
-				LocalizedText msg(tr("STR_NO_MORE_EQUIPMENT_ALLOWED_BY_SIZE").arg(c->getRules()->getMaxStorageSpace()));
+				LocalizedText msg(tr("STR_NO_MORE_EQUIPMENT_ALLOWED_BY_SIZE").arg(c->getMaxStorageSpaceClamped()));
 				_game->pushState(new ErrorMessageState(msg, _palette, _game->getMod()->getInterface("craftEquipment")->getElement("errorMessage")->color, "BACK04.SCR", _game->getMod()->getInterface("craftEquipment")->getElement("errorPalette")->color));
 				_reload = false;
 			}

@@ -3125,8 +3125,8 @@ void BattlescapeGenerator::generateBaseMap()
 		if (fac->isBuiltOrHadPreviousFacility())
 		{
 			int num = 0;
-			int xLimit = fac->getX() + fac->getRules()->getSize() -1;
-			int yLimit = fac->getY() + fac->getRules()->getSize() -1;
+			int xLimit = fac->getX() + fac->getRules()->getSizeX() -1;
+			int yLimit = fac->getY() + fac->getRules()->getSizeY() -1;
 
 			// Do we use the normal method for placing items on the ground or an explicit definition?
 			bool storageCheckerboard = (fac->getRules()->getStorageTiles().size() == 0);
@@ -3140,7 +3140,7 @@ void BattlescapeGenerator::generateBaseMap()
 				// Get the vertical levels from the facility ruleset and create a list according to map size
 				_verticalLevels.clear();
 				_verticalLevels = fac->getRules()->getVerticalLevels();
-				command.setVerticalLevels(_verticalLevels, fac->getRules()->getSize());
+				command.setVerticalLevels(_verticalLevels, fac->getRules()->getSizeX(), fac->getRules()->getSizeY());
 				populateVerticalLevels(&command);
 
 				auto currentLevel = _verticalLevels.begin();
@@ -3254,8 +3254,8 @@ void BattlescapeGenerator::generateBaseMap()
 						break;
 					}
 
-					if (pos.x < 0 || pos.x / 10 > fac->getRules()->getSize()
-						|| pos.y < 0 || pos.y / 10 > fac->getRules()->getSize()
+					if (pos.x < 0 || pos.x / 10 > fac->getRules()->getSizeX()
+						|| pos.y < 0 || pos.y / 10 > fac->getRules()->getSizeY()
 						|| pos.z < 0 || pos.z > _mapsize_z)
 					{
 						Log(LOG_ERROR) << "Tile position " << pos << " is outside the facility " << fac->getRules()->getType() << ", skipping placing items there.";

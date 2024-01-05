@@ -47,7 +47,8 @@ private:
 	BaseFacility *_facilities[BASE_SIZE][BASE_SIZE], *_selFacility;
 	Font *_big, *_small;
 	Language *_lang;
-	int _gridX, _gridY, _selSize;
+	int _gridX, _gridY;
+	int _selSizeX, _selSizeY;
 	Surface *_selector;
 	bool _blink;
 	Timer *_timer;
@@ -74,7 +75,7 @@ public:
 	/// Gets the Y position of the currently selected square.
 	int getGridY() const;
 	/// Sets whether the base view is selectable.
-	void setSelectable(int size);
+	void setSelectable(int sizeX, int sizeY);
 	/// Checks if a facility can be placed. Returns 0 if it can, otherwise an int for why not.
 	BasePlacementErrors getPlacementError(const RuleBaseFacility *rule, BaseFacility *facilityBeingMoved = nullptr, bool isStartFacility = false) const;
 	/// Checks if the placed facility is placed in queue or not.

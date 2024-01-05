@@ -35,7 +35,7 @@ RuleUfo::RuleUfo(const std::string &type) :
 	_hunterKillerPercentage(0), _huntMode(0), _huntSpeed(100), _huntBehavior(2), _softlockThreshold(100),
 	_missilePower(0), _unmanned(false),
 	_splashdownSurvivalChance(100), _fakeWaterLandingChance(0),
-	_fireSound(-1), _alertSound(-1), _huntAlertSound(-1),
+	_fireSound(-1), _alertSound(-1), _huntAlertSound(-1), _hitSound(-1),
 	_battlescapeTerrainData(0), _stats(), _statsRaceBonus()
 {
 	_stats.sightRange = 268;
@@ -109,6 +109,7 @@ void RuleUfo::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 		_battlescapeTerrainData = rule;
 	}
 	_modSprite = node["modSprite"].as<std::string>(_modSprite);
+	_hitImage = node["hitImage"].as<std::string>(_hitImage);
 	if (const YAML::Node &raceBonus = node["raceBonus"])
 	{
 		for (YAML::const_iterator i = raceBonus.begin(); i != raceBonus.end(); ++i)
@@ -120,6 +121,7 @@ void RuleUfo::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	mod->loadSoundOffset(_type, _fireSound, node["fireSound"], "GEO.CAT");
 	mod->loadSoundOffset(_type, _alertSound, node["alertSound"], "GEO.CAT");
 	mod->loadSoundOffset(_type, _huntAlertSound, node["huntAlertSound"], "GEO.CAT");
+	mod->loadSoundOffset(_type, _hitSound, node["hitSound"], "GEO.CAT");
 
 	_ufoScripts.load(_type, node, parsers.ufoScripts);
 	_scriptValues.load(node, parsers.getShared());

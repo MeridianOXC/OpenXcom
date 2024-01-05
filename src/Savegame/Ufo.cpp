@@ -101,23 +101,6 @@ Ufo::~Ufo()
 }
 
 /**
- * Match AlienMission based on the unique ID.
- */
-class matchMissionID
-{
-	typedef const AlienMission* argument_type;
-	typedef bool result_type;
-
-public:
-	/// Store ID for later comparisons.
-	matchMissionID(int id) : _id(id) { /* Empty by design. */ }
-	/// Match with stored ID.
-	bool operator()(const AlienMission *am) const { return am->getId() == _id; }
-private:
-	int _id;
-};
-
-/**
  * Loads the UFO from a YAML file.
  * @param node YAML node.
  * @param mod The game mod. Use to access the trajectory rules.
@@ -156,13 +139,21 @@ void Ufo::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod &mo
 	if (game.getMonthsPassed() != -1)
 	{
 		int missionID = node["mission"].as<int>();
-		auto found = std::find_if (game.getAlienMissions().begin(), game.getAlienMissions().end(), matchMissionID(missionID));
-		if (found == game.getAlienMissions().end())
+		AlienMission* found = nullptr;
+		for (auto* am : game.getAlienMissions())
+		{
+			if (am->getId() == missionID)
+			{
+				found = am;
+				break;
+			}
+		}
+		if (!found)
 		{
 			// Corrupt save file.
 			throw Exception("Unknown UFO mission, save file is corrupt.");
 		}
-		_mission = *found;
+		_mission = found;
 		_stats += _rules->getRaceBonus(_mission->getRace());
 
 		std::string tid = node["trajectory"].as<std::string>();

@@ -144,10 +144,15 @@ void GlobalAlienContainmentState::fillPrisonerList()
 
 	for (auto* xbase : *_game->getSavedGame()->getBases())
 	{
+		bool displayed = false;
+		int totalBaseCapacity = 0;
+
 		// determine prison types used in the base
 		std::set<int> occupiedPrisonTypes;
 		for(int prisonType : prisonTypes)
 		{	
+			totalBaseCapacity += xbase->getAvailableContainment(prisonType);
+
 			for(auto* baseFacility : *xbase->getFacilities())
 			{
 				if(baseFacility->getRules()->getAliens() > 0 && baseFacility->getRules()->getPrisonType() == prisonType)
@@ -170,7 +175,7 @@ void GlobalAlienContainmentState::fillPrisonerList()
 			for (const auto* proj : xbase->getResearch())
 			{
 				const RuleResearch* research = proj->getRules();
-				RuleItem* item = _game->getMod()->getItem(research->getName());
+				const RuleItem* item = _game->getMod()->getItem(research->getName()); // don't use getNeededItem()
 				if (research->needItem() && research->destroyItem() && item && item->isAlien() && item->getPrisonType() == prisonType)
 				{
 					researchList.push_back(research->getName());
@@ -185,6 +190,7 @@ void GlobalAlienContainmentState::fillPrisonerList()
 			_lstPrisoners->addRow(3, baseNameAndPrisonType.c_str(), "", "");
 			_lstPrisoners->setRowColor(_lstPrisoners->getLastRowIndex(), _lstPrisoners->getSecondaryColor());
 			_topics.push_back(std::make_tuple("", nullptr, 0));
+			displayed = true;
 
 			for (auto& itemType : _game->getMod()->getItemsList())
 			{
@@ -221,6 +227,16 @@ void GlobalAlienContainmentState::fillPrisonerList()
 				_topics.push_back(std::make_tuple(researchName, xbase, prisonType));
 				totalInterrogated++;
 			}
+		}
+
+		if (!displayed && totalBaseCapacity > 0)
+		{
+			_lstPrisoners->addRow(3, xbase->getName(_game->getLanguage()).c_str(), "", "");
+			_lstPrisoners->setRowColor(_lstPrisoners->getLastRowIndex(), _lstPrisoners->getSecondaryColor());
+			_topics.push_back(std::make_tuple("", nullptr, 0));
+
+			_lstPrisoners->addRow(3, tr("STR_NONE").c_str(), "", "");
+			_topics.push_back(std::make_tuple("", xbase, 0));
 		}
 	}
 

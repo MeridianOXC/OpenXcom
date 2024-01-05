@@ -352,6 +352,20 @@ void Craft::initFixedWeapons(const Mod* mod)
 			_weapons.at(i) = w;
 		}
 	}
+
+	// Remove craft weapons if needed
+	if (getMaxUnitsRaw() < 0 || getMaxVehiclesAndLargeSoldiersRaw() < 0)
+	{
+		size_t weaponIndex = 0;
+		for (auto* current : _weapons)
+		{
+			addCraftStats(-current->getRules()->getBonusStats());
+			setShield(getShield());
+			delete current;
+			_weapons.at(weaponIndex) = 0;
+			weaponIndex++;
+		}
+	}
 }
 
 /**
@@ -541,7 +555,7 @@ std::string Craft::getAltitude() const
 	}
 	else
 	{
-		return "STR_VERY_LOW";
+		return _rules->getDefaultDisplayAltitude();
 	}
 }
 
@@ -1040,9 +1054,9 @@ int Craft::getFuelLimit(Base *base) const
  * the craft can carry.
  * @return The maximum unit capacity.
  */
-int Craft::getMaxUnits() const
+int Craft::getMaxUnitsClamped() const
 {
-	return _stats.soldiers;
+	return Clamp(_stats.soldiers, 0, _rules->getMaxUnitsLimit());
 }
 
 /**
@@ -1050,9 +1064,9 @@ int Craft::getMaxUnits() const
  * the craft can carry.
  * @return The maximum vehicle capacity (incl. 2x2 soldiers).
  */
-int Craft::getMaxVehiclesAndLargeSoldiers() const
+int Craft::getMaxVehiclesAndLargeSoldiersClamped() const
 {
-	return _stats.vehicles;
+	return Clamp(_stats.vehicles, 0, _rules->getMaxVehiclesAndLargeSoldiersLimit());
 }
 
 /**
@@ -1451,7 +1465,7 @@ bool Craft::isDestroyed() const
  */
 int Craft::getSpaceAvailable() const
 {
-	return std::min(getMaxUnits(), _rules->getMaxUnitsLimit()) - getSpaceUsed();
+	return getMaxUnitsClamped() - getSpaceUsed();
 }
 
 /**
@@ -1895,10 +1909,10 @@ int Craft::getHunterKillerAttraction(int huntMode) const
 			// craft that can land (i.e. transports) are not attractive
 			attraction += 1000000;
 		}
-		if (getMaxUnits() > 0)
+		if (getMaxUnitsClamped() > 0)
 		{
 			// craft with more crew capacity (i.e. transports) are less attractive
-			attraction += 500000 + (getMaxUnits() * 1000);
+			attraction += 500000 + (getMaxUnitsClamped() * 1000);
 		}
 		// faster craft (i.e. interceptors) are more attractive
 		attraction += 100000 - _stats.speedMax;
@@ -1916,7 +1930,7 @@ int Craft::getHunterKillerAttraction(int huntMode) const
 			attraction += 1000000;
 		}
 		// craft with more crew capacity (i.e. transports) are more attractive
-		attraction += 500000 - (getMaxUnits() * 1000);
+		attraction += 500000 - (getMaxUnitsClamped() * 1000);
 		// faster craft (i.e. interceptors) are less attractive
 		attraction += 100000 + _stats.speedMax;
 	}
@@ -1983,7 +1997,7 @@ int Craft::getNumVehiclesAndLargeSoldiers() const
  */
 int Craft::getNumSmallSoldiers() const
 {
-	if (getMaxUnits() == 0)
+	if (_rules->getMaxUnitsLimit() == 0)
 		return 0;
 
 	int total = 0;
@@ -2003,7 +2017,7 @@ int Craft::getNumSmallSoldiers() const
  */
 int Craft::getNumLargeSoldiers() const
 {
-	if (getMaxUnits() == 0)
+	if (_rules->getMaxUnitsLimit() == 0)
 		return 0;
 
 	int total = 0;
@@ -2023,7 +2037,7 @@ int Craft::getNumLargeSoldiers() const
  */
 int Craft::getNumSmallVehicles() const
 {
-	if (getMaxUnits() == 0)
+	if (_rules->getMaxUnitsLimit() == 0)
 		return 0;
 
 	int total = 0;
@@ -2043,7 +2057,7 @@ int Craft::getNumSmallVehicles() const
  */
 int Craft::getNumLargeVehicles() const
 {
-	if (getMaxUnits() == 0)
+	if (_rules->getMaxUnitsLimit() == 0)
 		return 0;
 
 	int total = 0;
@@ -2081,7 +2095,7 @@ int Craft::getNumLargeUnits() const
  */
 int Craft::getNumTotalSoldiers() const
 {
-	if (getMaxUnits() == 0)
+	if (_rules->getMaxUnitsLimit() == 0)
 		return 0;
 
 	int total = 0;
@@ -2131,7 +2145,7 @@ bool Craft::validateArmorChange(int sizeFrom, int sizeTo) const
 			{
 				return false;
 			}
-			if (getMaxVehiclesAndLargeSoldiers() > -1 && getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
+			if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiersClamped())
 			{
 				return false;
 			}
@@ -2186,7 +2200,7 @@ bool Craft::validateAddingSoldier(int space, const Soldier* s) const
 	}
 	else // armorSize > 1
 	{
-		if (getMaxVehiclesAndLargeSoldiers() > -1 && getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiers())
+		if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiersClamped())
 		{
 			return false;
 		}
@@ -2210,9 +2224,8 @@ int Craft::validateAddingVehicles(int totalSize) const
 {
 	int maximumAllowed = getSpaceAvailable() / totalSize;
 
-	if (getMaxVehiclesAndLargeSoldiers() > -1)
 	{
-		maximumAllowed = std::min(maximumAllowed, getMaxVehiclesAndLargeSoldiers() - getNumVehiclesAndLargeSoldiers());
+		maximumAllowed = std::min(maximumAllowed, getMaxVehiclesAndLargeSoldiersClamped() - getNumVehiclesAndLargeSoldiers());
 	}
 	if (_rules->getMaxVehicles() > -1)
 	{

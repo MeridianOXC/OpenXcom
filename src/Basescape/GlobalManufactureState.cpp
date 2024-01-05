@@ -203,7 +203,7 @@ void GlobalManufactureState::fillProductionList()
 	for (Base *xbase : *_game->getSavedGame()->getBases())
 	{
 		auto& baseProductions = xbase->getProductions();
-		if (!baseProductions.empty())
+		if (!baseProductions.empty() || xbase->getEngineers() > 0)
 		{
 			std::string baseName = xbase->getName(_game->getLanguage());
 			_lstManufacture->addRow(3, baseName.c_str(), "", "");
@@ -248,6 +248,13 @@ void GlobalManufactureState::fillProductionList()
 
 			_bases.push_back(xbase);
 			_topics.push_back(prod->getRules());
+		}
+		if (baseProductions.empty() && xbase->getEngineers() > 0)
+		{
+			_lstManufacture->addRow(5, tr("STR_NONE").c_str(), "", "", "", "");
+
+			_bases.push_back(xbase);
+			_topics.push_back(0);
 		}
 
 		availableEngineers += xbase->getAvailableEngineers();

@@ -21,6 +21,7 @@
 #include "../Engine/Options.h"
 #include "../Engine/LocalizedText.h"
 #include "../Interface/Window.h"
+#include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
 #include "../Engine/Action.h"
 
@@ -39,7 +40,16 @@ OptionsControlsState::OptionsControlsState(OptionsOrigin origin) : OptionsBaseSt
 #endif
 
 	// Create objects
-	_lstControls = new TextList(200, 136, 94, 8);
+	_btnOXC = new TextButton(70, 16, 94, 8);
+	_btnOXCE = new TextButton(70, 16, 168, 8);
+	_btnOTHER = new TextButton(70, 16, 242, 8);
+	_lstControls = new TextList(200, 120, 94, 26);
+
+	_owner = _btnOXC;
+
+	add(_btnOXC, "button", "controlsMenu");
+	add(_btnOXCE, "button", "controlsMenu");
+	add(_btnOTHER, "button", "controlsMenu");
 
 	if (origin != OPT_BATTLESCAPE)
 	{
@@ -51,6 +61,19 @@ OptionsControlsState::OptionsControlsState(OptionsOrigin origin) : OptionsBaseSt
 	}
 
 	centerAllSurfaces();
+
+	_btnOXC->setText(tr("STR_ENGINE_OXC"));
+	_btnOXC->setGroup(&_owner);
+	_btnOXC->onMousePress((ActionHandler)&OptionsControlsState::btnGroupPress, SDL_BUTTON_LEFT);
+
+	_btnOXCE->setText(tr("STR_ENGINE_OXCE"));
+	_btnOXCE->setGroup(&_owner);
+	_btnOXCE->onMousePress((ActionHandler)&OptionsControlsState::btnGroupPress, SDL_BUTTON_LEFT);
+
+	_btnOTHER->setText(tr("STR_ENGINE_OTHER")); // rename in your fork
+	_btnOTHER->setGroup(&_owner);
+	_btnOTHER->onMousePress((ActionHandler)&OptionsControlsState::btnGroupPress, SDL_BUTTON_LEFT);
+	_btnOTHER->setVisible(false); // enable in your fork
 
 	// Set up objects
 	_lstControls->setColumns(2, 152, 48);
@@ -74,19 +97,19 @@ OptionsControlsState::OptionsControlsState(OptionsOrigin origin) : OptionsBaseSt
 		{
 			if (optionInfo.category() == "STR_GENERAL")
 			{
-				_controlsGeneral.push_back(optionInfo);
+				_controlsGeneral[optionInfo.owner()].push_back(optionInfo);
 			}
 			else if (optionInfo.category() == "STR_GEOSCAPE")
 			{
-				_controlsGeo.push_back(optionInfo);
+				_controlsGeo[optionInfo.owner()].push_back(optionInfo);
+			}
+			else if (optionInfo.category() == "STR_BASESCAPE")
+			{
+				_controlsBase[optionInfo.owner()].push_back(optionInfo);
 			}
 			else if (optionInfo.category() == "STR_BATTLESCAPE")
 			{
-				_controlsBattle.push_back(optionInfo);
-			}
-			else if (optionInfo.category() == "STR_OXCE")
-			{
-				_controlsOxce.push_back(optionInfo);
+				_controlsBattle[optionInfo.owner()].push_back(optionInfo);
 			}
 		}
 	}
@@ -100,27 +123,78 @@ OptionsControlsState::~OptionsControlsState()
 }
 
 /**
- * Fills the controls list based on category.
+ * Refreshes the UI.
  */
 void OptionsControlsState::init()
 {
 	OptionsBaseState::init();
+
+	updateList();
+}
+
+/**
+ * Fills the controls list based on category.
+ */
+void OptionsControlsState::updateList()
+{
+	OptionOwner idx = _owner == _btnOXC ? OPTION_OXC : _owner == _btnOXCE ? OPTION_OXCE : OPTION_OTHER;
+
+	_offsetGeneralMin = -1;
+	_offsetGeneralMax = -1;
+	_offsetGeoMin = -1;
+	_offsetGeoMax = -1;
+	_offsetBaseMin = -1;
+	_offsetBaseMax = -1;
+	_offsetBattleMin = -1;
+	_offsetBattleMax = -1;
+
 	_lstControls->clearList();
-	_lstControls->addRow(2, tr("STR_GENERAL").c_str(), "");
-	_lstControls->setCellColor(0, 0, _colorGroup);
-	addControls(_controlsGeneral);
-	_lstControls->addRow(2, "", "");
-	_lstControls->addRow(2, tr("STR_GEOSCAPE").c_str(), "");
-	_lstControls->setCellColor(_controlsGeneral.size() + 2, 0, _colorGroup);
-	addControls(_controlsGeo);
-	_lstControls->addRow(2, "", "");
-	_lstControls->addRow(2, tr("STR_BATTLESCAPE").c_str(), "");
-	_lstControls->setCellColor(_controlsGeneral.size() + 2 + _controlsGeo.size() + 2, 0, _colorGroup);
-	addControls(_controlsBattle);
-	_lstControls->addRow(2, "", "");
-	_lstControls->addRow(2, tr("STR_OXCE").c_str(), "");
-	_lstControls->setCellColor(_controlsGeneral.size() + 2 + _controlsGeo.size() + 2 + _controlsBattle.size() + 2, 0, _colorGroup);
-	addControls(_controlsOxce);
+
+	int row = -1;
+
+	if (_controlsGeneral[idx].size() > 0)
+	{
+		_lstControls->addRow(2, tr("STR_GENERAL").c_str(), "");
+		row++;
+		_offsetGeneralMin = row;
+		_lstControls->setCellColor(_offsetGeneralMin, 0, _colorGroup);
+		addControls(_controlsGeneral[idx]);
+		row += _controlsGeneral[idx].size();
+		_offsetGeneralMax = row;
+	}
+	if (_controlsGeo[idx].size() > 0)
+	{
+		if (row > -1) { _lstControls->addRow(2, "", ""); row++; }
+		_lstControls->addRow(2, tr("STR_GEOSCAPE").c_str(), "");
+		row++;
+		_offsetGeoMin = row;
+		_lstControls->setCellColor(_offsetGeoMin, 0, _colorGroup);
+		addControls(_controlsGeo[idx]);
+		row += _controlsGeo[idx].size();
+		_offsetGeoMax = row;
+	}
+	if (_controlsBase[idx].size() > 0)
+	{
+		if (row > -1) { _lstControls->addRow(2, "", ""); row++; }
+		_lstControls->addRow(2, tr("STR_BASESCAPE").c_str(), "");
+		row++;
+		_offsetBaseMin = row;
+		_lstControls->setCellColor(_offsetBaseMin, 0, _colorGroup);
+		addControls(_controlsBase[idx]);
+		row += _controlsBase[idx].size();
+		_offsetBaseMax = row;
+	}
+	if (_controlsBattle[idx].size() > 0)
+	{
+		if (row > -1) { _lstControls->addRow(2, "", ""); row++; }
+		_lstControls->addRow(2, tr("STR_BATTLESCAPE").c_str(), "");
+		row++;
+		_offsetBattleMin = row;
+		_lstControls->setCellColor(_offsetBattleMin, 0, _colorGroup);
+		addControls(_controlsBattle[idx]);
+		row += _controlsBattle[idx].size();
+		_offsetBattleMax = row;
+	}
 }
 
 /**
@@ -168,25 +242,24 @@ void OptionsControlsState::addControls(const std::vector<OptionInfo> &keys)
  */
 OptionInfo *OptionsControlsState::getControl(size_t sel)
 {
-	if (sel > 0 &&
-		sel <= _controlsGeneral.size())
+	int selInt = sel;
+	OptionOwner idx = _owner == _btnOXC ? OPTION_OXC : _owner == _btnOXCE ? OPTION_OXCE : OPTION_OTHER;
+
+	if (selInt > _offsetGeneralMin && selInt <= _offsetGeneralMax)
 	{
-		return &_controlsGeneral[sel - 1];
+		return &_controlsGeneral[idx][selInt - 1 - _offsetGeneralMin];
 	}
-	else if (sel > _controlsGeneral.size() + 2 &&
-			 sel <= _controlsGeneral.size() + 2 + _controlsGeo.size())
+	else if (selInt > _offsetGeoMin && selInt <= _offsetGeoMax)
 	{
-		return &_controlsGeo[sel - 1 - _controlsGeneral.size() - 2];
+		return &_controlsGeo[idx][selInt - 1 - _offsetGeoMin];
 	}
-	else if (sel > _controlsGeneral.size() + 2 + _controlsGeo.size() + 2 &&
-			 sel <= _controlsGeneral.size() + 2 + _controlsGeo.size() + 2 + _controlsBattle.size())
+	else if (selInt > _offsetBaseMin && selInt <= _offsetBaseMax)
 	{
-		return &_controlsBattle[sel - 1 - _controlsGeneral.size() - 2 - _controlsGeo.size() - 2];
+		return &_controlsBase[idx][selInt - 1 - _offsetBaseMin];
 	}
-	else if (sel > _controlsGeneral.size() + 2 + _controlsGeo.size() + 2 + _controlsBattle.size() + 2 &&
-		sel <= _controlsGeneral.size() + 2 + _controlsGeo.size() + 2 + _controlsBattle.size() + 2 + _controlsOxce.size())
+	else if (selInt > _offsetBattleMin && selInt <= _offsetBattleMax)
 	{
-		return &_controlsOxce[sel - 1 - _controlsGeneral.size() - 2 - _controlsGeo.size() - 2 - _controlsBattle.size() - 2];
+		return &_controlsBattle[idx][selInt - 1 - _offsetBattleMin];
 	}
 	else
 	{
@@ -258,6 +331,11 @@ void OptionsControlsState::lstControlsKeyPress(Action *action)
 		_selected = -1;
 		_selKey = 0;
 	}
+}
+
+void OptionsControlsState::btnGroupPress(Action*)
+{
+	updateList();
 }
 
 }

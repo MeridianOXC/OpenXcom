@@ -19,6 +19,7 @@
 #include "CraftErrorState.h"
 #include "CraftNotEnoughPilotsState.h"
 #include "ConfirmDestinationState.h"
+#include "../fmath.h"
 #include "../Engine/Game.h"
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/Mod.h"
@@ -75,6 +76,7 @@ ConfirmDestinationState::ConfirmDestinationState(std::vector<Craft*> crafts, Tar
 	_btnTransfer = new TextButton(82, 12, 87, 104);
 	_btnCancel = new TextButton(50, 12, btnCancelX, 104);
 	_txtTarget = new Text(232, 32, 12, 72);
+	_txtETA = new Text(232, 9, 12, 120);
 
 	// Set palette
 	setInterface("confirmDestination", w != 0 && w->getId() == 0);
@@ -84,6 +86,7 @@ ConfirmDestinationState::ConfirmDestinationState(std::vector<Craft*> crafts, Tar
 	add(_btnCancel, "button", "confirmDestination");
 	add(_btnTransfer, "button", "confirmDestination");
 	add(_txtTarget, "text", "confirmDestination");
+	add(_txtETA, "text", "confirmDestination");
 
 	centerAllSurfaces();
 
@@ -113,6 +116,33 @@ ConfirmDestinationState::ConfirmDestinationState(std::vector<Craft*> crafts, Tar
 	else
 	{
 		_txtTarget->setText(tr("STR_TARGET").arg(_target->getName(_game->getLanguage())));
+	}
+
+	// ETA display
+	if (Options::oxceShowETAMode > 0 && _target)
+	{
+		MovingTarget* mt = dynamic_cast<MovingTarget*>(_target);
+		if (Options::oxceShowETAMode == 1 && mt && mt->getSpeed() > 0)
+		{
+			// don't show ETA for moving targets (i.e. UFOs and crafts)
+		}
+		else
+		{
+			int speed = _crafts.front()->getCraftStats().speedMax;
+			int distance = XcomDistance(_crafts.front()->getDistance(_target));
+			int etaInHoursHelper = (distance + (speed / 2)) / speed;
+			int days = etaInHoursHelper / 24;
+			int hours = etaInHoursHelper % 24;
+			std::ostringstream ssStatus;
+			if (days > 0) ssStatus << tr("STR_DAY_SHORT").arg(days);
+			if (hours > 0 || days == 0)
+			{
+				if (days > 0) ssStatus << "/";
+				ssStatus << tr("STR_HOUR_SHORT").arg(hours);
+			}
+			_txtETA->setAlign(ALIGN_CENTER);
+			_txtETA->setText(tr("STR_ETA").arg(ssStatus.str()));
+		}
 	}
 }
 

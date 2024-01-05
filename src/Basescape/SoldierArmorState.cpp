@@ -46,14 +46,6 @@ namespace OpenXcom
 
 struct compareArmorName
 {
-	typedef ArmorItem& first_argument_type;
-	typedef ArmorItem& second_argument_type;
-	typedef bool result_type;
-
-	bool _reverse;
-
-	compareArmorName(bool reverse) : _reverse(reverse) {}
-
 	bool operator()(const ArmorItem &a, const ArmorItem &b) const
 	{
 		return Unicode::naturalCompare(a.name, b.name);
@@ -63,7 +55,6 @@ struct compareArmorName
 
 /**
  * Initializes all the elements in the Soldier Armor window.
- * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  * @param soldier ID of the selected soldier.
  */
@@ -157,8 +148,7 @@ SoldierArmorState::SoldierArmorState(Base *base, size_t soldier, SoldierArmorOri
 	_btnCancel->onKeyboardRelease((ActionHandler)&SoldierArmorState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
 
 	_armorOrder = ARMOR_SORT_NONE;
-	updateArrows();
-	updateList();
+	sortList();
 
 	_lstArmor->onMouseClick((ActionHandler)&SoldierArmorState::lstArmorClick);
 	_lstArmor->onMouseClick((ActionHandler)&SoldierArmorState::lstArmorClickMiddle, SDL_BUTTON_MIDDLE);
@@ -200,21 +190,23 @@ void SoldierArmorState::updateArrows()
 
 /**
 * Sorts the armor list.
-* @param sort Order to sort the armors in.
 */
 void SoldierArmorState::sortList()
 {
+	updateArrows();
+
 	switch (_armorOrder)
 	{
 	case ARMOR_SORT_NAME_ASC:
-		std::sort(_armors.begin(), _armors.end(), compareArmorName(false));
+		std::stable_sort(_armors.begin(), _armors.end(), compareArmorName());
 		break;
 	case ARMOR_SORT_NAME_DESC:
-		std::sort(_armors.rbegin(), _armors.rend(), compareArmorName(true));
+		std::stable_sort(_armors.rbegin(), _armors.rend(), compareArmorName());
 		break;
 	default:
 		break;
 	}
+
 	updateList();
 }
 
@@ -340,15 +332,7 @@ void SoldierArmorState::lstArmorClickMiddle(Action *action)
 */
 void SoldierArmorState::sortNameClick(Action *)
 {
-	if (_armorOrder == ARMOR_SORT_NAME_ASC)
-	{
-		_armorOrder = ARMOR_SORT_NAME_DESC;
-	}
-	else
-	{
-		_armorOrder = ARMOR_SORT_NAME_ASC;
-	}
-	updateArrows();
+	_armorOrder = _armorOrder == ARMOR_SORT_NAME_ASC ? ARMOR_SORT_NAME_DESC : ARMOR_SORT_NAME_ASC;
 	sortList();
 }
 

@@ -113,6 +113,8 @@ interfaces: #done
         color: 1
   - type: controlsMenu
     elements:
+      - id: button
+        color: 1
       - id: optionLists
         color: 1
         color2: 239
@@ -131,6 +133,8 @@ interfaces: #done
         color: 1
   - type: advancedMenu
     elements:
+      - id: button
+        color: 1
       - id: optionLists
         color: 1
         color2: 239
@@ -1366,6 +1370,9 @@ interfaces: #done
         color: 1   # white
         color2: 239
         border: 1  # blue
+      - id: listExtended
+        color: 156
+        color2: 244
       - id: button
         color: 1   # purple
   - type: allocateResearch
@@ -1794,6 +1801,10 @@ interfaces: #done
       - id: list
         color: 244
       - id: button
+        color: 1
+      - id: errorPalette
+        color: 4
+      - id: errorMessage
         color: 1
   - type: craftSoldiers
     backgroundImage: BACK02.SCR

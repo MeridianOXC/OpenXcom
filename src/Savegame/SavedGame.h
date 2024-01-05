@@ -319,8 +319,8 @@ public:
 	int getManufactureRuleStatus(const std::string &manufactureRule);
 	/// Gets all the research rule status info.
 	const std::map<std::string, int> &getResearchRuleStatusRaw() const { return _researchRuleStatus; }
-	/// Is the research new?
-	bool isResearchRuleStatusNew(const std::string &researchRule) const;
+	/// Gets the status of a research rule.
+	int getResearchRuleStatus(const std::string &researchRule) const;
 	/// Is the research permanently disabled?
 	bool isResearchRuleStatusDisabled(const std::string &researchRule) const;
 	/// Gets if a research still has undiscovered non-disabled "getOneFree".
