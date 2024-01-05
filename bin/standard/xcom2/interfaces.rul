@@ -113,6 +113,8 @@ interfaces: #done
         color: 1
   - type: controlsMenu
     elements:
+      - id: button
+        color: 1
       - id: optionLists
         color: 1
         color2: 239
@@ -131,6 +133,8 @@ interfaces: #done
         color: 1
   - type: advancedMenu
     elements:
+      - id: button
+        color: 1
       - id: optionLists
         color: 1
         color2: 239

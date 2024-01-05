@@ -113,6 +113,8 @@ interfaces:
         color: 239   # bright green
   - type: controlsMenu
     elements:
+      - id: button
+        color: 239   # bright green
       - id: optionLists
         color: 138   # yellow
         color2: 239  # bright green
@@ -131,6 +133,8 @@ interfaces:
         color: 239   # bright green
   - type: advancedMenu
     elements:
+      - id: button
+        color: 239   # bright green
       - id: optionLists
         color: 138   # yellow
         color2: 239  # bright green

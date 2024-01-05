@@ -456,7 +456,11 @@ en-GB:
   STR_NOTES: "Notes"
   STR_NEW_NOTE: "<NEW NOTE>"
 #OptionsAdvancedState.cpp
-  STR_OXCE: "Extended"
+  STR_ENGINE_OXC: "OXC"
+  STR_ENGINE_OXCE: "OXCE"
+  STR_ENGINE_OTHER: "OTHER"
+  STR_BASESCAPE: "Basescape"
+  STR_AI: "AI"
 #OptionsBaseState.cpp
   STR_FOLDERS: "FOLDERS"
 #OptionsBattlescapeState.cpp

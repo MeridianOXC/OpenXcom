@@ -82,6 +82,17 @@ namespace Options
 
 	/// Creates the options info.
 	void create();
+	void createOptionsAndroid();
+	void createAdvancedOptionsAndroid();
+	void createOptionsOXC();
+	void createAdvancedOptionsOXC();
+	void createControlsOXC();
+	void createOptionsOXCE();
+	void createAdvancedOptionsOXCE();
+	void createControlsOXCE();
+	void createOptionsOTHER();
+	void createAdvancedOptionsOTHER();
+	void createControlsOTHER();
 	/// Restores default options.
 	void resetDefault(bool includeMods);
 	/// Initializes the options settings.
