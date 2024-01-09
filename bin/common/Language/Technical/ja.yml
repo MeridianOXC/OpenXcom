@@ -352,6 +352,8 @@ ja:
   rearArmor: "背面装甲"
   underArmor: "内装甲"
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: "建造費"
   buildCostItems: "建材："
   buildTime: "建造期間"
@@ -405,8 +407,10 @@ ja:
 #
   costRent: "賃貸費"
   soldiers: "貨物スペース"
+  maxUnitsLimit: ""
   pilots: "コクピット人員数"
   vehicles: "HWP用スペース"
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: "小型兵士の最大数"
   maxLargeSoldiers: "大型兵士の最大数"
   maxSmallVehicles: "小型乗り物の最大数"

@@ -91,6 +91,7 @@ interfaces: #done
         color: 1
       - id: tooltip
         color: 239
+        color2: 244
       - id: button
         color: 1
       - id: confirmDefaults

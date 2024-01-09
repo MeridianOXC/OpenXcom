@@ -64,7 +64,7 @@ namespace OpenXcom
 		add(_lstSelection, "list", "ufopaedia");
 
 		_colorNormal = _lstSelection->getColor();
-		_colorNew = Options::oxceHighlightNewTopicsHidden ? _lstSelection->getSecondaryColor() : _colorNormal;
+		_colorNew = Options::oxceHighlightNewTopics ? _lstSelection->getSecondaryColor() : _colorNormal;
 
 		centerAllSurfaces();
 
@@ -141,7 +141,7 @@ namespace OpenXcom
 	 */
 	void UfopaediaSelectState::lstSelectionClickRight(Action *)
 	{
-		if (!Options::oxceHighlightNewTopicsHidden)
+		if (!Options::oxceHighlightNewTopics)
 			return;
 
 		// change status

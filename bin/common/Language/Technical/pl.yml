@@ -352,6 +352,8 @@ pl:
   rearArmor: "Pancerz tylny"
   underArmor: "Pancerz dolny"
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: "Koszt budowy"
   buildCostItems: "Materiały do budowy:"
   buildTime: "Czas budowy"
@@ -405,8 +407,10 @@ pl:
 #
   costRent: "Koszt utrzymania"
   soldiers: "Przestrzeń ładunkowa"
+  maxUnitsLimit: ""
   pilots: "Rozmiar kabiny"
   vehicles: "CDS-ów"
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: "Maks. małych żołnierzy"
   maxLargeSoldiers: "Maks. dużych żołnierzy"
   maxSmallVehicles: "Maks. małych pojazdów"

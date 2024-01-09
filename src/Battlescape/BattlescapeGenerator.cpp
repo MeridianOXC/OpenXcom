@@ -3620,6 +3620,14 @@ void BattlescapeGenerator::loadVerticalLevels(MapScript *command, bool repopulat
 					{
 						z = currentLevel->levelSizeZ == -1 ? block->getSizeZ() : currentLevel->levelSizeZ;
 					}
+					else
+					{
+						++tries; // we failed to find an appropriate block for a command that must explicitly load one, so don't try too hard to keep finding one
+						if(tries > maxTries)
+						{
+							Log(LOG_WARNING) << "Battlescape Generator has encountered an error: a mapscript command or base facility with vertical levels cannot find a map block with the right size/terrain/groups. The modder may want to check that the specified terrain or vertical level size/groups is correct.";
+						}
+					}
 
 					break;
 			}

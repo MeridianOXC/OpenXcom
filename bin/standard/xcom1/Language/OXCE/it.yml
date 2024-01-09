@@ -1,4 +1,5 @@
 it:
+  STR_NOT_ENOUGH_HWP_CAPACITY: "CAPACITÀ PER HWP INSUFFICIENTE!{SMALLLINE}Usa un modulo diverso o riduci il numero di HWP assegnati."
   STR_AVATAR_NAME_1: " #01 Maschio, Biondo"
   STR_AVATAR_NAME_2: "#02 Maschio, Castano"
   STR_AVATAR_NAME_3: "#03 Maschio, Asiatico"

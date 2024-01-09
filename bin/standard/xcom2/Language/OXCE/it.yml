@@ -1,4 +1,5 @@
 it:
+  STR_NOT_ENOUGH_HWP_CAPACITY: "CAPACITÀ PER SWS INSUFFICIENTE!{SMALLLINE}Usa un modulo diverso o riduci il numero di SWS assegnati."
   STR_AVATAR_NAME_1: "#01 Dolph"
   STR_AVATAR_NAME_2: "#02 Will"
   STR_AVATAR_NAME_3: "#03 Sylvester"

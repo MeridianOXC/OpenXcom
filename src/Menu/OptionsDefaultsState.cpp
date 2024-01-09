@@ -91,6 +91,30 @@ OptionsDefaultsState::~OptionsDefaultsState()
 void OptionsDefaultsState::btnYesClick(Action *action)
 {
 	Options::resetDefault(false);
+	if (_game->isCtrlPressed())
+	{
+		// my development/debug defaults
+		Options::debug = true;
+		Options::language = "en-US";
+		Options::musicVolume = 15;
+		Options::soundVolume = 15;
+		Options::uiVolume = 15;
+		Options::keyFps = SDLK_UNKNOWN;
+		Options::playIntro = false;
+		Options::autosave = false;
+		Options::showFundsOnGeoscape = true;
+		Options::battleFireSpeed = 16;
+		Options::battleXcomSpeed = 1;
+		Options::battleNotifyDeath = true;
+		Options::battleNewPreviewPath = PATH_ARROW_TU;
+		Options::battleUFOExtenderAccuracy = true;
+		Options::showMoreStatsInInventoryView = true;
+		Options::battleAutoEnd = true;
+		Options::disableAutoEquip = true;
+		Options::strafe = true;
+		Options::skipNextTurnScreen = true;
+		Options::alienBleeding = true;
+	}
 	_game->loadLanguages();
 	_game->popState();
 	_state->btnOkClick(action);

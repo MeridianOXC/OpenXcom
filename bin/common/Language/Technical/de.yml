@@ -352,6 +352,8 @@ de:
   rearArmor: ""
   underArmor: ""
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: "Baukosten"
   buildCostItems: "Baumaterialien:"
   buildTime: "Bauzeit"
@@ -405,8 +407,10 @@ de:
 #
   costRent: "Mietkosten"
   soldiers: "Lagerraum"
+  maxUnitsLimit: ""
   pilots: "Cockpit Größe"
   vehicles: ""
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: ""
   maxLargeSoldiers: ""
   maxSmallVehicles: ""

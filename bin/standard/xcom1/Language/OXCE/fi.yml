@@ -15,4 +15,5 @@ fi:
   GMGEO1: "Geomaisemakappale #1"
   GMGEO2: "Geomaisemakappale #2"
   GMTACTIC: "Taistelukenttäkappale"
+  GMINTER: "Ilmataisteluraita"
   STR_SHOT_TYPE_AUTO: "Sarja ({0})"

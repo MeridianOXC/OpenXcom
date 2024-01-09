@@ -79,7 +79,7 @@ NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _sho
 	add(_cbxCategory, "catBox", "selectNewManufacture");
 
 	_colorNormal = _lstManufacture->getColor();
-	_colorNew = Options::oxceHighlightNewTopicsHidden ? _lstManufacture->getSecondaryColor() : _colorNormal;
+	_colorNew = Options::oxceHighlightNewTopics ? _lstManufacture->getSecondaryColor() : _colorNormal;
 	_colorHidden = _game->getMod()->getInterface("selectNewManufacture")->getElement("listExtended")->color;
 	_colorFacilityRequired = _game->getMod()->getInterface("selectNewManufacture")->getElement("listExtended")->color2;
 
@@ -224,7 +224,7 @@ void NewManufactureListState::lstProdClickRight(Action *)
 		const std::string rule = _displayedStrings[_lstManufacture->getSelectedRow()];
 		int oldState = _game->getSavedGame()->getManufactureRuleStatus(rule);
 		int newState = (oldState + 1) % RuleManufacture::MANU_STATUSES;
-		if (!Options::oxceHighlightNewTopicsHidden)
+		if (!Options::oxceHighlightNewTopics)
 		{
 			// only switch between hidden and not hidden
 			newState = (oldState == RuleManufacture::MANU_STATUS_HIDDEN) ? RuleManufacture::MANU_STATUS_NORMAL : RuleManufacture::MANU_STATUS_HIDDEN;

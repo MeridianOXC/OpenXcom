@@ -66,15 +66,6 @@ void AlienRace::load(const YAML::Node &node, const Mod* mod)
 			_retaliationMissionDistribution.push_back(std::make_pair(nn->first.as<size_t>(0), nw));
 		}
 	}
-	else if (node["retaliationMission"] && mod->checkForObsoleteErrorByYear( _id, node["retaliationMission"], "use of property 'retaliationMission'", 2024))
-	{
-		// FIXME: backwards-compatibility, remove completely after mid 2024
-		std::string retaliationMission = node["retaliationMission"].as<std::string>("");
-
-		WeightedOptions* nw = new WeightedOptions();
-		nw->set(retaliationMission, 100); // weight 100
-		_retaliationMissionDistribution.push_back(std::make_pair(0, nw)); // month 0
-	}
 }
 
 /**
