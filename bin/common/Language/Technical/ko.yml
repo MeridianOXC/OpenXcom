@@ -352,6 +352,8 @@ ko:
   rearArmor: "후면 장갑"
   underArmor: "하부 장갑"
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: "제작 비용"
   buildCostItems: "제작 재료:"
   buildTime: "제작 시간"
@@ -405,8 +407,10 @@ ko:
 #
   costRent: "대여 비용"
   soldiers: "화물 공간"
+  maxUnitsLimit: ""
   pilots: "조종석 크기"
   vehicles: "중화기 플랫폼 수용량"
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: "최대 소형 병사"
   maxLargeSoldiers: "최대 대형 병사"
   maxSmallVehicles: "최대 소형 차량"

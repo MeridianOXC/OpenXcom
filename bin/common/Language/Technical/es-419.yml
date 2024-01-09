@@ -352,6 +352,8 @@ es-419:
   rearArmor: ""
   underArmor: ""
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: ""
   buildCostItems: ""
   buildTime: ""
@@ -405,8 +407,10 @@ es-419:
 #
   costRent: ""
   soldiers: ""
+  maxUnitsLimit: ""
   pilots: ""
   vehicles: ""
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: ""
   maxLargeSoldiers: ""
   maxSmallVehicles: ""

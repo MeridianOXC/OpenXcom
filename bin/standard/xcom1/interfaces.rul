@@ -91,6 +91,7 @@ interfaces:
         color: 133   # minty green
       - id: tooltip
         color: 133   # minty green
+        color2: 138  # yellow
       - id: button
         color: 133   # minty green
       - id: confirmDefaults

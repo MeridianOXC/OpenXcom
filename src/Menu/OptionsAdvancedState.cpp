@@ -350,6 +350,10 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		{
 			increment *= 10;
 		}
+		else if (i == &Options::oxceResearchScrollSpeedWithCtrl || i == &Options::oxceManufactureScrollSpeedWithCtrl)
+		{
+			increment *= 5;
+		}
 		*i += increment;
 
 		int min = 0, max = 0;
@@ -382,14 +386,24 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 1;
 			max = 5;
 		}
-		else if (i == &Options::autosaveSlots)
+		else if (i == &Options::autosaveSlots || i == &Options::oxceResearchScrollSpeed || i == &Options::oxceManufactureScrollSpeed)
 		{
 			min = 1;
 			max = 10;
 		}
+		else if (i == &Options::oxceInterceptGuiMaintenanceTime || i == &Options::oxceShowETAMode)
+		{
+			min = 0;
+			max = 2;
+		}
 		else if (i == &Options::oxceWoundedDefendBaseIf) {
 			min = 0;
 			max = 100;
+		}
+		else if (i == &Options::oxceResearchScrollSpeedWithCtrl || i == &Options::oxceManufactureScrollSpeedWithCtrl)
+		{
+			min = 5;
+			max = 50;
 		}
 		else if (i == &Options::oxceAutoNightVisionThreshold) {
 			min = 0;

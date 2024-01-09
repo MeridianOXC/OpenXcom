@@ -352,6 +352,8 @@ uk:
   rearArmor: "Тилова броня"
   underArmor: "Нижня броня"
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: "Вартість будівництва"
   buildCostItems: "Будівельні матеріали:"
   buildTime: "Час побудови"
@@ -405,8 +407,10 @@ uk:
 #
   costRent: "Вартість оренди"
   soldiers: "Вантажний простір"
+  maxUnitsLimit: ""
   pilots: "Розмір кабіни"
   vehicles: "Потужність транспортних засобів"
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: "Максимум легкої пехоти"
   maxLargeSoldiers: "Максимум важкої пехоти"
   maxSmallVehicles: "Максимум легкої техніки"

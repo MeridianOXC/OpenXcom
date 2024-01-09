@@ -248,6 +248,7 @@ pt-PT:
   STR_ALIEN_RACE: "Espécie"
   STR_ALIEN_TECH_LEVEL: "Nível de armamento"
   STR_RANDOMIZE: "Aleatório"
+  STR_OXCE_REQUIRED_QUESTION: "Esta modificação requer OpenXcom {0} para funcionar correctamente. Activar esta modificação?"
   STR_RESTORE_DEFAULTS_QUESTION: "Tem a certeza de que deseja restaurar os valores padrão?"
   STR_DISPLAY_OPTIONS_CONFIRM: "Deseja manter as opções de visualização atuais?"
   STR_DISPLAY_OPTIONS_REVERT: "A reverter em 0:{0}"

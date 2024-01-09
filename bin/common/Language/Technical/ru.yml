@@ -352,6 +352,8 @@ ru:
   rearArmor: "Тыловая броня"
   underArmor: "Нижняя броня"
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: "Цена постройки"
   buildCostItems: "Материалы для строит.:"
   buildTime: "Время постройки"
@@ -405,8 +407,10 @@ ru:
 #
   costRent: "Арендная плата"
   soldiers: "Грузоподъемность"
+  maxUnitsLimit: ""
   pilots: "Размер кабины"
   vehicles: "Мест под ТБП"
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: "Максимум легкой пехоты"
   maxLargeSoldiers: "Максимум тяжелой пехоты"
   maxSmallVehicles: "Максимум легкой техники"

@@ -3376,6 +3376,7 @@ void StatsForNerdsState::initCraftList()
 		addInteger(ss, craftRule->getListOrder(), "listOrder");
 
 		addSection("{Geoscape}", "", _white);
+		addSingleString(ss, craftRule->getDefaultDisplayAltitude(), "defaultAltitude", "STR_VERY_LOW");
 		addInteger(ss, craftRule->getSprite(0), "sprite (Minimized)", -1);
 		addSpriteResourcePath(ss, mod, "INTICON.PCK", craftRule->getSprite(0));
 		addInteger(ss, craftRule->getSprite(0) + 11, "_sprite (Dogfight)", 10);
@@ -3633,6 +3634,7 @@ void StatsForNerdsState::initUfoList()
 
 		addSection("{Exotic}", "", _white);
 		addInteger(ss, ufoRule->getSoftlockThreshold(), "softlockThreshold", 100);
+		addSingleString(ss, ufoRule->getHitImage(), "hitImage");
 		addInteger(ss, ufoRule->getMissilePower(), "missilePower");
 		addBoolean(ss, ufoRule->isUnmanned(), "unmanned");
 		addInteger(ss, ufoRule->getSplashdownSurvivalChance(), "splashdownSurvivalChance", 100);
@@ -3660,6 +3662,11 @@ void StatsForNerdsState::initUfoList()
 		addInteger(ss, ufoRule->getHuntAlertSound(), "huntAlertSound", -1);
 		tmpSoundVector.clear();
 		tmpSoundVector.push_back(ufoRule->getHuntAlertSound());
+		addSoundVectorResourcePaths(ss, mod, "GEO.CAT", tmpSoundVector);
+
+		addInteger(ss, ufoRule->getHitSound(), "hitSound", -1);
+		tmpSoundVector.clear();
+		tmpSoundVector.push_back(ufoRule->getHitSound());
 		addSoundVectorResourcePaths(ss, mod, "GEO.CAT", tmpSoundVector);
 
 		addSection("{Script tags}", "", _white, true);

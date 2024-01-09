@@ -167,7 +167,6 @@ ro:
   STR_NOT_ENOUGH_LIVING_SPACE_AT_BASE: "Nu este destul spațiu de trai să acomodeze {NEWLINE}{0}{NEWLINE}la{NEWLINE}{1}"
   STR_INFO: "INFORMAȚIE"
   STR_UFO_TRACKER: "Urmăritor de OZN-uri"
-  STR_OXCE: "Extins"
   STR_TEST_SCREEN: "ECRAN TEST"
   STR_PALETTE: "Paletă:"
   STR_TEST_CASE: "Caz TestȘ"

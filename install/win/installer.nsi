@@ -26,7 +26,7 @@
 ;Defines
 
 	!define GAME_NAME "OpenXcom Extended"
-	!define GAME_VERSION "7.10.0"
+	!define GAME_VERSION "7.11.0"
 	!define GAME_AUTHOR "OpenXcom Developers"
 	!include "version.nsh"
 
@@ -69,6 +69,10 @@
 	!define MUI_HEADERIMAGE
 	!define MUI_HEADERIMAGE_BITMAP logo.bmp
 	!define MUI_WELCOMEFINISHPAGE_BITMAP side.bmp
+	
+	;Show all languages, despite user's codepage
+	!define MUI_LANGDLL_ALLLANGUAGES
+	!define MUI_LANGDLL_ALWAYSSHOW
 
 ;--------------------------------
 ;Language Selection Dialog Settings
@@ -196,8 +200,7 @@ FunctionEnd
 ;--------------------------------
 ;Languages
 
-	!insertmacro MUI_LANGUAGE "English" ;first language is the default language
-	!insertmacro LANGFILE_INCLUDE "English.nsh"
+	!include "language.nsh"
 
 ;--------------------------------
 ;Reserve Files

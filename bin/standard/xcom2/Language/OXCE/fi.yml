@@ -20,4 +20,8 @@ fi:
   GMGEO6: "Geomaisemakappale #6"
   GMTACDRY: "Taistelukenttäkappale (maa)"
   GMTACWET: "Taistelukenttäkappale (vesi)"
+  GMINTER0: "Ilmataisteluraita 0"
+  GMINTER1: "Ilmataisteluraita 1"
+  GMINTER2: "Ilmataisteluraita 2"
+  GMINTER3: "Ilmataisteluraita 3"
   STR_SHOT_TYPE_AUTO: "Sarja ({0})"

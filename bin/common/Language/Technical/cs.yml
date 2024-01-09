@@ -352,6 +352,8 @@ cs:
   rearArmor: ""
   underArmor: ""
 #
+  sizeX: ""
+  sizeY: ""
   buildCost: "Cena postavení"
   buildCostItems: "Materiály k výrobě:"
   buildTime: "Čas postavení"
@@ -405,8 +407,10 @@ cs:
 #
   costRent: "Cena pronájmu"
   soldiers: "Nákladový prostor"
+  maxUnitsLimit: ""
   pilots: "Kapacita kokpitu"
   vehicles: "Kapacita platformy"
+  maxHWPUnitsLimit: ""
   maxSmallSoldiers: ""
   maxLargeSoldiers: ""
   maxSmallVehicles: ""

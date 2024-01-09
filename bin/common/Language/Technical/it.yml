@@ -352,6 +352,8 @@ it:
   rearArmor: "Armatura posteriore"
   underArmor: "Armatura inferiore"
 #
+  sizeX: "Dim. X"
+  sizeY: "Dim. Y"
   buildCost: "Costo costruzione"
   buildCostItems: "Materiale costruzione:"
   buildTime: "Tempo costruzione"
@@ -405,8 +407,10 @@ it:
 #
   costRent: "Affitto"
   soldiers: "Spazio cargo"
+  maxUnitsLimit: "Spazio di carico massimo"
   pilots: "Dim. cabina"
   vehicles: "Capacità HWP"
+  maxHWPUnitsLimit: "Massima capacità per HWP"
   maxSmallSoldiers: "Massimo numero soldati piccoli"
   maxLargeSoldiers: "Massimo numero soldati grandi"
   maxSmallVehicles: "Massimo numero veicoli piccoli"

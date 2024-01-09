@@ -73,7 +73,7 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	add(_cbxSort, "button", "selectNewResearch");
 
 	_colorNormal = _lstResearch->getColor();
-	_colorNew = Options::oxceHighlightNewTopicsHidden ? _lstResearch->getSecondaryColor() : _colorNormal;
+	_colorNew = Options::oxceHighlightNewTopics ? _lstResearch->getSecondaryColor() : _colorNormal;
 	_colorHidden = _game->getMod()->getInterface("selectNewResearch")->getElement("listExtended")->color;
 
 	centerAllSurfaces();
@@ -154,7 +154,7 @@ void NewResearchListState::onSelectProject(Action *)
 */
 void NewResearchListState::onToggleProjectStatus(Action *)
 {
-	if (!Options::oxceHighlightNewTopicsHidden && !_isSortingEnabled)
+	if (!Options::oxceHighlightNewTopics && !_isSortingEnabled)
 	{
 		// there are no statuses to toggle
 		return;
@@ -167,7 +167,7 @@ void NewResearchListState::onToggleProjectStatus(Action *)
 
 	if (oldState == RuleResearch::RESEARCH_STATUS_NEW)
 	{
-		newState = Options::oxceHighlightNewTopicsHidden ? RuleResearch::RESEARCH_STATUS_NORMAL : RuleResearch::RESEARCH_STATUS_HIDDEN;
+		newState = Options::oxceHighlightNewTopics ? RuleResearch::RESEARCH_STATUS_NORMAL : RuleResearch::RESEARCH_STATUS_HIDDEN;
 	}
 	else if (oldState == RuleResearch::RESEARCH_STATUS_NORMAL)
 	{

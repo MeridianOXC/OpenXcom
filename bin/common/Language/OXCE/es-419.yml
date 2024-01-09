@@ -206,7 +206,6 @@ es-419:
   STR_NOT_ENOUGH_LIVING_SPACE_AT_BASE: "No hay suficiente espacio de vivienda para acomodar{NEWLINE}{0}{NEWLINE}en{NEWLINE}{1}"
   STR_INFO: "INFO"
   STR_UFO_TRACKER: "Rastreador OVNi"
-  STR_OXCE: "Extendido"
   STR_TEST_SCREEN: "PANTALLA DE PRUEBA"
   STR_PALETTE: "Paleta;"
   STR_PREVIEW: "Muestra"

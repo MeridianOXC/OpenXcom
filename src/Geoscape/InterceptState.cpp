@@ -69,7 +69,7 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 	}
 
 	// Create objects
-	if (Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
+	if (Options::oxceInterceptGuiMaintenanceTime > 0)
 	{
 		_window = new Window(this, 320, 140, 0, 30, POPUP_HORIZONTAL);
 		_btnCancel = new TextButton(_base ? 142 : 288, 16, 16, 146);
@@ -135,13 +135,13 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 
 	_txtBase->setText(tr("STR_BASE"));
 
-	if (Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
+	if (Options::oxceInterceptGuiMaintenanceTime > 0)
 	{
 		_txtWeapons->setAlign(ALIGN_RIGHT);
 	}
 	_txtWeapons->setText(tr("STR_WEAPONS_CREW_HWPS"));
 
-	if (Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
+	if (Options::oxceInterceptGuiMaintenanceTime > 0)
 	{
 		_lstCrafts->setColumns(4, WIDTH_CRAFT, WIDTH_STATUS, WIDTH_BASE, WIDTH_WEAPONS);
 		_lstCrafts->setAlign(ALIGN_RIGHT, 3);
@@ -152,7 +152,7 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 	}
 	_lstCrafts->setSelectable(true);
 	_lstCrafts->setBackground(_window);
-	if (Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
+	if (Options::oxceInterceptGuiMaintenanceTime > 0)
 	{
 		_lstCrafts->setMargin(2);
 	}
@@ -241,15 +241,15 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 			{
 				unsigned int maintenanceHours = 0;
 
-				if (Options::oxceInterceptGuiMaintenanceTimeHidden == 2 || xcraft->getStatus() == "STR_REPAIRS")
+				if (Options::oxceInterceptGuiMaintenanceTime == 2 || xcraft->getStatus() == "STR_REPAIRS")
 				{
 					maintenanceHours += xcraft->calcRepairTime();
 				}
-				if (Options::oxceInterceptGuiMaintenanceTimeHidden == 2 || xcraft->getStatus() == "STR_REFUELLING")
+				if (Options::oxceInterceptGuiMaintenanceTime == 2 || xcraft->getStatus() == "STR_REFUELLING")
 				{
 					maintenanceHours += xcraft->calcRefuelTime();
 				}
-				if (Options::oxceInterceptGuiMaintenanceTimeHidden == 2 || xcraft->getStatus() == "STR_REARMING")
+				if (Options::oxceInterceptGuiMaintenanceTime == 2 || xcraft->getStatus() == "STR_REARMING")
 				{
 					// Note: if the craft is already refueling, don't count any potential rearm time (can be > 0 if ammo is missing)
 					if (xcraft->getStatus() != "STR_REFUELLING")
@@ -260,7 +260,7 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 
 				int days = maintenanceHours / 24;
 				int hours = maintenanceHours % 24;
-				if (maintenanceHours > 0 && Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
+				if (maintenanceHours > 0 && Options::oxceInterceptGuiMaintenanceTime > 0)
 				{
 					ssStatus << " (";
 					if (days > 0)
@@ -281,7 +281,7 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 			else
 			{
 				// ETA display
-				if (Options::oxceShowETAMode > 0 && xcraft->getDestination() && Options::oxceInterceptGuiMaintenanceTimeHidden > 0)
+				if (Options::oxceShowETAMode > 0 && xcraft->getDestination() && Options::oxceInterceptGuiMaintenanceTime > 0)
 				{
 					MovingTarget* mt = dynamic_cast<MovingTarget*>(xcraft->getDestination());
 					if (Options::oxceShowETAMode == 1 && mt && mt->getSpeed() > 0)

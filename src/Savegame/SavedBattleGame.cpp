@@ -512,6 +512,25 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	_toggleNightVision = node["toggleNightVision"].as<bool>(_toggleNightVision);
 	_toggleBrightness = node["toggleBrightness"].as<int>(_toggleBrightness);
 	_scriptValues.load(node, _rule->getScriptGlobal());
+
+	// Sanity checks
+	for (auto* unit : _units)
+	{
+		switch (unit->getStatus())
+		{
+		case STATUS_STANDING:
+		case STATUS_DEAD:
+		case STATUS_UNCONSCIOUS:
+		case STATUS_IGNORE_ME:
+			break;
+		default:
+			Log(LOG_ERROR) << "Save '" << savedGame->getName()
+				<< "' is corrupted. Unit " << unit->getType()
+				<< " (id: " << unit->getId()
+				<< ") has an invalid 'status: " << unit->getStatus() << "'";
+			break;
+		}
+	}
 }
 
 /**
