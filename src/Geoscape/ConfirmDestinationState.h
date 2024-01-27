@@ -25,6 +25,7 @@ namespace OpenXcom
 class Window;
 class Text;
 class TextButton;
+class ToggleTextButton;
 class Craft;
 class Target;
 
@@ -41,6 +42,7 @@ private:
 	Text *_txtTarget;
 	Text *_txtETA;
 	TextButton *_btnOk, *_btnTransfer, *_btnCancel;
+	ToggleTextButton *_btnFollowWingLeader;
 	// Checks the starting condition
 	std::string checkStartingCondition();
 public:

@@ -29,6 +29,7 @@ class Window;
 class Text;
 class TextEdit;
 class TextList;
+class ToggleTextButton;
 
 /**
  * Allows the player to take notes.
@@ -43,6 +44,7 @@ protected:
 	TextEdit* _edtNote;
 	TextButton* _btnSave;
 	TextButton* _btnCancel;
+	ToggleTextButton* _btnDelete;
 
 	OptionsOrigin _origin;
 	std::string _selectedNote;

@@ -32,12 +32,14 @@ public:
 private:
 	Position _subVoxelPos;
 	Position _screenData;
-	Uint8 _density;
+	Position _subVoxelVelocity;
+	Position _subVoxelAcceleration;
+	Uint8 _drift;
 	Uint8 _layerZ;
 	Uint8 _color, _opacity, _size;
 public:
 	/// Create a particle.
-	Particle(Position voxelPos, Uint8 density, Uint8 color, Uint8 opacity);
+	Particle(Position voxelPos, Position subVoxelOffset, Position subVoxelVel, Position subVoxelAcc, Uint8 drift, Uint8 color, Uint8 opacity, Uint8 size);
 	/// Default copy constructor
 	Particle(const Particle&) = default;
 	/// Default move constructor

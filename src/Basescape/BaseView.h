@@ -52,6 +52,8 @@ private:
 	Surface *_selector;
 	bool _blink;
 	Timer *_timer;
+	Uint8 _redColor, _yellowColor, _greenColor;
+	bool _highContrast;
 	Uint8 _cellColor, _selectorColor;
 	/// Updates the neighborFacility's build time. This is for internal use only (reCalcQueuedBuildings()).
 	void updateNeighborFacilityBuildTime(BaseFacility* facility, BaseFacility* neighbor);
@@ -96,8 +98,8 @@ public:
 	void mouseOut(Action *action, State *state) override;
 
 	void setColor(Uint8 color) override;
-
 	void setSecondaryColor(Uint8 color) override;
+	void setOtherColors(Uint8 red, Uint8 yellow, Uint8 green, bool highContrast);
 };
 
 }

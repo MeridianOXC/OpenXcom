@@ -25,6 +25,7 @@
 #include "../Interface/TextList.h"
 #include "../Interface/TextEdit.h"
 #include "../Interface/TextButton.h"
+#include "../Interface/ToggleTextButton.h"
 #include "SaveGameState.h"
 
 namespace OpenXcom
@@ -92,7 +93,7 @@ void ListSaveState::updateList()
  */
 void ListSaveState::lstSavesPress(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT && _edtSave->isFocused())
+	if ((action->getDetails()->button.button == SDL_BUTTON_RIGHT || _btnDelete->getPressed()) && _edtSave->isFocused())
 	{
 		_edtSave->setText("");
 		_edtSave->setVisible(false);
@@ -100,7 +101,7 @@ void ListSaveState::lstSavesPress(Action *action)
 		_lstSaves->setScrolling(true);
 	}
 	ListGamesState::lstSavesPress(action);
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (action->getDetails()->button.button == SDL_BUTTON_LEFT && !_btnDelete->getPressed())
 	{
 		_previousSelectedRow = _selectedRow;
 		_selectedRow = _lstSaves->getSelectedRow();

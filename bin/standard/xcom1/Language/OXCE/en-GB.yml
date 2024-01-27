@@ -26,5 +26,20 @@ en-GB:
   GMGEO2: "Geoscape Track #2"
   GMTACTIC: "Battlescape Track"
   GMINTER: "Dogfight Track"
+#=================== Menu ===================
+#NewBattleState.cpp
+  GLOBE_TEXTURE_0: "Forest/Jungle 1"
+  GLOBE_TEXTURE_1: "Farmland 1"
+  GLOBE_TEXTURE_2: "Farmland 2"
+  GLOBE_TEXTURE_3: "Farmland 3"
+  GLOBE_TEXTURE_4: "Farmland 4"
+  GLOBE_TEXTURE_5: "Mountains"
+  GLOBE_TEXTURE_6: "Forest/Jungle 2"
+  GLOBE_TEXTURE_7: "Desert 1"
+  GLOBE_TEXTURE_8: "Desert 2"
+  GLOBE_TEXTURE_9: "Polar 1"
+  GLOBE_TEXTURE_10: "Forest/Jungle 3"
+  GLOBE_TEXTURE_11: "Forest/Jungle 4"
+  GLOBE_TEXTURE_12: "Polar 2"
 #==================================================================================================================
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

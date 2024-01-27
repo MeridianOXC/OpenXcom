@@ -26,6 +26,7 @@
 #include "../Interface/TextButton.h"
 #include "../Interface/TextEdit.h"
 #include "../Interface/TextList.h"
+#include "../Interface/ToggleTextButton.h"
 #include "../Interface/Window.h"
 #include "../Savegame/SavedGame.h"
 
@@ -48,6 +49,7 @@ NotesState::NotesState(OptionsOrigin origin) : _origin(origin), _previousSelecte
 	_edtNote = new TextEdit(this, 268, 9, 0, 0);
 	_btnSave = new TextButton(80, 16, 60, 172);
 	_btnCancel = new TextButton(80, 16, 180, 172);
+	_btnDelete = new ToggleTextButton(288, 16, 16, 23);
 
 	// Set palette
 	setInterface("geoscape", true, _game->getSavedGame() ? _game->getSavedGame()->getSavedBattle() : 0);
@@ -59,6 +61,7 @@ NotesState::NotesState(OptionsOrigin origin) : _origin(origin), _previousSelecte
 	add(_edtNote);
 	add(_btnSave, "button", "noteMenu");
 	add(_btnCancel, "button", "noteMenu");
+	add(_btnDelete, "button", "noteMenu");
 
 	centerAllSurfaces();
 
@@ -69,8 +72,14 @@ NotesState::NotesState(OptionsOrigin origin) : _origin(origin), _previousSelecte
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setText(tr("STR_NOTES"));
 
+#ifdef __MOBILE__
+	_txtDelete->setVisible(false);
+	_btnDelete->setText(tr("STR_RIGHT_CLICK_TO_DELETE"));
+#else
+	_btnDelete->setVisible(false);
 	_txtDelete->setAlign(ALIGN_CENTER);
 	_txtDelete->setText(tr("STR_RIGHT_CLICK_TO_DELETE"));
+#endif
 
 	_lstNotes->setColumns(1, 288);
 	_lstNotes->setSelectable(true);
@@ -170,7 +179,7 @@ void NotesState::lstNotesPress(Action* action)
 		_selectedNote = _lstNotes->getCellText(_selectedRow, 0);
 	}
 
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT || _btnDelete->getPressed())
 	{
 		if (_edtNote->isFocused())
 		{

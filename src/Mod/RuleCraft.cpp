@@ -141,6 +141,10 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	{
 		_craftInventoryTile = craftInventoryTile.as<std::vector<int> >(_craftInventoryTile);
 	}
+	if (const YAML::Node& craftGroups = node["groups"])
+	{
+		_groups = craftGroups.as<std::vector<int> >(_groups);
+	}
 	_maxSkinIndex = node["maxSkinIndex"].as<int>(_maxSkinIndex);
 	_deployment = node["deployment"].as< RuleCraftDeployment >(_deployment);
 	_keepCraftAfterFailedMission = node["keepCraftAfterFailedMission"].as<bool>(_keepCraftAfterFailedMission);

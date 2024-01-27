@@ -46,6 +46,7 @@ void RuleEvent::load(const YAML::Node &node)
 	_city = node["city"].as<bool>(_city);
 	_points = node["points"].as<int>(_points);
 	_funds = node["funds"].as<int>(_funds);
+	_spawnedCraftType = node["spawnedCraftType"].as<std::string>(_spawnedCraftType);
 	_spawnedPersons = node["spawnedPersons"].as<int>(_spawnedPersons);
 	_spawnedPersonType = node["spawnedPersonType"].as<std::string>(_spawnedPersonType);
 	_spawnedPersonName = node["spawnedPersonName"].as<std::string>(_spawnedPersonName);

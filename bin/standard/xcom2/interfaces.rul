@@ -921,6 +921,10 @@ interfaces: #done
         color: 1
         color2: 239
         border: 1
+      - id: listExtended
+        color: 156
+        color2: 244
+        border: 1
       - id: button1
         color: 1
       - id: button2
@@ -1894,6 +1898,11 @@ interfaces: #done
       - id: baseView
         color: 213   # gold   (time remaining)
         color2: 16   # orange (selector color)
+      - id: trafficLights
+        color: 8     # red
+        color2: 163  # yellow
+        border: 81   # green
+        TFTDMode: true
       - id: errorPalette
         color: 6     # oxide
       - id: errorMessage

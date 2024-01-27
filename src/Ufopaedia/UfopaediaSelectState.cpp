@@ -28,15 +28,17 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextEdit.h"
 #include "../Interface/TextButton.h"
-#include "../Interface/ToggleTextButton.h"
+#include "../Interface/ComboBox.h"
 #include "../Interface/TextList.h"
 #include "../Mod/Mod.h"
+#include "../Mod/RuleInterface.h"
 #include "../Savegame/SavedGame.h"
 
 namespace OpenXcom
 {
 	UfopaediaSelectState::UfopaediaSelectState(const std::string &section, int heightOffset, int windowOffset) : _section(section), _lstScroll(0)
 	{
+		_isCommendationsSection = (_section == UFOPAEDIA_COMMENDATIONS);
 		_screen = false;
 
 		// set background window
@@ -49,7 +51,7 @@ namespace OpenXcom
 
 		// set buttons
 		_btnOk = new TextButton(108, 16, 164, 166 - windowOffset + heightOffset);
-		_btnShowOnlyNew = new ToggleTextButton(108, 16, 48, 166 - windowOffset + heightOffset);
+		_cbxFilter = new ComboBox(this, 108, 16, 48, 166 - windowOffset + heightOffset, true);
 		int listHeightOffset = (heightOffset / 8) * 8; // multiple of 8
 		_lstSelection = new TextList(224, 104 + listHeightOffset, 40, 50 - windowOffset);
 
@@ -60,11 +62,12 @@ namespace OpenXcom
 		add(_btnQuickSearch, "button2", "ufopaedia");
 		add(_txtTitle, "text", "ufopaedia");
 		add(_btnOk, "button2", "ufopaedia");
-		add(_btnShowOnlyNew, "button2", "ufopaedia");
 		add(_lstSelection, "list", "ufopaedia");
+		add(_cbxFilter, "button2", "ufopaedia");
 
 		_colorNormal = _lstSelection->getColor();
 		_colorNew = Options::oxceHighlightNewTopics ? _lstSelection->getSecondaryColor() : _colorNormal;
+		_colorHidden = _game->getMod()->getInterface("ufopaedia")->getElement("listExtended")->color;
 
 		centerAllSurfaces();
 
@@ -79,16 +82,6 @@ namespace OpenXcom
 		_btnOk->onKeyboardPress((ActionHandler)&UfopaediaSelectState::btnOkClick,Options::keyCancel);
 		_btnOk->onKeyboardPress((ActionHandler)&UfopaediaSelectState::btnMarkAllAsSeenClick, Options::keyMarkAllAsSeen);
 
-		if (_section == UFOPAEDIA_COMMENDATIONS)
-		{
-			_btnShowOnlyNew->setText(tr("STR_NOT_AWARDED_YET"));
-		}
-		else
-		{
-			_btnShowOnlyNew->setText(tr("STR_SHOW_ONLY_NEW"));
-		}
-		_btnShowOnlyNew->onMouseClick((ActionHandler)&UfopaediaSelectState::btnShowOnlyNewClick);
-
 		_lstSelection->setColumns(1, 206);
 		_lstSelection->setSelectable(true);
 		_lstSelection->setBackground(_window);
@@ -96,6 +89,13 @@ namespace OpenXcom
 		_lstSelection->setAlign(ALIGN_CENTER);
 		_lstSelection->onMouseClick((ActionHandler)&UfopaediaSelectState::lstSelectionClick, SDL_BUTTON_LEFT);
 		_lstSelection->onMouseClick((ActionHandler)&UfopaediaSelectState::lstSelectionClickRight, SDL_BUTTON_RIGHT);
+
+		std::vector<std::string> filterOptions;
+		filterOptions.push_back("STR_FILTER_DEFAULT");
+		filterOptions.push_back(_isCommendationsSection ? "STR_NOT_AWARDED_YET" : "STR_SHOW_ONLY_NEW");
+		filterOptions.push_back("STR_FILTER_HIDDEN");
+		_cbxFilter->setOptions(filterOptions, true);
+		_cbxFilter->onChange((ActionHandler)&UfopaediaSelectState::cbxFilterChange);
 
 		_btnQuickSearch->setText(""); // redraw
 		_btnQuickSearch->onEnter((ActionHandler)&UfopaediaSelectState::btnQuickSearchApply);
@@ -141,16 +141,22 @@ namespace OpenXcom
 	 */
 	void UfopaediaSelectState::lstSelectionClickRight(Action *)
 	{
-		if (!Options::oxceHighlightNewTopics)
-			return;
-
 		// change status
 		const std::string rule = _filtered_article_list[_lstSelection->getSelectedRow()]->id;
 		int oldState = _game->getSavedGame()->getUfopediaRuleStatus(rule);
-		int newState = 1 - oldState;
+		int newState = (oldState + 1) % ArticleDefinition::PEDIA_STATUSES;
+		if (!Options::oxceHighlightNewTopics)
+		{
+			// only switch between hidden and not hidden
+			newState = (oldState == ArticleDefinition::PEDIA_STATUS_HIDDEN) ? ArticleDefinition::PEDIA_STATUS_NORMAL : ArticleDefinition::PEDIA_STATUS_HIDDEN;
+		}
 		_game->getSavedGame()->setUfopediaRuleStatus(rule, newState);
 
-		if (newState == ArticleDefinition::PEDIA_STATUS_NEW)
+		if (newState == ArticleDefinition::PEDIA_STATUS_HIDDEN)
+		{
+			_lstSelection->setRowColor(_lstSelection->getSelectedRow(), _colorHidden);
+		}
+		else if (newState == ArticleDefinition::PEDIA_STATUS_NEW)
 		{
 			_lstSelection->setRowColor(_lstSelection->getSelectedRow(), _colorNew);
 		}
@@ -189,10 +195,10 @@ namespace OpenXcom
 	}
 
 	/**
-	* Filter to display only new items.
+	* Updates the list to match the filter.
 	* @param action Pointer to an action.
 	*/
-	void UfopaediaSelectState::btnShowOnlyNewClick(Action *)
+	void UfopaediaSelectState::cbxFilterChange(Action *)
 	{
 		loadSelectionList(false);
 	}
@@ -208,8 +214,6 @@ namespace OpenXcom
 
 	void UfopaediaSelectState::loadSelectionList(bool markAllAsSeen)
 	{
-		bool isCommendationsSection = (_section == UFOPAEDIA_COMMENDATIONS);
-
 		std::string searchString = _btnQuickSearch->getText();
 		Unicode::upperCase(searchString);
 
@@ -217,15 +221,33 @@ namespace OpenXcom
 		_article_list.clear();
 		Ufopaedia::list(_game->getSavedGame(), _game->getMod(), _section, _article_list);
 		_filtered_article_list.clear();
+		size_t selectedFilter = _cbxFilter->getSelected();
 
 		int row = 0;
 		bool hasUnseen = false;
+		int ruleStatus = 0;
 		for (auto* articleDef : _article_list)
 		{
+			ruleStatus = _game->getSavedGame()->getUfopediaRuleStatus(articleDef->id);
+
 			// filter
-			if (_btnShowOnlyNew->getPressed())
+			if (selectedFilter == 0)
 			{
-				if (isCommendationsSection)
+				if (ruleStatus == ArticleDefinition::PEDIA_STATUS_HIDDEN)
+				{
+					continue;
+				}
+			}
+			else if (selectedFilter == 2)
+			{
+				if (ruleStatus != ArticleDefinition::PEDIA_STATUS_HIDDEN)
+				{
+					continue;
+				}
+			}
+			else if (selectedFilter == 1)
+			{
+				if (_isCommendationsSection)
 				{
 					if (Ufopaedia::isAwardedCommendation(_game->getSavedGame(), articleDef))
 					{
@@ -234,7 +256,7 @@ namespace OpenXcom
 				}
 				else
 				{
-					if (_game->getSavedGame()->getUfopediaRuleStatus(articleDef->id) != ArticleDefinition::PEDIA_STATUS_NEW)
+					if (ruleStatus != ArticleDefinition::PEDIA_STATUS_NEW)
 					{
 						continue;
 					}
@@ -260,23 +282,25 @@ namespace OpenXcom
 				// remember all listed articles as seen/normal
 				_game->getSavedGame()->setUfopediaRuleStatus(articleDef->id, ArticleDefinition::PEDIA_STATUS_NORMAL);
 			}
-			else if (_game->getSavedGame()->getUfopediaRuleStatus(articleDef->id) == ArticleDefinition::PEDIA_STATUS_NEW)
+			else
 			{
-				// highlight as new
-				_lstSelection->setCellColor(row, 0, _colorNew);
-				hasUnseen = true;
+				if (ruleStatus == ArticleDefinition::PEDIA_STATUS_NEW)
+				{
+					_lstSelection->setCellColor(row, 0, _colorNew);
+					hasUnseen = true;
+				}
+				else if (ruleStatus == ArticleDefinition::PEDIA_STATUS_HIDDEN)
+				{
+					_lstSelection->setCellColor(row, 0, _colorHidden);
+				}
 			}
 			row++;
 		}
 
-		if (isCommendationsSection)
+		if (!_isCommendationsSection)
 		{
-			_btnShowOnlyNew->setText(tr("STR_NOT_AWARDED_YET"));
-		}
-		else
-		{
-			std::string label = tr("STR_SHOW_ONLY_NEW");
-			_btnShowOnlyNew->setText((hasUnseen ? "* " : "") + label);
+			std::string label = tr("STR_OK");
+			_btnOk->setText((hasUnseen ? "* " : "") + label);
 		}
 		if (_lstScroll > 0)
 		{

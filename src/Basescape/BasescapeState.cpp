@@ -117,6 +117,11 @@ BasescapeState::BasescapeState(Base *base, Globe *globe) : _base(base), _globe(g
 	centerAllSurfaces();
 
 	// Set up objects
+	auto* itf = _game->getMod()->getInterface("basescape")->getElement("trafficLights");
+	if (itf)
+	{
+		_view->setOtherColors(itf->color, itf->color2, itf->border, !itf->TFTDMode);
+	}
 	_view->setTexture(_game->getMod()->getSurfaceSet("BASEBITS.PCK"));
 	_view->onMouseClick((ActionHandler)&BasescapeState::viewLeftClick, SDL_BUTTON_LEFT);
 	_view->onMouseClick((ActionHandler)&BasescapeState::viewRightClick, SDL_BUTTON_RIGHT);

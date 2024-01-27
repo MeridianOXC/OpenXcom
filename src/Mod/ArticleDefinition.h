@@ -70,6 +70,8 @@ namespace OpenXcom
 	public:
 		static const int PEDIA_STATUS_NEW = 0;
 		static const int PEDIA_STATUS_NORMAL = 1;
+		static const int PEDIA_STATUS_HIDDEN = 2;
+		static const int PEDIA_STATUSES = 3;
 		/// Destructor.
 		virtual ~ArticleDefinition();
 		/// Gets the type of article definition.
@@ -82,6 +84,7 @@ namespace OpenXcom
 		std::string id;
 		std::string section;
 		std::vector<std::string> _requires;
+		std::vector<std::string> disabledBy;
 		bool customPalette;
 		bool hiddenCommendation;
 
@@ -271,6 +274,7 @@ namespace OpenXcom
 		/// Loads the article from YAML.
 		void load(const YAML::Node& node, int listOrder) override;
 
+		std::string weapon;
 	};
 
 	/**

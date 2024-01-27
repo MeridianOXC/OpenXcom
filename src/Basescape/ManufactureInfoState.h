@@ -43,6 +43,7 @@ private:
 	RuleManufacture * _item;
 	Production * _production;
 	Window * _window;
+	ArrowButton * _btnUnitInfinity, * _btnUnitMinimum;
 	ArrowButton * _btnUnitUp, * _btnUnitDown, * _btnEngineerUp, * _btnEngineerDown;
 	TextButton * _btnStop, * _btnOk;
 	Text * _txtTitle, * _txtAvailableEngineer, * _txtAvailableSpace, * _txtHoursPerUnit, * _txtMonthlyProfit;
@@ -77,6 +78,7 @@ private:
 	void moreUnitRelease(Action * action);
 	/// Handler for clicking the more unit button.
 	void moreUnitClick(Action * action);
+	void infinityUnitClick(Action* action);
 	/// Removes the given number of engineers from the project if possible.
 	void lessEngineer(int change);
 	/// Handler for pressing the less engineer button.
@@ -93,6 +95,7 @@ private:
 	void lessUnitRelease(Action * action);
 	/// Handler for clicking the less unit button.
 	void lessUnitClick(Action * action);
+	void minimumUnitClick(Action* action);
 	/// Adds one engineer to the production (if possible).
 	void onMoreEngineer();
 	/// Removes one engineer from the production (if possible).

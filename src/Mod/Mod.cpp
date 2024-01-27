@@ -1566,6 +1566,7 @@ const std::string YamlRuleNodeDelete = "delete";
 const std::string YamlRuleNodeNew = "new";
 const std::string YamlRuleNodeOverride = "override";
 const std::string YamlRuleNodeUpdate = "update";
+const std::string YamlRuleNodeIgnore = "ignore";
 
 
 void loadRuleInfoHelper(const YAML::Node &node, const char* nodeName, const char* type)
@@ -1578,6 +1579,7 @@ void loadRuleInfoHelper(const YAML::Node &node, const char* nodeName, const char
 		info.get() << " '" << YamlRuleNodeNew << ":',";
 		info.get() << " '" << YamlRuleNodeOverride << ":',";
 		info.get() << " '" << YamlRuleNodeUpdate << ":',";
+		info.get() << " '" << YamlRuleNodeIgnore << ":',";
 		info.get() << " '" << type << ":'";
 	}
 }
@@ -3564,11 +3566,12 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 	const auto newNode = getNode(node, YamlRuleNodeNew);
 	const auto overrideNode = getNode(node, YamlRuleNodeOverride);
 	const auto updateNode = getNode(node, YamlRuleNodeUpdate);
+	const auto ignoreNode = getNode(node, YamlRuleNodeIgnore);
 
 	{
 		// check for duplicates
 		const std::tuple<std::string, YAML::Node, bool>* last = nullptr;
-		for (auto* p : { &defaultNode, &deleteNode, &newNode, &updateNode, &overrideNode })
+		for (auto* p : { &defaultNode, &deleteNode, &newNode, &updateNode, &overrideNode, &ignoreNode })
 		{
 			if (haveNode(*p))
 			{
@@ -3690,9 +3693,13 @@ T *Mod::loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::ve
 			Log(LOG_INFO) << "Rule named '" << type  << "' do not exist for " << getDescriptionNode(updateNode);
 		}
 	}
+	else if (haveNode(ignoreNode))
+	{
+		// nothing to see there...
+	}
 	else
 	{
-		//no correct id throw exception?
+		checkForObsoleteErrorByYear("Mod", node, "Missing main node", 2024);
 	}
 
 	return rule;

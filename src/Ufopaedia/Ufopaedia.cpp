@@ -56,6 +56,14 @@ namespace OpenXcom
 	 */
 	bool Ufopaedia::isArticleAvailable(SavedGame *save, ArticleDefinition *article)
 	{
+		if (!article->disabledBy.empty())
+		{
+			// Note: yes, check for non-empty vector is necessary
+			if (save->isResearched(article->disabledBy, false))
+			{
+				return false; // article is disabled, i.e. not available
+			}
+		}
 		return save->isResearched(article->_requires);
 	}
 
@@ -207,6 +215,7 @@ namespace OpenXcom
 	 */
 	void Ufopaedia::next(Game *game, std::shared_ptr<ArticleCommonState> state)
 	{
+		if (state->isCurrentArticleHidden()) return;
 		state->nextArticlePage();
 		game->popState();
 		game->pushState(createArticleState(std::move(state)));
@@ -218,6 +227,7 @@ namespace OpenXcom
 	 */
 	void Ufopaedia::nextDetail(Game *game, std::shared_ptr<ArticleCommonState> state, bool debug, bool ids, bool defaults)
 	{
+		if (state->isCurrentArticleHidden()) return;
 		state->nextArticle();
 		game->popState();
 		game->pushState(new StatsForNerdsState(std::move(state), debug, ids, defaults));
@@ -229,6 +239,7 @@ namespace OpenXcom
 	 */
 	void Ufopaedia::prev(Game *game, std::shared_ptr<ArticleCommonState> state)
 	{
+		if (state->isCurrentArticleHidden()) return;
 		state->prevArticlePage();
 		game->popState();
 		game->pushState(createArticleState(std::move(state)));
@@ -240,6 +251,7 @@ namespace OpenXcom
 	 */
 	void Ufopaedia::prevDetail(Game *game, std::shared_ptr<ArticleCommonState> state, bool debug, bool ids, bool defaults)
 	{
+		if (state->isCurrentArticleHidden()) return;
 		state->prevArticle();
 		game->popState();
 		game->pushState(new StatsForNerdsState(std::move(state), debug, ids, defaults));
@@ -265,11 +277,11 @@ namespace OpenXcom
 	}
 
 	/**
-	 * Check if the article is hidden.
+	 * Check if this is an invisible commendation article.
 	 * @param save Pointer to saved game.
 	 * @param article Article to check.
 	 */
-	bool Ufopaedia::isArticleHidden(SavedGame *save, ArticleDefinition *article, Mod *mod)
+	bool Ufopaedia::isCommendationArticleInvisible(SavedGame *save, ArticleDefinition *article)
 	{
 		// show hidden Commendations entries if:
 		if (article->hiddenCommendation)
@@ -350,9 +362,10 @@ namespace OpenXcom
 		for (const auto& articleName : mod->getUfopaediaList())
 		{
 			ArticleDefinition *article = mod->getUfopaediaArticle(articleName);
-			if (isArticleAvailable(save, article) && article->section != UFOPAEDIA_NOT_AVAILABLE && !isArticleHidden(save, article, mod))
+			if (isArticleAvailable(save, article) && article->section != UFOPAEDIA_NOT_AVAILABLE && !isCommendationArticleInvisible(save, article))
 			{
 				shared->articleList.push_back(article);
+				shared->articleStatusList.push_back(save->getUfopediaRuleStatus(articleName) == ArticleDefinition::PEDIA_STATUS_HIDDEN);
 			}
 		}
 		return shared;

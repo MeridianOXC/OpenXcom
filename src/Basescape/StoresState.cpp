@@ -30,6 +30,7 @@
 #include "../Interface/ToggleTextButton.h"
 #include "../Interface/Window.h"
 #include "../Savegame/Base.h"
+#include "../Savegame/BaseFacility.h"
 #include "../Savegame/Craft.h"
 #include "../Savegame/ItemContainer.h"
 #include "../Savegame/ResearchProject.h"
@@ -255,6 +256,15 @@ void StoresState::initList()
 			{
 				// 1. items in base stores
 				qty += xbase->getStorageItems()->getItem(rule);
+
+				// 1b. items from base defense facilities
+				for (const auto* facility : *xbase->getFacilities())
+				{
+					if (facility->getRules()->getAmmoMax() > 0 && facility->getRules()->getAmmoItem() == rule)
+					{
+						qty += facility->getAmmo();
+					}
+				}
 
 				// 2. items from craft
 				for (const auto* craft : *xbase->getCrafts())

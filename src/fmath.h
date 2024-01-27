@@ -71,6 +71,42 @@ inline _Tx Clamp(const _Tx& x, const _Tx& min, const _Tx& max)
 	return std::min(std::max(x, min), max);
 }
 
+template <class _Tx, class _Ts = int>
+inline _Tx VectCrossProduct(const _Tx& a, const _Tx& b, _Ts scale = 1)
+{
+	_Tx temp
+	{
+		(a.y * b.z - a.z * b.y) / scale,
+		(a.z * b.x - a.x * b.z) / scale,
+		(a.x * b.y - a.y * b.x) / scale,
+	};
+	return temp;
+}
+
+template <class _Tx, class _Ts = int>
+inline _Ts VectDotProduct(const _Tx& a, const _Tx& b, _Ts scale = 1)
+{
+	return (a.x * b.x + a.y * b.y + a.z * b.z) / scale;
+}
+
+template <class _Tx, class _Ts = int>
+inline _Tx VectNormalize(const _Tx& a, _Ts scale = 1)
+{
+	_Ts dot = VectDotProduct(a, a, scale);
+	if (dot > 0)
+	{
+		dot = std::sqrt(dot * scale);
+		_Tx temp
+		{
+			a.x * scale / dot,
+			a.y * scale / dot,
+			a.z * scale / dot,
+		};
+		return temp;
+	}
+	return _Tx{ };
+}
+
 /**
  * Interpolate between two variables.
  * @param a Left side value

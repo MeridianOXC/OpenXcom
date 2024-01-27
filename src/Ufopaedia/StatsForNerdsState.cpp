@@ -3108,6 +3108,8 @@ void StatsForNerdsState::initFacilityList()
 	addIntegerPercent(ss, facilityRule->getRadarChance(), "radarChance");
 	addInteger(ss, facilityRule->getDefenseValue(), "defense");
 	addIntegerPercent(ss, facilityRule->getHitRatio(), "hitRatio");
+	addInteger(ss, facilityRule->getAmmoMax(), "ammoMax", 0);
+	addInteger(ss, facilityRule->getRearmRate(), "rearmRate", 1);
 	addInteger(ss, facilityRule->getAmmoNeeded(), "ammoNeeded", 1);
 	addRule(ss, facilityRule->getAmmoItem(), "ammoItem");
 
@@ -3398,6 +3400,7 @@ void StatsForNerdsState::initCraftList()
 		addBoolean(ss, craftRule->getBattlescapeTerrainData() != 0, "battlescapeTerrainData", false); // just say if there is any or not
 		addBoolean(ss, craftRule->isMapVisible(), "mapVisible", true);
 		addVectorOfIntegers(ss, craftRule->getCraftInventoryTile(), "craftInventoryTile");
+		addVectorOfIntegers(ss, craftRule->getGroups(), "groups");
 		addBoolean(ss, craftRule->useAllStartTiles(), "useAllStartTiles");
 		addSingleString(ss, craftRule->getCustomPreviewTypeRaw(), "customPreview");
 		if (craftRule->getDeployment().empty())

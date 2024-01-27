@@ -173,6 +173,7 @@ private:
 	MapScriptCommand _type;
 	bool _canBeSkipped, _markAsReinforcementsBlock;
 	std::vector<SDL_Rect*> _rects;
+	std::vector<int> _craftGroups;
 	std::vector<int> _groups, _blocks, _frequencies, _maxUses, _conditionals;
 	int _verticalGroup, _horizontalGroup, _crossingGroup;
 	std::vector<int> _groupsTemp, _blocksTemp, _frequenciesTemp, _maxUsesTemp;
@@ -204,6 +205,8 @@ public:
 	bool markAsReinforcementsBlock() const { return _markAsReinforcementsBlock; }
 	/// Gets the rects, describing the areas this command applies to.
 	const std::vector<SDL_Rect*> *getRects() const {return &_rects;};
+	/// Gets the craft groups vector for iteration.
+	const std::vector<int>& getCraftGroups() const { return _craftGroups; };
 	/// Gets the X size for this command.
 	int getSizeX() const {return _sizeX;};
 	/// Gets the Y size for this command.
