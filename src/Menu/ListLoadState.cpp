@@ -25,6 +25,7 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
+#include "../Interface/ToggleTextButton.h"
 #include "ConfirmLoadState.h"
 #include "LoadGameState.h"
 #include "ListLoadOriginalState.h"
@@ -78,7 +79,7 @@ void ListLoadState::btnOldClick(Action *)
 void ListLoadState::lstSavesPress(Action *action)
 {
 	ListGamesState::lstSavesPress(action);
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (action->getDetails()->button.button == SDL_BUTTON_LEFT && !_btnDelete->getPressed())
 	{
 		loadSave(_lstSaves->getSelectedRow());
 	}

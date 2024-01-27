@@ -20,6 +20,7 @@
 #include "RuleTerrain.h"
 #include "MapBlock.h"
 #include "MapDataSet.h"
+#include "MapScript.h"
 #include "../Engine/RNG.h"
 #include "Mod.h"
 
@@ -307,6 +308,74 @@ const std::string& RuleTerrain::getRandomMapScript() const
 		return _mapScripts[pick];
 	}
 	return _mapScript;
+}
+
+/**
+ * Does any map script use globe terrain?
+ * @return 1 = yes, 0 = no, -1 = no map script found.
+ */
+int RuleTerrain::hasTextureBasedScript(const Mod* mod) const
+{
+	int ret = -1;
+	// iterate _mapScripts
+	for (const std::string& script : _mapScripts)
+	{
+		auto* vec = mod->getMapScript(script);
+		if (vec)
+		{
+			ret = 0;
+			// iterate map script commands
+			for (auto* ms : *vec)
+			{
+				// iterate terrains
+				for (const std::string& terrain : ms->getRandomAlternateTerrain())
+				{
+					if (terrain == "globeTerrain" || terrain == "baseTerrain")
+					{
+						return 1;
+					}
+				}
+				// iterate vertical levels
+				for (auto& vlevel : ms->getVerticalLevels())
+				{
+					if (vlevel.levelTerrain == "globeTerrain" || vlevel.levelTerrain == "baseTerrain")
+					{
+						return 1;
+					}
+				}
+			}
+		}
+	}
+	// check also _mapScript
+	{
+		auto* vec = mod->getMapScript(_mapScript);
+		if (vec)
+		{
+			ret = 0;
+			// iterate map script commands
+			for (auto* ms : *vec)
+			{
+				// iterate terrains
+				for (const std::string& terrain : ms->getRandomAlternateTerrain())
+				{
+					if (terrain == "globeTerrain" || terrain == "baseTerrain")
+					{
+						return 1;
+					}
+				}
+				// iterate vertical levels
+				for (auto& vlevel : ms->getVerticalLevels())
+				{
+					if (vlevel.levelTerrain == "globeTerrain" || vlevel.levelTerrain == "baseTerrain")
+					{
+						return 1;
+					}
+				}
+			}
+		}
+
+	}
+	return ret;
 }
 
 /**

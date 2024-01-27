@@ -87,6 +87,7 @@ public:
 	int getMaxAmbienceRandomDelay() const { return _maxAmbienceRandomDelay; }
 	/// Gets the generation script name.
 	const std::string& getRandomMapScript() const;
+	int hasTextureBasedScript(const Mod* mod) const;
 	/// Gets the list of music to pick from.
 	const std::vector<std::string> &getMusic() const;
 	double getAmbientVolume() const;

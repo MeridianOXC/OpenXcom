@@ -1189,10 +1189,69 @@ void makeDiscoveredScript(Tile *t, int i)
 	}
 }
 
-
 void getUnitScript(const Tile *t, const BattleUnit*& ret)
 {
 	ret = t ? t->getUnit() : nullptr;
+}
+
+
+
+
+void addPositionScript(Position& a, Position v)
+{
+	a += v;
+}
+
+void subPositionScript(Position& a, Position v)
+{
+	a -= v;
+}
+
+void mulByPositionScript(Position& a, Position v)
+{
+	a *= v;
+}
+
+void mulByIntScript(Position& a, int v)
+{
+	a *= v;
+}
+
+void mulDivByIntScript(Position& a, int v, int d)
+{
+	if (d)
+	{
+		// to avoid overflow on `Sint16` we multiply manually
+		a = { a.x * v / d, a.y * v / d, a.z * v / d };
+	}
+	else
+	{
+		a = {};
+	}
+}
+
+
+
+
+std::string debugDisplayScript(const Position* t)
+{
+	if (t)
+	{
+		std::string s;
+		s += "Position";
+		s += "(x: ";
+		s += std::to_string(t->x);
+		s += " y: ";
+		s += std::to_string(t->y);
+		s += " z: ";
+		s += std::to_string(t->z);
+		s += ")";
+		return s;
+	}
+	else
+	{
+		return "null";
+	}
 }
 
 std::string debugDisplayScript(const Tile* t)
@@ -1230,11 +1289,33 @@ std::string debugDisplayScript(const Tile* t)
 
 void Tile::ScriptRegister(ScriptParserBase* parser)
 {
+
+	{
+		const auto name = std::string{ "Position" };
+		parser->registerRawValueType<Position>(name);
+		BindValue<Position> rs = { parser, name };
+
+		rs.addConstructor<int, int, int>();
+
+		rs.addField<&Position::x>("getX", "setX", "addX");
+		rs.addField<&Position::y>("getY", "setY", "addY");
+		rs.addField<&Position::z>("getZ", "setZ", "addZ");
+
+		rs.addFreeFunction<&mulByIntScript>("mul");
+		rs.addFreeFunction<&mulDivByIntScript>("muldiv");
+		rs.addFreeFunction<&mulByPositionScript>("mul");
+		rs.addFreeFunction<&addPositionScript>("add");
+		rs.addFreeFunction<&subPositionScript>("sub");
+
+		rs.addDebugValueDisplay<&debugDisplayScript>();
+	}
+
 	Bind<Tile> t = { parser };
 
 	t.add<&getPositionXScript>("getPosition.getX");
 	t.add<&getPositionYScript>("getPosition.getY");
 	t.add<&getPositionZScript>("getPosition.getZ");
+	t.add<&Tile::getPosition>("getPosition");
 	t.add<&Tile::getFire>("getFire");
 	t.add<&Tile::getSmoke>("getSmoke");
 	t.add<&Tile::getShade>("getShade");

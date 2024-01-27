@@ -41,7 +41,12 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-BaseView::BaseView(int width, int height, int x, int y) : InteractiveSurface(width, height, x, y), _base(0), _texture(0), _selFacility(0), _big(0), _small(0), _lang(0), _gridX(0), _gridY(0), _selSizeX(0), _selSizeY(0), _selector(0), _blink(true), _cellColor(0), _selectorColor(0)
+BaseView::BaseView(int width, int height, int x, int y) : InteractiveSurface(width, height, x, y),
+	_base(0), _texture(0), _selFacility(0), _big(0), _small(0), _lang(0),
+	_gridX(0), _gridY(0), _selSizeX(0), _selSizeY(0),
+	_selector(0), _blink(true),
+	_redColor(0), _yellowColor(0), _greenColor(0), _highContrast(true),
+	_cellColor(0), _selectorColor(0)
 {
 	// Clear grid
 	for (int i = 0; i < BASE_SIZE; ++i)
@@ -605,6 +610,28 @@ void BaseView::draw()
 			text->blit(this->getSurface());
 			delete text;
 		}
+
+		// Draw ammo indicator
+		if (fac->getBuildTime() == 0 && fac->getRules()->getAmmoMax() > 0)
+		{
+			Text* text = new Text(GRID_SIZE * fac->getRules()->getSizeX(), 9, 0, 0);
+			text->setPalette(getPalette());
+			text->initText(_big, _small, _lang);
+			text->setX(fac->getX() * GRID_SIZE);
+			text->setY(fac->getY() * GRID_SIZE);
+			text->setHighContrast(_highContrast);
+			if (fac->getAmmo() >= fac->getRules()->getAmmoMax())
+				text->setColor(_greenColor); // 100%
+			else if (fac->getAmmo() <= fac->getRules()->getAmmoMax() / 2)
+				text->setColor(_redColor); // 0-50%
+			else
+				text->setColor(_yellowColor); // 51-99%
+			std::ostringstream ss;
+			ss << fac->getAmmo() << "/" << fac->getRules()->getAmmoMax();
+			text->setText(ss.str());
+			text->blit(this->getSurface());
+			delete text;
+		}
 	}
 }
 
@@ -682,6 +709,13 @@ void BaseView::setColor(Uint8 color)
 void BaseView::setSecondaryColor(Uint8 color)
 {
 	_selectorColor = color;
+}
+void BaseView::setOtherColors(Uint8 red, Uint8 yellow, Uint8 green, bool highContrast)
+{
+	_redColor = red;
+	_yellowColor = yellow;
+	_greenColor = green;
+	_highContrast = highContrast;
 }
 
 }

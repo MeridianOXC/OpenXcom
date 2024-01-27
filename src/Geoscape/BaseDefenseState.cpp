@@ -193,6 +193,8 @@ void BaseDefenseState::nextStep()
 		BaseFacility* def = _base->getDefenses()->at(_attacks);
 		const RuleItem* ammo = (def)->getRules()->getAmmoItem();
 		int ammoNeeded = (def)->getRules()->getAmmoNeeded();
+		bool hasOwnAmmo = def->getRules()->getAmmoMax() > 0;
+		bool spendAmmo = false;
 
 		switch (_action)
 		{
@@ -206,7 +208,11 @@ void BaseDefenseState::nextStep()
 			}
 			return;
 		case BDA_FIRE:
-			if (ammo && _base->getStorageItems()->getItem(ammo) < ammoNeeded)
+			if (hasOwnAmmo && def->getAmmo() < ammoNeeded)
+			{
+				_lstDefenses->setCellText(_row, 1, tr("STR_NO_AMMO"));
+			}
+			else if (!hasOwnAmmo && ammo && _base->getStorageItems()->getItem(ammo) < ammoNeeded)
 			{
 				_lstDefenses->setCellText(_row, 1, tr("STR_NO_AMMO"));
 			}
@@ -219,20 +225,22 @@ void BaseDefenseState::nextStep()
 			_action = BDA_RESOLVE;
 			return;
 		case BDA_RESOLVE:
-			if (ammo && _base->getStorageItems()->getItem(ammo) < ammoNeeded)
+			if (hasOwnAmmo && def->getAmmo() < ammoNeeded)
+			{
+				//_lstDefenses->setCellText(_row, 2, tr("STR_NO_AMMO"));
+			}
+			else if (!hasOwnAmmo && ammo && _base->getStorageItems()->getItem(ammo) < ammoNeeded)
 			{
 				//_lstDefenses->setCellText(_row, 2, tr("STR_NO_AMMO"));
 			}
 			else if (!RNG::percent((def)->getRules()->getHitRatio()))
 			{
+				spendAmmo = true;
 				_lstDefenses->setCellText(_row, 2, tr("STR_MISSED"));
 			}
 			else
 			{
-				if (ammo && ammoNeeded > 0)
-				{
-					_base->getStorageItems()->removeItem(ammo, ammoNeeded);
-				}
+				spendAmmo = true;
 				_lstDefenses->setCellText(_row, 2, tr("STR_HIT"));
 				_game->getMod()->getSound("GEO.CAT", (def)->getRules()->getHitSound())->play();
 				int dmg = (def)->getRules()->getDefenseValue();
@@ -244,6 +252,18 @@ void BaseDefenseState::nextStep()
 					_ufo->setShield(_ufo->getShield() - shieldDamage);
 				}
 				_ufo->setDamage(_ufo->getDamage() + dmg, _game->getMod());
+			}
+			if (spendAmmo && ammoNeeded > 0)
+			{
+				if (hasOwnAmmo)
+				{
+					def->setAmmo(def->getAmmo() - ammoNeeded);
+					def->resetAmmoMissingReported();
+				}
+				else if (!hasOwnAmmo && ammo)
+				{
+					_base->getStorageItems()->removeItem(ammo, ammoNeeded);
+				}
 			}
 			if (_ufo->getStatus() == Ufo::DESTROYED)
 				_action = BDA_DESTROY;

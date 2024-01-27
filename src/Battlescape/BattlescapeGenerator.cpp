@@ -949,6 +949,11 @@ void BattlescapeGenerator::run()
 	{
 		explodePowerSources();
 	}
+
+	if (!isPreview)
+	{
+		explodeOtherJunk();
+	}
 }
 
 /**
@@ -2404,6 +2409,79 @@ void BattlescapeGenerator::explodePowerSources()
 }
 
 /**
+ * Terraforming.
+ */
+void BattlescapeGenerator::explodeOtherJunk()
+{
+	std::vector<BattleItem*> itemsToGoBoom;
+	std::vector<std::tuple<Tile*, const RuleItem*> > explosionParams;
+
+	for (auto* bi : *_save->getItems())
+	{
+		if (bi->isOwnerIgnored() || !bi->getTile())
+		{
+			continue;
+		}
+		if ((!bi->getRules()->getSpawnUnit() && !bi->getRules()->getSpawnItem()) && !bi->getXCOMProperty() && !bi->isSpecialWeapon())
+		{
+			// fuseTimer == 0 cannot be used, because it is already used for "explode after the first player turn"
+			// fuseTimer == -1 is also used, means "unprimed grenade"
+			if (bi->getRules()->getBattleType() == BT_GRENADE && bi->getFuseTimer() == -2 /* && !bi->isFuseEnabled() */)
+			{
+				itemsToGoBoom.push_back(bi);
+				explosionParams.push_back(std::tuple(bi->getTile(), bi->getRules()));
+			}
+		}
+	}
+
+	for (auto* item : itemsToGoBoom)
+	{
+		_save->removeItem(item);
+	}
+
+	for (auto& params : explosionParams)
+	{
+		Tile* tile = std::get<Tile*>(params);
+		const RuleItem* rule = std::get<const RuleItem*>(params);
+
+		Position p = tile->getPosition().toVoxel() + Position(8, 8, -tile->getTerrainLevel());
+		_save->getTileEngine()->explode(
+			{ },
+			p,
+			rule->getPower(),
+			rule->getDamageType(),
+			rule->getExplosionRadius({ })
+		);
+	}
+
+	Tile* t = _save->getTileEngine()->checkForTerrainExplosions();
+	while (t)
+	{
+		ItemDamageType DT;
+		switch (t->getExplosiveType())
+		{
+		case 0:
+			DT = DT_HE;
+			break;
+		case 5:
+			DT = DT_IN;
+			break;
+		case 6:
+			DT = DT_STUN;
+			break;
+		default:
+			DT = DT_SMOKE;
+			break;
+		}
+		int power = t->getExplosive();
+		t->setExplosive(0, 0, true);
+		Position p = t->getPosition().toVoxel() + Position(8, 8, 0);
+		_save->getTileEngine()->explode({ }, p, power, _game->getMod()->getDamageType(DT), power / 10);
+		t = _save->getTileEngine()->checkForTerrainExplosions();
+	}
+}
+
+/**
  * Spawns civilians on a terror mission.
  * @param max Maximum number of civilians to spawn.
  */
@@ -2629,7 +2707,7 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 			uint64_t baseSeed = baseLon * baseLat * 1e6;
 			RNG::setSeed(baseSeed);
 
-			_baseTerrain = _game->getMod()->getTerrain(_missionTexture->getRandomBaseTerrain(target), true);
+			_baseTerrain = _game->getMod()->getTerrain(_globeTexture->getRandomBaseTerrain(target), true);
 			generateBaseMap();
 		}
 		else
@@ -2673,6 +2751,28 @@ void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, co
 			if (!execute)
 			{
 				continue;
+			}
+		}
+
+		// if this command runs conditionally based on deployed craft's groups
+		if (_craftDeployed && _craftRules)
+		{
+			if (!command->getCraftGroups().empty())
+			{
+				bool execute = false;
+				// compare the corresponding entries in the craft rules vector
+				for (int grp : command->getCraftGroups())
+				{
+					if (std::find(_craftRules->getGroups().begin(), _craftRules->getGroups().end(), grp) != _craftRules->getGroups().end())
+					{
+						execute = true;
+						break;
+					}
+				}
+				if (!execute)
+				{
+					continue;
+				}
 			}
 		}
 

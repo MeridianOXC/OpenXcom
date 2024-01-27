@@ -209,6 +209,7 @@ private:
 	std::string _defaultAltitude;
 	RuleCraftDeployment _deployment;
 	std::vector<int> _craftInventoryTile;
+	std::vector<int> _groups;
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
 	bool _mapVisible, _forceShowInMonthlyCosts;
@@ -330,6 +331,8 @@ public:
 	const RuleCraftDeployment &getDeployment() const;
 	/// Gets the craft inventory tile position.
 	const std::vector<int> &getCraftInventoryTile() const;
+	/// Gets the craft groups (used in map scripts).
+	const std::vector<int>& getGroups() const { return _groups; }
 	/// Gets the item limit for this craft.
 	int getMaxItems() const;
 	/// Gets the item storage space limit for this craft.

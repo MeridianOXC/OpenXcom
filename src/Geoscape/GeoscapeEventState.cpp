@@ -308,6 +308,28 @@ void GeoscapeEventState::eventLogic()
 		_lstTransfers->addRow(2, tr(ti.first).c_str(), ss.str().c_str());
 	}
 
+	// 3b. spawn craft into the HQ
+	const RuleCraft* craftRule = mod->getCraft(rule.getSpawnedCraftType(), true);
+	if (craftRule)
+	{
+		Craft* craft = new Craft(craftRule, hq, save->getId(craftRule->getType()));
+		craft->initFixedWeapons(mod);
+		if (Options::oxceGeoscapeEventsInstantDelivery)
+		{
+			// same as manufacture
+			craft->checkup();
+			hq->getCrafts()->push_back(craft);
+		}
+		else
+		{
+			// same as buy
+			craft->setStatus("STR_REFUELLING");
+			Transfer* t = new Transfer(1);
+			t->setCraft(craft);
+			hq->getTransfers()->push_back(t);
+		}
+	}
+
 	// 4. give bonus research
 	std::vector<const RuleResearch*> possibilities;
 

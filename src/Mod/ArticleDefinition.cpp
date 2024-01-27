@@ -87,6 +87,7 @@ namespace OpenXcom
 		id = _pages[0].title = node["id"].as<std::string>(id);
 		section = node["section"].as<std::string>(section);
 		_requires = node["requires"].as< std::vector<std::string> >(_requires);
+		disabledBy = node["disabledBy"].as< std::vector<std::string> >(disabledBy);
 		hiddenCommendation = node["hiddenCommendation"].as<bool>(hiddenCommendation);
 		//_type_id = (UfopaediaTypeId)node["type_id"].as<int>(_type_id);
 		_listOrder = node["listOrder"].as<int>(_listOrder);
@@ -284,6 +285,7 @@ namespace OpenXcom
 	void ArticleDefinitionItem::load(const YAML::Node &node, int listOrder)
 	{
 		ArticleDefinition::load(node, listOrder);
+		weapon = node["weapon"].as<std::string>(weapon);
 	}
 
 	/**

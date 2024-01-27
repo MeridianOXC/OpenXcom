@@ -20,6 +20,7 @@
 #include "../Mod/RuleBaseFacility.h"
 #include "../Engine/GraphSubset.h"
 #include "Base.h"
+#include "ItemContainer.h"
 
 namespace OpenXcom
 {
@@ -29,7 +30,14 @@ namespace OpenXcom
  * @param rules Pointer to ruleset.
  * @param base Pointer to base of origin.
  */
-BaseFacility::BaseFacility(const RuleBaseFacility *rules, Base *base) : _rules(rules), _base(base), _x(-1), _y(-1), _buildTime(0), _disabled(false), _craftForDrawing(0), _hadPreviousFacility(false)
+BaseFacility::BaseFacility(const RuleBaseFacility *rules, Base *base) :
+	_rules(rules), _base(base),
+	_x(-1), _y(-1), _buildTime(0),
+	_ammo(0),
+	_ammoMissingReported(false),
+	_disabled(false),
+	_craftForDrawing(0),
+	_hadPreviousFacility(false)
 {
 }
 
@@ -49,6 +57,8 @@ void BaseFacility::load(const YAML::Node &node)
 	_x = node["x"].as<int>(_x);
 	_y = node["y"].as<int>(_y);
 	_buildTime = node["buildTime"].as<int>(_buildTime);
+	_ammo = node["ammo"].as<int>(_ammo);
+	_ammoMissingReported = node["ammoMissingReported"].as<bool>(_ammoMissingReported);
 	_disabled = node["disabled"].as<bool>(_disabled);
 	_hadPreviousFacility = node["hadPreviousFacility"].as<bool>(_hadPreviousFacility);
 }
@@ -65,6 +75,10 @@ YAML::Node BaseFacility::save() const
 	node["y"] = _y;
 	if (_buildTime != 0)
 		node["buildTime"] = _buildTime;
+	if (_ammo != 0)
+		node["ammo"] = _ammo;
+	if (_ammoMissingReported)
+		node["ammoMissingReported"] = _ammoMissingReported;
 	if (_disabled)
 		node["disabled"] = _disabled;
 	if (_hadPreviousFacility)
@@ -188,6 +202,51 @@ bool BaseFacility::inUse() const
 	}
 
 	return _base->isAreaInUse(getPlacement()) != BPE_None;
+}
+
+/**
+ * Rearms the facility.
+ * @return The ammo item missing for rearming, or nullptr if none or reported already.
+ */
+const RuleItem* BaseFacility::rearm()
+{
+	// facility doesn't need to be rearmed at all (vanilla)
+	if (_rules->getAmmoMax() <= 0)
+		return nullptr;
+
+	// facility is not operational
+	if (_buildTime > 0)
+		return nullptr;
+
+	// facility is already fully armed
+	if (_ammo >= _rules->getAmmoMax())
+	{
+		resetAmmoMissingReported();
+		return nullptr;
+	}
+
+	int ammoMissing = _rules->getAmmoMax() - _ammo;
+	int ammoUsed = std::min(ammoMissing, _rules->getRearmRate());
+
+	const RuleItem* ammoItem = nullptr;
+	if (_rules->getAmmoItem())
+	{
+		int ammoAvailable = _base->getStorageItems()->getItem(_rules->getAmmoItem());
+		if (ammoAvailable < ammoUsed)
+		{
+			if (!_ammoMissingReported)
+			{
+				ammoItem = _rules->getAmmoItem();
+				_ammoMissingReported = true;
+			}
+			ammoUsed = ammoAvailable;
+		}
+		_base->getStorageItems()->removeItem(_rules->getAmmoItem(), ammoUsed);
+	}
+
+	_ammo += ammoUsed;
+
+	return ammoItem;
 }
 
 /**

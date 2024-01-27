@@ -74,8 +74,8 @@ namespace OpenXcom
 		/// load a vector with article ids that are currently visible of a given section.
 		static void list(SavedGame *save, Mod *rule, const std::string &section, ArticleDefinitionList &data);
 
-		/// check if the article is hidden.
-		static bool isArticleHidden(SavedGame *save, ArticleDefinition *article, Mod *mod);
+		/// check if this is an invisible commendation article.
+		static bool isCommendationArticleInvisible(SavedGame *save, ArticleDefinition *article);
 
 		/// check if the article corresponds to an awarded commendation.
 		static bool isAwardedCommendation(SavedGame *save, ArticleDefinition *article);

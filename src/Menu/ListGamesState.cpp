@@ -33,6 +33,7 @@
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextList.h"
+#include "../Interface/ToggleTextButton.h"
 #include "../Interface/ArrowButton.h"
 #include "DeleteGameState.h"
 
@@ -88,17 +89,23 @@ ListGamesState::ListGamesState(OptionsOrigin origin, int firstValidRow, bool aut
 {
 	_screen = false;
 
+	bool isMobile = false;
+#ifdef __MOBILE__
+	isMobile = true;
+#endif
+
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0, POPUP_BOTH);
 	_btnCancel = new TextButton(80, 16, 120, 172);
 	_txtTitle = new Text(310, 17, 5, 7);
 	_txtDelete = new Text(310, 9, 5, 23);
-	_txtName = new Text(150, 9, 16, 32);
-	_txtDate = new Text(110, 9, 204, 32);
-	_lstSaves = new TextList(288, 112, 8, 42);
+	_txtName = new Text(150, 9, 16, isMobile ? 40 : 32);
+	_txtDate = new Text(110, 9, 204, isMobile ? 40 : 32);
+	_lstSaves = new TextList(288, isMobile ? 104 : 112, 8, isMobile ? 50 : 42);
 	_txtDetails = new Text(288, 16, 16, 156);
-	_sortName = new ArrowButton(ARROW_NONE, 11, 8, 16, 32);
-	_sortDate = new ArrowButton(ARROW_NONE, 11, 8, 204, 32);
+	_sortName = new ArrowButton(ARROW_NONE, 11, 8, 16, isMobile ? 40 : 32);
+	_sortDate = new ArrowButton(ARROW_NONE, 11, 8, 204, isMobile ? 40 : 32);
+	_btnDelete = new ToggleTextButton(288, 16, 16, 23);
 
 	// Set palette
 	setInterface("geoscape", true, _game->getSavedGame() ? _game->getSavedGame()->getSavedBattle() : 0);
@@ -113,6 +120,7 @@ ListGamesState::ListGamesState(OptionsOrigin origin, int firstValidRow, bool aut
 	add(_txtDetails, "text", "saveMenus");
 	add(_sortName, "text", "saveMenus");
 	add(_sortDate, "text", "saveMenus");
+	add(_btnDelete, "button", "saveMenus");
 
 	// Set up objects
 	setWindowBackground(_window, "saveMenus");
@@ -124,8 +132,17 @@ ListGamesState::ListGamesState(OptionsOrigin origin, int firstValidRow, bool aut
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);
 
-	_txtDelete->setAlign(ALIGN_CENTER);
-	_txtDelete->setText(tr("STR_RIGHT_CLICK_TO_DELETE"));
+	if (isMobile)
+	{
+		_txtDelete->setVisible(false);
+		_btnDelete->setText(tr("STR_RIGHT_CLICK_TO_DELETE"));
+	}
+	else
+	{
+		_btnDelete->setVisible(false);
+		_txtDelete->setAlign(ALIGN_CENTER);
+		_txtDelete->setText(tr("STR_RIGHT_CLICK_TO_DELETE"));
+	}
 
 	_txtName->setText(tr("STR_NAME"));
 
@@ -295,7 +312,7 @@ void ListGamesState::lstSavesMouseOut(Action *)
  */
 void ListGamesState::lstSavesPress(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT && _lstSaves->getSelectedRow() >= _firstValidRow)
+	if ((action->getDetails()->button.button == SDL_BUTTON_RIGHT || _btnDelete->getPressed()) && _lstSaves->getSelectedRow() >= _firstValidRow)
 	{
 		_game->pushState(new DeleteGameState(_origin, _saves[_lstSaves->getSelectedRow() - _firstValidRow].fileName));
 	}

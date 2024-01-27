@@ -41,6 +41,7 @@ private:
 	Window *_window;
 	Text *_txtTitle, *_txtBriefing, *_txtArmors;
 	TextList* _lstArmors;
+	std::vector<std::pair<std::string, std::string> > _armorNameList;
 	// Checks the starting condition
 	void checkStartingCondition(AlienDeployment *deployment);
 public:
@@ -52,6 +53,8 @@ public:
 	void btnOkClick(Action *action);
 	/// Handler for clicking the Armors button.
 	void btnArmorsClick(Action *action);
+	/// Handler for clicking the Armors list.
+	void lstArmorsClick(Action* action);
 };
 
 }

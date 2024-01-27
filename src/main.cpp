@@ -27,7 +27,6 @@
 #include "Engine/Options.h"
 #include "Engine/FileMap.h"
 #include "Menu/StartState.h"
-#include "Engine/Collections.h"
 
 /** @mainpage
  * @author OpenXcom Developers
@@ -155,6 +154,8 @@ const char Version[] = "$VER: OpenXCom " OPENXCOM_VERSION_SHORT " (" __AMIGADATE
 
 #ifdef OXCE_AUTO_TEST
 
+#include "Engine/Collections.h"
+#include "fmath.h"
 
 struct BadMove
 {
@@ -256,6 +257,48 @@ static auto dummy = ([]
 		Collections::removeIf(v, [](BadMove& i) { return true; });
 		assert((v == std::vector<BadMove>{ }));
 	}
+
+	return 0;
+})();
+
+struct DummyVectDouble
+{
+	double x, y, z;
+
+	bool operator==(const DummyVectDouble& a) const { return AreSame(x, a.x) && AreSame(y, a.y) && AreSame(z, a.z); };
+};
+
+static auto dummyMath = ([]
+{
+	const DummyVectDouble x { 1, 0, 0 };
+	const DummyVectDouble y { 0, 1, 0 };
+	const DummyVectDouble z { 0, 0, 1 };
+
+	const DummyVectDouble x256 { 256, 0, 0 };
+	const DummyVectDouble y256 { 0, 256, 0 };
+	const DummyVectDouble z256 { 0, 0, 256 };
+
+	assert(x == VectNormalize(x));
+	assert(y == VectNormalize(y));
+	assert(z == VectNormalize(z));
+	assert(x == VectNormalize(x256));
+	assert(y == VectNormalize(y256));
+	assert(z == VectNormalize(z256));
+	assert(x256 == VectNormalize(x256, 256));
+	assert(y256 == VectNormalize(y256, 256));
+	assert(z256 == VectNormalize(z256, 256));
+
+	assert(z == VectCrossProduct(x, y));
+	assert(x == VectCrossProduct(y, z));
+	assert(y == VectCrossProduct(z, x));
+
+	assert(z256 == VectCrossProduct(x256, y));
+	assert(x256 == VectCrossProduct(y256, z));
+	assert(y256 == VectCrossProduct(z256, x));
+
+	assert(z256 == VectCrossProduct(x256, y256, 256));
+	assert(x256 == VectCrossProduct(y256, z256, 256));
+	assert(y256 == VectCrossProduct(z256, x256, 256));
 
 	return 0;
 })();

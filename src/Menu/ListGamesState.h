@@ -31,6 +31,7 @@ class Window;
 class Text;
 class TextList;
 class ArrowButton;
+class ToggleTextButton;
 
 /**
  * Base class for saved game screens which
@@ -41,6 +42,7 @@ class ListGamesState : public State
 protected:
 	TextButton *_btnCancel;
 	Window *_window;
+	ToggleTextButton* _btnDelete;
 	Text *_txtTitle, *_txtName, *_txtDate, *_txtDelete, *_txtDetails;
 	TextList *_lstSaves;
 	ArrowButton *_sortName, *_sortDate;

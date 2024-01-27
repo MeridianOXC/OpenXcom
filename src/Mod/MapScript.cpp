@@ -106,6 +106,10 @@ void MapScript::load(const YAML::Node& node)
 			_rects.push_back(rect);
 		}
 	}
+	if (const YAML::Node& craftGroups = node["craftGroups"])
+	{
+		_craftGroups = craftGroups.as<std::vector<int> >(_craftGroups);
+	}
 	if (const YAML::Node &map = node["tunnelData"])
 	{
 		_tunnelData = new TunnelData;

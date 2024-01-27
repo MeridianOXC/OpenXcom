@@ -73,6 +73,7 @@ OPT bool oxceUpdateCheck;
 OPT int autosaveSlots;
 OPT bool oxceLinks;
 OPT bool oxceFatFingerLinks;
+OPT bool oxceHighlightNewTopics;
 OPT bool oxcePediaShowClipSize;
 
 OPT bool oxceEnableSlackingIndicator;
@@ -85,7 +86,6 @@ OPT bool oxceShowBaseNameInPopups;
 
 OPT bool oxceAlternateCraftEquipmentManagement;
 OPT bool oxceBaseInfoScaleEnabled;
-OPT bool oxceHighlightNewTopics;
 OPT int oxceResearchScrollSpeed;
 OPT int oxceResearchScrollSpeedWithCtrl;
 OPT bool oxceManufactureFilterSuppliesOK;
@@ -126,6 +126,7 @@ OPT int oxceGeoscapeDebugLogMaxEntries;
 OPT int oxceGeoSlowdownFactor;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
+OPT int oxceBaseManufactureInfinityButton;
 
 OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableHitLog;

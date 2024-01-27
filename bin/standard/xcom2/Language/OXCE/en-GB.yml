@@ -34,5 +34,20 @@ en-GB:
   GMINTER1: "Dogfight Track #1"
   GMINTER2: "Dogfight Track #2"
   GMINTER3: "Dogfight Track #3"
+#=================== Menu ===================
+#NewBattleState.cpp
+  GLOBE_TEXTURE_0: "Seabed/Coral 1"
+  GLOBE_TEXTURE_1: "Research Facility 1"
+  GLOBE_TEXTURE_2: "Crashed Plane"
+  GLOBE_TEXTURE_3: "Atlantis"
+  GLOBE_TEXTURE_4: "Mayan Temple 1"
+  GLOBE_TEXTURE_5: "Sunken Galleon"
+  GLOBE_TEXTURE_6: "Sunken Liner 1"
+  GLOBE_TEXTURE_7: "Volcanic 1"
+  GLOBE_TEXTURE_8: "Seabed/Coral 2"
+  GLOBE_TEXTURE_9: "Volcanic 2"
+  GLOBE_TEXTURE_10: "Sunken Liner 2"
+  GLOBE_TEXTURE_11: "Research Facility 2"
+  GLOBE_TEXTURE_12: "Mayan Temple 2"
 #==================================================================================================================
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

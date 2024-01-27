@@ -24,6 +24,7 @@ namespace OpenXcom
 {
 
 class RuleBaseFacility;
+class RuleItem;
 class Base;
 class Mod;
 class Craft;
@@ -40,6 +41,8 @@ private:
 	const RuleBaseFacility *_rules;
 	Base *_base;
 	int _x, _y, _buildTime;
+	int _ammo;
+	bool _ammoMissingReported;
 	bool _disabled;
 	Craft *_craftForDrawing;	// craft, used for drawing facility
 	bool _hadPreviousFacility;
@@ -74,6 +77,14 @@ public:
 	void build();
 	/// Checks if the facility is currently in use.
 	bool inUse() const;
+	/// Gets the facility's ammo count.
+	int getAmmo() const { return _ammo; }
+	/// Sets the facility's ammo count.
+	void setAmmo(int ammo) { _ammo = ammo; }
+	/// Resets the helper flag.
+	void resetAmmoMissingReported() { _ammoMissingReported = false; }
+	/// Rearms the facility.
+	const RuleItem* rearm();
 	/// Checks if the facility is disabled.
 	bool getDisabled() const;
 	/// Sets the facility's disabled flag.

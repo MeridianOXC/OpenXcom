@@ -33,31 +33,15 @@ namespace OpenXcom
  * @param color the color set to use from the transparency LUTs
  * @param opacity another reference for the LUT, this one is divided by 5 for the actual offset to use.
  */
-Particle::Particle(Position voxelPos, Uint8 density, Uint8 color, Uint8 opacity) : _density(density), _color(color), _opacity(opacity), _size(0)
+Particle::Particle(Position voxelPos, Position subVoxelOffset, Position subVoxelVel, Position subVoxelAcc, Uint8 drift, Uint8 color, Uint8 opacity, Uint8 size) : _drift(drift), _color(color), _opacity(opacity), _size(size)
 {
 	_layerZ = (voxelPos.z / Position::TileZ) << 1;
 
 	_subVoxelPos = voxelPos.clipVoxel() * SubVoxelAccuracy;
+	_subVoxelPos += subVoxelOffset;
 
-	// approximation of old `int offset = RNG::seedless(0, 4) - 2;`
-	const int offset = SubVoxelAccuracy * 3 / 2;
-	_subVoxelPos.x += RNG::seedless(-offset, +offset);
-	_subVoxelPos.y += RNG::seedless(-offset, +offset);
-	_subVoxelPos.z += RNG::seedless(-offset, +offset);
-
-	//size is initialized at 0
-	if (density < 100)
-	{
-		_size = 3;
-	}
-	else if (density < 125)
-	{
-		_size = 2;
-	}
-	else if (density < 150)
-	{
-		_size = 1;
-	}
+	_subVoxelVelocity = subVoxelVel;
+	_subVoxelAcceleration = subVoxelAcc;
 }
 
 /**
@@ -66,14 +50,13 @@ Particle::Particle(Position voxelPos, Uint8 density, Uint8 color, Uint8 opacity)
  */
 bool Particle::animate()
 {
-	_subVoxelPos.z += (320-_density);
 	_opacity--;
 
-	// approximation of old `_xOffset += (RNG::seedless(0,1)*2 -1)* (0.25 + (float)RNG::seedless(0,9)/30);`
-	const int drift = SubVoxelAccuracy / 2;
-	_subVoxelPos.x += RNG::seedless(-drift, drift);
-	_subVoxelPos.y += RNG::seedless(-drift, drift);
-	_subVoxelPos.z += RNG::seedless(-drift, drift);
+	_subVoxelPos.x += RNG::seedless(-_drift, _drift);
+	_subVoxelPos.y += RNG::seedless(-_drift, _drift);
+	_subVoxelPos.z += RNG::seedless(-_drift, _drift);
+	_subVoxelPos += _subVoxelVelocity;
+	_subVoxelVelocity += _subVoxelAcceleration;
 
 	if ( _opacity == 0 )
 	{

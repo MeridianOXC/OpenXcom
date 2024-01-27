@@ -45,11 +45,16 @@ namespace OpenXcom
 
 		/// List of all available articles.
 		std::vector<ArticleDefinition *> articleList;
+		std::vector<bool> articleStatusList;
 
 		/// Get current Article definition for current index position.
 		ArticleDefinition* getCurrentArticle() const
 		{
 			return articleList[current_index];
+		}
+		bool isCurrentArticleHidden() const
+		{
+			return articleStatusList[current_index];
 		}
 
 		/// Change index position to next article

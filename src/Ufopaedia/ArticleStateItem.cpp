@@ -41,7 +41,11 @@ namespace OpenXcom
 
 	ArticleStateItem::ArticleStateItem(ArticleDefinitionItem *defs, std::shared_ptr<ArticleCommonState> state) : ArticleState(defs->id, std::move(state))
 	{
-		RuleItem *item = _game->getMod()->getItem(defs->id, true);
+		RuleItem *item = _game->getMod()->getItem(defs->weapon, false);
+		if (!item)
+		{
+			item = _game->getMod()->getItem(defs->id, true);
+		}
 
 		int bottomOffset = 20;
 		std::string accuracyModifier;

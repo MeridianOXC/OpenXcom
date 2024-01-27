@@ -36,9 +36,9 @@ public:
 	Sint16 x, y, z;
 
 	/// Null position constructor.
-	constexpr Position() : x(0), y(0), z(0) {};
+	constexpr Position() noexcept : x(0), y(0), z(0) {};
 	/// X Y Z position constructor.
-	constexpr Position(int x_, int y_, int z_) : x(x_), y(y_), z(z_) {};
+	constexpr Position(int x_, int y_, int z_) noexcept : x(x_), y(y_), z(z_) {};
 	/// Copy constructor.
 	constexpr Position(const Position& pos) = default;
 

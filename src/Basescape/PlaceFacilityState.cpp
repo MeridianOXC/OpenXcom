@@ -85,6 +85,11 @@ PlaceFacilityState::PlaceFacilityState(Base *base, const RuleBaseFacility *rule,
 	// Set up objects
 	setWindowBackground(_window, "placeFacility");
 
+	auto* itf = _game->getMod()->getInterface("basescape")->getElement("trafficLights");
+	if (itf)
+	{
+		_view->setOtherColors(itf->color, itf->color2, itf->border, !itf->TFTDMode);
+	}
 	_view->setTexture(_game->getMod()->getSurfaceSet("BASEBITS.PCK"));
 	_view->setBase(_base);
 	_view->setSelectable(rule->getSizeX(), rule->getSizeY());
@@ -280,6 +285,12 @@ void PlaceFacilityState::viewClick(Action *)
 						// This only counts as building over something if it wasn't in construction
 						if (checkFacility->getBuildTime() == 0)
 							buildingOver = true;
+					}
+					if (checkFacility->getAmmo() > 0)
+					{
+						// Full refund of loaded ammo
+						_base->getStorageItems()->addItem(checkFacility->getRules()->getAmmoItem(), checkFacility->getAmmo());
+						checkFacility->setAmmo(0);
 					}
 
 					// Remove the facility from the base

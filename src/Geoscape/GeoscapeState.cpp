@@ -2105,6 +2105,23 @@ void GeoscapeState::time1Hour()
 		}
 	}
 
+	// Handle base defenses maintenance
+	for (auto* xbase : *_game->getSavedGame()->getBases())
+	{
+		for (auto* facility : *xbase->getFacilities())
+		{
+			auto* ammo = facility->rearm();
+			if (ammo)
+			{
+				std::string msg = tr("STR_NOT_ENOUGH_ITEM_TO_REARM_FACILITY_AT_BASE")
+					.arg(tr(ammo->getType()))
+					.arg(tr(facility->getRules()->getType()))
+					.arg(xbase->getName());
+				popup(new CraftErrorState(this, msg));
+			}
+		}
+	}
+
 	// Handle transfers
 	bool window = false;
 	for (auto* xbase : *_game->getSavedGame()->getBases())
