@@ -74,6 +74,8 @@
 		5BF23CF329FD071E00A5C239 /* RankCount.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF23CF229FD071E00A5C239 /* RankCount.cpp */; };
 		5BF23CF729FD073100A5C239 /* GlobalAlienContainmentState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF23CF529FD073100A5C239 /* GlobalAlienContainmentState.cpp */; };
 		5BF23CFB29FD076900A5C239 /* SoldierRankState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF23CF929FD076900A5C239 /* SoldierRankState.cpp */; };
+		5BF3E41B2B8119AF0026D2FD /* ProgressBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF3E4192B8119AF0026D2FD /* ProgressBar.cpp */; };
+		5BF3E41F2B8119BF0026D2FD /* SoldierTransformState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BF3E41E2B8119BF0026D2FD /* SoldierTransformState.cpp */; };
 		B235EF4A201C4DF200FF7AC3 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
 		B235EF51201C4DF200FF7AC3 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D31D8B5E5600915323 /* AVFoundation.framework */; };
 		B235EF52201C4DF200FF7AC3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE0E9691BAF96A00098DFA4 /* GameController.framework */; };
@@ -650,6 +652,10 @@
 		5BF23CF629FD073100A5C239 /* GlobalAlienContainmentState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalAlienContainmentState.h; sourceTree = "<group>"; };
 		5BF23CF929FD076900A5C239 /* SoldierRankState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoldierRankState.cpp; sourceTree = "<group>"; };
 		5BF23CFA29FD076900A5C239 /* SoldierRankState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoldierRankState.h; sourceTree = "<group>"; };
+		5BF3E4192B8119AF0026D2FD /* ProgressBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProgressBar.cpp; sourceTree = "<group>"; };
+		5BF3E41A2B8119AF0026D2FD /* ProgressBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgressBar.h; sourceTree = "<group>"; };
+		5BF3E41D2B8119BE0026D2FD /* SoldierTransformState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoldierTransformState.h; sourceTree = "<group>"; };
+		5BF3E41E2B8119BF0026D2FD /* SoldierTransformState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoldierTransformState.cpp; sourceTree = "<group>"; };
 		5BF48A3624F16E47003E3156 /* Functions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Functions.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B235EF5E201C4DF200FF7AC3 /* Game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Game.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2021,6 +2027,8 @@
 		B283439A201F6D9C00BAEC9D /* Interface */ = {
 			isa = PBXGroup;
 			children = (
+				5BF3E4192B8119AF0026D2FD /* ProgressBar.cpp */,
+				5BF3E41A2B8119AF0026D2FD /* ProgressBar.h */,
 				B283439B201F6D9C00BAEC9D /* TextList.h */,
 				B283439C201F6D9C00BAEC9D /* FpsCounter.cpp */,
 				B283439D201F6D9C00BAEC9D /* Frame.cpp */,
@@ -2062,6 +2070,8 @@
 		B28343BD201F6D9D00BAEC9D /* Basescape */ = {
 			isa = PBXGroup;
 			children = (
+				5BF3E41E2B8119BF0026D2FD /* SoldierTransformState.cpp */,
+				5BF3E41D2B8119BE0026D2FD /* SoldierTransformState.h */,
 				5BF23CF929FD076900A5C239 /* SoldierRankState.cpp */,
 				5BF23CFA29FD076900A5C239 /* SoldierRankState.h */,
 				5BF23CF529FD073100A5C239 /* GlobalAlienContainmentState.cpp */,
@@ -2653,6 +2663,7 @@
 				5BD0BAF62242E02A008E6DFB /* AlienInventoryState.cpp in Sources */,
 				B28344D4201F6D9E00BAEC9D /* AlienMission.cpp in Sources */,
 				B2834557201F6D9E00BAEC9D /* CraftWeaponsState.cpp in Sources */,
+				5BF3E41B2B8119AF0026D2FD /* ProgressBar.cpp in Sources */,
 				B28344BF201F6D9E00BAEC9D /* Language.cpp in Sources */,
 				B283457D201F6D9E00BAEC9D /* ExtraStrings.cpp in Sources */,
 				B28344E9201F6D9E00BAEC9D /* SoldierDeath.cpp in Sources */,
@@ -2836,6 +2847,7 @@
 				B2834599201F6D9E00BAEC9D /* UfoTrajectory.cpp in Sources */,
 				B2834502201F6D9E00BAEC9D /* UnitDieBState.cpp in Sources */,
 				B28344F6201F6D9E00BAEC9D /* ScannerState.cpp in Sources */,
+				5BF3E41F2B8119BF0026D2FD /* SoldierTransformState.cpp in Sources */,
 				5B0DC8B222F300FA0092A513 /* RuleArcScript.cpp in Sources */,
 				B28344EC201F6D9E00BAEC9D /* CraftWeaponProjectile.cpp in Sources */,
 				5BD0BB382242E0C1008E6DFB /* RuleSoldierTransformation.cpp in Sources */,
