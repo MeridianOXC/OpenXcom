@@ -237,7 +237,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_lstSoldiers->setMargin(8);
 	_lstSoldiers->onLeftArrowClick((ActionHandler)&SoldiersState::lstItemsLeftArrowClick);
 	_lstSoldiers->onRightArrowClick((ActionHandler)&SoldiersState::lstItemsRightArrowClick);
-	_lstSoldiers->onMouseClick((ActionHandler)&SoldiersState::lstSoldiersClick);
+	_lstSoldiers->onMouseClick((ActionHandler)&SoldiersState::lstSoldiersClick, 0);
 	//_lstSoldiers->onMousePress((ActionHandler)&SoldiersState::lstSoldiersMousePress);
 }
 
@@ -367,6 +367,7 @@ void SoldiersState::initList(size_t scrl)
 	_lstSoldiers->clearList();
 
 	_filteredListOfSoldiers.clear();
+	_filteredIndicesOfSoldiers.clear();
 
 	std::string selAction = "STR_SOLDIER_INFO";
 	if (!_availableOptions.empty())
@@ -391,8 +392,10 @@ void SoldiersState::initList(size_t scrl)
 		RuleSoldierTransformation *transformationRule = _game->getMod()->getSoldierTransformation(selAction);
 		if (transformationRule)
 		{
+			int idx = -1;
 			for (auto* soldier : *_base->getSoldiers())
 			{
+				idx++;
 				if (soldier->getCraft() && soldier->getCraft()->getStatus() == "STR_OUT")
 				{
 					// soldiers outside of the base are not eligible
@@ -401,6 +404,7 @@ void SoldiersState::initList(size_t scrl)
 				if (soldier->isEligibleForTransformation(transformationRule))
 				{
 					_filteredListOfSoldiers.push_back(soldier);
+					_filteredIndicesOfSoldiers.push_back(idx);
 				}
 			}
 			for (auto* deadMan : *_game->getSavedGame()->getDeadSoldiers())
@@ -408,6 +412,7 @@ void SoldiersState::initList(size_t scrl)
 				if (deadMan->isEligibleForTransformation(transformationRule))
 				{
 					_filteredListOfSoldiers.push_back(deadMan);
+					_filteredIndicesOfSoldiers.push_back(-1); // invalid
 				}
 			}
 		}
@@ -687,6 +692,18 @@ void SoldiersState::lstSoldiersClick(Action *action)
 	if (selAction == "STR_SOLDIER_INFO")
 	{
 		_game->pushState(new SoldierInfoState(_base, _lstSoldiers->getSelectedRow()));
+	}
+	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	{
+		size_t idx = _lstSoldiers->getSelectedRow();
+		if (idx < _filteredIndicesOfSoldiers.size())
+		{
+			int soldierId = _filteredIndicesOfSoldiers[idx];
+			if (soldierId > -1)
+			{
+				_game->pushState(new SoldierInfoState(_base, soldierId));
+			}
+		}
 	}
 	else
 	{

@@ -70,6 +70,22 @@ enum BasePlacementErrors : int
 	BPE_ForbiddenByOther = 8,
 	/// 9: trying to build a facility, which would forbid (i.e. would be in conflict with) other existing facilities in the base
 	BPE_ForbiddenByThis = 9,
+	/// 10: not enough storage space
+	BPE_Used_Stores = 10,
+	/// 11: not enough living quarters
+	BPE_Used_Quarters = 11,
+	/// 12: not enough laboratories
+	BPE_Used_Laboratories = 12,
+	/// 13: not enough workshops
+	BPE_Used_Workshops = 13,
+	/// 14: not enough hangars
+	BPE_Used_Hangars = 14,
+	/// 15: not enough psi labs
+	BPE_Used_PsiLabs = 15,
+	/// 16: not enough gyms
+	BPE_Used_Gyms = 16,
+	/// 17: not enough alien containment
+	BPE_Used_AlienContainment = 17,
 };
 
 struct BaseSumDailyRecovery

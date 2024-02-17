@@ -47,6 +47,7 @@ private:
 	TextList *_lstSoldiers;
 	Base *_base;
 	std::vector<Soldier *> _origSoldierOrder, _filteredListOfSoldiers;
+	std::vector<int> _filteredIndicesOfSoldiers;
 	std::vector<SortFunctor *> _sortFunctors;
 	getStatFn_t _dynGetter;
 	std::vector<std::string> _availableOptions;

@@ -118,6 +118,7 @@ hu:
   landOnly: "Csak szárazföldi?"
   psiRequired: "Pszi ügyesség szükséges?"
   targetMatrix: ""
+  convertToCivilian: ""
   manaRequired: "Mana szükséges?"
   LOSRequired: "Tűzvonal szükséges?"
 #
@@ -410,6 +411,8 @@ hu:
   maxUnitsLimit: ""
   pilots: "Pilótafülke mérete"
   vehicles: "NFP kapacitás"
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
   maxHWPUnitsLimit: ""
   maxSmallSoldiers: ""
   maxLargeSoldiers: ""

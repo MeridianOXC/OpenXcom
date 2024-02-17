@@ -150,7 +150,7 @@ void GlobalAlienContainmentState::fillPrisonerList()
 		// determine prison types used in the base
 		std::set<int> occupiedPrisonTypes;
 		for(int prisonType : prisonTypes)
-		{	
+		{
 			totalBaseCapacity += xbase->getAvailableContainment(prisonType);
 
 			for(auto* baseFacility : *xbase->getFacilities())
@@ -197,7 +197,7 @@ void GlobalAlienContainmentState::fillPrisonerList()
 				RuleItem* rule = _game->getMod()->getItem(itemType, true);
 				if (rule->isAlien() && rule->getPrisonType() == prisonType)
 				{
-					int qty = xbase->getStorageItems()->getItem(itemType);
+					int qty = xbase->getStorageItems()->getItem(rule);
 					if (qty > 0)
 					{
 						std::ostringstream ss;
@@ -274,7 +274,7 @@ void GlobalAlienContainmentState::onSelectBase(Action*)
 			_game->popState();
 		}
 
-		// open new window 
+		// open new window
 		_game->pushState(new ManageAlienContainmentState(base, prisonType, OPT_GEOSCAPE));
 	}
 }

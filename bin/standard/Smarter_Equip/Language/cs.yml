@@ -1,0 +1,10 @@
+cs:
+  OXCE_CRAFT_WEAPONS: "Palubní zbraně"
+  OXCE_HWPS: "TZS"
+  OXCE_MAIN_WEAPONS: "Hlavní zbraně"
+  OXCE_SIDE_WEAPONS: "Boční zbraně"
+  OXCE_AMMO: "Munice"
+  OXCE_GRENADES: "Granáty"
+  OXCE_ARMORS_AND_CORPSES: "Zbroj a mrtvoly"
+  OXCE_PRISONERS: "Vězni"
+  OXCE_COMPONENTS: "Komponenty"

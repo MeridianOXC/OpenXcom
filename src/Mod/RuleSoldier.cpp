@@ -38,7 +38,7 @@ namespace OpenXcom
  * type of soldier.
  * @param type String defining the type.
  */
-RuleSoldier::RuleSoldier(const std::string &type, int listOrder) : _type(type), _listOrder(listOrder), _armor(nullptr), _specWeapon(nullptr),
+RuleSoldier::RuleSoldier(const std::string &type, int listOrder) : _type(type), _group(0), _listOrder(listOrder), _armor(nullptr), _specWeapon(nullptr),
 	_monthlyBuyLimit(0), _costBuy(0), _costSalary(0),
 	_costSalarySquaddie(0), _costSalarySergeant(0), _costSalaryCaptain(0), _costSalaryColonel(0), _costSalaryCommander(0),
 	_standHeight(0), _kneelHeight(0), _floatHeight(0), _femaleFrequency(50), _value(20), _transferTime(0), _moraleLossWhenKilled(100),
@@ -182,6 +182,7 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, const ModScript &parser
 
 	mod->loadNames(_type, _skillNames, node["skills"]);
 
+	_group = node["group"].as<int>(_group);
 	_listOrder = node["listOrder"].as<int>(_listOrder);
 
 	_scriptValues.load(node, parsers.getShared());

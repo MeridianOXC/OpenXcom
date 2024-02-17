@@ -118,6 +118,7 @@ cs:
   landOnly: "Jen pozemské?"
   psiRequired: "Vyžaduje psi dovednost?"
   targetMatrix: "Terče věcí"
+  convertToCivilian: ""
   manaRequired: "Vyžaduje manu?"
   LOSRequired: "Musí vidět cíl?"
 #
@@ -410,6 +411,8 @@ cs:
   maxUnitsLimit: ""
   pilots: "Kapacita kokpitu"
   vehicles: "Kapacita platformy"
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
   maxHWPUnitsLimit: ""
   maxSmallSoldiers: ""
   maxLargeSoldiers: ""

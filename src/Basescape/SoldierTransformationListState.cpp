@@ -222,7 +222,7 @@ void SoldierTransformationListState::initList()
 		for (auto& item : transformationRule->getRequiredItems())
 		{
 			RuleItem* itemRule = _game->getMod()->getItem(item.first);
-			projectsPossible = std::min(projectsPossible, itemContainer->getItem(itemRule->getType()) / item.second);
+			projectsPossible = std::min(projectsPossible, itemContainer->getItem(itemRule) / item.second);
 		}
 		if (projectsPossible <= 0)
 		{

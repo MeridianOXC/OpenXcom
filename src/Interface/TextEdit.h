@@ -38,6 +38,7 @@ private:
 	Text *_text, *_caret;
 	UString _value;
 	bool _blink, _modal;
+	bool _drawBackground;
 	Timer *_timer;
 	UCode _char;
 	size_t _caretPos;
@@ -113,6 +114,8 @@ public:
 	void textInput(Action *action, State *state) override;
 	/// Sets a function to be called every time ENTER is pressed.
 	void onEnter(ActionHandler handler);
+	/// Sets the text edit's background drawing setting.
+	void setDrawBackground(bool drawBackground) { _drawBackground = drawBackground; }
 };
 
 }

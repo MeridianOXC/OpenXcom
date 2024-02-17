@@ -25,6 +25,9 @@ namespace OpenXcom
 {
 
 class BattleItem;
+class RuleItem;
+class RuleInventory;
+class Mod;
 
 /**
  * Represents a soldier-equipment layout item which is used
@@ -33,35 +36,35 @@ class BattleItem;
 class EquipmentLayoutItem
 {
 private:
-	std::string _itemType;
-	std::string _slot;
+	const RuleItem* _itemType;
+	const RuleInventory* _slot;
 	int _slotX, _slotY;
-	std::string _ammoItem[RuleItem::AmmoSlotMax];
+	const RuleItem* _ammoItem[RuleItem::AmmoSlotMax];
 	int _fuseTimer;
 	bool _fixed;
 public:
 	/// Creates a new soldier-equipment layout item and loads its contents from YAML.
-	EquipmentLayoutItem(const YAML::Node& node);
+	EquipmentLayoutItem(const YAML::Node& node, const Mod* mod);
 	/// Creates a new soldier-equipment layout item.
 	EquipmentLayoutItem(const BattleItem* item);
 	/// Cleans up the soldier-equipment layout item.
 	~EquipmentLayoutItem();
 	/// Gets the item's type which has to be in a slot
-	const std::string& getItemType() const;
+	const RuleItem* getItemType() const;
 	/// Gets the slot to be occupied
-	const std::string& getSlot() const;
+	const RuleInventory* getSlot() const;
 	/// Gets the slotX to be occupied
 	int getSlotX() const;
 	/// Gets the slotY to be occupied
 	int getSlotY() const;
 	/// Gets the ammo item
-	const std::string& getAmmoItemForSlot(int i) const;
+	const RuleItem* getAmmoItemForSlot(int i) const;
 	/// Gets the turn until explosion
 	int getFuseTimer() const;
 	/// Is this a fixed weapon entry?
 	bool isFixed() const;
 	/// Loads the soldier-equipment layout item from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::Node& node, const Mod* mod);
 	/// Saves the soldier-equipment layout item to YAML.
 	YAML::Node save() const;
 };

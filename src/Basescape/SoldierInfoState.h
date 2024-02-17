@@ -40,13 +40,14 @@ class SoldierInfoState : public State
 private:
 	Base *_base;
 	size_t _soldierId;
+	bool _forceLimits;
 	Soldier *_soldier;
 	std::vector<Soldier*> *_list;
 
 	Surface *_bg;
 	InteractiveSurface *_rank;
 	InteractiveSurface *_flag;
-	TextButton *_btnOk, *_btnPrev, *_btnNext, *_btnArmor, *_btnSack, *_btnDiary, *_btnBonuses;
+	TextButton *_btnOk, *_btnPrev, *_btnNext, *_btnArmor, *_btnSack, *_btnDiary, *_btnBonuses, *_btnTransformations;
 	Text *_txtRank, *_txtMissions, *_txtKills, *_txtCraft, *_txtRecovery, *_txtPsionic, *_txtDead;
 	Text *_txtStuns;
 	TextEdit *_edtSoldier;
@@ -57,7 +58,7 @@ private:
 
 public:
 	/// Creates the Soldier Info state.
-	SoldierInfoState(Base *base, size_t soldierId);
+	SoldierInfoState(Base *base, size_t soldierId, bool forceLimits = true);
 	/// Cleans up the Soldier Info state.
 	~SoldierInfoState();
 	/// Updates the soldier info.
@@ -80,6 +81,8 @@ public:
 	void btnArmorClick(Action *action);
 	/// Handler for clicking the Bonuses button.
 	void btnBonusesClick(Action *action);
+	/// Handler for clicking the Transformations button.
+	void btnTransformationsClick(Action* action);
 	/// Handler for clicking the Sack button.
 	void btnSackClick(Action *action);
 	/// Handler for clicking the Diary button.

@@ -18,6 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string>
+#include <vector>
 #include <yaml-cpp/yaml.h>
 
 namespace OpenXcom
@@ -35,6 +36,7 @@ private:
 	std::string _type, _replaceBy;
 	bool _hidden;
 	int _listOrder;
+	std::vector<std::string> _invOrder;
 public:
 	/// Creates a blank item category ruleset.
 	RuleItemCategory(const std::string &type, int listOrder);
@@ -50,6 +52,8 @@ public:
 	bool isHidden() const;
 	/// Get the list weight for this item category.
 	int getListOrder() const;
+	/// Gets the inventory slot order to be used for auto-equip and ctrl-click-equip.
+	const std::vector<std::string>& getInvOrder() const { return _invOrder; }
 
 };
 

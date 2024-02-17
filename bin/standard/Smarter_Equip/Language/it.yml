@@ -1,0 +1,10 @@
+it:
+  OXCE_CRAFT_WEAPONS: "Armi da vascello"
+  OXCE_HWPS: "TANK"
+  OXCE_MAIN_WEAPONS: "Armi principali"
+  OXCE_SIDE_WEAPONS: "Armi secondarie"
+  OXCE_AMMO: "Munizioni"
+  OXCE_GRENADES: "Granate"
+  OXCE_ARMORS_AND_CORPSES: "Armature & Cadaveri"
+  OXCE_PRISONERS: "Progionieri"
+  OXCE_COMPONENTS: "Componenti"

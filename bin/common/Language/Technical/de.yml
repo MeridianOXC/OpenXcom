@@ -118,6 +118,7 @@ de:
   landOnly: "Ausschließlich Land"
   psiRequired: "Psi-Fertigkeit benötigt"
   targetMatrix: ""
+  convertToCivilian: ""
   manaRequired: "Mana benötigt"
   LOSRequired: "Sicht benötigt"
 #
@@ -410,6 +411,8 @@ de:
   maxUnitsLimit: ""
   pilots: "Cockpit Größe"
   vehicles: ""
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
   maxHWPUnitsLimit: ""
   maxSmallSoldiers: ""
   maxLargeSoldiers: ""

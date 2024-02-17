@@ -84,7 +84,7 @@ public:
 	/// Gets if this slot is left hand;
 	bool isLeftHand() const;
 	/// Gets all the slots in the inventory.
-	std::vector<struct RuleSlot> *getSlots();
+	const std::vector<struct RuleSlot> *getSlots() const;
 	/// Checks for a slot in a certain position.
 	bool checkSlotInPosition(int *x, int *y) const;
 	/// Checks if an item fits in a slot.

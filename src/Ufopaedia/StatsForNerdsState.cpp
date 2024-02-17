@@ -1836,6 +1836,7 @@ void StatsForNerdsState::initItemList()
 	addBoolean(ss, itemRule->isManaRequired(), "manaRequired");
 	int targetMatrixDefault = itemBattleType == BT_PSIAMP ? 6 : 7;
 	addItemTargets(ss, itemRule, "targetMatrix", targetMatrixDefault);
+	addBoolean(ss, itemRule->convertToCivilian(), "convertToCivilian");
 	addBoolean(ss, itemRule->isLOSRequired(), "LOSRequired");
 
 	if (itemBattleType == BT_FIREARM
@@ -3219,6 +3220,9 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiersLimit(), "maxHWPUnitsLimit", craftRule->getMaxVehiclesAndLargeSoldiers());
 
+	addBoolean(ss, craftRule->isOnlyOneSoldierGroupAllowed(), "onlyOneSoldierGroupAllowed");
+	addVectorOfIntegers(ss, craftRule->getAllowedSoldierGroups(), "allowedSoldierGroups");
+
 	addInteger(ss, craftRule->getMaxSmallSoldiers(), "maxSmallSoldiers", -1);
 	addInteger(ss, craftRule->getMaxLargeSoldiers(), "maxLargeSoldiers", -1);
 	addInteger(ss, craftRule->getMaxSmallVehicles(), "maxSmallVehicles", -1);
@@ -3338,7 +3342,7 @@ void StatsForNerdsState::initCraftList()
 	}
 	addInteger(ss, craftRule->getShieldRechargeAtBase(), "shieldRechargedAtBase", 1000);
 
-	addSingleString(ss, craftRule->getRefuelItem(), "refuelItem");
+	addRule(ss, craftRule->getRefuelItem(), "refuelItem");
 	addInteger(ss, craftRule->getRefuelRate(), "refuelRate", 1);
 	addInteger(ss, craftRule->getRepairRate(), "repairRate", 1);
 

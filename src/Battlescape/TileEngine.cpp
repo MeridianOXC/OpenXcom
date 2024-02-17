@@ -2710,55 +2710,89 @@ TileEngine::ReactionScore TileEngine::determineReactionType(BattleUnit *unit, Ba
 		re.reactionReduction = 1.0 * BattleActionCost(type, re.unit, weapon).Time * re.unit->getBaseStats()->reactions / re.unit->getBaseStats()->tu;
 	};
 
-	// prioritize melee
+	std::vector<BattleItem*> reactionWeapons;
+	// 1. first try the preferred weapon (player units only... to prevent abuse)
+	bool isPlayer = (unit->getFaction() == FACTION_PLAYER);
+	if (isPlayer)
+	{
+		if (BattleItem* preferredWeapon = unit->getWeaponForReactions())
+		{
+			reactionWeapons.push_back(preferredWeapon);
+		}
+	}
+	// 2. then prioritize melee
+	if (BattleItem* meleeWeapon = unit->getUtilityWeapon(BT_MELEE))
+	{
+		reactionWeapons.push_back(meleeWeapon);
+	}
+	// 3. then the rest (AI: quickest weapon, Player: last selected/main weapon)
+	if (BattleItem* otherWeapon = unit->getMainHandWeapon(!isPlayer, true))
+	{
+		reactionWeapons.push_back(otherWeapon);
+	}
+
 	int tempDirection = unit->getDirection();
 	if (Mod::EXTENDED_MELEE_REACTIONS == 2)
 	{
 		// temporarily face the target to allow melee reactions when attacked from any side, not just from the front
 		tempDirection = getDirectionTo(unit->getPosition(), target->getPosition());
 	}
-	BattleItem *meleeWeapon = unit->getWeaponForReactions(true);
-	if (!meleeWeapon)
+
+	BattleItem* disabledLeft = nullptr;
+	BattleItem* disabledRight = nullptr;
+	// player units only... to prevent abuse
+	if (isPlayer)
 	{
-		meleeWeapon = unit->getUtilityWeapon(BT_MELEE);
-	}
-	// has a melee weapon and is in melee range
-	if (_save->canUseWeapon(meleeWeapon, unit, false, BA_HIT) &&
-		validMeleeRange(unit, target, tempDirection) &&
-		meleeWeapon->getAmmoForAction(BA_HIT) &&
-		BattleActionCost(BA_HIT, unit, meleeWeapon).haveTU())
-	{
-		setReaction(reaction, BA_HIT, meleeWeapon);
-		return reaction;
+		BattleItem* leftHandItem = unit->getLeftHandWeapon();
+		BattleItem* rightHandItem = unit->getRightHandWeapon();
+		BattleItem* emptyHandItem = nullptr;
+		if ((!leftHandItem && unit->isLeftHandDisabledForReactions()) || (!rightHandItem && unit->isRightHandDisabledForReactions()))
+		{
+			auto typesToCheck = { BT_MELEE, BT_PSIAMP, BT_FIREARM/*, BT_MEDIKIT, BT_SCANNER, BT_MINDPROBE*/ };
+			for (auto& type : typesToCheck)
+			{
+				emptyHandItem = unit->getSpecialWeapon(type);
+				if (emptyHandItem && emptyHandItem->getRules()->isSpecialUsingEmptyHand())
+				{
+					break;
+				}
+				emptyHandItem = nullptr;
+			}
+		}
+		disabledLeft = unit->isLeftHandDisabledForReactions() ? (leftHandItem ? leftHandItem : emptyHandItem) : nullptr;
+		disabledRight = unit->isRightHandDisabledForReactions() ? (rightHandItem ? rightHandItem : emptyHandItem) : nullptr;
 	}
 
-	// has a weapon
-	BattleItem *weapon = unit->getWeaponForReactions(false);
-	if (!weapon)
+	for (auto* weapon : reactionWeapons)
 	{
-		weapon = unit->getMainHandWeapon(unit->getFaction() != FACTION_PLAYER);
-	}
-	if (_save->canUseWeapon(weapon, unit, false, BA_HIT))
-	{
-		// has a weapon capable of melee and is in melee range
-		if (validMeleeRange(unit, target, tempDirection) &&
-			weapon->getAmmoForAction(BA_HIT) &&
-			BattleActionCost(BA_HIT, unit, weapon).haveTU())
+		if (weapon == disabledLeft || weapon == disabledRight)
 		{
-			setReaction(reaction, BA_HIT, weapon);
-			return reaction;
+			// the player doesn't want to react with this weapon
+			continue;
 		}
-	}
-	if (_save->canUseWeapon(weapon, unit, false, BA_SNAPSHOT))
-	{
-		// has a gun capable of snap shot with ammo
-		if (weapon->getRules()->getBattleType() == BT_FIREARM &&
-			!weapon->getRules()->isOutOfRange(unit->distance3dToUnitSq(target)) &&
-			weapon->getAmmoForAction(BA_SNAPSHOT) &&
-			BattleActionCost(BA_SNAPSHOT, unit, weapon).haveTU())
+
+		if (_save->canUseWeapon(weapon, unit, false, BA_HIT))
 		{
-			setReaction(reaction, BA_SNAPSHOT, weapon);
-			return reaction;
+			// has a weapon capable of melee and is in melee range
+			if (validMeleeRange(unit, target, tempDirection) &&
+				weapon->getAmmoForAction(BA_HIT) &&
+				BattleActionCost(BA_HIT, unit, weapon).haveTU())
+			{
+				setReaction(reaction, BA_HIT, weapon);
+				return reaction;
+			}
+		}
+		if (_save->canUseWeapon(weapon, unit, false, BA_SNAPSHOT))
+		{
+			// has a gun capable of snap shot with ammo
+			if (weapon->getRules()->getBattleType() == BT_FIREARM &&
+				!weapon->getRules()->isOutOfRange(unit->distance3dToUnitSq(target)) &&
+				weapon->getAmmoForAction(BA_SNAPSHOT) &&
+				BattleActionCost(BA_SNAPSHOT, unit, weapon).haveTU())
+			{
+				setReaction(reaction, BA_SNAPSHOT, weapon);
+				return reaction;
+			}
 		}
 	}
 
@@ -4749,9 +4783,21 @@ bool TileEngine::psiAttack(BattleActionAttack attack, BattleUnit *victim)
 				}
 			}
 			victim->setMindControllerId(attack.attacker->getId());
-			victim->convertToFaction(attack.attacker->getFaction());
-			calculateLighting(LL_UNITS, victim->getPosition());
-			calculateFOV(victim->getPosition()); //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
+			if (attack.weapon_item->getRules()->convertToCivilian() && victim->getOriginalFaction() == FACTION_HOSTILE)
+			{
+				victim->convertToFaction(FACTION_NEUTRAL);
+				if (victim->getAIModule())
+				{
+					// rewire them to attack hostiles
+					victim->getAIModule()->setTargetFaction(FACTION_HOSTILE);
+				}
+			}
+			else
+			{
+				victim->convertToFaction(attack.attacker->getFaction());
+				calculateLighting(LL_UNITS, victim->getPosition());
+				calculateFOV(victim->getPosition()); //happens fairly rarely, so do a full recalc for units in range to handle the potential unit visible cache issues.
+			}
 			victim->recoverTimeUnits();
 			victim->allowReselect();
 			victim->abortTurn(); // resets unit status to STANDING

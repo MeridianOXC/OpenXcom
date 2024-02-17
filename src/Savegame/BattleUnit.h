@@ -118,6 +118,8 @@ private:
 	const Unit *_spawnUnit = nullptr;
 	std::string _activeHand;
 	std::string _preferredHandForReactions;
+	bool _reactionsDisabledForLeftHand = false;
+	bool _reactionsDisabledForRightHand = false;
 	BattleUnitStatistics* _statistics;
 	int _murdererId;	// used to credit the murderer with the kills that this unit got by blowing up on death
 	int _mindControllerID;	// used to credit the mind controller with the kills of the mind controllee
@@ -397,7 +399,7 @@ public:
 	/// Get the list of items in the inventory.
 	std::vector<BattleItem*> *getInventory();
 	/// Fit item into inventory slot.
-	bool fitItemToInventory(RuleInventory *slot, BattleItem *item);
+	bool fitItemToInventory(const RuleInventory *slot, BattleItem *item);
 	/// Add item to unit.
 	bool addItem(BattleItem *item, const Mod *mod, bool allowSecondClip = false, bool allowAutoLoadout = false, bool allowUnloadedWeapons = false);
 
@@ -429,9 +431,9 @@ public:
 	void setPreviousOwner(BattleUnit *owner);
 
 	/// Gets the item in the specified slot.
-	BattleItem *getItem(RuleInventory *slot, int x = 0, int y = 0) const;
+	BattleItem *getItem(const RuleInventory *slot, int x = 0, int y = 0) const;
 	/// Gets the item in the main hand.
-	BattleItem *getMainHandWeapon(bool quickest = true) const;
+	BattleItem *getMainHandWeapon(bool quickest = true, bool reactions = false) const;
 	/// Gets a grenade from the belt, if any.
 	BattleItem *getGrenadeFromBelt() const;
 	/// Gets the item from right hand.
@@ -448,15 +450,20 @@ public:
 	bool reloadAmmo();
 
 	/// Toggle the right hand as main hand for reactions.
-	void toggleRightHandForReactions();
+	void toggleRightHandForReactions(bool isCtrl);
 	/// Toggle the left hand as main hand for reactions.
-	void toggleLeftHandForReactions();
+	void toggleLeftHandForReactions(bool isCtrl);
 	/// Is right hand preferred for reactions?
 	bool isRightHandPreferredForReactions() const;
 	/// Is left hand preferred for reactions?
 	bool isLeftHandPreferredForReactions() const;
 	/// Get preferred weapon for reactions, if applicable.
-	BattleItem *getWeaponForReactions(bool meleeOnly) const;
+	BattleItem *getWeaponForReactions() const;
+
+	/// Is right hand disabled for reactions?
+	bool isRightHandDisabledForReactions() const { return _reactionsDisabledForRightHand; }
+	/// Is left hand disabled for reactions?
+	bool isLeftHandDisabledForReactions() const { return _reactionsDisabledForLeftHand; }
 
 	/// Check if this unit is in the exit area
 	bool isInExitArea(SpecialTileType stt) const;

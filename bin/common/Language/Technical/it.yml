@@ -118,6 +118,7 @@ it:
   landOnly: "Solo terreno?"
   psiRequired: "Richiesta abilità Psi?"
   targetMatrix: "Bersaglio oggetto"
+  convertToCivilian: "Converti in Civile?"
   manaRequired: "Mana richiesto?"
   LOSRequired: "Vista richiesta?"
 #
@@ -410,6 +411,8 @@ it:
   maxUnitsLimit: "Spazio di carico massimo"
   pilots: "Dim. cabina"
   vehicles: "Capacità HWP"
+  onlyOneSoldierGroupAllowed: "È consentito un solo gruppo di soldati?"
+  allowedSoldierGroups: "Gruppo di soldati consentiti"
   maxHWPUnitsLimit: "Massima capacità per HWP"
   maxSmallSoldiers: "Massimo numero soldati piccoli"
   maxLargeSoldiers: "Massimo numero soldati grandi"

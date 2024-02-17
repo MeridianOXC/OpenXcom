@@ -170,20 +170,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		}
 	}
 
-	_items->load(node["items"]);
-	// Some old saves have bad items, better get rid of them to avoid further bugs
-	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end();)
-	{
-		if (_mod->getItem(iter->first) == 0)
-		{
-			Log(LOG_ERROR) << "Failed to load item " << iter->first;
-			_items->getContents()->erase(iter++);
-		}
-		else
-		{
-			++iter;
-		}
-	}
+	_items->load(node["items"], _mod);
 
 	_scientists = node["scientists"].as<int>(_scientists);
 	_engineers = node["engineers"].as<int>(_engineers);
@@ -717,7 +704,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			auto* ruleItem = _mod->getItem(transfer->getItems(), true);
+			const auto* ruleItem = transfer->getItems();
 			if (ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += transfer->getQuantity();
@@ -746,7 +733,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	}
 	for (const auto& storeItem : *_items->getContents())
 	{
-		auto* ruleItem = _mod->getItem(storeItem.first, true);
+		auto* ruleItem = storeItem.first;
 		if (ruleItem->getMonthlySalary() != 0)
 		{
 			staffCount += storeItem.second;
@@ -762,7 +749,7 @@ int Base::getTotalOtherStaffAndInventoryCost(int& staffCount, int& inventoryCoun
 	{
 		for (const auto& craftItem : *xcraft->getItems()->getContents())
 		{
-			auto* ruleItem = _mod->getItem(craftItem.first, true);
+			auto* ruleItem = craftItem.first;
 			if (ruleItem->getMonthlySalary() != 0)
 			{
 				staffCount += craftItem.second;
@@ -860,7 +847,7 @@ double Base::getUsedStores(bool excludeNormalItems) const
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			total += transfer->getQuantity() * _mod->getItem(transfer->getItems(), true)->getSize();
+			total += transfer->getQuantity() * transfer->getItems()->getSize();
 		}
 		else if (transfer->getType() == TRANSFER_CRAFT)
 		{
@@ -1477,12 +1464,12 @@ int Base::getFreeTrainingSpace() const
 int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 {
 	int total = 0;
-	RuleItem *rule = 0;
+	const RuleItem *rule = 0;
 	for (const auto* transfer : _transfers)
 	{
 		if (transfer->getType() == TRANSFER_ITEM)
 		{
-			rule = _mod->getItem(transfer->getItems(), true);
+			rule = transfer->getItems();
 			if (rule->isAlien() && rule->getPrisonType() == prisonType)
 			{
 				total += transfer->getQuantity();
@@ -1508,7 +1495,7 @@ int Base::getUsedContainment(int prisonType, bool onlyExternal) const
 
 	for (const auto& pair : *_items->getContents())
 	{
-		rule = _mod->getItem(pair.first, true);
+		rule = pair.first;
 		if (rule->isAlien() && rule->getPrisonType() == prisonType)
 		{
 			total += pair.second;
@@ -1643,9 +1630,8 @@ void Base::setupDefenses(AlienMission* am)
 	// add vehicles left on the base
 	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end(); )
 	{
-		const auto& itemId = iter->first;
 		int itemQty = iter->second;
-		RuleItem *rule = _mod->getItem(itemId, true);
+		const RuleItem *rule = iter->first;
 		if (rule->getVehicleUnit())
 		{
 			int size = rule->getVehicleUnit()->getArmor()->getTotalSize();
@@ -1657,7 +1643,7 @@ void Base::setupDefenses(AlienMission* am)
 					_vehicles.push_back(vehicle);
 					_vehiclesFromBase.push_back(vehicle);
 				}
-				_items->removeItem(itemId, itemQty);
+				_items->removeItem(rule, itemQty);
 			}
 			else // so this vehicle needs ammo
 			{
@@ -1678,7 +1664,7 @@ void Base::setupDefenses(AlienMission* am)
 					_vehiclesFromBase.push_back(vehicle);
 					_items->removeItem(ammo, ammoPerVehicle);
 				}
-				_items->removeItem(itemId, canBeAdded);
+				_items->removeItem(rule, canBeAdded);
 			}
 
 			iter = _items->getContents()->begin(); // we have to start over because iterator is broken because of the removeItem
@@ -2118,10 +2104,10 @@ void Base::cleanupPrisons(int prisonType)
 		{
 			if (transfer->getType() == TRANSFER_ITEM)
 			{
-				RuleItem* rule = _mod->getItem(transfer->getItems(), true);
+				const auto* rule = transfer->getItems();
 				if (rule->isAlien() && rule->getPrisonType() == prisonType)
 				{
-					getStorageItems()->addItem(transfer->getItems(), transfer->getQuantity());
+					getStorageItems()->addItem(rule, transfer->getQuantity());
 					return true;
 				}
 			}
@@ -2142,8 +2128,8 @@ void Base::cleanupDefenses(bool reclaimItems)
 	{
 		for (auto* vehicle : _vehiclesFromBase)
 		{
-			RuleItem *rule = vehicle->getRules();
-			_items->addItem(rule->getType());
+			const RuleItem *rule = vehicle->getRules();
+			_items->addItem(rule);
 			if (rule->getVehicleClipAmmo())
 			{
 				_items->addItem(rule->getVehicleClipAmmo(), rule->getVehicleClipsLoaded());
@@ -2219,7 +2205,7 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 					//too many prison types, give up
 					if (prisonCurr == prisonEnd)
 					{
-						return BPE_Used;
+						return BPE_Used_AlienContainment;
 					}
 					*prisonCurr = type;
 					++prisonCurr;
@@ -2348,22 +2334,42 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 		{
 			if (typeSize.second < getUsedContainment(typeSize.first))
 			{
-				return BPE_Used;
+				return BPE_Used_AlienContainment;
 			}
 		}
 	}
 
 	// only check space for things that are removed
-	return (
-		(removed.quarters > 0 && available.quarters < getUsedQuarters()) ||
-		(removed.stores > 0 && available.stores < getUsedStores()) ||
-		(removed.laboratories > 0 && available.laboratories < getUsedLaboratories()) ||
-		(removed.workshops > 0 && available.workshops < getUsedWorkshops()) ||
-		(removed.hangars > 0 && available.hangars < getUsedHangars()) ||
-		(removed.psiLaboratories > 0 && available.psiLaboratories < getUsedPsiLabs()) ||
-		(removed.training > 0 && available.training < getUsedTraining()) ||
-		false
-	) ? BPE_Used : BPE_None;
+	if (removed.stores > 0 && available.stores < getUsedStores())
+	{
+		return BPE_Used_Stores;
+	}
+	else if (removed.quarters > 0 && available.quarters < getUsedQuarters())
+	{
+		return BPE_Used_Quarters;
+	}
+	else if (removed.laboratories > 0 && available.laboratories < getUsedLaboratories())
+	{
+		return BPE_Used_Laboratories;
+	}
+	else if (removed.workshops > 0 && available.workshops < getUsedWorkshops())
+	{
+		return BPE_Used_Workshops;
+	}
+	else if (removed.hangars > 0 && available.hangars < getUsedHangars())
+	{
+		return BPE_Used_Hangars;
+	}
+	else if (removed.psiLaboratories > 0 && available.psiLaboratories < getUsedPsiLabs())
+	{
+		return BPE_Used_PsiLabs;
+	}
+	else if (removed.training > 0 && available.training < getUsedTraining())
+	{
+		return BPE_Used_Gyms;
+	}
+
+	return BPE_None;
 }
 
 /**

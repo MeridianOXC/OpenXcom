@@ -397,13 +397,13 @@ void NewBattleState::load(const std::string &filename)
 				}
 
 				// Generate items
-				base->getStorageItems()->getContents()->clear();
+				base->getStorageItems()->clear();
 				for (auto& itemType : mod->getItemsList())
 				{
 					RuleItem *rule = _game->getMod()->getItem(itemType);
 					if (rule->getBattleType() != BT_CORPSE && rule->isRecoverable())
 					{
-						base->getStorageItems()->addItem(itemType, 1);
+						base->getStorageItems()->addItem(rule, 1);
 					}
 				}
 
@@ -417,14 +417,6 @@ void NewBattleState::load(const std::string &filename)
 				else
 				{
 					_craft = base->getCrafts()->front();
-					for (auto& pair : *_craft->getItems()->getContents())
-					{
-						RuleItem *rule = _game->getMod()->getItem(pair.first);
-						if (!rule)
-						{
-							pair.second = 0;
-						}
-					}
 				}
 
 				_game->setSavedGame(save);
@@ -493,7 +485,7 @@ void NewBattleState::initSave()
 		delete xcraft;
 	}
 	base->getCrafts()->clear();
-	base->getStorageItems()->getContents()->clear();
+	base->getStorageItems()->clear();
 
 	_craft = new Craft(mod->getCraft(_crafts[_cbxCraft->getSelected()]), base, 1);
 	base->getCrafts()->push_back(_craft);
@@ -536,7 +528,7 @@ void NewBattleState::initSave()
 		base->getSoldiers()->push_back(soldier);
 
 		int space = _craft->getSpaceAvailable();
-		if (_craft->validateAddingSoldier(space, soldier))
+		if (_craft->validateAddingSoldier(space, soldier) == CPE_None)
 		{
 			soldier->setCraft(_craft);
 		}
@@ -545,14 +537,14 @@ void NewBattleState::initSave()
 	// Generate items
 	for (auto& itemType : mod->getItemsList())
 	{
-		RuleItem *rule = _game->getMod()->getItem(itemType);
+		const RuleItem *rule = _game->getMod()->getItem(itemType);
 		if (rule->getBattleType() != BT_CORPSE && rule->isRecoverable())
 		{
 			int howMany = rule->getBattleType() == BT_AMMO ? 2 : 1;
-			base->getStorageItems()->addItem(itemType, howMany);
+			base->getStorageItems()->addItem(rule, howMany);
 			if (rule->getBattleType() != BT_NONE && rule->isInventoryItem())
 			{
-				_craft->getItems()->addItem(itemType, howMany);
+				_craft->getItems()->addItem(rule, howMany);
 			}
 		}
 	}
@@ -795,7 +787,7 @@ void NewBattleState::cbxCraftChange(Action *)
 		{
 			count--;
 			int space = _craft->getSpaceAvailable();
-			if (_craft->validateAddingSoldier(space, soldier))
+			if (_craft->validateAddingSoldier(space, soldier) == CPE_None)
 			{
 				soldier->setCraft(_craft);
 			}

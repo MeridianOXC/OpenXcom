@@ -1,0 +1,227 @@
+items:
+  - type: STR_STINGRAY_LAUNCHER
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_STINGRAY_MISSILES
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_AVALANCHE_LAUNCHER
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_AVALANCHE_MISSILES
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_CANNON
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_CANNON_ROUNDS_X50
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_FUSION_BALL_LAUNCHER
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_FUSION_BALL
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_LASER_CANNON
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_PLASMA_BEAM
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_TANK_CANNON
+    categories: [OXCE_HWPS]
+  - type: STR_HWP_CANNON_SHELLS
+    categories: [OXCE_HWPS]
+  - type: STR_TANK_ROCKET_LAUNCHER
+    categories: [OXCE_HWPS]
+  - type: STR_HWP_ROCKETS
+    categories: [OXCE_HWPS]
+  - type: STR_TANK_LASER_CANNON
+    categories: [OXCE_HWPS]
+  - type: STR_HOVERTANK_PLASMA
+    categories: [OXCE_HWPS]
+  - type: STR_HOVERTANK_LAUNCHER
+    categories: [OXCE_HWPS]
+  - type: STR_HWP_FUSION_BOMB
+    categories: [OXCE_HWPS]
+  - type: STR_PISTOL
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_PISTOL_CLIP
+    categories: [OXCE_AMMO, OXCE_SIDE_WEAPONS]
+  - type: STR_RIFLE
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_RIFLE_CLIP
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_HEAVY_CANNON
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_HC_AP_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_HC_HE_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_HC_I_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_AUTO_CANNON
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_AC_AP_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_AC_HE_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_AC_I_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_ROCKET_LAUNCHER
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_SMALL_ROCKET
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_LARGE_ROCKET
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_INCENDIARY_ROCKET
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_LASER_PISTOL
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_LASER_RIFLE
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_HEAVY_LASER
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_GRENADE
+    categories: [OXCE_GRENADES]
+  - type: STR_SMOKE_GRENADE
+    categories: [OXCE_GRENADES]
+  - type: STR_PROXIMITY_GRENADE
+    categories: [OXCE_GRENADES]
+  - type: STR_HIGH_EXPLOSIVE
+    categories: [OXCE_GRENADES]
+  - type: STR_MOTION_SCANNER
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_MEDI_KIT
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_PSI_AMP
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_STUN_ROD
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_ELECTRO_FLARE
+    categories: [OXCE_GRENADES]
+  - type: STR_HEAVY_PLASMA
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_HEAVY_PLASMA_CLIP
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_PLASMA_RIFLE
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_PLASMA_RIFLE_CLIP
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_PLASMA_PISTOL
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_PLASMA_PISTOL_CLIP
+    categories: [OXCE_AMMO, OXCE_SIDE_WEAPONS]
+  - type: STR_BLASTER_LAUNCHER
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_BLASTER_BOMB
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_SMALL_LAUNCHER
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_STUN_BOMB
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_ALIEN_GRENADE
+    categories: [OXCE_GRENADES]
+  - type: STR_ELERIUM_115
+    categories: [OXCE_COMPONENTS]
+  - type: STR_MIND_PROBE
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_SECTOID_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_SNAKEMAN_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_ETHEREAL_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_MUTON_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_FLOATER_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_CELATID_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_SILACOID_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_CHRYSSALID_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_REAPER_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_SECTOPOD_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_CYBERDISC_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_UFO_POWER_SOURCE
+    categories: [OXCE_COMPONENTS]
+  - type: STR_UFO_NAVIGATION
+    categories: [OXCE_COMPONENTS]
+  - type: STR_UFO_CONSTRUCTION
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_FOOD
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_REPRODUCTION
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_ENTERTAINMENT
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_SURGERY
+    categories: [OXCE_COMPONENTS]
+  - type: STR_EXAMINATION_ROOM
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_ALLOYS
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_HABITAT
+    categories: [OXCE_COMPONENTS]
+  - type: STR_PERSONAL_ARMOR
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_POWER_SUIT
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_FLYING_SUIT
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_SECTOID_COMMANDER
+    categories: [OXCE_PRISONERS]
+  - type: STR_SECTOID_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_SECTOID_ENGINEER
+    categories: [OXCE_PRISONERS]
+  - type: STR_SECTOID_MEDIC
+    categories: [OXCE_PRISONERS]
+  - type: STR_SECTOID_NAVIGATOR
+    categories: [OXCE_PRISONERS]
+  - type: STR_SECTOID_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_SNAKEMAN_COMMANDER
+    categories: [OXCE_PRISONERS]
+  - type: STR_SNAKEMAN_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_SNAKEMAN_ENGINEER
+    categories: [OXCE_PRISONERS]
+  - type: STR_SNAKEMAN_NAVIGATOR
+    categories: [OXCE_PRISONERS]
+  - type: STR_SNAKEMAN_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_ETHEREAL_COMMANDER
+    categories: [OXCE_PRISONERS]
+  - type: STR_ETHEREAL_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_ETHEREAL_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_MUTON_ENGINEER
+    categories: [OXCE_PRISONERS]
+  - type: STR_MUTON_NAVIGATOR
+    categories: [OXCE_PRISONERS]
+  - type: STR_MUTON_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_FLOATER_COMMANDER
+    categories: [OXCE_PRISONERS]
+  - type: STR_FLOATER_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_FLOATER_ENGINEER
+    categories: [OXCE_PRISONERS]
+  - type: STR_FLOATER_MEDIC
+    categories: [OXCE_PRISONERS]
+  - type: STR_FLOATER_NAVIGATOR
+    categories: [OXCE_PRISONERS]
+  - type: STR_FLOATER_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_CELATID_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_SILACOID_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_CHRYSSALID_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_REAPER_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_SECTOPOD_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_CYBERDISC_TERRORIST
+    categories: [OXCE_PRISONERS]
+
+# end of file

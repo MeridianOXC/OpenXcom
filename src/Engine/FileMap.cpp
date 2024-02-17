@@ -1031,6 +1031,8 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 		"OpenXCom_Unlimited_Waypoints",
 		"OpenXCom_Unlimited_Waypoints_TFTD",
 		"PSX_Static_Cydonia_Map",
+		"Smarter_Equip",
+		"Smarter_Equip_TFTD",
 		"StrategyCore_Swap_Small_USOs_TFTD",
 		"TFTD_Damage",
 		"UFOextender_Gun_Melee",

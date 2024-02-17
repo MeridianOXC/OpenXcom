@@ -118,6 +118,7 @@ fi:
   landOnly: "Vain maalla?"
   psiRequired: "Vaatiiko psi-taitoa?"
   targetMatrix: "Esineen kohteet"
+  convertToCivilian: ""
   manaRequired: "Vaatiiko manaa?"
   LOSRequired: "Vaatiiko näköyhteyttä?"
 #
@@ -410,6 +411,8 @@ fi:
   maxUnitsLimit: ""
   pilots: "Ohjaamotila"
   vehicles: "MTK-tila"
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
   maxHWPUnitsLimit: ""
   maxSmallSoldiers: "Max pienet sotilaat"
   maxLargeSoldiers: "Max isot sotilaat"

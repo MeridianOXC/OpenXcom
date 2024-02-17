@@ -118,6 +118,7 @@ pl:
   landOnly: "Tylko lądowe?"
   psiRequired: "Wymaga zdolności psi?"
   targetMatrix: "Dozwolone cele dla przedmiotu"
+  convertToCivilian: "Konwertować do cywila?"
   manaRequired: "Wymaga many?"
   LOSRequired: "Wymaga linii wzroku?"
 #
@@ -352,8 +353,8 @@ pl:
   rearArmor: "Pancerz tylny"
   underArmor: "Pancerz dolny"
 #
-  sizeX: ""
-  sizeY: ""
+  sizeX: "Rozmiar X"
+  sizeY: "Rozmiar Y"
   buildCost: "Koszt budowy"
   buildCostItems: "Materiały do budowy:"
   buildTime: "Czas budowy"
@@ -407,10 +408,12 @@ pl:
 #
   costRent: "Koszt utrzymania"
   soldiers: "Przestrzeń ładunkowa"
-  maxUnitsLimit: ""
+  maxUnitsLimit: "Maks. pojemność ładowni"
   pilots: "Rozmiar kabiny"
   vehicles: "CDS-ów"
-  maxHWPUnitsLimit: ""
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
+  maxHWPUnitsLimit: "Maks. liczba CDS-ów"
   maxSmallSoldiers: "Maks. małych żołnierzy"
   maxLargeSoldiers: "Maks. dużych żołnierzy"
   maxSmallVehicles: "Maks. małych pojazdów"

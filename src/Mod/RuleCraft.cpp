@@ -40,7 +40,7 @@ RuleCraft::RuleCraft(const std::string &type, int listOrder) :
 	_monthlyBuyLimit(0), _costBuy(0), _costRent(0), _costSell(0), _repairRate(1), _refuelRate(1),
 	_transferTime(24), _score(0), _battlescapeTerrainData(0), _maxSkinIndex(0),
 	_keepCraftAfterFailedMission(false), _allowLanding(true), _spacecraft(false), _notifyWhenRefueled(false), _autoPatrol(false), _undetectable(false),
-	_listOrder(listOrder), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _stats(),
+	_listOrder(listOrder), _maxAltitude(-1), _defaultAltitude("STR_VERY_LOW"), _onlyOneSoldierGroupAllowed(false), _stats(),
 	_shieldRechargeAtBase(1000),
 	_mapVisible(true), _forceShowInMonthlyCosts(false), _useAllStartTiles(false)
 {
@@ -126,7 +126,7 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_costBuy = node["costBuy"].as<int>(_costBuy);
 	_costRent = node["costRent"].as<int>(_costRent);
 	_costSell = node["costSell"].as<int>(_costSell);
-	_refuelItem = node["refuelItem"].as<std::string>(_refuelItem);
+	mod->loadName(_type, _refuelItemName, node["refuelItem"]);
 	_repairRate = node["repairRate"].as<int>(_repairRate);
 	_refuelRate = node["refuelRate"].as<int>(_refuelRate);
 	_transferTime = node["transferTime"].as<int>(_transferTime);
@@ -141,10 +141,9 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	{
 		_craftInventoryTile = craftInventoryTile.as<std::vector<int> >(_craftInventoryTile);
 	}
-	if (const YAML::Node& craftGroups = node["groups"])
-	{
-		_groups = craftGroups.as<std::vector<int> >(_groups);
-	}
+	mod->loadUnorderedInts(_type, _groups, node["groups"]);
+	mod->loadUnorderedInts(_type, _allowedSoldierGroups, node["allowedSoldierGroups"]);
+	_onlyOneSoldierGroupAllowed = node["onlyOneSoldierGroupAllowed"].as<bool>(_onlyOneSoldierGroupAllowed);
 	_maxSkinIndex = node["maxSkinIndex"].as<int>(_maxSkinIndex);
 	_deployment = node["deployment"].as< RuleCraftDeployment >(_deployment);
 	_keepCraftAfterFailedMission = node["keepCraftAfterFailedMission"].as<bool>(_keepCraftAfterFailedMission);
@@ -208,6 +207,8 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
  */
 void RuleCraft::afterLoad(const Mod* mod)
 {
+	mod->linkRule(_refuelItem, _refuelItemName);
+
 	// No turning soldiers into antimatter
 	mod->checkForSoftError(_stats.soldiers < 0, _type, "Default unit capacity cannot be negative.", LOG_ERROR);
 	mod->checkForSoftError(_stats.vehicles < 0, _type, "Default HWP capacity cannot be negative.", LOG_ERROR);
@@ -394,7 +395,7 @@ int RuleCraft::getSellCost() const
  * the craft is refuelling.
  * @return The item ID or "" if none.
  */
-const std::string &RuleCraft::getRefuelItem() const
+const RuleItem* RuleCraft::getRefuelItem() const
 {
 	return _refuelItem;
 }
@@ -712,7 +713,7 @@ int RuleCraft::calculateRange(int type)
 	int totalFuelTicks = _stats.fuelMax;
 
 	// If no item is used to refuel, the tick rate depends on speed
-	if (_refuelItem.empty())
+	if (_refuelItem == nullptr)
 	{
 		// Craft with less than 100 speed don't consume fuel and therefore have infinite range
 		if (_stats.speedMax < 100)

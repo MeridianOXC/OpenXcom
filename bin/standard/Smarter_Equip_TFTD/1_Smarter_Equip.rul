@@ -1,0 +1,58 @@
+# 1. Use inventory slots defined by individual items
+items:
+  - type: STR_MAGNA_PACK_EXPLOSIVE
+    defaultInventorySlot: STR_RIGHT_LEG
+  - type: STR_PARTICLE_DISTURBANCE_SENSOR
+    defaultInventorySlot: STR_BELT
+  - type: STR_MEDI_KIT
+    defaultInventorySlot: STR_BELT
+  - type: STR_DISRUPTOR_AMMO
+    defaultInventorySlot: STR_LEFT_HAND
+
+# 2. Use inventory slots defined by item categories
+displayCustomCategories: 1
+
+itemCategories:
+  - type: OXCE_CRAFT_WEAPONS
+  - type: OXCE_HWPS
+  - type: OXCE_MAIN_WEAPONS
+    invOrder: [STR_RIGHT_HAND, STR_LEFT_HAND, STR_BACK_PACK]
+  - type: OXCE_SIDE_WEAPONS
+    invOrder: [STR_LEFT_HAND, STR_BELT, STR_BACK_PACK, STR_RIGHT_HAND]
+  - type: OXCE_AMMO
+    invOrder: [STR_BELT, STR_LEFT_LEG, STR_RIGHT_LEG]
+  - type: OXCE_GRENADES
+    invOrder: [STR_RIGHT_SHOULDER, STR_LEFT_SHOULDER, STR_BELT, STR_LEFT_LEG, STR_RIGHT_LEG, STR_LEFT_HAND, STR_RIGHT_HAND, STR_BACK_PACK]
+  - type: OXCE_ARMORS_AND_CORPSES
+    invOrder: [STR_LEFT_HAND, STR_RIGHT_HAND, STR_BACK_PACK]
+  - type: OXCE_PRISONERS
+    invOrder: [STR_LEFT_HAND, STR_RIGHT_HAND, STR_BACK_PACK]
+  - type: OXCE_COMPONENTS
+    invOrder: [STR_LEFT_HAND, STR_BELT, STR_BACK_PACK]
+
+# 3. Use inventory slots ordered by listOrder (instead of alphabetical order)
+constants:
+  extendedInventorySlotSorting: true
+
+invs:
+  - id: STR_RIGHT_SHOULDER
+    listOrder: 10
+  - id: STR_LEFT_SHOULDER
+    listOrder: 20
+  - id: STR_BELT
+    listOrder: 30
+  - id: STR_LEFT_LEG
+    listOrder: 40
+  - id: STR_RIGHT_LEG
+    listOrder: 50
+  - id: STR_BACK_PACK
+    listOrder: 60
+# let's keep the hands low (or at least after the backpack, so that aliens don't auto-equip things like mind probes in hands)
+  - id: STR_RIGHT_HAND
+    listOrder: 70
+  - id: STR_LEFT_HAND
+    listOrder: 80
+  - id: STR_GROUND
+    listOrder: 90
+
+# end of file

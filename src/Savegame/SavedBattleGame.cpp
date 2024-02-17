@@ -504,7 +504,7 @@ void SavedBattleGame::load(const YAML::Node &node, Mod *mod, SavedGame* savedGam
 	_maxAmbienceRandomDelay = node["maxAmbienceRandomDelay"].as<int>(_maxAmbienceRandomDelay);
 	_currentAmbienceDelay = node["currentAmbienceDelay"].as<int>(_currentAmbienceDelay);
 	_music = node["music"].as<std::string>(_music);
-	_baseItems->load(node["baseItems"]);
+	_baseItems->load(node["baseItems"], mod);
 	_turnLimit = node["turnLimit"].as<int>(_turnLimit);
 	_chronoTrigger = ChronoTrigger(node["chronoTrigger"].as<int>(_chronoTrigger));
 	_cheatTurn = node["cheatTurn"].as<int>(_cheatTurn);
@@ -1622,6 +1622,33 @@ void SavedBattleGame::endTurn()
 			continue;
 		}
 
+		// Disclaimer: hardcoded!
+		if (bu->getFaction() == FACTION_NEUTRAL && bu->getOriginalFaction() == FACTION_HOSTILE)
+		{
+			if (_side != FACTION_PLAYER)
+			{
+				// a hostile converted to a neutral during the player turn, just keep them mostly "as is" during the hostile/neutral turn...
+				if (_side == FACTION_HOSTILE)
+				{
+					bu->updateUnitStats(false, true);
+				}
+				bu->setVisible(false);
+			}
+			else
+			{
+				// ...and convert them back at the beginning of the player turn
+				bu->prepareNewTurn();
+
+				if (bu->getAIModule())
+				{
+					// don't forget to rewire them back to attack the player again
+					bu->getAIModule()->setTargetFaction(FACTION_PLAYER);
+				}
+			}
+			// skip the standard logic
+			continue;
+		}
+
 		if (bu->getFaction() == _side)
 		{
 			bu->prepareNewTurn();
@@ -2170,6 +2197,7 @@ BattleUnit *SavedBattleGame::convertUnit(BattleUnit *unit)
 	const Unit* type = unit->getSpawnUnit();
 
 	BattleUnit *newUnit = createTempUnit(type, unit->getSpawnUnitFaction());
+	newUnit->setSpawnUnitFaction(unit->getSpawnUnitFaction()); // allied/neutral zombie should spawn an allied/neutral chryssalid?
 
 	newUnit->clearTimeUnits();
 	newUnit->setVisible(visible);

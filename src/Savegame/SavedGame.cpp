@@ -673,33 +673,13 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		{
 			for (YAML::const_iterator i = layout.begin(); i != layout.end(); ++i)
 			{
-				EquipmentLayoutItem *layoutItem = new EquipmentLayoutItem(*i);
-
-				// check if everything still exists (in case of mod upgrades)
-				bool error = false;
-				if (!mod->getInventory(layoutItem->getSlot()))
-					error = true;
-				if (!mod->getItem(layoutItem->getItemType()))
-					error = true;
-				for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+				try
 				{
-					if (layoutItem->getAmmoItemForSlot(slot) == "NONE" || mod->getItem(layoutItem->getAmmoItemForSlot(slot)))
-					{
-						// ok
-					}
-					else
-					{
-						error = true;
-						break;
-					}
+					_globalEquipmentLayout[j].push_back(new EquipmentLayoutItem(*i, mod));
 				}
-				if (!error)
+				catch (Exception& ex)
 				{
-					_globalEquipmentLayout[j].push_back(layoutItem);
-				}
-				else
-				{
-					delete layoutItem;
+					Log(LOG_ERROR) << "Error loading Layout: " << ex.what();
 				}
 			}
 		}
@@ -726,7 +706,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 		std::string key = oss.str();
 		if (const YAML::Node &loadout = doc[key])
 		{
-			_globalCraftLoadout[j]->load(loadout);
+			_globalCraftLoadout[j]->load(loadout, mod);
 		}
 		std::ostringstream oss2;
 		oss2 << "globalCraftLoadoutName" << j;
@@ -1940,9 +1920,15 @@ void SavedGame::getDependableManufacture (std::vector<RuleManufacture *> & depen
  */
 void SavedGame::getAvailableTransformations (std::vector<RuleSoldierTransformation *> & transformations, const Mod * mod, Base * base) const
 {
+	auto& list = mod->getSoldierTransformationList();
+	if (list.empty())
+	{
+		return;
+	}
+
 	RuleBaseFacilityFunctions baseFunc = base->getProvidedBaseFunc({});
 
-	for (const auto& transformType : mod->getSoldierTransformationList())
+	for (const auto& transformType : list)
 	{
 		RuleSoldierTransformation *m = mod->getSoldierTransformation(transformType);
 		if (!isResearched(m->getRequiredResearch()))
@@ -3351,7 +3337,7 @@ void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleRes
 		if (spawnedItem)
 		{
 			Transfer* t = new Transfer(1);
-			t->setItems(myResearchRule->getSpawnedItem(), std::max(1, myResearchRule->getSpawnedItemCount()));
+			t->setItems(spawnedItem, std::max(1, myResearchRule->getSpawnedItemCount()));
 			base->getTransfers()->push_back(t);
 		}
 		for (const auto& spawnedItemName2 : myResearchRule->getSpawnedItemList())
@@ -3360,7 +3346,7 @@ void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleRes
 			if (spawnedItem2)
 			{
 				Transfer* t = new Transfer(1);
-				t->setItems(spawnedItemName2);
+				t->setItems(spawnedItem2);
 				base->getTransfers()->push_back(t);
 			}
 		}

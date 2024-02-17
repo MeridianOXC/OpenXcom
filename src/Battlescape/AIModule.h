@@ -66,6 +66,8 @@ public:
 	AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node);
 	/// Cleans up the AIModule.
 	~AIModule();
+	/// Sets the target faction.
+	void setTargetFaction(UnitFaction f);
 	/// Resets the unsaved AI state.
 	void reset();
 	/// Loads the AI Module from YAML.

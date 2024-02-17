@@ -118,6 +118,7 @@ uk:
   landOnly: "Тільки наземне?"
   psiRequired: "Необхідний PSI-навик?"
   targetMatrix: "Цілі предмета"
+  convertToCivilian: ""
   manaRequired: "Необхідна мана?"
   LOSRequired: "Необхідна видимість?"
 #
@@ -410,6 +411,8 @@ uk:
   maxUnitsLimit: ""
   pilots: "Розмір кабіни"
   vehicles: "Потужність транспортних засобів"
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
   maxHWPUnitsLimit: ""
   maxSmallSoldiers: "Максимум легкої пехоти"
   maxLargeSoldiers: "Максимум важкої пехоти"

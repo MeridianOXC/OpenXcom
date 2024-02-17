@@ -1,0 +1,231 @@
+items:
+  - type: STR_AJAX_LAUNCHER
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_AJAX_TORPEDOES
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_DUP_HEAD_LAUNCHER
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_DUP_HEAD_TORPEDOES
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_CRAFT_GAS_CANNON
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_CRAFT_GAS_CANNON_ROUNDS_X50
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_GAUSS_CANNON
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_GAUSS_CANNON_AMMO
+    categories: [OXCE_CRAFT_WEAPONS, OXCE_HWPS]
+  - type: STR_SONIC_OSCILLATOR
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_PWT_CANNON
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_PULSE_WAVE_TORPEDOES
+    categories: [OXCE_CRAFT_WEAPONS]
+  - type: STR_COELACANTH_GAS_CANNON
+    categories: [OXCE_HWPS]
+  - type: STR_HWP_SOLID_HARPOON_BOLTS
+    categories: [OXCE_HWPS]
+  - type: STR_COELACANTH_AQUA_JET
+    categories: [OXCE_HWPS]
+  - type: STR_HWP_AQUA_JET_MISSILES
+    categories: [OXCE_HWPS]
+  - type: STR_COELACANTH_GAUSS
+    categories: [OXCE_HWPS]
+  - type: STR_DISPLACER_SONIC
+    categories: [OXCE_HWPS]
+  - type: STR_DISPLACER_PWT
+    categories: [OXCE_HWPS]
+  - type: STR_HWP_DISPLACER_PWT
+    categories: [OXCE_HWPS]
+  - type: STR_DART_PISTOL
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_DART_POD
+    categories: [OXCE_AMMO, OXCE_SIDE_WEAPONS]
+  - type: STR_JET_HARPOON
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_HARPOON_POD
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_GAS_CANNON
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_GC_AP_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_GC_HE_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_GC_P_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_HYDRO_JET_CANNON
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_HJC_AP_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_HJC_HE_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_HJC_P_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_TORPEDO_LAUNCHER
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_SMALL_TORPEDO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_LARGE_TORPEDO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_PHOSPHOROUS_TORPEDO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_GAUSS_PISTOL
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_GAUSS_PISTOL_CLIP
+    categories: [OXCE_AMMO, OXCE_SIDE_WEAPONS]
+  - type: STR_GAUSS_RIFLE
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_GAUSS_RIFLE_CLIP
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_HEAVY_GAUSS
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_HEAVY_GAUSS_CLIP
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_MAGNA_BLAST_GRENADE
+    categories: [OXCE_GRENADES]
+  - type: STR_DYE_GRENADE
+    categories: [OXCE_GRENADES]
+  - type: STR_PARTICLE_DISTURBANCE_GRENADE
+    categories: [OXCE_GRENADES]
+  - type: STR_MAGNA_PACK_EXPLOSIVE
+    categories: [OXCE_GRENADES]
+  - type: STR_PARTICLE_DISTURBANCE_SENSOR
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_MEDI_KIT
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_MC_DISRUPTOR
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_THERMAL_TAZER
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_CHEMICAL_FLARE
+    categories: [OXCE_GRENADES]
+  - type: STR_SONIC_CANNON
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_CANNON_POWER_CLIP
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_SONIC_BLASTA_RIFLE
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_BLASTA_POWER_CLIP
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_SONIC_PISTOL
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_PISTOL_POWER_CLIP
+    categories: [OXCE_AMMO, OXCE_SIDE_WEAPONS]
+  - type: STR_DISRUPTOR_PULSE_LAUNCHER
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_DISRUPTOR_AMMO
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_THERMAL_SHOK_LAUNCHER
+    categories: [OXCE_MAIN_WEAPONS]
+  - type: STR_THERMAL_SHOK_BOMB
+    categories: [OXCE_AMMO, OXCE_MAIN_WEAPONS]
+  - type: STR_SONIC_PULSER
+    categories: [OXCE_GRENADES]
+  - type: STR_ZRBITE
+    categories: [OXCE_COMPONENTS]
+  - type: STR_MC_READER
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_VIBRO_BLADE
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_THERMIC_LANCE
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_HEAVY_THERMIC_LANCE
+    categories: [OXCE_SIDE_WEAPONS]
+  - type: STR_AQUATOID_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_DEEP_ONE_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_GILLMAN_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_TASOTH_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_CALCINITE_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_TENTACULAT_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_LOBSTERMAN_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_BIODRONE_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_XARQUID_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_HALLUCINOID_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_TRISCENE_CORPSE
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_ION_BEAM_ACCELERATORS
+    categories: [OXCE_COMPONENTS]
+  - type: STR_MAGNETIC_NAVIGATION
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_SUB_CONSTRUCTION
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_CRYOGENICS
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_CLONING
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_LEARNING_ARRAYS
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_IMPLANTER
+    categories: [OXCE_COMPONENTS]
+  - type: STR_EXAMINATION_ROOM
+    categories: [OXCE_COMPONENTS]
+  - type: STR_ALIEN_REANIMATION_ZONE
+    categories: [OXCE_COMPONENTS]
+  - type: STR_AQUA_PLASTICS
+    categories: [OXCE_COMPONENTS]
+  - type: STR_PLASTIC_AQUA_ARMOR
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_ION_ARMOR
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_MAGNETIC_ION_ARMOR
+    categories: [OXCE_ARMORS_AND_CORPSES]
+  - type: STR_AQUATOID_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_AQUATOID_SQUAD_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_AQUATOID_TECHNICIAN
+    categories: [OXCE_PRISONERS]
+  - type: STR_AQUATOID_MEDIC
+    categories: [OXCE_PRISONERS]
+  - type: STR_AQUATOID_NAVIGATOR
+    categories: [OXCE_PRISONERS]
+  - type: STR_AQUATOID_COMMANDER
+    categories: [OXCE_PRISONERS]
+  - type: STR_HALLUCINOID_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_CALCINITE_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_GILLMAN_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_GILLMAN_SQUAD_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_GILLMAN_TECHNICIAN
+    categories: [OXCE_PRISONERS]
+  - type: STR_GILLMAN_COMMANDER
+    categories: [OXCE_PRISONERS]
+  - type: STR_DEEP_ONE_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_XARQUID_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_TASOTH_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_TASOTH_SQUAD_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_TRISCENE_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_BIODRONE_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_TENTACULAT_TERRORIST
+    categories: [OXCE_PRISONERS]
+  - type: STR_LOBSTERMAN_SOLDIER
+    categories: [OXCE_PRISONERS]
+  - type: STR_LOBSTERMAN_SQUAD_LEADER
+    categories: [OXCE_PRISONERS]
+  - type: STR_LOBSTERMAN_TECHNICIAN
+    categories: [OXCE_PRISONERS]
+  - type: STR_LOBSTERMAN_NAVIGATOR
+    categories: [OXCE_PRISONERS]
+  - type: STR_LOBSTERMAN_COMMANDER
+    categories: [OXCE_PRISONERS]
+
+# end of file

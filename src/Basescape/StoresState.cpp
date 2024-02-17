@@ -246,7 +246,7 @@ void StoresState::initList()
 		if (!grandTotal)
 		{
 			// items in stores from this base only
-			qty += _base->getStorageItems()->getItem(itemType);
+			qty += _base->getStorageItems()->getItem(rule);
 		}
 		else
 		{
@@ -287,7 +287,7 @@ void StoresState::initList()
 					const auto* rrule = research->getRules();
 					if (rrule->needItem() && rrule->destroyItem())
 					{
-						if (rrule->getNeededItem() && rrule->getNeededItem()->getType() == itemType)
+						if (rrule->getNeededItem() && rrule->getNeededItem() == rule)
 						{
 							qty += 1;
 							break;
@@ -311,7 +311,7 @@ void StoresState::initList()
 							qty += 1;
 						}
 					}
-					else if (transfer->getItems() == itemType)
+					else if (transfer->getItems() == rule)
 					{
 						// 5b. items in transfer
 						qty += transfer->getQuantity();

@@ -194,14 +194,14 @@ void BaseFacility::build()
  * used by its base.
  * @return True if it's under use, False otherwise.
  */
-bool BaseFacility::inUse() const
+BasePlacementErrors BaseFacility::inUse() const
 {
 	if (_buildTime > 0)
 	{
-		return false;
+		return BPE_None;
 	}
 
-	return _base->isAreaInUse(getPlacement()) != BPE_None;
+	return _base->isAreaInUse(getPlacement());
 }
 
 /**

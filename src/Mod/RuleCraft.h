@@ -29,6 +29,7 @@ namespace OpenXcom
 typedef std::vector<std::vector<int> > RuleCraftDeployment;
 
 class RuleTerrain;
+class RuleItem;
 class Mod;
 class ModScript;
 class ScriptParserBase;
@@ -198,7 +199,8 @@ private:
 	int _monthlyBuyLimit;
 	int _costBuy, _costRent, _costSell;
 	char _weaponTypes[WeaponMax][WeaponTypeMax];
-	std::string _refuelItem;
+	const RuleItem* _refuelItem;
+	std::string _refuelItemName;
 	std::string _weaponStrings[WeaponMax];
 	std::string _fixedWeaponNames[WeaponMax];
 	int _repairRate, _refuelRate, _transferTime, _score;
@@ -210,6 +212,8 @@ private:
 	RuleCraftDeployment _deployment;
 	std::vector<int> _craftInventoryTile;
 	std::vector<int> _groups;
+	std::vector<int> _allowedSoldierGroups;
+	bool _onlyOneSoldierGroupAllowed;
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
 	bool _mapVisible, _forceShowInMonthlyCosts;
@@ -294,7 +298,7 @@ public:
 	/// Gets the craft's value.
 	int getSellCost() const;
 	/// Gets the craft's refuel item.
-	const std::string &getRefuelItem() const;
+	const RuleItem* getRefuelItem() const;
 	/// Gets the craft's repair rate.
 	int getRepairRate() const;
 	/// Gets the craft's refuel rate.
@@ -333,6 +337,10 @@ public:
 	const std::vector<int> &getCraftInventoryTile() const;
 	/// Gets the craft groups (used in map scripts).
 	const std::vector<int>& getGroups() const { return _groups; }
+	/// Gets the list of allowed soldier groups.
+	const std::vector<int>& getAllowedSoldierGroups() const { return _allowedSoldierGroups; }
+	/// Does this craft allow soldiers of the same group only?
+	bool isOnlyOneSoldierGroupAllowed() const { return _onlyOneSoldierGroupAllowed; }
 	/// Gets the item limit for this craft.
 	int getMaxItems() const;
 	/// Gets the item storage space limit for this craft.
