@@ -54,6 +54,7 @@ void RuleItemCategory::load(const YAML::Node &node, Mod *mod)
 	_hidden = node["hidden"].as<bool>(_hidden);
 
 	_listOrder = node["listOrder"].as<int>(_listOrder);
+	mod->loadUnorderedNames(_type, _invOrder, node["invOrder"]);
 }
 
 /**

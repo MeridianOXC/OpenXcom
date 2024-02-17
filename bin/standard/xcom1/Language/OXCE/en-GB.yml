@@ -1,5 +1,14 @@
 en-GB:
 #=================== Basescape ===================
+#BasescapeState.cpp
+  STR_FACILITY_IN_USE_STORAGE: "FACILITY IN USE!{SMALLLINE}Not enough storage space."
+  STR_FACILITY_IN_USE_QUARTERS: "FACILITY IN USE!{SMALLLINE}Not enough living quarters."
+  STR_FACILITY_IN_USE_LABORATORIES: "FACILITY IN USE!{SMALLLINE}Not enough lab space."
+  STR_FACILITY_IN_USE_WORKSHOPS: "FACILITY IN USE!{SMALLLINE}Not enough workshop space."
+  STR_FACILITY_IN_USE_HANGARS: "FACILITY IN USE!{SMALLLINE}Not enough hangars."
+  STR_FACILITY_IN_USE_PSI_LABS: "FACILITY IN USE!{SMALLLINE}Not enough psi labs."
+  STR_FACILITY_IN_USE_GYMS: "FACILITY IN USE!{SMALLLINE}Not enough gyms."
+  STR_FACILITY_IN_USE_PRISONS: "FACILITY IN USE!{SMALLLINE}Not enough alien containment."
 #CraftWeaponsState.cpp
   STR_NOT_ENOUGH_HWP_CAPACITY: "NOT ENOUGH HWP CAPACITY AVAILABLE!{SMALLLINE}Use a different module or reduce the number of assigned HWPs."
 #SoldierAvatarState.cpp

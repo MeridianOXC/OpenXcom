@@ -196,7 +196,7 @@ public:
 	/// Cleans up the BattlescapeGame state.
 	~BattlescapeGame();
 	/// Checks for units panicking or falling and so on.
-	void think();
+	int think();
 	/// Initializes the Battlescape game.
 	void init();
 	/// Determines whether a playable unit is selected.

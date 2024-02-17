@@ -157,7 +157,7 @@ bool RuleInventory::isLeftHand() const
  * Gets all the slots in the inventory section.
  * @return The list of slots.
  */
-std::vector<struct RuleSlot> *RuleInventory::getSlots()
+const std::vector<struct RuleSlot> *RuleInventory::getSlots() const
 {
 	return &_slots;
 }

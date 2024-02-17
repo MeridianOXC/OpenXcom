@@ -177,20 +177,16 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 		}
 	}
 
-	_items->load(node["items"]);
+	_items->load(node["items"], mod);
 	// Some old saves have bad items, better get rid of them to avoid further bugs
 	for (auto iter = _items->getContents()->begin(); iter != _items->getContents()->end();)
 	{
-		auto* ruleItem = mod->getItem(iter->first);
-		if (!ruleItem)
+		auto* ruleItem = iter->first;
+		if (!ruleItem->canBeEquippedToCraftInventory())
 		{
-			Log(LOG_ERROR) << "Failed to load item " << iter->first;
-			_items->getContents()->erase(iter++);
-		}
-		else if (!ruleItem->canBeEquippedToCraftInventory())
-		{
-			Log(LOG_WARNING) << "Item '" << iter->first << "' cannot be equipped in the craft inventory (" << _rules->getType() << ", " << _id << "). Skipping " << iter->second << " items.";
-			_items->getContents()->erase(iter++);
+			Log(LOG_WARNING) << "Item '" << iter->first->getType() << "' cannot be equipped in the craft inventory (" << _rules->getType() << ", " << _id << "). Skipping " << iter->second << " items.";
+			auto old = iter++; // avoid erase in `removeItem`
+			_items->removeItem(old->first, old->second);
 		}
 		else
 		{
@@ -698,7 +694,7 @@ std::vector<Vehicle*> *Craft::getVehicles()
  */
 void Craft::calculateTotalSoldierEquipment()
 {
-	_tempSoldierItems->getContents()->clear();
+	_tempSoldierItems->clear();
 
 	for (auto* soldier : *_base->getSoldiers())
 	{
@@ -714,8 +710,8 @@ void Craft::calculateTotalSoldierEquipment()
 				// ...but not their ammo
 				for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 				{
-					const std::string& invItemAmmo = invItem->getAmmoItemForSlot(slot);
-					if (invItemAmmo != "NONE")
+					const auto* invItemAmmo = invItem->getAmmoItemForSlot(slot);
+					if (invItemAmmo != nullptr)
 					{
 						_tempSoldierItems->addItem(invItemAmmo);
 					}
@@ -807,7 +803,7 @@ void Craft::addCraftStats(const RuleCraftStats& s)
 	_stats += s;
 
 	int overflowFuel = _fuel - _stats.fuelMax;
-	if (overflowFuel > 0 && !_rules->getRefuelItem().empty())
+	if (overflowFuel > 0 && _rules->getRefuelItem())
 	{
 		_base->getStorageItems()->addItem(_rules->getRefuelItem(), overflowFuel / _rules->getRefuelRate());
 	}
@@ -1018,7 +1014,7 @@ double Craft::getDistanceFromBase() const
  */
 int Craft::getFuelConsumption(int speed, int escortSpeed) const
 {
-	if (!_rules->getRefuelItem().empty())
+	if (_rules->getRefuelItem())
 		return 1;
 	if (escortSpeed > 0)
 	{
@@ -1336,8 +1332,8 @@ std::string Craft::refuel()
 	std::string fuel;
 	if (_fuel < _stats.fuelMax)
 	{
-		std::string item = _rules->getRefuelItem();
-		if (item.empty())
+		const auto* item = _rules->getRefuelItem();
+		if (item == nullptr)
 		{
 			setFuel(_fuel + _rules->getRefuelRate());
 		}
@@ -1351,7 +1347,7 @@ std::string Craft::refuel()
 			}
 			else if (!_lowFuel)
 			{
-				fuel = item;
+				fuel = item->getType();
 				if (_fuel > 0)
 				{
 					_status = "STR_READY";
@@ -1837,7 +1833,7 @@ void Craft::unload()
 	// Remove vehicles
 	for (auto*& vehicle : _vehicles)
 	{
-		_base->getStorageItems()->addItem(vehicle->getRules()->getType());
+		_base->getStorageItems()->addItem(vehicle->getRules());
 		if (vehicle->getRules()->getVehicleClipAmmo())
 		{
 			_base->getStorageItems()->addItem(vehicle->getRules()->getVehicleClipAmmo(), vehicle->getRules()->getVehicleClipsLoaded());
@@ -1889,7 +1885,7 @@ void Craft::reuseItem(const RuleItem* item)
 		return;
 
 	// Check if it's fuel to refuel the craft
-	if (item->getType() == _rules->getRefuelItem() && _fuel < _stats.fuelMax)
+	if (item == _rules->getRefuelItem() && _fuel < _stats.fuelMax)
 		_status = "STR_REFUELLING";
 }
 
@@ -2175,45 +2171,68 @@ bool Craft::validateArmorChange(int sizeFrom, int sizeTo) const
 
 /**
  * Validates craft space and craft constraints on adding soldier to a craft.
- * @return True, if adding a soldier is allowed.
  */
-bool Craft::validateAddingSoldier(int space, const Soldier* s) const
+CraftPlacementErrors Craft::validateAddingSoldier(int space, const Soldier* s) const
 {
 	if (space < s->getArmor()->getTotalSize())
 	{
-		return false;
+		return CPE_NotEnoughSpace;
 	}
 	if (_rules->getMaxSoldiers() > -1 && getNumTotalSoldiers() >= _rules->getMaxSoldiers())
 	{
-		return false;
+		return CPE_TooManySoldiers;
 	}
 	if (s->getArmor()->getSize() == 1)
 	{
 		if (_rules->getMaxSmallSoldiers() > -1 && getNumSmallSoldiers() >= _rules->getMaxSmallSoldiers())
 		{
-			return false;
+			return CPE_TooManySmallSoldiers;
 		}
 		if (_rules->getMaxSmallUnits() > -1 && getNumSmallUnits() >= _rules->getMaxSmallUnits())
 		{
-			return false;
+			return CPE_TooManySmallUnits;
 		}
 	}
 	else // armorSize > 1
 	{
 		if (getNumVehiclesAndLargeSoldiers() >= getMaxVehiclesAndLargeSoldiersClamped())
 		{
-			return false;
+			return CPE_TooManyVehiclesAndLargeSoldiers;
 		}
 		if (_rules->getMaxLargeSoldiers() > -1 && getNumLargeSoldiers() >= _rules->getMaxLargeSoldiers())
 		{
-			return false;
+			return CPE_TooManyLargeSoldiers;
 		}
 		if (_rules->getMaxLargeUnits() > -1 && getNumLargeUnits() >= _rules->getMaxLargeUnits())
 		{
-			return false;
+			return CPE_TooManyLargeUnits;
 		}
 	}
-	return true;
+	auto& allowedSoldierGroups = _rules->getAllowedSoldierGroups();
+	if (!allowedSoldierGroups.empty())
+	{
+		if (std::find(allowedSoldierGroups.begin(), allowedSoldierGroups.end(), s->getRules()->getGroup()) == allowedSoldierGroups.end())
+		{
+			return CPE_SoldierGroupNotAllowed;
+		}
+	}
+	if (_rules->isOnlyOneSoldierGroupAllowed() && getNumTotalSoldiers() > 0)
+	{
+		int currentGroup = -1;
+		for (const auto* tmpSoldier : *_base->getSoldiers())
+		{
+			if (tmpSoldier->getCraft() == this)
+			{
+				currentGroup = tmpSoldier->getRules()->getGroup();
+				break;
+			}
+		}
+		if (s->getRules()->getGroup() != currentGroup)
+		{
+			return CPE_SoldierGroupNotSame;
+		}
+	}
+	return CPE_None;
 }
 
 /**

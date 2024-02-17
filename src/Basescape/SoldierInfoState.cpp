@@ -40,6 +40,7 @@
 #include "SellState.h"
 #include "SoldierArmorState.h"
 #include "SoldierBonusState.h"
+#include "SoldierTransformState.h"
 #include "SoldierRankState.h"
 #include "SackSoldierState.h"
 #include "../Mod/RuleInterface.h"
@@ -55,7 +56,7 @@ namespace OpenXcom
  * @param base Pointer to the base to get info from. NULL to use the dead soldiers list.
  * @param soldierId ID of the selected soldier.
  */
-SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), _soldierId(soldierId), _soldier(0)
+SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId, bool forceLimits) : _base(base), _soldierId(soldierId), _forceLimits(forceLimits), _soldier(0)
 {
 	if (_base == 0)
 	{
@@ -83,6 +84,7 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), 
 	_btnNext = new TextButton(28, 14, 80, 33);
 	_btnArmor = new TextButton(110, 14, 130, 33);
 	_btnBonuses = new TextButton(16, 14, 242, 33);
+	_btnTransformations = new TextButton(18, 14, 110, 33);
 	_edtSoldier = new TextEdit(this, 210, 16, 40, 9);
 	_btnSack = new TextButton(60, 14, 260, 33);
 	_btnDiary = new TextButton(60, 14, 260, 48);
@@ -176,6 +178,7 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), 
 	add(_btnNext, "button", "soldierInfo");
 	add(_btnArmor, "button", "soldierInfo");
 	add(_btnBonuses, "button", "soldierInfo");
+	add(_btnTransformations, "button", "soldierInfo");
 	add(_edtSoldier, "text1", "soldierInfo");
 	add(_btnSack, "button", "soldierInfo");
 	add(_btnDiary, "button", "soldierInfo");
@@ -277,6 +280,19 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId) : _base(base), 
 
 	_btnBonuses->setText(tr("STR_BONUSES_BUTTON")); // tiny button, default translation is " "
 	_btnBonuses->onMouseClick((ActionHandler)&SoldierInfoState::btnBonusesClick);
+
+	_btnTransformations->setText(tr("STR_TRANSFORMATIONS_BUTTON"));
+	_btnTransformations->onMouseClick((ActionHandler)&SoldierInfoState::btnTransformationsClick);
+
+	std::vector<RuleSoldierTransformation*> availableTransformations;
+	if (_base)
+	{
+		_game->getSavedGame()->getAvailableTransformations(availableTransformations, _game->getMod(), _base);
+	}
+	if (availableTransformations.empty())
+	{
+		_btnTransformations->setVisible(false);
+	}
 
 	_edtSoldier->setBig();
 	_edtSoldier->onChange((ActionHandler)&SoldierInfoState::edtSoldierChange);
@@ -645,7 +661,11 @@ void SoldierInfoState::btnOkClick(Action *)
 	_game->popState();
 	if (_game->getSavedGame()->getMonthsPassed() > -1 && Options::storageLimitsEnforced && _base != 0 && _base->storesOverfull())
 	{
-		_game->pushState(new SellState(_base, 0));
+		if (_forceLimits)
+		{
+			// Note: we could sell a currently opened craft here and crash the game
+			_game->pushState(new SellState(_base, 0));
+		}
 		_game->pushState(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(_base->getName()), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
 	}
 }
@@ -694,6 +714,15 @@ void SoldierInfoState::btnArmorClick(Action *)
 void SoldierInfoState::btnBonusesClick(Action *)
 {
 	_game->pushState(new SoldierBonusState(_base, _soldierId));
+}
+
+/**
+ * Shows the SoldierTransform window.
+ * @param action Pointer to an action.
+ */
+void SoldierInfoState::btnTransformationsClick(Action*)
+{
+	_game->pushState(new SoldierTransformState(_base, _soldierId));
 }
 
 /**

@@ -35,18 +35,18 @@ class RuleItem;
 class ItemContainer
 {
 private:
-	std::map<std::string, int> _qty;
+	std::map<const RuleItem*, int> _qty;
 public:
 	/// Creates an empty item container.
 	ItemContainer();
 	/// Cleans up the item container.
 	~ItemContainer();
 	/// Loads the item container from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::Node& node, const Mod* mod);
 	/// Saves the item container to YAML.
 	YAML::Node save() const;
 	/// Adds an item to the container.
-	void addItem(const std::string &id, int qty = 1);
+	void addItem(const std::string &id, int qty = 1) = delete;
 	/// Adds an item to the container.
 	void addItem(const RuleItem* item, int qty = 1);
 	/// Removes an item from the container.
@@ -61,8 +61,12 @@ public:
 	int getTotalQuantity() const;
 	/// Gets the total size of items in the container.
 	double getTotalSize(const Mod *mod) const;
+	/// Check if have any item
+	bool empty() const { return _qty.empty(); }
+	/// Clear all content.
+	void clear() { _qty.clear(); }
 	/// Gets all the items in the container.
-	std::map<std::string, int> *getContents();
+	const std::map<const RuleItem*, int> *getContents() const;
 };
 
 }

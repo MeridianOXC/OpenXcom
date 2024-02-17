@@ -569,7 +569,7 @@ void GeoscapeState::handle(Action *action)
 						auto* item = _game->getMod()->getItem(itemType);
 						if (item && item->isRecoverable() && !item->isAlien() && item->getSellCost() > 0)
 						{
-							xbase->getStorageItems()->addItem(itemType, 2);
+							xbase->getStorageItems()->addItem(item, 2);
 						}
 					}
 				}
@@ -585,7 +585,7 @@ void GeoscapeState::handle(Action *action)
 						auto* item = _game->getMod()->getItem(itemType);
 						if (item && item->isRecoverable() && item->isAlien() && item->getSellCost() > 0)
 						{
-							xbase->getStorageItems()->addItem(itemType, 2);
+							xbase->getStorageItems()->addItem(item, 2);
 						}
 					}
 				}
@@ -2167,10 +2167,9 @@ void GeoscapeState::time1Hour()
 			if (!_game->getSavedGame()->getAlienContainmentChecked())
 			{
 				std::map<int, int> prisonTypes;
-				RuleItem *rule = nullptr;
 				for (const auto& item : *xbase->getStorageItems()->getContents())
 				{
-					rule = _game->getMod()->getItem(item.first, true);
+					const RuleItem* rule = item.first;
 					if (rule->isAlien())
 					{
 						prisonTypes[rule->getPrisonType()] += 1;
@@ -2389,7 +2388,7 @@ void GeoscapeState::time1Day()
 					auto* ruleCorpse = ruleUnit->getArmor()->getCorpseGeoscape();
 					if (ruleCorpse && ruleCorpse->isRecoverable() && ruleCorpse->isCorpseRecoverable())
 					{
-						xbase->getStorageItems()->addItem(ruleCorpse->getType());
+						xbase->getStorageItems()->addItem(ruleCorpse);
 					}
 				}
 			}

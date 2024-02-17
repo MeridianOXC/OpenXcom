@@ -118,6 +118,7 @@ en-US:
   landOnly: "Land only?"
   psiRequired: "Psi skill required?"
   targetMatrix: "Item targets"
+  convertToCivilian: "Convert to civilian?"
   manaRequired: "Mana required?"
   LOSRequired: "Sight required?"
 #
@@ -410,6 +411,8 @@ en-US:
   maxUnitsLimit: "Max cargo space"
   pilots: "Cockpit size"
   vehicles: "HWP capacity"
+  onlyOneSoldierGroupAllowed: "Only one soldier group allowed?"
+  allowedSoldierGroups: "Allowed soldier groups"
   maxHWPUnitsLimit: "Max HWP capacity"
   maxSmallSoldiers: "Max small soldiers"
   maxLargeSoldiers: "Max large soldiers"

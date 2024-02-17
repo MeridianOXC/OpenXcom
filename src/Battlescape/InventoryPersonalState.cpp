@@ -76,7 +76,7 @@ InventoryPersonalState::InventoryPersonalState(Soldier* soldier)
 	_btnCancel->onKeyboardPress((ActionHandler)&InventoryPersonalState::btnCancelClick, Options::keyCancel);
 
 	// 1. tally items
-	std::map<std::string, int> summary;
+	std::map<const RuleItem*, int> summary;
 	for (const auto* layoutItem : *soldier->getPersonalEquipmentLayout())
 	{
 		// item
@@ -85,8 +85,8 @@ InventoryPersonalState::InventoryPersonalState(Soldier* soldier)
 		// ammo
 		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 		{
-			auto& loadedAmmoType = layoutItem->getAmmoItemForSlot(slot);
-			if (loadedAmmoType != "NONE")
+			const auto* loadedAmmoType = layoutItem->getAmmoItemForSlot(slot);
+			if (loadedAmmoType != nullptr)
 			{
 				summary[loadedAmmoType] += 1;
 			}
@@ -98,11 +98,7 @@ InventoryPersonalState::InventoryPersonalState(Soldier* soldier)
 	sorted.reserve(summary.size());
 	for (auto& info : summary)
 	{
-		auto* itemRule = _game->getMod()->getItem(info.first, false);
-		if (itemRule)
-		{
-			sorted.push_back(itemRule);
-		}
+		sorted.push_back(info.first);
 	}
 	std::sort(sorted.begin(), sorted.end(), [](const RuleItem* a, const RuleItem* b)
 		{
@@ -131,7 +127,7 @@ InventoryPersonalState::InventoryPersonalState(Soldier* soldier)
 			ss1 << "  ";
 		}
 		ss1 << tr(ruleItem->getType());
-		ss2 << summary[ruleItem->getType()];
+		ss2 << summary[ruleItem];
 		_lstLayout->addRow(2, ss1.str().c_str(), ss2.str().c_str());
 	}
 }

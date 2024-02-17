@@ -26,6 +26,7 @@ namespace OpenXcom
 class Window;
 class Text;
 class Font;
+class ProgressBar;
 
 /**
  * Generic window used to display messages
@@ -34,8 +35,13 @@ class Font;
 class BattlescapeMessage : public Surface
 {
 private:
+	static const int HORIZONTAL_OFFSET;
+	static const int VERTICAL_OFFSET;
+
 	Window *_window;
 	Text *_text;
+	Text *_txtThinking;
+	ProgressBar *_progressBar;
 public:
 	/// Creates a new Battlescape message with the specified size and position.
 	BattlescapeMessage(int width, int height, int x = 0, int y = 0);
@@ -48,7 +54,9 @@ public:
 	/// Sets the Battlescape message's background.
 	void setBackground(Surface *background);
 	/// Sets the Battlescape message's text.
-	void setText(const std::string &message);
+	void setText(const std::string &message, const std::string& message2);
+	/// Sets the progress bar value.
+	void setProgressValue(int progress);
 	/// Initializes the Battlescape message's resources.
 	void initText(Font *big, Font *small, Language *lang) override;
 	/// Sets the Battlescape message's palette.
@@ -59,6 +67,8 @@ public:
 	void setHeight(int height) override;
 	/// Sets the text color of the battlescape message.
 	void setTextColor(Uint8 color);
+	/// Sets the colors of the progress bar.
+	void setProgressBarColor(Uint8 color, Uint8 borderColor);
 };
 
 }

@@ -416,3 +416,6 @@ el:
   STR_THROWING_ACCURACY_ABBREVIATION: "THR"
   STR_STRENGTH_ABBREVIATION: "STR"
   STR_MELEE_ACCURACY_ABBREVIATION: "MEL"
+  STR_FOLDERS: "ΦΑΚΕΛΟΙ"
+  STR_DATA_FOLDER: "ΦΑΚΕΛΟΣ ΔΕΔΩΜΕΝΩΝ (αυθεντικοί πόροι)"
+  STR_USER_FOLDER: "ΦΑΚΕΛΟΣ ΧΡΗΣΤΗ (mods, openxcom.log)"

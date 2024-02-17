@@ -777,7 +777,7 @@ void PurchaseState::btnOkClick(Action *)
 						itemPurchaseLimitLog[rule->getType()] += transferRow.amount;
 					}
 					t = new Transfer(rule->getTransferTime());
-					t->setItems(rule->getType(), transferRow.amount);
+					t->setItems(rule, transferRow.amount);
 					_base->getTransfers()->push_back(t);
 					if (_parent && !_missingItemsMap.empty() && _missingItemsMap.find(rule) != _missingItemsMap.end())
 					{

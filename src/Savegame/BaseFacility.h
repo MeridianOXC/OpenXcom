@@ -76,7 +76,7 @@ public:
 	/// Builds up the facility.
 	void build();
 	/// Checks if the facility is currently in use.
-	bool inUse() const;
+	BasePlacementErrors inUse() const;
 	/// Gets the facility's ammo count.
 	int getAmmo() const { return _ammo; }
 	/// Sets the facility's ammo count.

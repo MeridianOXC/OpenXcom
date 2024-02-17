@@ -19,10 +19,14 @@
 #include "BattlescapeMessage.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
+#include "../Interface/ProgressBar.h"
 #include "../Engine/Palette.h"
 
 namespace OpenXcom
 {
+
+const int BattlescapeMessage::HORIZONTAL_OFFSET = 200;
+const int BattlescapeMessage::VERTICAL_OFFSET = 20;
 
 /**
  * Sets up a blank Battlescape message with the specified size and position.
@@ -42,6 +46,13 @@ BattlescapeMessage::BattlescapeMessage(int width, int height, int x, int y) : Su
 	_text->setAlign(ALIGN_CENTER);
 	_text->setVerticalAlign(ALIGN_MIDDLE);
 	_text->setHighContrast(true);
+
+	_txtThinking = new Text(102, 9, HORIZONTAL_OFFSET, VERTICAL_OFFSET - 10);
+	_txtThinking->setColor(Palette::blockOffset(0) - 1);
+	_txtThinking->setAlign(ALIGN_CENTER);
+	_txtThinking->setHighContrast(true);
+
+	_progressBar = new ProgressBar(102, 5, HORIZONTAL_OFFSET, VERTICAL_OFFSET);
 }
 
 /**
@@ -51,6 +62,8 @@ BattlescapeMessage::~BattlescapeMessage()
 {
 	delete _window;
 	delete _text;
+	delete _txtThinking;
+	delete _progressBar;
 }
 
 /**
@@ -62,6 +75,8 @@ void BattlescapeMessage::setX(int x)
 	Surface::setX(x);
 	_window->setX(x);
 	_text->setX(x);
+	_txtThinking->setX(x + HORIZONTAL_OFFSET);
+	_progressBar->setX(x + HORIZONTAL_OFFSET);
 }
 
 /**
@@ -73,6 +88,8 @@ void BattlescapeMessage::setY(int y)
 	Surface::setY(y);
 	_window->setY(y);
 	_text->setY(y);
+	_txtThinking->setY(y + VERTICAL_OFFSET - 10);
+	_progressBar->setY(y + VERTICAL_OFFSET);
 }
 
 /**
@@ -88,9 +105,19 @@ void BattlescapeMessage::setBackground(Surface *background)
  * Changes the message text.
  * @param message Message string.
  */
-void BattlescapeMessage::setText(const std::string &message)
+void BattlescapeMessage::setText(const std::string &message, const std::string& message2)
 {
 	_text->setText(message);
+	_txtThinking->setText(message2);
+}
+
+/**
+ * Changes the progress bar value.
+ * @param message New value.
+ */
+void BattlescapeMessage::setProgressValue(int progress)
+{
+	_progressBar->setValue(progress);
 }
 
 /**
@@ -106,6 +133,7 @@ void BattlescapeMessage::initText(Font *big, Font *small, Language *lang)
 {
 	_text->initText(big, small, lang);
 	_text->setBig();
+	_txtThinking->initText(big, small, lang);
 }
 
 /**
@@ -119,6 +147,8 @@ void BattlescapeMessage::setPalette(const SDL_Color *colors, int firstcolor, int
 	Surface::setPalette(colors, firstcolor, ncolors);
 	_window->setPalette(colors, firstcolor, ncolors);
 	_text->setPalette(colors, firstcolor, ncolors);
+	_txtThinking->setPalette(colors, firstcolor, ncolors);
+	_progressBar->setPalette(colors, firstcolor, ncolors);
 }
 
 /**
@@ -129,6 +159,8 @@ void BattlescapeMessage::blit(SDL_Surface *surface)
 	Surface::blit(surface);
 	_window->blit(surface);
 	_text->blit(surface);
+	_txtThinking->blit(surface);
+	_progressBar->blit(surface);
 }
 
 /*
@@ -149,6 +181,18 @@ void BattlescapeMessage::setHeight(int height)
 void BattlescapeMessage::setTextColor(Uint8 color)
 {
 	_text->setColor(color);
+	_txtThinking->setColor(color);
+}
+
+/*
+ * Sets the colors of the progress bar.
+ * @param color the new color.
+ * @param borderColor the new border color.
+ */
+void BattlescapeMessage::setProgressBarColor(Uint8 color, Uint8 borderColor)
+{
+	_progressBar->setColor(color);
+	_progressBar->setBorderColor(borderColor);
 }
 
 }

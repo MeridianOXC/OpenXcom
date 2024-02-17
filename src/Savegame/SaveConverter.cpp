@@ -750,7 +750,8 @@ void SaveConverter::loadDatBase()
 				int qty = load<Uint16>(bdata + _rules->getOffset("BASE.DAT_ITEMS") + k * 2);
 				if (qty != 0 && !_rules->getItems()[k].empty())
 				{
-					base->getStorageItems()->addItem(_rules->getItems()[k], qty);
+					const RuleItem *rule = _mod->getItem(_rules->getItems()[k], true);
+					base->getStorageItems()->addItem(rule, qty);
 				}
 			}
 			base->setEngineers(engineers);
@@ -794,7 +795,8 @@ void SaveConverter::loadDatAStore()
 			if (base != 0xFF)
 			{
 				Base *b = dynamic_cast<Base*>(_targets[base]);
-				b->getStorageItems()->addItem(liveAlien);
+				const RuleItem *rule = _mod->getItem(liveAlien, true);
+				b->getStorageItems()->addItem(rule);
 			}
 		}
 		_aliens.push_back(liveAlien);
@@ -850,9 +852,9 @@ void SaveConverter::loadDatTransfer()
 				break;
 			default:
 				if (type == TRANSFER_ITEM)
-					transfer->setItems(_rules->getItems()[dat], qty);
+					transfer->setItems(_mod->getItem(_rules->getItems()[dat], true), qty);
 				else
-					transfer->setItems(_aliens[dat]);
+					transfer->setItems(_mod->getItem(_aliens[dat], true));
 				break;
 			}
 
@@ -915,7 +917,7 @@ void SaveConverter::loadDatCraft()
 					int qty = load<Uint8>(cdata + _rules->getOffset("CRAFT.DAT_ITEMS") + k);
 					for (int v = 0; v < qty; ++v)
 					{
-						RuleItem *rule = _mod->getItem(_rules->getItems()[k + 10], true);
+						const RuleItem *rule = _mod->getItem(_rules->getItems()[k + 10], true);
 						craft->getVehicles()->push_back(new Vehicle(rule, rule->getVehicleClipSize(), 4));
 					}
 				}
@@ -926,7 +928,8 @@ void SaveConverter::loadDatCraft()
 					int qty = load<Uint8>(cdata + _rules->getOffset("CRAFT.DAT_ITEMS") + k);
 					if (qty != 0 && !_rules->getItems()[k + 10].empty())
 					{
-						craft->getItems()->addItem(_rules->getItems()[k + 10], qty);
+						const RuleItem *rule = _mod->getItem(_rules->getItems()[k + 10], true);
+						craft->getItems()->addItem(rule, qty);
 					}
 				}
 

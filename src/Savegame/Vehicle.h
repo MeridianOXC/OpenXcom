@@ -32,11 +32,11 @@ class RuleItem;
 class Vehicle
 {
 private:
-	RuleItem *_rules;
+	const RuleItem *_rules;
 	int _ammo, _size;
 public:
 	/// Creates a vehicle of the specified type.
-	Vehicle(RuleItem *rules, int ammo, int size);
+	Vehicle(const RuleItem *rules, int ammo, int size);
 	/// Cleans up the vehicle.
 	~Vehicle();
 	/// Loads the vehicle from YAML.
@@ -44,7 +44,7 @@ public:
 	/// Saves the vehicle to YAML.
 	YAML::Node save() const;
 	/// Gets the vehicle's ruleset.
-	RuleItem *getRules() const;
+	const RuleItem *getRules() const;
 	/// Gets the vehicle's ammo.
 	int getAmmo() const;
 	/// Sets the vehicle's ammo.

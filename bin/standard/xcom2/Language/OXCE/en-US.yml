@@ -1,5 +1,14 @@
 en-US:
 #=================== Basescape ===================
+#BasescapeState.cpp
+  STR_FACILITY_IN_USE_STORAGE: "AQUA-POD IN USE!{SMALLLINE}Not enough storage space."
+  STR_FACILITY_IN_USE_QUARTERS: "AQUA-POD IN USE!{SMALLLINE}Not enough living quarters."
+  STR_FACILITY_IN_USE_LABORATORIES: "AQUA-POD IN USE!{SMALLLINE}Not enough lab space."
+  STR_FACILITY_IN_USE_WORKSHOPS: "AQUA-POD IN USE!{SMALLLINE}Not enough workshop space."
+  STR_FACILITY_IN_USE_HANGARS: "AQUA-POD IN USE!{SMALLLINE}Not enough sub pens."
+  STR_FACILITY_IN_USE_PSI_LABS: "AQUA-POD IN USE!{SMALLLINE}Not enough M.C. labs."
+  STR_FACILITY_IN_USE_GYMS: "AQUA-POD IN USE!{SMALLLINE}Not enough gyms."
+  STR_FACILITY_IN_USE_PRISONS: "AQUA-POD IN USE!{SMALLLINE}Not enough alien containment."
 #CraftWeaponsState.cpp
   STR_NOT_ENOUGH_HWP_CAPACITY: "NOT ENOUGH SWS CAPACITY AVAILABLE!{SMALLLINE}Use a different module or reduce the number of assigned SWSs."
 #SoldierAvatarState.cpp

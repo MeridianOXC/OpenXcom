@@ -118,6 +118,7 @@ es-419:
   landOnly: ""
   psiRequired: ""
   targetMatrix: ""
+  convertToCivilian: ""
   manaRequired: ""
   LOSRequired: ""
 #
@@ -410,6 +411,8 @@ es-419:
   maxUnitsLimit: ""
   pilots: ""
   vehicles: ""
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
   maxHWPUnitsLimit: ""
   maxSmallSoldiers: ""
   maxLargeSoldiers: ""

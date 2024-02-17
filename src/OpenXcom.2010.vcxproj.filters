@@ -1139,6 +1139,12 @@
     <ClCompile Include="Savegame\RankCount.cpp">
       <Filter>Savegame</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\SoldierTransformState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\ProgressBar.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2341,6 +2347,12 @@
     </ClInclude>
     <ClInclude Include="Mod\LoadYaml.h">
       <Filter>Mod</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\SoldierTransformState.h">
+      <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\ProgressBar.h">
+      <Filter>Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

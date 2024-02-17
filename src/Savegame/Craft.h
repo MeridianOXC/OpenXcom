@@ -45,6 +45,19 @@ class ScriptParserBase;
 class ScriptGlobal;
 
 enum UfoDetection : int;
+enum CraftPlacementErrors : int
+{
+	CPE_None = 0,
+	CPE_NotEnoughSpace = 1,
+	CPE_TooManySoldiers = 2,
+	CPE_TooManySmallSoldiers = 3,
+	CPE_TooManySmallUnits = 4,
+	CPE_TooManyVehiclesAndLargeSoldiers = 5,
+	CPE_TooManyLargeSoldiers = 6,
+	CPE_TooManyLargeUnits = 7,
+	CPE_SoldierGroupNotAllowed = 8,
+	CPE_SoldierGroupNotSame = 9,
+};
 
 typedef std::pair<Position, int> SoldierDeploymentData;
 
@@ -352,7 +365,7 @@ public:
 	/// Validates craft space and craft constraints on soldier armor change.
 	bool validateArmorChange(int sizeFrom, int sizeTo) const;
 	/// Validates craft space and craft constraints on adding soldier to a craft.
-	bool validateAddingSoldier(int space, const Soldier* s) const;
+	CraftPlacementErrors validateAddingSoldier(int space, const Soldier* s) const;
 	/// Validates craft space and craft constraints on adding vehicles to a craft.
 	int validateAddingVehicles(int totalSize) const;
 };

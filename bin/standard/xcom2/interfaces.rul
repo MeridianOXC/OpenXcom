@@ -1590,6 +1590,21 @@ interfaces: #done
         border: 1  # white
       - id: button
         color: 1   # white
+  - type: soldierTransform
+    backgroundImage: BACK14.SCR
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 1     # white
+      - id: text
+        color: 1     # white
+        color2: 239  # blue
+      - id: list
+        color: 1   # white
+        border: 1  # white
+      - id: button
+        color: 1   # white
   - type: soldierRank
     backgroundImage: BACK14.SCR
     elements:
@@ -2071,6 +2086,10 @@ interfaces: #done
         color: 47
         color2: 60
         border: 51
+      - id: thinkingProgressBar
+        color: 177
+        color2: 81
+        border: 1
       - id: warning
         size: [232, 24]
         pos: [44, 32]

@@ -1566,6 +1566,21 @@ interfaces:
         border: 213  # gold
       - id: button
         color: 213   # gold
+  - type: soldierTransform
+    backgroundImage: BACK14.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 213   # gold
+      - id: list
+        color: 208   # white
+        border: 213  # gold
+      - id: button
+        color: 213   # gold
   - type: soldierRank
     backgroundImage: BACK14.SCR
     palette: PAL_BASESCAPE
@@ -1971,6 +1986,10 @@ interfaces:
         color: -1
         color2: 14
         border: 7
+      - id: thinkingProgressBar
+        color: 33
+        color2: 65
+        border: 1
       - id: optionLists
         color: -1
         color2: 14

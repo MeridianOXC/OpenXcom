@@ -118,6 +118,7 @@ ja:
   landOnly: "陸上のみにするか"
   psiRequired: "Psiスキル必須にするか"
   targetMatrix: "アイテムの対象"
+  convertToCivilian: ""
   manaRequired: "MPを必要とするか"
   LOSRequired: "視認状態を必須にするか"
 #
@@ -410,6 +411,8 @@ ja:
   maxUnitsLimit: ""
   pilots: "コクピット人員数"
   vehicles: "HWP用スペース"
+  onlyOneSoldierGroupAllowed: ""
+  allowedSoldierGroups: ""
   maxHWPUnitsLimit: ""
   maxSmallSoldiers: "小型兵士の最大数"
   maxLargeSoldiers: "大型兵士の最大数"

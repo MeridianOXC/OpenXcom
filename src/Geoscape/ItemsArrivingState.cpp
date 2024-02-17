@@ -108,7 +108,7 @@ ItemsArrivingState::ItemsArrivingState(GeoscapeState *state) : _state(state), _b
 				// Check if we have an automated use for an item
 				if (transfer->getType() == TRANSFER_ITEM)
 				{
-					RuleItem *item = _game->getMod()->getItem(transfer->getItems(), true);
+					const auto* item = transfer->getItems();
 					if (item->getBattleType() == BT_NONE)
 					{
 						for (auto* xcraft : *xbase->getCrafts())

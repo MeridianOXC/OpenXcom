@@ -41,9 +41,25 @@ ItemContainer::~ItemContainer()
  * Loads the item container from a YAML file.
  * @param node YAML node.
  */
-void ItemContainer::load(const YAML::Node &node)
+void ItemContainer::load(const YAML::Node &node, const Mod* mod)
 {
-	_qty = node.as< std::map<std::string, int> >(_qty);
+	if (node && node.IsMap())
+	{
+		_qty.clear();
+		for (const std::pair<YAML::Node, YAML::Node>& pair : node)
+		{
+			auto name = pair.first.as<std::string>();
+			const auto* type = mod->getItem(name);
+			if (type)
+			{
+				_qty[type] = pair.second.as<int>();
+			}
+			else
+			{
+				Log(LOG_ERROR) << "Failed to load item " << name;
+			}
+		}
+	}
 }
 
 /**
@@ -52,23 +68,22 @@ void ItemContainer::load(const YAML::Node &node)
  */
 YAML::Node ItemContainer::save() const
 {
-	YAML::Node node;
-	node = _qty;
-	return node;
-}
+	YAML::Node node(YAML::NodeType::Map);
+	std::vector<std::pair<std::string, int>> sortedItems;
 
-/**
- * Adds an item amount to the container.
- * @param id Item ID.
- * @param qty Item quantity.
- */
-void ItemContainer::addItem(const std::string &id, int qty)
-{
-	if (Mod::isEmptyRuleName(id))
+	for (auto& pair : _qty)
 	{
-		return;
+		sortedItems.push_back(std::make_pair(pair.first->getType(), pair.second));
 	}
-	_qty[id] += qty;
+
+	// enforce order of positions in node
+	std::sort(sortedItems.begin(), sortedItems.end(), [](auto& a, auto& b){ return a < b; });
+	for (auto& pair : sortedItems)
+	{
+		node[pair.first] = pair.second;
+	}
+
+	return node;
 }
 
 /**
@@ -80,7 +95,7 @@ void ItemContainer::addItem(const RuleItem* item, int qty)
 {
 	if (item)
 	{
-		addItem(item->getType(), qty);
+		_qty[item] += qty;
 	}
 }
 
@@ -95,7 +110,7 @@ void ItemContainer::removeItem(const std::string &id, int qty)
 	{
 		return;
 	}
-	auto it = _qty.find(id);
+	auto it = std::find_if(_qty.begin(), _qty.end(), [&](auto& pair) { return pair.first->getType() == id; });
 	if (it == _qty.end())
 	{
 		return;
@@ -120,7 +135,20 @@ void ItemContainer::removeItem(const RuleItem* item, int qty)
 {
 	if (item)
 	{
-		removeItem(item->getType(), qty);
+		auto it = _qty.find(item);
+		if (it == _qty.end())
+		{
+			return;
+		}
+
+		if (qty < it->second)
+		{
+			it->second -= qty;
+		}
+		else
+		{
+			_qty.erase(it);
+		}
 	}
 }
 
@@ -136,7 +164,7 @@ int ItemContainer::getItem(const std::string &id) const
 		return 0;
 	}
 
-	auto it = _qty.find(id);
+	auto it = std::find_if(_qty.begin(), _qty.end(), [&](auto& pair) { return pair.first->getType() == id; });
 	if (it == _qty.end())
 	{
 		return 0;
@@ -156,7 +184,15 @@ int ItemContainer::getItem(const RuleItem* item) const
 {
 	if (item)
 	{
-		return getItem(item->getType());
+		auto it = _qty.find(item);
+		if (it == _qty.end())
+		{
+			return 0;
+		}
+		else
+		{
+			return it->second;
+		}
 	}
 	else
 	{
@@ -188,7 +224,7 @@ double ItemContainer::getTotalSize(const Mod *mod) const
 	double total = 0;
 	for (const auto& pair : _qty)
 	{
-		total += mod->getItem(pair.first, true)->getSize() * pair.second;
+		total += pair.first->getSize() * pair.second;
 	}
 	return total;
 }
@@ -197,7 +233,7 @@ double ItemContainer::getTotalSize(const Mod *mod) const
  * Returns all the items currently contained within.
  * @return List of contents.
  */
-std::map<std::string, int> *ItemContainer::getContents()
+const std::map<const RuleItem*, int> *ItemContainer::getContents() const
 {
 	return &_qty;
 }

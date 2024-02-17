@@ -75,6 +75,14 @@ AIModule::~AIModule()
 }
 
 /**
+ * Sets the target faction.
+ */
+void AIModule::setTargetFaction(UnitFaction f)
+{
+	_targetFaction = f;
+}
+
+/**
  * Resets the unsaved AI state.
  */
 void AIModule::reset()
@@ -96,6 +104,11 @@ void AIModule::load(const YAML::Node &node)
 	_AIMode = node["AIMode"].as<int>(AI_PATROL);
 	_wasHitBy = node["wasHitBy"].as<std::vector<int> >(_wasHitBy);
 	_weaponPickedUp = node["weaponPickedUp"].as<bool>(_weaponPickedUp);
+	if (node["targetFaction"])
+	{
+		_targetFaction = (UnitFaction)node["targetFaction"].as<int>(_targetFaction);
+	}
+
 	// TODO: Figure out why AI are sometimes left with junk nodes
 	if (fromNodeID >= 0 && (size_t)fromNodeID < _save->getNodes()->size())
 	{
@@ -127,6 +140,10 @@ YAML::Node AIModule::save() const
 	node["wasHitBy"] = _wasHitBy;
 	if (_weaponPickedUp)
 		node["weaponPickedUp"] = _weaponPickedUp;
+	if (_unit->getOriginalFaction() == FACTION_HOSTILE && _unit->getFaction() == FACTION_NEUTRAL && _targetFaction == FACTION_HOSTILE)
+	{
+		node["targetFaction"] = (int)_targetFaction;
+	}
 	return node;
 }
 

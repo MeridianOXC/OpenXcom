@@ -114,6 +114,11 @@ Map::Map(Game *game, int width, int height, int x, int y, int visibleMapHeight) 
 	_iconWidth = _game->getMod()->getInterface("battlescape")->getElement("icons")->w;
 	_messageColor = _game->getMod()->getInterface("battlescape")->getElement("messageWindows")->color;
 
+	auto* itf = _game->getMod()->getInterface("battlescape")->getElement("thinkingProgressBar");
+	_hostileBarColor = itf->color;
+	_neutralBarColor = itf->color2;
+	_borderBarColor = itf->border;
+
 	PathPreview previewSetting = Options::battleNewPreviewPath;
 	_smoothCamera = Options::battleSmoothCamera;
 	if (Options::traceAI)
@@ -338,6 +343,19 @@ void Map::draw()
 	}
 }
 
+void Map::refreshAIProgress(int progress)
+{
+	if (_save->getSide() == FACTION_NEUTRAL)
+	{
+		_message->setProgressBarColor(_neutralBarColor, _borderBarColor);
+	}
+	else
+	{
+		_message->setProgressBarColor(_hostileBarColor, _borderBarColor);
+	}
+	_message->setProgressValue(progress);
+}
+
 /**
  * Replaces a certain amount of colors in the surface's palette.
  * @param colors Pointer to the set of colors.
@@ -354,7 +372,7 @@ void Map::setPalette(const SDL_Color *colors, int firstcolor, int ncolors)
 	_message->setPalette(colors, firstcolor, ncolors);
 	refreshHiddenMovementBackground();
 	_message->initText(_game->getMod()->getFont("FONT_BIG"), _game->getMod()->getFont("FONT_SMALL"), _game->getLanguage());
-	_message->setText(_game->getLanguage()->getString("STR_HIDDEN_MOVEMENT"));
+	_message->setText(_game->getLanguage()->getString("STR_HIDDEN_MOVEMENT"), _game->getLanguage()->getString("STR_THINKING"));
 }
 
 void Map::refreshHiddenMovementBackground()
@@ -1685,7 +1703,7 @@ void Map::drawTerrain(Surface *surface)
 				{
 					offset.y += 4;
 				}
-				offset.y += 24 - myUnit->getHeight();
+				offset.y += 24 - /*myUnit->getHeight()*/ 21; // no spoilers
 				if (myUnit->isKneeled())
 				{
 					offset.y -= 2;

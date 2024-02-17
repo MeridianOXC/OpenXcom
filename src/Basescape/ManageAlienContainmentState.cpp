@@ -226,8 +226,9 @@ void ManageAlienContainmentState::resetListAndTotals()
 
 	for (auto& itemType : _game->getMod()->getItemsList())
 	{
-		int qty = _base->getStorageItems()->getItem(itemType);
 		RuleItem *rule = _game->getMod()->getItem(itemType, true);
+
+		int qty = _base->getStorageItems()->getItem(rule);
 		if (qty > 0 && rule->isAlien() && rule->getPrisonType() == _prisonType)
 		{
 			_qtys.push_back(0);
@@ -370,7 +371,7 @@ void ManageAlienContainmentState::dealWithSelectedAliens(bool sell)
 					auto* ruleCorpse = ruleUnit->getArmor()->getCorpseGeoscape();
 					if (ruleCorpse && ruleCorpse->isRecoverable() && ruleCorpse->isCorpseRecoverable())
 					{
-						_base->getStorageItems()->addItem(ruleCorpse->getType(), _qtys[i]);
+						_base->getStorageItems()->addItem(ruleCorpse, _qtys[i]);
 					}
 				}
 			}

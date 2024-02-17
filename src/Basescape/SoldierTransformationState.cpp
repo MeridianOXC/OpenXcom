@@ -108,7 +108,7 @@ SoldierTransformationState::SoldierTransformationState(RuleSoldierTransformation
 	_btnStart->onMouseClick((ActionHandler)&SoldierTransformationState::btnStartClick);
 	_btnStart->onKeyboardPress((ActionHandler)&SoldierTransformationState::btnStartClick, Options::keyOk);
 
-	if (_filteredListOfSoldiers->size() > 1)
+	if (_filteredListOfSoldiers && _filteredListOfSoldiers->size() > 1)
 	{
 		_btnLeftArrow->setText("<<");
 		_btnLeftArrow->onMouseClick((ActionHandler)&SoldierTransformationState::btnLeftArrowClick);
@@ -216,10 +216,11 @@ void SoldierTransformationState::initTransformationData()
 	{
 		std::ostringstream s1, s2;
 		s1 << requiredItem.second;
-		if (_game->getMod()->getItem(requiredItem.first) != 0)
+		const auto* rule = _game->getMod()->getItem(requiredItem.first);
+		if (rule != 0)
 		{
-			s2 << _base->getStorageItems()->getItem(requiredItem.first);
-			transformationPossible &= (_base->getStorageItems()->getItem(requiredItem.first) >= requiredItem.second);
+			s2 << _base->getStorageItems()->getItem(rule);
+			transformationPossible &= (_base->getStorageItems()->getItem(rule) >= requiredItem.second);
 		}
 
 		_lstRequiredItems->addRow(3, tr(requiredItem.first).c_str(), s1.str().c_str(), s2.str().c_str());
@@ -439,9 +440,10 @@ void SoldierTransformationState::btnStartClick(Action *action)
 
 	for (auto& requiredItem : _transformationRule->getRequiredItems())
 	{
-		if (_game->getMod()->getItem(requiredItem.first) != 0)
+		const auto* rule = _game->getMod()->getItem(requiredItem.first);
+		if (rule != 0)
 		{
-			_base->getStorageItems()->removeItem(requiredItem.first, requiredItem.second);
+			_base->getStorageItems()->removeItem(rule, requiredItem.second);
 		}
 	}
 
@@ -557,7 +559,7 @@ void SoldierTransformationState::retire()
 	{
 		int transferTime = _transformationRule->getTransferTime() > 0 ? _transformationRule->getTransferTime() : 1;
 		Transfer *transfer = new Transfer(transferTime);
-		transfer->setItems(_transformationRule->getProducedItem(), 1);
+		transfer->setItems(_game->getMod()->getItem(_transformationRule->getProducedItem(), true), 1);
 		_base->getTransfers()->push_back(transfer);
 	}
 }

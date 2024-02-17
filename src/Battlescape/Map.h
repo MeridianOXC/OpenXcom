@@ -108,6 +108,7 @@ private:
 	int getTerrainLevel(const Position& pos, int size) const;
 	int getWallShade(TilePart part, Tile* tileFrot);
 	int _iconHeight, _iconWidth, _messageColor;
+	int _hostileBarColor, _neutralBarColor, _borderBarColor;
 	const std::vector<Uint8> *_transparencies;
 	bool _showObstacles;
 public:
@@ -121,6 +122,7 @@ public:
 	void think() override;
 	/// Draws the surface.
 	void draw() override;
+	void refreshAIProgress(int progress);
 	/// Sets the palette.
 	void setPalette(const SDL_Color *colors, int firstcolor = 0, int ncolors = 256) override;
 	void refreshHiddenMovementBackground();

@@ -476,11 +476,20 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 				else if (s->hasFullHealth())
 				{
 					int space = c->getSpaceAvailable();
-					if (c->validateAddingSoldier(space, s))
+					CraftPlacementErrors err = c->validateAddingSoldier(space, s);
+					if (err == CPE_None)
 					{
 						s->setCraftAndMoveEquipment(c, _base, _game->getSavedGame()->getMonthsPassed() == -1, true);
 						_lstSoldiers->setCellText(_lstSoldiers->getSelectedRow(), 1, c->getName(_game->getLanguage()));
 						_lstSoldiers->setRowColor(_lstSoldiers->getSelectedRow(), _lstSoldiers->getSecondaryColor());
+					}
+					else if (err == CPE_SoldierGroupNotAllowed)
+					{
+						_game->pushState(new ErrorMessageState(tr("STR_SOLDIER_GROUP_NOT_ALLOWED"), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
+					}
+					else if (err == CPE_SoldierGroupNotSame)
+					{
+						_game->pushState(new ErrorMessageState(tr("STR_SOLDIER_GROUP_NOT_SAME"), _palette, _game->getMod()->getInterface("soldierInfo")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("soldierInfo")->getElement("errorPalette")->color));
 					}
 					else if (space > 0)
 					{

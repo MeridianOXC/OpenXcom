@@ -45,9 +45,9 @@ TechTreeSelectState::TechTreeSelectState(TechTreeViewerState *parent) : _parent(
 	_screen = false;
 
 	_window = new Window(this, 230, 140, 45, 32);
-	_btnQuickSearch = new TextEdit(this, 48, 9, 219, 42);
+	_btnQuickSearch = new TextEdit(this, 198, 9, 53, 52);
 	_txtTitle = new Text(182, 9, 53, 42);
-	_lstTopics = new TextList(198, 88, 53, 54);
+	_lstTopics = new TextList(198, 80, 53, 62);
 	_btnOk = new TextButton(206, 16, 57, 145);
 
 	// Set palette
@@ -71,7 +71,7 @@ TechTreeSelectState::TechTreeSelectState(TechTreeViewerState *parent) : _parent(
 	_btnOk->onMouseClick((ActionHandler)&TechTreeSelectState::btnOkClick);
 	_btnOk->onKeyboardPress((ActionHandler)&TechTreeSelectState::btnOkClick, Options::keyCancel);
 
-	_lstTopics->setColumns(1, 182);
+	_lstTopics->setColumns(1, 198);
 	_lstTopics->setSelectable(true);
 	_lstTopics->setBackground(_window);
 	_lstTopics->setMargin(0);
@@ -79,6 +79,7 @@ TechTreeSelectState::TechTreeSelectState(TechTreeViewerState *parent) : _parent(
 	_lstTopics->onMouseClick((ActionHandler)&TechTreeSelectState::onSelectTopic);
 
 	_btnQuickSearch->setText(""); // redraw
+	_btnQuickSearch->setDrawBackground(false);
 	_btnQuickSearch->onEnter((ActionHandler)&TechTreeSelectState::btnQuickSearchApply);
 	_btnQuickSearch->setVisible(true);
 	_btnQuickSearch->setFocus(true);
