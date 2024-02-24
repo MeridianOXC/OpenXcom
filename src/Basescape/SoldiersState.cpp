@@ -237,7 +237,8 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_lstSoldiers->setMargin(8);
 	_lstSoldiers->onLeftArrowClick((ActionHandler)&SoldiersState::lstItemsLeftArrowClick);
 	_lstSoldiers->onRightArrowClick((ActionHandler)&SoldiersState::lstItemsRightArrowClick);
-	_lstSoldiers->onMouseClick((ActionHandler)&SoldiersState::lstSoldiersClick, 0);
+	_lstSoldiers->onMouseClick((ActionHandler)&SoldiersState::lstSoldiersClick);
+	_lstSoldiers->onMouseClick((ActionHandler)&SoldiersState::lstSoldiersClick, SDL_BUTTON_RIGHT);
 	//_lstSoldiers->onMousePress((ActionHandler)&SoldiersState::lstSoldiersMousePress);
 }
 

@@ -186,6 +186,7 @@ int Mod::DIFFICULTY_COEFFICIENT[5];
 int Mod::SELL_PRICE_COEFFICIENT[5];
 int Mod::DIFFICULTY_BASED_RETAL_DELAY[5];
 int Mod::UNIT_RESPONSE_SOUNDS_FREQUENCY[4];
+int Mod::PEDIA_FACILITY_RENDER_PARAMETERS[4];
 bool Mod::EXTENDED_ITEM_RELOAD_COST;
 bool Mod::EXTENDED_INVENTORY_SLOT_SORTING;
 bool Mod::EXTENDED_RUNNING_COST;
@@ -284,6 +285,11 @@ void Mod::resetGlobalStatics()
 	UNIT_RESPONSE_SOUNDS_FREQUENCY[1] = 100; // start moving
 	UNIT_RESPONSE_SOUNDS_FREQUENCY[2] = 100; // select weapon
 	UNIT_RESPONSE_SOUNDS_FREQUENCY[3] = 20;  // annoyed
+
+	PEDIA_FACILITY_RENDER_PARAMETERS[0] = 2; // pedia facility max width
+	PEDIA_FACILITY_RENDER_PARAMETERS[1] = 2; // pedia facility max height
+	PEDIA_FACILITY_RENDER_PARAMETERS[2] = 0; // pedia facility X offset
+	PEDIA_FACILITY_RENDER_PARAMETERS[3] = 0; // pedia facility Y offset
 
 	EXTENDED_ITEM_RELOAD_COST = false;
 	EXTENDED_INVENTORY_SLOT_SORTING = false;
@@ -2627,6 +2633,15 @@ void Mod::loadConstants(const YAML::Node &node)
 	}
 	DEBRIEF_MUSIC_GOOD = node["goodDebriefingMusic"].as<std::string>(DEBRIEF_MUSIC_GOOD);
 	DEBRIEF_MUSIC_BAD = node["badDebriefingMusic"].as<std::string>(DEBRIEF_MUSIC_BAD);
+	if (node["extendedPediaFacilityParams"])
+	{
+		int k = 0;
+		for (YAML::const_iterator j = node["extendedPediaFacilityParams"].begin(); j != node["extendedPediaFacilityParams"].end() && k < 4; ++j)
+		{
+			PEDIA_FACILITY_RENDER_PARAMETERS[k] = (*j).as<int>(PEDIA_FACILITY_RENDER_PARAMETERS[k]);
+			++k;
+		}
+	}
 	EXTENDED_ITEM_RELOAD_COST = node["extendedItemReloadCost"].as<bool>(EXTENDED_ITEM_RELOAD_COST);
 	EXTENDED_INVENTORY_SLOT_SORTING = node["extendedInventorySlotSorting"].as<bool>(EXTENDED_INVENTORY_SLOT_SORTING);
 	EXTENDED_RUNNING_COST = node["extendedRunningCost"].as<bool>(EXTENDED_RUNNING_COST);
