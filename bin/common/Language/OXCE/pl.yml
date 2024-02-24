@@ -41,6 +41,8 @@ pl:
   STR_NORMAL: "Normalna"
   STR_BOLD: "Śmiała (+50%)"
   STR_VERY_BOLD: "Bardzo śmiała (+100%)"
+  STR_SOLDIER_GROUP_NOT_ALLOWED: "Ten typ żołnierza nie może wejść na pokład."
+  STR_SOLDIER_GROUP_NOT_SAME: "Ten typ żołnierza nie jest kompatybilny z innymi żołnierzami na pokładzie."
   STR_CRAFT_DEPLOYMENT_PREVIEW: "Podgląd"
   STR_CRAFT_DEPLOYMENT_PREVIEW_SAVED: "Podgląd *"
   STR_CRAFT_DEPLOYMENT_PREVIEW_BRIEFING: "Ta funkcja pozwala sprawdzić i zmodyfikować rozmieszczenie twoich jednostek na początku bitwy. Masz nieograniczony ruch. Naciśnij i przytrzymaj 'Alt', by podświetlić miejsca dostępne dla jednostek. Naciśnij przycisk 'Przerwij misję', aby zapisać swoje rozmieszczenie. Naciśnij przycisk 'Zakończ turę', by wyjść z podglądu.{NEWLINE}Zauważ, że dodanie nowych żołnierzy lub pojazdów do statku automatycznie skasuje zapisane wcześniej rozmieszczenie. Obecność specjalnego rozmieszczenia jest oznaczona gwiazdką na przycisku 'Podgląd'."
