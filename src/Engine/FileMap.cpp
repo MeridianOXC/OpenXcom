@@ -1019,7 +1019,7 @@ SDL_RWops *zipGetFileByName(const std::string& zipfile, const std::string& fullp
 void scanModDir(const std::string& dirname, const std::string& basename, bool protectedLocation) {
 
 	// "standard" directory is for built-in mods only! otherwise automatic updates would delete user data
-	const std::set<std::string> standardMods = {
+	const static std::set<std::string> standardMods = {
 		"Aliens_Pick_Up_Weapons",
 		"Aliens_Pick_Up_Weapons_TFTD",
 		"Demigod_Difficulty",
