@@ -990,6 +990,8 @@ void refreshMods()
 
 void updateMods()
 {
+	setDataFolder(CrossPlatform::dirFilename(CrossPlatform::searchDataFolder("common")));
+
 	// pick up stuff in common before-hand
 	FileMap::clear(false, Options::oxceEmbeddedOnly);
 

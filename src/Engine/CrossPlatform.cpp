@@ -473,7 +473,6 @@ std::string searchDataFile(const std::string &filename)
 		path = dataPath + name;
 		if (fileExists(path))
 		{
-			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}
@@ -486,21 +485,32 @@ std::string searchDataFolder(const std::string &foldername)
 {
 	// Correct folder separator
 	std::string name = foldername;
+	std::string path;
 
-	// Check current data path
-	std::string path = Options::getDataFolder() + name;
-	if (folderExists(path))
+	// Set miminum possible of dirs
+	std::size_t minNumOfElementsInFolder = (
+		foldername == "TFTD" || foldername == "UFO" ? 9 : // At least 9 dictionaries with original data data
+		foldername == "common" ? 6 : // Files: "Language/", "Palettes/", "Resources/", "Shaders/", "SoldierName/", "openxcom.png"
+		foldername == "standard" ? 20 : // Now 48 mods, some buffer if some decide to drop some mods
+		0
+	);
+
+	if (Options::getDataFolder() != "")
 	{
-		return path;
+		// Check current data path
+		path = Options::getDataFolder() + name;
+		if (folderExists(path) && (minNumOfElementsInFolder == 0 || getFolderContents(path).size() >= minNumOfElementsInFolder))
+		{
+			return path;
+		}
 	}
 
 	// Check every other path
 	for (auto& dataPath : Options::getDataList())
 	{
 		path = dataPath + name;
-		if (folderExists(path))
+		if (folderExists(path) && (minNumOfElementsInFolder == 0 || getFolderContents(path).size() >= minNumOfElementsInFolder))
 		{
-			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}
