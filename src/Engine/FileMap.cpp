@@ -819,7 +819,7 @@ static bool mapExtResources(ModRecord *mrec, const std::string& basename, bool e
 		if (CrossPlatform::fileExists(fullname)) {
 			Log(LOG_VERBOSE) << log_ctx << "found zip ("<<fullname<<")";
 			auto layer = new VFSLayer(fullname);
-			if (layer->mapZipFile(fullname, "", true)) {
+			if (layer->mapZipFile(fullname, basename + "/", true) || layer->mapZipFile(fullname, "", true)) {
 				mrec->push_front(layer);
 				MappedVFSLayers.insert(layer);
 				mapped_anything = true;
