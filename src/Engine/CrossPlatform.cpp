@@ -719,6 +719,30 @@ std::string baseFilename(const std::string &path)
 }
 
 /**
+ * Returns the directory from a specified path.
+ * @param path Full path.
+ * @return Directory component.
+ */
+std::string dirFilename(const std::string &path)
+{
+	size_t sep = path.find_last_of('/');
+	std::string filename;
+	if (sep == std::string::npos)
+	{
+		filename = "";
+	}
+	else if (sep == path.size() - 1)
+	{
+		return dirFilename(path.substr(0, path.size() - 1));
+	}
+	else
+	{
+		filename = path.substr(0, sep + 1);
+	}
+	return filename;
+}
+
+/**
  * Replaces invalid filesystem characters with _.
  * @param filename Original filename.
  * @return Filename without invalid characters.
@@ -1816,6 +1840,22 @@ static auto dummy = ([]
 	assert(!isHigherThanCurrentVersion(create(1, 2, 1, 3), {1, 2, 2, 2}));
 	assert(!isHigherThanCurrentVersion(create(1, 2, 1, 3), {1, 3, 1, 2}));
 
+	return 0;
+})();
+
+static auto dummyPaths = ([]
+{
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc") == "ccc");
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc/") == "ccc");
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc//") == "ccc");
+	assert(CrossPlatform::baseFilename("/ccc") == "ccc");
+	assert(CrossPlatform::baseFilename("ccc") == "ccc");
+
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc/") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc//") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("/ccc") == "/");
+	assert(CrossPlatform::dirFilename("ccc") == "");
 	return 0;
 })();
 

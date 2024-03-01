@@ -212,6 +212,8 @@ namespace CrossPlatform
 	bool deleteFile(const std::string &path);
 	/// Gets the pathless filename of a file.
 	std::string baseFilename(const std::string &path);
+	/// Gets the pathless dir of a file.
+	std::string dirFilename(const std::string &path);
 	/// Sanitizes the characters in a filename.
 	std::string sanitizeFilename(const std::string &filename);
 	/// Removes the extension from a filename.
