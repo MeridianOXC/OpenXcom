@@ -34,6 +34,7 @@ class ModInfo;
 class FpsCounter;
 class Action;
 class MapEditor;
+class MapEditorSave;
 
 /**
  * The core of the game engine, manages the game's entire contents and structure.

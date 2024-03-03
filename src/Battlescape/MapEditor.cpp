@@ -21,9 +21,11 @@
 #include "../Battlescape/TileEngine.h"
 #include "../Engine/Action.h"
 #include "../Engine/Logger.h"
+#include "../Engine/ModInfo.h"
 #include "../Engine/Options.h"
 #include "../Mod/MapData.h"
 #include "../Mod/MapDataSet.h"
+#include "../Savegame/MapEditorSave.h"
 #include "../Savegame/Node.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/Tile.h"
@@ -36,8 +38,11 @@ namespace OpenXcom
  * Initializes all the Map Editor.
  */
 MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
-    _selectedMapDataID(-1), _mapname(""), _selectedObject(O_MAX)
+    _mapSave(0), _selectedMapDataID(-1), _selectedObject(O_MAX)
 {
+    _mapSave = new MapEditorSave();
+    _mapSave->load();
+
     init();
 
     // clear the clipboards only on first startup so they're available across maps
@@ -50,7 +55,7 @@ MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
  */
 MapEditor::~MapEditor()
 {
-
+    delete _mapSave;
 }
 
 /**
@@ -806,32 +811,82 @@ void MapEditor::setSave(SavedBattleGame *save)
 }
 
 /**
- * Sets the name of the map file we're editing
- * @param mapname String of the map's name
+ * Gets the MapEditorSave for the editor
+ * @return Pointer to the data on saved map files
  */
-void MapEditor::setMapName(std::string mapname)
+MapEditorSave *MapEditor::getMapEditorSave()
 {
-    _mapname = mapname;
+    return _mapSave;
 }
 
 /**
- * Gets the name of the map file we're editing
+ * Creates the structure for handling map file information from a file path
+ * Automatically checks if save directory is in MAPS or ROUTES or not
+ * @param fullPath String of the full directory path to the file
+ * @param terrainName String of the terrain for the map (defaults to "" if omitted)
  */
-std::string MapEditor::getMapName()
+MapFileInfo MapEditor::createMapFileInfo(std::string fullPath, std::string terrainName)
 {
-    return _mapname;
+    Log(LOG_INFO) << "MapEditor::createMapFileInfo got passed fullPath: " + fullPath;
+
+    MapFileInfo mapFileInfo;
+
+    // Get just the file name
+    std::string fileName = CrossPlatform::noExt(CrossPlatform::baseFilename(fullPath));
+    
+    Log(LOG_INFO) << "> Found file name: " + fileName;
+
+    // Get the directory without the file name
+	std::string filePath = fullPath;
+    size_t pos = fullPath.find_last_of('/');
+    if (pos != std::string::npos)
+    {
+        filePath = filePath.substr(0, pos);
+    }
+    
+    Log(LOG_INFO) << "> Found file path: " + filePath;
+
+    // Check if directory passed ends in MAPS or ROUTES, remove if so
+    pos = filePath.rfind(MapEditorSave::MAP_DIRECTORY);
+    if (pos != std::string::npos)
+    {
+        filePath = filePath.substr(0, filePath.size() - MapEditorSave::MAP_DIRECTORY.size());
+    }
+    pos = filePath.rfind(MapEditorSave::RMP_DIRECTORY);
+    if (pos != std::string::npos)
+    {
+        filePath = filePath.substr(0, filePath.size() - MapEditorSave::RMP_DIRECTORY.size());
+    }
+    
+    Log(LOG_INFO) << "> After removing MAPS/ROUTES: " + filePath;
+
+    mapFileInfo.name = fileName;
+    mapFileInfo.baseDirectory = filePath;
+    mapFileInfo.mods.clear();
+    for (auto i : Options::getActiveMods())
+    {
+        mapFileInfo.mods.push_back(i->getName());
+    }
+    mapFileInfo.terrain = terrainName;
+    mapFileInfo.mcds.clear();
+    for (auto i : *_save->getMapDataSets())
+    {
+        mapFileInfo.mcds.push_back(i->getName());
+    }
+
+    return mapFileInfo;
 }
 
 /**
- * Saves the map file
+ * Saves the current map file
  * Sets a message for the editor state to read whether the map saved successfully
- * @param filename String for the name of the file to save
  */
-void MapEditor::saveMapFile(std::string filename)
+void MapEditor::saveMapFile()
 {
     std::string message = "STR_MAP_EDITOR_SAVED_SUCCESSFULLY";
-    std::string filepath = Options::getMasterUserFolder() + filename;
-    std::string logInfo = "    mapDataSets:\n";
+    std::string filename = _mapSave->getCurrentMapFile()->name;
+    std::string filepath = CrossPlatform::convertPath(_mapSave->getCurrentMapFile()->baseDirectory);
+    std::string logInfo = "\n    mapDataSets:\n";
     for (auto i : *_save->getMapDataSets())
     {
         logInfo += "      - " + i->getName() + "\n";
@@ -843,7 +898,13 @@ void MapEditor::saveMapFile(std::string filename)
     logInfo += "        height: " + std::to_string(_save->getMapSizeZ());
     Log(LOG_INFO) << logInfo;
 
-    Log(LOG_INFO) << "Saving edited map file " + filepath + ".MAP";
+    std::string fullpath = filepath;
+    if(CrossPlatform::folderExists(fullpath + MapEditorSave::MAP_DIRECTORY))
+    {
+        fullpath = fullpath + MapEditorSave::MAP_DIRECTORY;
+    }
+    fullpath = fullpath + filename + ".MAP"; //TODO add extensions to MapEditorSave's consts?
+    Log(LOG_INFO) << "Saving edited map file " + fullpath;
 
     std::vector<unsigned char> data;
     data.clear();
@@ -885,12 +946,18 @@ void MapEditor::saveMapFile(std::string filename)
         }
     }
 
-	if (!CrossPlatform::writeFile(filepath + ".MAP", data))
+	if (!CrossPlatform::writeFile(fullpath, data))
 	{
-		throw Exception("Failed to save " + filepath + ".MAP");
+		throw Exception("Failed to save " + fullpath);
 	}
 
-    Log(LOG_INFO) << "Saving edited route file " + filepath + ".RMP";
+    fullpath = filepath;
+    if(CrossPlatform::folderExists(fullpath + MapEditorSave::RMP_DIRECTORY))
+    {
+        fullpath = fullpath + MapEditorSave::RMP_DIRECTORY;
+    }
+    fullpath = fullpath + filename + ".RMP"; //TODO add extensions to MapEditorSave's consts?
+    Log(LOG_INFO) << "Saving edited route file " + fullpath;
 
     // Start by finding how many 24-byte nodes we need to allocate and which nodes are "active" and should be saved
     std::vector<Node*> nodesToSave;
@@ -960,10 +1027,12 @@ void MapEditor::saveMapFile(std::string filename)
 
     // It is still valid to write an empty RMP file - that just means we have no nodes
     // But if there are nodes and we fail to save, then something is wrong
-	if (!CrossPlatform::writeFile(filepath + ".RMP", data) && nodesToSave.size() > 0)
+	if (!CrossPlatform::writeFile(fullpath, data) && nodesToSave.size() > 0)
 	{
-		throw Exception("Failed to save " + filepath + ".RMP");
+		throw Exception("Failed to save " + fullpath);
 	}
+
+    _mapSave->save();
 
     _messages.push_back(message);
 }

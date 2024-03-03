@@ -33,6 +33,7 @@ class MapEditorOptionsState : public State
 {
 private :
 	OptionsOrigin _origin;
+    State *_parent;
     bool _resetEditorState;
 	TextButton *_btnInfo, *_btnLoad, *_btnSave, *_btnAbandon, *_btnOptions, *_btnCancel;
     TextList *_lstOptions;
@@ -43,7 +44,7 @@ private :
 
 public :
     /// Creates the options menu window for the map editor
-    MapEditorOptionsState(OptionsOrigin origin);
+    MapEditorOptionsState(OptionsOrigin origin, State *parent);
     /// Cleans up the map editor options menu
     ~MapEditorOptionsState();
 	/// Fills settings list.

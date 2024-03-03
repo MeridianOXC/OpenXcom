@@ -43,6 +43,7 @@
 #include "../Battlescape/BattlescapeGenerator.h"
 #include "../Battlescape/Camera.h"
 #include "../Battlescape/Map.h"
+#include "../Savegame/MapEditorSave.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 
@@ -182,6 +183,14 @@ void MapEditorMenuState::init()
 
     populateMapsList();
 }
+
+//void MapEditorMenuState::think()
+//{
+//    if (_fileName != "")
+//    {
+//
+//    }
+//}
 
 /**
  * Fills the list with available map names
@@ -497,7 +506,7 @@ void MapEditorMenuState::startEditor()
     _game->setSavedGame(save);
 
     SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
-    _game->getSavedGame()->setBattleGame(savedBattleGame);
+    save->setBattleGame(savedBattleGame);
 
     MapEditor *editor = _game->getMapEditor();
     if (!editor)
@@ -545,14 +554,22 @@ void MapEditorMenuState::startEditor()
 	Options::baseYResolution = Options::baseYBattlescape;
 	_game->getScreen()->resetDisplay(false);
 
-    if (block)
+    if(_fileName == "")
     {
-	    editor->setMapName(block->getName());
+        _fileName = Options::getMasterUserFolder();
+
+        if (block)
+        {
+            _fileName = _fileName + block->getName();
+        }
+        else
+        {
+            _fileName = _fileName + _newMapName;
+        }
     }
-    else
-    {
-        editor->setMapName(_newMapName);
-    }
+    MapFileInfo fileInfo = editor->createMapFileInfo(_fileName, terrain->getName());
+    editor->getMapEditorSave()->addMap(fileInfo);
+    _fileName = "";
 
 	MapEditorState *mapEditorState = new MapEditorState(editor);
 	_game->setState(mapEditorState);

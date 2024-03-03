@@ -266,7 +266,6 @@ set ( menu_src
   Menu/MapEditorFindTileState.cpp
   Menu/MapEditorInfoState.cpp
   Menu/MapEditorOptionsState.cpp
-  Menu/MapEditorSaveAsState.cpp
   Menu/MapEditorSetSizeState.cpp
   Menu/NewBattleState.cpp
   Menu/NewGameState.cpp
@@ -372,6 +371,7 @@ set ( savegame_src
   Savegame/GeoscapeEvent.cpp
   Savegame/HitLog.cpp
   Savegame/ItemContainer.cpp
+  Savegame/MapEditorSave.cpp
   Savegame/MissionSite.cpp
   Savegame/MovingTarget.cpp
   Savegame/Node.cpp

@@ -795,7 +795,7 @@ void Game::resetTouchButtonFlags()
 
 /**
  * Sets the pointer to the Map Editor to save it for multiple states
- * param mapEditor Pointer to the new Map Editor
+ * @param mapEditor Pointer to the new Map Editor
  */
 void Game::setMapEditor(MapEditor *mapEditor)
 {

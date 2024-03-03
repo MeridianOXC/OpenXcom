@@ -28,13 +28,14 @@
 #include "../Interface/TextList.h"
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
+#include "../Menu/FileBrowserState.h"
 #include "../Menu/MapEditorMenuState.h"
 #include "../Mod/Mod.h"
+#include "../Savegame/MapEditorSave.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "AbandonGameState.h"
 #include "MapEditorInfoState.h"
-#include "MapEditorSaveAsState.h"
 #include "OptionsVideoState.h"
 #include "OptionsGeoscapeState.h"
 #include "OptionsBattlescapeState.h"
@@ -47,7 +48,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param parent Pointer to the map editor menu
  */
-MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin) : _origin(origin), _resetEditorState(false)
+MapEditorOptionsState::MapEditorOptionsState(OptionsOrigin origin, State *parent) : _origin(origin), _parent(parent), _resetEditorState(false)
 {
     _screen = false;
 
@@ -202,13 +203,14 @@ void MapEditorOptionsState::btnLoadClick(Action *)
  */
 void MapEditorOptionsState::btnSaveClick(Action *)
 {
-	if (_game->getMapEditor()->getMapName().size() == 0)
+	if (_game->getMapEditor()->getMapEditorSave()->getCurrentMapFile()->name == "")
 	{
-		_game->pushState(new MapEditorSaveAsState());
+		_game->popState();
+		_game->pushState(new FileBrowserState(_parent, true));
 	}
 	else
 	{
-    	_game->getMapEditor()->saveMapFile(_game->getMapEditor()->getMapName());
+    	_game->getMapEditor()->saveMapFile();
 	}
 }
 

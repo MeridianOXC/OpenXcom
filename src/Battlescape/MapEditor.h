@@ -102,15 +102,19 @@ struct NodeEdit
     }
 };
 
+struct MapFileInfo;
+
 class Action;
 class Node;
 class SavedBattleGame;
+class MapEditorSave;
 class Tile;
 
 class MapEditor
 {
 private :
     SavedBattleGame *_save;
+    MapEditorSave *_mapSave;
     std::vector<std::vector<TileEdit>> _tileRegister;
     std::vector<TileEdit> _proposedTileEdits, _clipboardTileEdits;
     std::vector<std::vector<NodeEdit>> _nodeRegister;
@@ -118,7 +122,6 @@ private :
     int _selectedMapDataID, _tileRegisterPosition, _nodeRegisterPosition;
     std::vector< Tile* > _selectedTiles;
     std::vector< Node* > _selectedNodes;
-    std::string _mapname;
     TilePart _selectedObject;
     std::map<int, bool> _activeNodes;
     int _numberOfActiveNodes;
@@ -188,12 +191,12 @@ public :
     bool isNodeOverIDLimit(Node *node);
     /// Sets the SavedBattleGame
     void setSave(SavedBattleGame *save);
-    /// Sets the name of the map we're editing
-    void setMapName(std::string mapname);
-    /// Gets the name of the map we're editing
-    std::string getMapName();
+    /// Gets the MapEditorSave
+    MapEditorSave *getMapEditorSave();
+    /// Creates the structure for handling map file information from a file path
+    MapFileInfo createMapFileInfo(std::string fullPath, std::string terrainName = "");
     /// Saves the map file
-    void saveMapFile(std::string filename);
+    void saveMapFile();
     /// Gets any error messages set by the editor
     std::string getMessage();
 

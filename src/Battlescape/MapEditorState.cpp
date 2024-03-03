@@ -48,15 +48,16 @@
 #include "../Interface/Cursor.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
+#include "../Menu/FileBrowserState.h"
 #include "../Menu/MapEditorMenuState.h"
 #include "../Menu/MapEditorFindTileState.h"
 #include "../Menu/MapEditorFindNodeState.h"
 #include "../Menu/MapEditorInfoState.h"
 #include "../Menu/MapEditorOptionsState.h"
-#include "../Menu/MapEditorSaveAsState.h"
 #include "../Mod/MapData.h"
 #include "../Mod/MapDataSet.h"
 #include "../Mod/Mod.h"
+#include "../Savegame/MapEditorSave.h"
 #include "../Savegame/Node.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
@@ -863,7 +864,7 @@ void MapEditorState::init()
 			if (validatedPosition != node->getPosition())
 			{
 				mapHadOutOfBoundNodes = true;
-				Log(LOG_WARNING) << "A node from " << _editor->getMapName() << ".RMP was out-of bounds at " << node->getPosition() << ", moving to " << validatedPosition;
+				Log(LOG_WARNING) << "A node from " << _editor->getMapEditorSave()->getCurrentMapFile()->name << ".RMP was out-of bounds at " << node->getPosition() << ", moving to " << validatedPosition;
 				node->setPosition(validatedPosition);
 			}
 		}
@@ -1033,6 +1034,15 @@ void MapEditorState::think()
 			_btnNodePaste->offset(232 - 8, 0, 255, 1);
 			_btnNodePaste->setColor(232); // change to default color
 		}
+	}
+
+	if (_fileName != "")
+	{
+		MapFileInfo mapFileInfo = _editor->createMapFileInfo(_fileName);
+		_editor->getMapEditorSave()->addMap(mapFileInfo); // should this handling just be moved into MapEditor?
+		_editor->saveMapFile();
+
+		_fileName = "";
 	}
 
 	updateDebugText();
@@ -1690,7 +1700,7 @@ void MapEditorState::btnOptionsClick(Action *action)
 		return;
 	}
 
-	_game->pushState(new MapEditorOptionsState(OPT_MAPEDITOR));
+	_game->pushState(new MapEditorOptionsState(OPT_MAPEDITOR, this));
 }
 
 /**
@@ -1708,7 +1718,7 @@ void MapEditorState::btnSelectMusicTrackClick(Action *)
  */
 void MapEditorState::btnSaveClick(Action *action)
 {
-	_editor->saveMapFile(_editor->getMapName());
+	_editor->saveMapFile();
 }
 
 /**
@@ -2290,8 +2300,8 @@ inline void MapEditorState::handle(Action *action)
 				}
 				else if (key == SDLK_s && ctrlPressed) // change s to options
 				{
-					if (shiftPressed || _editor->getMapName().size() == 0)
-						_game->pushState(new MapEditorSaveAsState());
+					if (shiftPressed)
+						_game->pushState(new FileBrowserState(this, true, _editor->getMapEditorSave()->getCurrentMapFile()->name));
 					else
 						btnSaveClick(action);
 				}

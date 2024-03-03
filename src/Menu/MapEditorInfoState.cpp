@@ -28,6 +28,7 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextList.h"
 #include "../Battlescape/MapEditor.h"
+#include "../Savegame/MapEditorSave.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Mod/Mod.h"
@@ -83,7 +84,11 @@ MapEditorInfoState::MapEditorInfoState()
 	_btnReturn->onKeyboardPress((ActionHandler)&MapEditorInfoState::btnReturnClick, Options::keyCancel);
 
     std::ostringstream text;
-    std::string name = _game->getMapEditor()->getMapName().size() == 0 ? std::string(tr("STR_EMPTY_MAP_NAME")) : _game->getMapEditor()->getMapName();
+    std::string name = _game->getMapEditor()->getMapEditorSave()->getCurrentMapFile()->name; 
+    if (name == "")
+    {
+        name = std::string(tr("STR_EMPTY_MAP_NAME"));
+    }
     text << tr("STR_EDITOR_MAP_NAME").arg(name);
     _txtName->setText(text.str());
 
@@ -98,7 +103,7 @@ MapEditorInfoState::MapEditorInfoState()
     _lstTerrain->setSelectable(false);
 	_lstTerrain->setBackground(_window);
     _lstTerrain->clearList();
-    for (const auto &i : *_game->getSavedGame()->getSavedBattle()->getMapDataSets())
+    for (const auto &i : *_game->getSavedGame()->getSavedBattle()->getMapDataSets()) // TODO: just pull data from the CurrentMapFile?
     {
         _lstTerrain->addRow(1, i->getName().c_str());
     }

@@ -37,6 +37,7 @@
 #include "../Interface/Frame.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleInterface.h"
+#include "../Savegame/MapEditorSave.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 
@@ -79,6 +80,8 @@ struct FileSorter
  */
 FileBrowserState::FileBrowserState(State *parent, bool saveMode, std::string fileName) : _parent(parent), _saveMode(saveMode)
 {
+	_screen = false; // TODO: need to check how to rescale properly after closing this window
+
 	if (_game->getSavedGame() && _game->getSavedGame()->getSavedBattle() && Options::maximizeInfoScreens)
 	{
 		Options::baseXResolution = Screen::ORIGINAL_WIDTH;
@@ -700,6 +703,8 @@ void FileBrowserState::btnPasteClick(Action *action)
 		{
 			CrossPlatform::copyFile(_directoryToCopyFrom + fileToCopy, _currentDirectory + fileToCopy);
 		}
+
+		// TODO: if we're moving a .MAP or .RMP file, update the saved data we keep on where the files are and what resources they use
 	}
 
 	// if moving files, they are no longer in the copied-from location, so clear that data
@@ -756,7 +761,10 @@ void FileBrowserState::btnCloseClick(Action *action)
  */
 void FileBrowserState::btnOkClick(Action *)
 {
-	_parent->setFileName("");
+	std::string filePath = "";
+	if (_saveMode)
+		filePath = _currentDirectory + _edtQuickSearch->getText();
+	_parent->setFileName(filePath);
     _game->popState();
 }
 
