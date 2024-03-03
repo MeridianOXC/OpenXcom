@@ -193,8 +193,11 @@ public :
     void setSave(SavedBattleGame *save);
     /// Gets the MapEditorSave
     MapEditorSave *getMapEditorSave();
-    /// Creates the structure for handling map file information from a file path
-    MapFileInfo createMapFileInfo(std::string fullPath, std::string terrainName = "");
+    /// Updates the file data on the current map
+    void updateMapFileInfo(std::string mapName, std::string baseDirectory, std::string terrainName);
+    void updateMapFileInfo(std::string fullPath, std::string terrainName = "");
+    /// Checks whether a directory has been set for the current map file
+    bool currentMapFileNeedsDirectory();
     /// Saves the map file
     void saveMapFile();
     /// Gets any error messages set by the editor

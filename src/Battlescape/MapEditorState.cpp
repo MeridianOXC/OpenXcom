@@ -1036,10 +1036,10 @@ void MapEditorState::think()
 		}
 	}
 
+	// passed the name of a file (including path) from the FileBrowser: time to save!
 	if (_fileName != "")
 	{
-		MapFileInfo mapFileInfo = _editor->createMapFileInfo(_fileName);
-		_editor->getMapEditorSave()->addMap(mapFileInfo); // should this handling just be moved into MapEditor?
+		_editor->updateMapFileInfo(_fileName);
 		_editor->saveMapFile();
 
 		_fileName = "";
@@ -1718,7 +1718,14 @@ void MapEditorState::btnSelectMusicTrackClick(Action *)
  */
 void MapEditorState::btnSaveClick(Action *action)
 {
-	_editor->saveMapFile();
+	if (_editor->currentMapFileNeedsDirectory())
+	{
+		_game->pushState(new FileBrowserState(this, true, _editor->getMapEditorSave()->getCurrentMapFile()->name));
+	}
+	else
+	{
+		_editor->saveMapFile();
+	}
 }
 
 /**

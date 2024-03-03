@@ -22,7 +22,6 @@
 #include "../Engine/CrossPlatform.h"
 #include "../Engine/Exception.h"
 #include "../Engine/Options.h"
-#include "../Engine/Logger.h"
 
 namespace OpenXcom
 {
@@ -30,8 +29,8 @@ namespace OpenXcom
 const std::string MapEditorSave::AUTOSAVE_MAPEDITOR = "_auto_mapeditor_.asav",
 				  MapEditorSave::MAINSAVE_MAPEDITOR = "mapeditor.sav";
 
-const std::string MapEditorSave::MAP_DIRECTORY = "MAPS/",
-				  MapEditorSave::RMP_DIRECTORY = "ROUTES/";
+const std::string MapEditorSave::MAP_DIRECTORY = "/MAPS",
+				  MapEditorSave::RMP_DIRECTORY = "/ROUTES";
 
 /**
  * Initializes the class for storing information for saving or editing maps
@@ -39,9 +38,6 @@ const std::string MapEditorSave::MAP_DIRECTORY = "MAPS/",
 MapEditorSave::MapEditorSave()
 {
     _savedMapFiles.clear();
-    Log(LOG_INFO) << _currentMapFile.name;
-    Log(LOG_INFO) << _currentMapFile.baseDirectory;
-    Log(LOG_INFO) << _currentMapFile.terrain;
 }
 
 /**
@@ -118,7 +114,16 @@ void MapEditorSave::save()
 }
 
 /**
- * Adds the data on a new edited map file to the list
+ * Gets the data for the current map being edited
+ * @return pointer to the current map info
+ */
+MapFileInfo *MapEditorSave::getCurrentMapFile()
+{
+    return &_currentMapFile;
+}
+
+/**
+ * Adds the data on a newly saved map file to the list
  * @param fileInfo information on the new edited map file
  */
 void MapEditorSave::addMap(MapFileInfo fileInfo)
@@ -135,15 +140,6 @@ void MapEditorSave::addMap(MapFileInfo fileInfo)
 }
 
 /**
- * Gets the data for the current map being edited
- * @return pointer to the current map info
- */
-MapFileInfo *MapEditorSave::getCurrentMapFile()
-{
-    return &_currentMapFile;
-}
-
-/**
  * Search for a specific entry in the list of edited map files
  * @return copy of the data for the map file
  */
@@ -155,6 +151,7 @@ MapFileInfo MapEditorSave::getMapFileInfo(std::string mapDirectory, std::string 
     // TODO: more efficient search?
     for (size_t i = 0; i != _savedMapFiles.size(); ++i)
     {
+        // TODO: break points in order: baseDirectory, name, terrain, mcds, mods
         if (mapName == _savedMapFiles.at(i).name && mapDirectory == _savedMapFiles.at(i).baseDirectory)
         {
             fileInfo = _savedMapFiles.at(i);

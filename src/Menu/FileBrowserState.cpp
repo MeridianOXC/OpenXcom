@@ -325,7 +325,9 @@ void FileBrowserState::populateBrowserList(std::string directory, bool forceRefr
 	for (auto file : _fileData)
 	{
 		auto fileName = file.name;
-		if (!searchString.empty())
+
+		// Filter browser window by typed file name (only in open mode)
+		if (!searchString.empty() && !_saveMode)
 		{
 			std::string uppercaseName = fileName;
 			Unicode::upperCase(uppercaseName);
@@ -443,6 +445,7 @@ void FileBrowserState::edtQuickSearchFocus(Action *action)
  */
 void FileBrowserState::edtQuickSearchApply(Action *action)
 {
+	_edtQuickSearch->setText(CrossPlatform::sanitizeFilename(_edtQuickSearch->getText()));
     populateBrowserList(_currentDirectory);
 }
 
@@ -554,6 +557,10 @@ void FileBrowserState::lstBrowserClick(Action *action)
 				{
 					std::string directory = _currentDirectory + clickedFile.name + "/";
 					populateBrowserList(directory);
+				}
+				else if (_saveMode)
+				{
+					_edtQuickSearch->setText(clickedFile.name); // TODO: be a little smarter about not selecting multiple files for save mode?
 				}
 			}
 
@@ -763,7 +770,13 @@ void FileBrowserState::btnOkClick(Action *)
 {
 	std::string filePath = "";
 	if (_saveMode)
+	{
+		if(_edtQuickSearch->getText().empty())
+		{
+			return;
+		}
 		filePath = _currentDirectory + _edtQuickSearch->getText();
+	}
 	_parent->setFileName(filePath);
     _game->popState();
 }

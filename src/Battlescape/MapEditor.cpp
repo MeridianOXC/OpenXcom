@@ -55,6 +55,7 @@ MapEditor::MapEditor(SavedBattleGame *save) : _save(save),
  */
 MapEditor::~MapEditor()
 {
+    _mapSave->save();
     delete _mapSave;
 }
 
@@ -820,16 +821,35 @@ MapEditorSave *MapEditor::getMapEditorSave()
 }
 
 /**
- * Creates the structure for handling map file information from a file path
- * Automatically checks if save directory is in MAPS or ROUTES or not
- * @param fullPath String of the full directory path to the file
- * @param terrainName String of the terrain for the map (defaults to "" if omitted)
+ * Updates the file data on the current map
+ * @param mapName changes the map name
+ * @param baseDirectory where the file is located (parent directory for MAPS/ROUTES)
  */
-MapFileInfo MapEditor::createMapFileInfo(std::string fullPath, std::string terrainName)
+void MapEditor::updateMapFileInfo(std::string mapName, std::string baseDirectory, std::string terrainName)
 {
-    Log(LOG_INFO) << "MapEditor::createMapFileInfo got passed fullPath: " + fullPath;
+    _mapSave->getCurrentMapFile()->name = mapName;
+    _mapSave->getCurrentMapFile()->baseDirectory = baseDirectory;
+    _mapSave->getCurrentMapFile()->terrain = terrainName;
+    _mapSave->getCurrentMapFile()->mods.clear();
+    for (auto i : Options::getActiveMods())
+    {
+        _mapSave->getCurrentMapFile()->mods.push_back(i->getName());
+    }
+    _mapSave->getCurrentMapFile()->mcds.clear();
+    for (auto i : *_save->getMapDataSets())
+    {
+        _mapSave->getCurrentMapFile()->mcds.push_back(i->getName());
+    }
+}
 
-    MapFileInfo mapFileInfo;
+/**
+ * Overload to update file data just from a full directory path, optional terrainName
+ * @param fullPath directory to the file
+ * @param terrainName name of the terrain (defaults to "")
+ */
+void MapEditor::updateMapFileInfo(std::string fullPath, std::string terrainName)
+{
+    Log(LOG_INFO) << "MapEditor::updateMapFileInfo got passed fullPath: " + fullPath;
 
     // Get just the file name
     std::string fileName = CrossPlatform::noExt(CrossPlatform::baseFilename(fullPath));
@@ -846,7 +866,7 @@ MapFileInfo MapEditor::createMapFileInfo(std::string fullPath, std::string terra
     
     Log(LOG_INFO) << "> Found file path: " + filePath;
 
-    // Check if directory passed ends in MAPS or ROUTES, remove if so
+    // Check if directory passed ends in /MAPS or /ROUTES, remove if so
     pos = filePath.rfind(MapEditorSave::MAP_DIRECTORY);
     if (pos != std::string::npos)
     {
@@ -857,24 +877,29 @@ MapFileInfo MapEditor::createMapFileInfo(std::string fullPath, std::string terra
     {
         filePath = filePath.substr(0, filePath.size() - MapEditorSave::RMP_DIRECTORY.size());
     }
+    if (!CrossPlatform::folderExists(filePath))
+    {
+        filePath = "";
+    }
     
     Log(LOG_INFO) << "> After removing MAPS/ROUTES: " + filePath;
 
-    mapFileInfo.name = fileName;
-    mapFileInfo.baseDirectory = filePath;
-    mapFileInfo.mods.clear();
-    for (auto i : Options::getActiveMods())
+    if(terrainName == "")
     {
-        mapFileInfo.mods.push_back(i->getName());
-    }
-    mapFileInfo.terrain = terrainName;
-    mapFileInfo.mcds.clear();
-    for (auto i : *_save->getMapDataSets())
-    {
-        mapFileInfo.mcds.push_back(i->getName());
+        terrainName = _mapSave->getCurrentMapFile()->terrain;
     }
 
-    return mapFileInfo;
+    updateMapFileInfo(fileName, filePath, terrainName);
+}
+
+/**
+ * Checks whether a directory has been set for the current map file
+ * Used for determining if bringing up the File Browser is necesary when saving
+ * @return true if the user needs to pick a directory for the map file
+ */
+bool MapEditor::currentMapFileNeedsDirectory()
+{
+    return !CrossPlatform::folderExists(_mapSave->getCurrentMapFile()->baseDirectory);
 }
 
 /**
@@ -885,7 +910,7 @@ void MapEditor::saveMapFile()
 {
     std::string message = "STR_MAP_EDITOR_SAVED_SUCCESSFULLY";
     std::string filename = _mapSave->getCurrentMapFile()->name;
-    std::string filepath = CrossPlatform::convertPath(_mapSave->getCurrentMapFile()->baseDirectory);
+    std::string filepath = _mapSave->getCurrentMapFile()->baseDirectory;
     std::string logInfo = "\n    mapDataSets:\n";
     for (auto i : *_save->getMapDataSets())
     {
@@ -903,6 +928,7 @@ void MapEditor::saveMapFile()
     {
         fullpath = fullpath + MapEditorSave::MAP_DIRECTORY;
     }
+    fullpath = CrossPlatform::convertPath(fullpath);
     fullpath = fullpath + filename + ".MAP"; //TODO add extensions to MapEditorSave's consts?
     Log(LOG_INFO) << "Saving edited map file " + fullpath;
 
@@ -956,6 +982,7 @@ void MapEditor::saveMapFile()
     {
         fullpath = fullpath + MapEditorSave::RMP_DIRECTORY;
     }
+    fullpath = CrossPlatform::convertPath(fullpath);
     fullpath = fullpath + filename + ".RMP"; //TODO add extensions to MapEditorSave's consts?
     Log(LOG_INFO) << "Saving edited route file " + fullpath;
 
@@ -1032,6 +1059,7 @@ void MapEditor::saveMapFile()
 		throw Exception("Failed to save " + fullpath);
 	}
 
+    _mapSave->addMap(*_mapSave->getCurrentMapFile());
     _mapSave->save();
 
     _messages.push_back(message);

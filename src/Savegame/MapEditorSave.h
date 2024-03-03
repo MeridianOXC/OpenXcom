@@ -50,10 +50,10 @@ public:
     void load();
     /// Saves the data on edited map files to the user directory
     void save();
-    /// Adds the data on a new edited map file to the list
-    void addMap(MapFileInfo fileInfo);
     /// Gets the data for the current map being edited
     MapFileInfo *getCurrentMapFile();
+    /// Adds the data on a new edited map file to the list
+    void addMap(MapFileInfo fileInfo);
     /// Search for a specific entry in the list of edited map files
     MapFileInfo getMapFileInfo(std::string mapDirectory, std::string mapName);
 

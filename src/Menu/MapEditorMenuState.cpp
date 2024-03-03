@@ -556,8 +556,6 @@ void MapEditorMenuState::startEditor()
 
     if(_fileName == "")
     {
-        _fileName = Options::getMasterUserFolder();
-
         if (block)
         {
             _fileName = _fileName + block->getName();
@@ -567,8 +565,7 @@ void MapEditorMenuState::startEditor()
             _fileName = _fileName + _newMapName;
         }
     }
-    MapFileInfo fileInfo = editor->createMapFileInfo(_fileName, terrain->getName());
-    editor->getMapEditorSave()->addMap(fileInfo);
+    editor->updateMapFileInfo(_fileName, terrain->getName());
     _fileName = "";
 
 	MapEditorState *mapEditorState = new MapEditorState(editor);

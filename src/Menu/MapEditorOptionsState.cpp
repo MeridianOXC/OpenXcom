@@ -203,10 +203,10 @@ void MapEditorOptionsState::btnLoadClick(Action *)
  */
 void MapEditorOptionsState::btnSaveClick(Action *)
 {
-	if (_game->getMapEditor()->getMapEditorSave()->getCurrentMapFile()->name == "")
+	_game->popState();
+	if (_game->getMapEditor()->currentMapFileNeedsDirectory())
 	{
-		_game->popState();
-		_game->pushState(new FileBrowserState(_parent, true));
+		_game->pushState(new FileBrowserState(_parent, true, _game->getMapEditor()->getMapEditorSave()->getCurrentMapFile()->name));
 	}
 	else
 	{
