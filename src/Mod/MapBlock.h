@@ -65,6 +65,7 @@ private:
 	std::vector<ExtendedItems> _extendedItems;
 public:
 	MapBlock(const std::string &name);
+	MapBlock(const std::string &name, int size_x, int size_y, int size_z);
 	~MapBlock();
 	/// Loads the map block from YAML.
 	void load(const YAML::Node& node);

@@ -777,6 +777,17 @@ void FileBrowserState::btnOkClick(Action *)
 		}
 		filePath = _currentDirectory + _edtQuickSearch->getText();
 	}
+	else
+	{
+		for (auto file : _fileData)
+		{
+			if (file.selected)
+			{
+				filePath = _currentDirectory + file.name;
+				break;
+			}
+		}
+	}
 	_parent->setFileName(filePath);
     _game->popState();
 }

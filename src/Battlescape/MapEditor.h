@@ -193,6 +193,8 @@ public :
     void setSave(SavedBattleGame *save);
     /// Gets the MapEditorSave
     MapEditorSave *getMapEditorSave();
+    /// Searches the MapEditorSave for entries containing a specific file path
+    size_t searchForMapFileInfo(std::string filePath, std::vector<std::string> *terrainNames);
     /// Updates the file data on the current map
     void updateMapFileInfo(std::string mapName, std::string baseDirectory, std::string terrainName);
     void updateMapFileInfo(std::string fullPath, std::string terrainName = "");
@@ -203,6 +205,12 @@ public :
     /// Gets any error messages set by the editor
     std::string getMessage();
 
+    /// Helper function to get just the file name from a path
+    std::string getFileName(std::string fullPath);
+    /// Helper function to get to the base directory for map files
+    std::string getBaseDirectory(std::string fullPath);
+    /// Helper function to get the full directory of a MAP/RMP file
+    std::string getMAPorRMPDirectory(std::string baseDirectory, std::string mapName, bool rmpMode);
 };
 
 }

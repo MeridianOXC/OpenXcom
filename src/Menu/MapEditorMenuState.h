@@ -36,7 +36,7 @@ class MapEditorMenuState : public State
 {
 private :
 	Window *_window;
-	Text *_txtTitle, *_txtSearch, *_txtSelectedMap, *_txtSelectedMapTerrain;
+	Text *_txtTitle, *_txtSearch, *_txtSelectedMap, *_txtSelectedMapTerrain, *_txtPickTerrainMode;
     TextButton *_filterTerrain, *_filterCraft, *_filterUFOs, *_mapFilter;
     TextButton *_btnBrowser;
 	TextButton *_btnOk, *_btnCancel, *_btnNew;
@@ -44,8 +44,9 @@ private :
     TextList *_lstMaps;
     Frame *_frameLeft, *_frameRight;
     std::vector< std::pair<std::string, std::string> > _mapsList;
+    std::vector<std::string> _terrainsList;
     int _selectedMap;
-    bool _newMapMode;
+    bool _pickTerrainMode;
     std::string _newMapName;
     int _newMapX, _newMapY, _newMapZ;
 
@@ -56,6 +57,8 @@ public :
     ~MapEditorMenuState();
     /// Initializes the data in the Map Editor Menu
     void init() override;
+	/// Checks for information passed from the FileBrowser.
+	void think() override;
     /// Populates the list of available maps
     void populateMapsList();
     /// Populates the list of available terrains

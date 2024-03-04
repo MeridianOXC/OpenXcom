@@ -821,6 +821,20 @@ MapEditorSave *MapEditor::getMapEditorSave()
 }
 
 /**
+ * Searches the MapEditorSave for entries containing a specific file path
+ * @param filePath path to the file
+ * @param terrainNames pointer to a vector to fill with entries' terrains when found
+ * @return number of entries found
+ */
+size_t MapEditor::searchForMapFileInfo(std::string filePath, std::vector<std::string> *terrainNames)
+{
+    std::string baseDirectory = getBaseDirectory(filePath);
+    std::string mapName = CrossPlatform::noExt(CrossPlatform::baseFilename(filePath));
+    
+    return _mapSave->getMatchingTerrains(baseDirectory, mapName, terrainNames);
+}
+
+/**
  * Updates the file data on the current map
  * @param mapName changes the map name
  * @param baseDirectory where the file is located (parent directory for MAPS/ROUTES)
@@ -852,37 +866,12 @@ void MapEditor::updateMapFileInfo(std::string fullPath, std::string terrainName)
     Log(LOG_INFO) << "MapEditor::updateMapFileInfo got passed fullPath: " + fullPath;
 
     // Get just the file name
-    std::string fileName = CrossPlatform::noExt(CrossPlatform::baseFilename(fullPath));
+    std::string fileName = getFileName(fullPath);
     
     Log(LOG_INFO) << "> Found file name: " + fileName;
 
     // Get the directory without the file name
-	std::string filePath = fullPath;
-    size_t pos = fullPath.find_last_of('/');
-    if (pos != std::string::npos)
-    {
-        filePath = filePath.substr(0, pos);
-    }
-    
-    Log(LOG_INFO) << "> Found file path: " + filePath;
-
-    // Check if directory passed ends in /MAPS or /ROUTES, remove if so
-    pos = filePath.rfind(MapEditorSave::MAP_DIRECTORY);
-    if (pos != std::string::npos)
-    {
-        filePath = filePath.substr(0, filePath.size() - MapEditorSave::MAP_DIRECTORY.size());
-    }
-    pos = filePath.rfind(MapEditorSave::RMP_DIRECTORY);
-    if (pos != std::string::npos)
-    {
-        filePath = filePath.substr(0, filePath.size() - MapEditorSave::RMP_DIRECTORY.size());
-    }
-    if (!CrossPlatform::folderExists(filePath))
-    {
-        filePath = "";
-    }
-    
-    Log(LOG_INFO) << "> After removing MAPS/ROUTES: " + filePath;
+	std::string filePath = getBaseDirectory(fullPath);
 
     if(terrainName == "")
     {
@@ -1080,6 +1069,78 @@ std::string MapEditor::getMessage()
     }
 
     return message;
+}
+
+
+/**
+ * Helper function to get just the file name from a path
+ * @param fullPath the full file path
+ * @return just the file name without extension
+ */
+std::string MapEditor::getFileName(std::string fullPath)
+{
+    return CrossPlatform::noExt(CrossPlatform::baseFilename(fullPath));
+}
+
+/**
+ * Helper function to get to the base directory for map files
+ * @param fullPath the path to check
+ * @return the base directory without /MAPS or /ROUTES (empty if path doesn't exist)
+ */
+std::string MapEditor::getBaseDirectory(std::string fullPath)
+{
+  	std::string filePath = fullPath;
+    size_t pos = fullPath.find_last_of('/');
+    if (pos != std::string::npos)
+    {
+        filePath = filePath.substr(0, pos);
+    }
+    
+    Log(LOG_INFO) << "> Found file path: " + filePath;
+
+    // Check if directory passed ends in /MAPS or /ROUTES, remove if so
+    pos = filePath.rfind(MapEditorSave::MAP_DIRECTORY);
+    if (pos != std::string::npos)
+    {
+        filePath = filePath.substr(0, filePath.size() - MapEditorSave::MAP_DIRECTORY.size());
+    }
+    pos = filePath.rfind(MapEditorSave::RMP_DIRECTORY);
+    if (pos != std::string::npos)
+    {
+        filePath = filePath.substr(0, filePath.size() - MapEditorSave::RMP_DIRECTORY.size());
+    }
+    if (!CrossPlatform::folderExists(filePath))
+    {
+        filePath = "";
+    } 
+    
+    Log(LOG_INFO) << "> After removing MAPS/ROUTES: " + filePath;
+
+    return filePath; 
+}
+
+/**
+ * Helper function to get the full directory of a MAP/RMP file
+ * @param baseDirectory the folder containing the MAP or /MAPS, RMP or /ROUTES
+ * @param mapName the name of the map without the extension
+ * @return the absolute path to the file
+ */
+std::string MapEditor::getMAPorRMPDirectory(std::string baseDirectory, std::string mapName, bool rmpMode)
+{
+    std::string fullPath = "";
+    std::string folder = rmpMode ? MapEditorSave::RMP_DIRECTORY : MapEditorSave::MAP_DIRECTORY;
+    std::string extension = rmpMode ? ".MAP" : ".RMP";
+
+    if (CrossPlatform::fileExists(baseDirectory + mapName + extension))
+    {
+        fullPath = baseDirectory + mapName + extension;
+    }
+    else if (CrossPlatform::fileExists(baseDirectory + folder + mapName + extension))
+    {
+        fullPath = baseDirectory + folder + mapName + extension;
+    }
+
+    return fullPath;
 }
 
 }

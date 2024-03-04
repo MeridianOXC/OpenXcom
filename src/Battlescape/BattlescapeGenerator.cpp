@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <sstream>
 #include "BattlescapeGenerator.h"
+#include "MapEditor.h"
 #include "TileEngine.h"
 #include "Inventory.h"
 #include "AIModule.h"
@@ -39,6 +40,7 @@
 #include "../Savegame/MissionSite.h"
 #include "../Savegame/AlienBase.h"
 #include "../Savegame/EquipmentLayoutItem.h"
+#include "../Engine/CrossPlatform.h"
 #include "../Engine/Game.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/Options.h"
@@ -2062,6 +2064,17 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 	std::string filename = "MAPS/" + mapblock->getName() + ".MAP";
 	unsigned int terrainObjectID;
 
+	// A little filename editing for loading a MAP direct from file instead of from mod
+	MapEditor *editor = _game->getMapEditor();
+	if (editor)
+	{
+		std::string baseDirectory = editor->getBaseDirectory(mapblock->getName());
+		if (!baseDirectory.empty())
+		{
+			filename = editor->getMAPorRMPDirectory(baseDirectory, editor->getFileName(mapblock->getName()), false);
+		}
+	}
+
 	// Load file
 	auto mapFile = FileMap::getIStream(filename);
 
@@ -2319,6 +2332,18 @@ void BattlescapeGenerator::loadRMP(MapBlock *mapblock, int xoff, int yoff, int z
 {
 	unsigned char value[24];
 	std::string filename = "ROUTES/" + mapblock->getName() +".RMP";
+
+	// A little filename editing for loading a MAP direct from file instead of from mod
+	MapEditor *editor = _game->getMapEditor();
+	if (editor)
+	{
+		std::string baseDirectory = editor->getBaseDirectory(mapblock->getName());
+		if (!baseDirectory.empty())
+		{
+			filename = editor->getMAPorRMPDirectory(baseDirectory, editor->getFileName(mapblock->getName()), true);
+		}
+	}
+
 	// Load file
 	auto mapFile = FileMap::getIStream(filename);
 
@@ -4794,16 +4819,25 @@ void BattlescapeGenerator::setMusic(const AlienDeployment* ruleDeploy, bool next
  * Creates a mini-battle-save for editing map files.
  * @param block Pointer to the map block to edit.
  */
-void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
+void BattlescapeGenerator::loadMapForEditing(MapBlock *block, std::string filePath)
 {
 	// Load in the existing map block if we're editing one
-	if (block)
+	if (block || !filePath.empty())
 	{
+		std::string filename;
+		if (!filePath.empty())
+		{
+			filename = filePath;
+		}
+		else
+		{
+			filename = "MAPS/" + block->getName() + ".MAP";
+		}
+
 		// Since this mapblock might not have been loaded before, the size might be wrong
 		// We check the size defined in the file instead since we need to set the 'battlescape' size
 		int sizex, sizey, sizez;
 		char size[3];
-		std::string filename = "MAPS/" + block->getName() + ".MAP";
 
 		// Load file
 		auto mapFile = FileMap::getIStream(filename);
@@ -4824,8 +4858,18 @@ void BattlescapeGenerator::loadMapForEditing(MapBlock *block)
 			_save->getMapDataSets()->push_back(i);
 		}
 
+		if (!filePath.empty())
+		{
+			block = new MapBlock(filePath, sizex, sizey, sizez);
+		}
+
 		loadMAP(block, 0, 0, 0, _terrain, 0, true);
 		loadRMP(block, 0, 0, 0, 0, false);
+
+		if (!filePath.empty())
+		{
+			delete block;
+		}
 	}
 	else
 	{

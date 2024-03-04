@@ -56,6 +56,8 @@ public:
     void addMap(MapFileInfo fileInfo);
     /// Search for a specific entry in the list of edited map files
     MapFileInfo getMapFileInfo(std::string mapDirectory, std::string mapName);
+    /// Search for entries matching the current map file and return the terrains for those entries
+    size_t getMatchingTerrains(std::string baseDirectory, std::string mapName, std::vector<std::string> *terrainNames);
 
 private:
     std::vector<MapFileInfo> _savedMapFiles;

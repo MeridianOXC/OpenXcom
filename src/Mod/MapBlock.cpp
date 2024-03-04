@@ -89,6 +89,11 @@ MapBlock::MapBlock(const std::string &name): _name(name), _size_x(10), _size_y(1
 	_groups.push_back(0);
 }
 
+MapBlock::MapBlock(const std::string &name, int size_x, int size_y, int size_z): _name(name), _size_x(size_x), _size_y(size_y), _size_z(size_z)
+{
+	_groups.push_back(0);
+}
+
 /**
  * MapBlock destruction.
  */

@@ -162,4 +162,30 @@ MapFileInfo MapEditorSave::getMapFileInfo(std::string mapDirectory, std::string 
     return fileInfo;
 }
 
+/**
+ * Search for entries matching the given directory + map name and return the terrains for those entries
+ * @param baseDirectory directory containing the map files directly or folder containing /MAPS and /ROUTES
+ * @param mapName name of the map file without the extension
+ * @param terrainNames pointer to a vector to fill with the found terrains
+ * @return number of matching entries found in the saved map file data
+ */
+size_t MapEditorSave::getMatchingTerrains(std::string baseDirectory, std::string mapName, std::vector<std::string> *terrainNames)
+{
+    if (baseDirectory.empty() || mapName.empty())
+        return 0;
+
+    size_t numFound = 0;
+
+    for (auto i : _savedMapFiles)
+    {
+        if (i.baseDirectory == baseDirectory && i.name == mapName)
+        {
+            terrainNames->push_back(i.terrain);
+            ++numFound;
+        }
+    }
+
+    return numFound;
+}
+
 }

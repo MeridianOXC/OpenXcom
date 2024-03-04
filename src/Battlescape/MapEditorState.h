@@ -109,7 +109,7 @@ public:
 	~MapEditorState();
 	/// Initializes the MapEditorState.
 	void init() override;
-	/// Runs the timers.
+	/// Runs the timers, checks for information passed from the FileBrowser.
 	void think() override;
 	/// Handler for moving mouse over the map.
 	void mapOver(Action *action);
