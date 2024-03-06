@@ -426,52 +426,74 @@ set ( c_src
 set_property ( SOURCE ${c_src} APPEND PROPERTY COMPILE_DEFINITIONS MINIZ_NO_STDIO )
 set_property ( SOURCE Engine/Scalers/xbrz.cpp APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-unused\ )
 
+# These file groups do not work with UNITY_BUILD
+set ( skip_unity_src
+    ${mod_src}
+
+    ${sdl_src}
+
+    Engine/Adlib/adlplayer.cpp
+    Engine/Adlib/fmopl.cpp
+    Engine/AdlibMusic.cpp
+
+    Savegame/BattleItem.cpp
+    Savegame/BattleUnit.cpp
+
+    Savegame/SavedGame.cpp
+    Savegame/SavedBattleGame.cpp)
+set_property ( SOURCE ${skip_unity_src} PROPERTY SKIP_UNITY_BUILD_INCLUSION true)
+
 set ( data_install_dir bin )
 if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
   set_property ( SOURCE Engine/Options.cpp APPEND PROPERTY COMPILE_DEFINITIONS _DEBUG )
   set_property ( SOURCE OpenXcom.rc APPEND PROPERTY COMPILE_DEFINITIONS _DEBUG )
 endif ()
+
 if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
   # attempt to limit the executable size
-  set_property ( SOURCE ${cxx_src} APPEND_STRING PROPERTY COMPILE_FLAGS -femit-struct-debug-reduced\ )
+  add_compile_options( $<$<COMPILE_LANGUAGE:CXX>:-femit-struct-debug-reduced>)
 endif ()
+
 if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
   # C++ - only warnings
   # C and C++ warnings
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wall\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wextra\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Winit-self\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wmissing-include-dirs\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wunknown-pragmas\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wmissing-format-attribute\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wredundant-decls\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wformat-security\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wtype-limits\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wempty-body\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wuninitialized\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wignored-qualifiers\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-unused-parameter\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-inline\ )
+  add_compile_options ( -Wall )
+  add_compile_options ( -Wextra )
+  add_compile_options ( -Winit-self )
+  add_compile_options ( -Wmissing-include-dirs )
+  add_compile_options ( -Wunknown-pragmas )
+  add_compile_options ( -Wmissing-format-attribute )
+  add_compile_options ( -Wredundant-decls )
+  add_compile_options ( -Wformat-security )
+  add_compile_options ( -Wtype-limits )
+  add_compile_options ( -Wempty-body )
+  add_compile_options ( -Wuninitialized )
+  add_compile_options ( -Wignored-qualifiers )
+  add_compile_options ( -Wno-unused-parameter )
+  add_compile_options ( -Wno-inline )
+
   if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
+
     # apple clang 11.0 goes crazy with -Wshadow on the yaml-cpp source code
-    set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wshadow\ )
+    add_compile_options ( -Wshadow )
+
     # add warning flags recognized by g++ but not by clang
-    set_property ( SOURCE ${cxx_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wsuggest-override\ )
-    set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wclobbered\ )
-    set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Wlogical-op\ )
+    add_compile_options( $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override> )
+    add_compile_options ( -Wclobbered )
+    add_compile_options ( -Wlogical-op )
   elseif ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
     # add warning flags recognized by clang but not by g++
   endif ()
   if ( FATAL_WARNING )
-    set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Werror\ )
+    add_compile_options ( -Werror )
   endif ()
 endif ()
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -Qunused-arguments\ )
-  set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS -pipe\ )
+  add_compile_options ( -Qunused-arguments )
+  add_compile_options ( -pipe )
   if ( ENABLE_CLANG_ANALYSIS )
-    set_property ( SOURCE ${cxx_src} ${c_src} APPEND_STRING PROPERTY COMPILE_FLAGS --analyze\ )
+    add_compile_options ( --analyze )
   endif ()
 endif ()
 
