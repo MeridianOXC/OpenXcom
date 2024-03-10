@@ -50,18 +50,24 @@ public:
     void load();
     /// Saves the data on edited map files to the user directory
     void save();
+    /// Gets the data for the map we want to load
+    MapFileInfo *getMapFileToLoad();
+    /// Clears the MapFileInfo for the file we want to load
+    void clearMapFileToLoad();
     /// Gets the data for the current map being edited
     MapFileInfo *getCurrentMapFile();
     /// Adds the data on a new edited map file to the list
     void addMap(MapFileInfo fileInfo);
     /// Search for a specific entry in the list of edited map files
     MapFileInfo getMapFileInfo(std::string mapDirectory, std::string mapName);
-    /// Search for entries matching the current map file and return the terrains for those entries
-    size_t getMatchingTerrains(std::string baseDirectory, std::string mapName, std::vector<std::string> *terrainNames);
+    /// Search for entries matching the given directory + map name
+    size_t findMatchingFiles(MapFileInfo *fileInfo);
+    /// Gets the list of entries found by the search
+    std::vector<MapFileInfo> *getMatchedFiles();
 
 private:
-    std::vector<MapFileInfo> _savedMapFiles;
-    MapFileInfo _currentMapFile;
+    std::vector<MapFileInfo> _savedMapFiles, _matchedFiles;
+    MapFileInfo _mapFileToLoad, _currentMapFile;
 
 };
 

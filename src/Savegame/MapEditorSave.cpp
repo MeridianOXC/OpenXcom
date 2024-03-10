@@ -38,6 +38,7 @@ const std::string MapEditorSave::MAP_DIRECTORY = "/MAPS",
 MapEditorSave::MapEditorSave()
 {
     _savedMapFiles.clear();
+    _matchedFiles.clear();
 }
 
 /**
@@ -114,6 +115,24 @@ void MapEditorSave::save()
 }
 
 /**
+ * Gets the data for the map file we want to load
+ * @return pointer to the map info
+ */
+MapFileInfo *MapEditorSave::getMapFileToLoad()
+{
+    return &_mapFileToLoad;
+}
+
+/**
+ * Clears the MapFileInfo for the file we want to load
+ */
+void MapEditorSave::clearMapFileToLoad()
+{
+    MapFileInfo fileInfo;
+    _mapFileToLoad = fileInfo;
+}
+
+/**
  * Gets the data for the current map being edited
  * @return pointer to the current map info
  */
@@ -163,29 +182,45 @@ MapFileInfo MapEditorSave::getMapFileInfo(std::string mapDirectory, std::string 
 }
 
 /**
- * Search for entries matching the given directory + map name and return the terrains for those entries
- * @param baseDirectory directory containing the map files directly or folder containing /MAPS and /ROUTES
- * @param mapName name of the map file without the extension
- * @param terrainNames pointer to a vector to fill with the found terrains
+ * Search for entries matching the given directory + map name
+ * Populates the list of matched files returned by getMatchedFiles
+ * @param fileInfo pointer to the information on the map file we're looking for
  * @return number of matching entries found in the saved map file data
  */
-size_t MapEditorSave::getMatchingTerrains(std::string baseDirectory, std::string mapName, std::vector<std::string> *terrainNames)
+size_t MapEditorSave::findMatchingFiles(MapFileInfo *fileInfo)
 {
-    if (baseDirectory.empty() || mapName.empty())
+    _mapFileToLoad = *fileInfo;
+    _matchedFiles.clear();
+
+    if (fileInfo->baseDirectory.empty() || fileInfo->name.empty())
         return 0;
 
     size_t numFound = 0;
 
     for (auto i : _savedMapFiles)
     {
-        if (i.baseDirectory == baseDirectory && i.name == mapName)
+        if (i.baseDirectory == fileInfo->baseDirectory && i.name == fileInfo->name)
         {
-            terrainNames->push_back(i.terrain);
+            _matchedFiles.push_back(i);
             ++numFound;
         }
     }
 
+    if (numFound == 1)
+    {
+        _mapFileToLoad = _matchedFiles.front();
+    }
+
     return numFound;
+}
+
+/**
+ * Gets the list of entries found by the search
+ * @return pointer to the list of MapFileInfo
+ */
+std::vector<MapFileInfo> *MapEditorSave::getMatchedFiles()
+{
+    return &_matchedFiles;
 }
 
 }

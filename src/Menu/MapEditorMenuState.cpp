@@ -175,6 +175,16 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _pickTerrainMode(fa
 	_lstMaps->setBackground(_window);
     _lstMaps->onMouseClick((ActionHandler)&MapEditorMenuState::lstMapsClick);
 
+    _editor = _game->getMapEditor();
+    if (!_editor)
+    {
+        // we haven't passed it a save yet, so this is **ONLY** to get access to the MapEditorSave data
+        // we'll make the save and pass it to the editor when starting it
+        _editor = new MapEditor(0);
+        _game->setMapEditor(_editor);
+    }
+    _editor->getMapEditorSave()->clearMapFileToLoad();
+
     _terrainsList.clear();
 }
 
@@ -191,15 +201,6 @@ void MapEditorMenuState::init()
 {
 	State::init();
 
-    MapEditor *editor = _game->getMapEditor();
-    if (!editor)
-    {
-        // we haven't passed it a save yet, so this is **ONLY** to get access to the MapEditorSave data
-        // we'll make the save and pass it to the editor when starting it
-        editor = new MapEditor(0);
-        _game->setMapEditor(editor);
-    }
-
     populateMapsList();
 }
 
@@ -207,24 +208,52 @@ void MapEditorMenuState::think()
 {
     State::think();
 
+    // FileBrowser passed a path to a file, try to load it or check if we need to pick a terrain for the map
     if (!_fileName.empty() && !_pickTerrainMode)
     {
+        // Check if we've save this map before and check if it's been saved with multiple different terrains
+        size_t numTerrains = _editor->searchForMapFileInfo(_fileName);
+
         _terrainsList.clear();
+        for (auto i : *_editor->getMapEditorSave()->getMatchedFiles())
+        {
+            _terrainsList.push_back(i.terrain);
+        }
 
-        size_t numTerrains = _game->getMapEditor()->searchForMapFileInfo(_fileName, &_terrainsList);
-
-        // validate whether these terrains currently exist within the loaded mods
+        // validate whether the terrains found during the search currently exist within the loaded mods
         std::vector<std::string> missingTerrains;
         missingTerrains.clear();
         for (std::vector<std::string>::iterator it = _terrainsList.begin(); it != _terrainsList.end(); )
         {
-            RuleTerrain *terrain = _game->getMod()->getTerrain(*it);
+            RuleTerrain *terrain = 0;
 
-            if (!terrain && _game->getMod()->getCraft(*it))
-                terrain = _game->getMod()->getCraft(*it)->getBattlescapeTerrainData();
+            if (_game->getMod()->getUfo(*it))
+            {
+                Log(LOG_INFO) << "Trying to find UFO " << *it;
+                terrain = _game->getMod()->getUfo(*it)->getBattlescapeTerrainData();
+            }
+            else if (_game->getMod()->getCraft(*it))
+            {
+                Log(LOG_INFO) << "Trying to find Craft " << *it;
+                terrain = _game->getMod()->getCraft(*it)->getBattlescapeTerrainData(); 
+            }
+            else
+            {
+                Log(LOG_INFO) << "Trying to find terrain " << *it;
+                terrain = _game->getMod()->getTerrain(*it);
+            }
 
-            if (!terrain && _game->getMod()->getUfo(*it))
-                terrain = _game->getMod()->getUfo(*it)->getBattlescapeTerrainData(); 
+//            RuleTerrain *terrain = _game->getMod()->getTerrain(*it);
+//
+//            if (!terrain && _game->getMod()->getCraft(*it))
+//            {
+//                terrain = _game->getMod()->getCraft(*it)->getBattlescapeTerrainData();
+//            }
+//
+//            if (!terrain && _game->getMod()->getUfo(*it))
+//            {
+//                terrain = _game->getMod()->getUfo(*it)->getBattlescapeTerrainData();
+//            } 
 
             if (!terrain)
             {
@@ -242,9 +271,10 @@ void MapEditorMenuState::think()
            _game->pushState(new ErrorMessageState(tr("STR_MISSING_TERRAINS"), _palette, _game->getMod()->getInterface("mainMenu")->getElement("text")->color, "BACK01.SCR", _game->getMod()->getInterface("mainMenu")->getElement("palette")->color));
         }
 
-        if (numTerrains == 1)
+        if (numTerrains == 1 && missingTerrains.size() == 0)
         {
             // start the editor with that single terrain!
+            startEditor();
         }
         else
         {
@@ -539,8 +569,8 @@ void MapEditorMenuState::btnBrowserClick(Action *action)
 
 /**
  * Handles clicking on the list of maps.
+ * If there's only one map matched, set it as selected
  * @param action Pointer to an action.
- * @param single If there's only one map matched, set it as selected
  */
 void MapEditorMenuState::lstMapsClick(Action *)
 {
@@ -549,6 +579,11 @@ void MapEditorMenuState::lstMapsClick(Action *)
     {
         _txtSelectedMap->setText(_mapsList.at(_selectedMap).first);
         _txtSelectedMapTerrain->setText(_mapsList.at(_selectedMap).second);
+        if (!_pickTerrainMode)
+        {
+            _editor->getMapEditorSave()->getMapFileToLoad()->name = _mapsList.at(_selectedMap).first;
+        }
+        _editor->getMapEditorSave()->getMapFileToLoad()->terrain = _mapsList.at(_selectedMap).second;
         _btnOk->setVisible(true);
     }
     else
@@ -588,75 +623,99 @@ void MapEditorMenuState::startEditor()
     SavedBattleGame *savedBattleGame = new SavedBattleGame(_game->getMod(), _game->getLanguage());
     save->setBattleGame(savedBattleGame);
 
-    MapEditor *editor = _game->getMapEditor();
-    editor->setSave(savedBattleGame);
-    editor->init();
+    _editor->setSave(savedBattleGame);
+    _editor->init();
 
 	BattlescapeGenerator battlescapeGenerator = BattlescapeGenerator(_game);
 
+    // get the name of and a pointer to the terrain we're loading
+    std::string terrainName = _editor->getMapFileToLoadTerrain();
     RuleTerrain *terrain = 0;
-    MapBlock *block = 0;
-    std::string selectedTerrain = _mapsList.at(_selectedMap).second;
 
     // default map loading: map already loaded as part of the current mods or a new map
     if (_terrainsList.size() == 0)
     {
         if (_mapFilter == _filterTerrain)
         {
-            terrain = _game->getMod()->getTerrain(selectedTerrain);
+            terrain = _game->getMod()->getTerrain(terrainName);
         }
         else if (_mapFilter == _filterCraft)
         {
-            terrain = _game->getMod()->getCraft(selectedTerrain)->getBattlescapeTerrainData();
+            terrain = _game->getMod()->getCraft(terrainName)->getBattlescapeTerrainData();
         }
         else if (_mapFilter == _filterUFOs)
         {
-            terrain = _game->getMod()->getUfo(selectedTerrain)->getBattlescapeTerrainData();
+            terrain = _game->getMod()->getUfo(terrainName)->getBattlescapeTerrainData();
         }
     }
-    else
+    else // loading directly from a file
     {
-        terrain = _game->getMod()->getTerrain(selectedTerrain);
+        // does this copying need to happen?
+        //for (auto i : *_editor->getMapEditorSave()->getMatchedFiles())
+        //{
+        //    if (i.terrain == terrainName)
+        //    {
+        //        for (auto j : i->mods)
+        //        {
+        //            _editor->getMapEditorSave()->getMapFileToLoad()->mods.push_back(j);
+        //        }
+        //        for (auto j : i->mcds)
+        //        {
+        //            _editor->getMapEditorSave()->getMapFileToLoad()->mcds.push_back(j);
+        //        }
+        //    }
+        //}
 
-        if (!terrain && _game->getMod()->getCraft(selectedTerrain))
-            terrain = _game->getMod()->getCraft(selectedTerrain)->getBattlescapeTerrainData();
+        if (_game->getMod()->getUfo(terrainName))
+        {
+            terrain = _game->getMod()->getUfo(terrainName)->getBattlescapeTerrainData();
+        }
+        else if (_game->getMod()->getCraft(terrainName))
+        {
+            terrain = _game->getMod()->getCraft(terrainName)->getBattlescapeTerrainData(); 
+        }
+        else
+        {
+            terrain = _game->getMod()->getTerrain(terrainName);
+        }
 
-        if (!terrain && _game->getMod()->getUfo(selectedTerrain))
-            terrain = _game->getMod()->getUfo(selectedTerrain)->getBattlescapeTerrainData();
+//        terrain = _game->getMod()->getTerrain(terrainName);
+//
+//        if (!terrain && _game->getMod()->getCraft(terrainName))
+//            terrain = _game->getMod()->getCraft(terrainName)->getBattlescapeTerrainData();
+//
+//        if (!terrain && _game->getMod()->getUfo(terrainName))
+//            terrain = _game->getMod()->getUfo(terrainName)->getBattlescapeTerrainData();
     }
 
 	battlescapeGenerator.setTerrain(terrain);
 	battlescapeGenerator.setWorldShade(0);
 
-    if (_fileName.empty())
+    std::string mapName = _editor->getMapFileToLoadName();
+    if (mapName.empty() && _pickTerrainMode)
     {
-        if (!_pickTerrainMode)
-        {
-            block = terrain->getMapBlock(_mapsList.at(_selectedMap).first);
-            _fileName = block->getName();
-        }
-        else
-        {
-            _game->getSavedGame()->getSavedBattle()->initMap(_newMapX, _newMapY, _newMapZ, true);
-            _fileName = _newMapName;
-        }
-
-        battlescapeGenerator.loadMapForEditing(block);      
+        _game->getSavedGame()->getSavedBattle()->initMap(_newMapX, _newMapY, _newMapZ, true);
+        _editor->setMapFileToLoadName(_newMapName);
+        battlescapeGenerator.loadEmptyMap();
     }
     else
     {
-        //block = terrain->getMapBlock(editor->getFileName(_fileName));
-        battlescapeGenerator.loadMapForEditing(block, _fileName);
+        if (mapName.empty())
+        {
+            _editor->setMapFileToLoadName(_mapsList.at(_selectedMap).first);
+        }
+
+        battlescapeGenerator.loadMapForEditing();      
     }
 
 	Options::baseXResolution = Options::baseXBattlescape;
 	Options::baseYResolution = Options::baseYBattlescape;
 	_game->getScreen()->resetDisplay(false);
 
-    editor->updateMapFileInfo(_fileName, terrain->getName());
+    _editor->updateMapFileInfo();
     _fileName = "";
 
-	MapEditorState *mapEditorState = new MapEditorState(editor);
+	MapEditorState *mapEditorState = new MapEditorState(_editor);
 	_game->setState(mapEditorState);
 	_game->getSavedGame()->getSavedBattle()->setMapEditorState(mapEditorState);
 }
@@ -707,6 +766,8 @@ void MapEditorMenuState::btnNewMapClick(Action *action)
     // We have populateMapsList() call populateTerrainsList() instead if necessary
     // This is so it can also handle changing the terrain/crafts/ufos filter
     populateMapsList();
+
+    _editor->getMapEditorSave()->clearMapFileToLoad();
 }
 
 /**

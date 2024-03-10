@@ -194,10 +194,27 @@ public :
     /// Gets the MapEditorSave
     MapEditorSave *getMapEditorSave();
     /// Searches the MapEditorSave for entries containing a specific file path
-    size_t searchForMapFileInfo(std::string filePath, std::vector<std::string> *terrainNames);
+    size_t searchForMapFileInfo(std::string filePath);
+    /// Gets the name of the map file to load
+    std::string getMapFileToLoadName();
+    /// Sets the name of the map file to load
+    void setMapFileToLoadName(std::string name);
+    /// Gets the directory of the map file to load
+    std::string getMapFileToLoadDirectory();
+    /// Sets the directory of the map file to load
+    void setMapFileToLoadDirectory(std::string directory);
+    /// Gets the terrain of the map file to load
+    std::string getMapFileToLoadTerrain();
+    /// Sets the terrain of the map file to load
+    void setMapFileToLoadTerrain(std::string terrain);
+    /// Gets the full path to a MAP file we're loading
+    std::string getFullPathToMAPToLoad();
+    /// Gets the full path to a RMP file we're loading
+    std::string getFullPathToRMPToLoad();
     /// Updates the file data on the current map
     void updateMapFileInfo(std::string mapName, std::string baseDirectory, std::string terrainName);
     void updateMapFileInfo(std::string fullPath, std::string terrainName = "");
+    void updateMapFileInfo();
     /// Checks whether a directory has been set for the current map file
     bool currentMapFileNeedsDirectory();
     /// Saves the map file

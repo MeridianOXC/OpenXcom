@@ -31,6 +31,7 @@ class Window;
 class Text;
 class Frame;
 class Position;
+class MapEditor;
 
 class MapEditorMenuState : public State
 {
@@ -45,6 +46,7 @@ private :
     Frame *_frameLeft, *_frameRight;
     std::vector< std::pair<std::string, std::string> > _mapsList;
     std::vector<std::string> _terrainsList;
+    MapEditor *_editor;
     int _selectedMap;
     bool _pickTerrainMode;
     std::string _newMapName;
