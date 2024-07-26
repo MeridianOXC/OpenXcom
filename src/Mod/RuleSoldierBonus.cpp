@@ -26,7 +26,7 @@
 namespace OpenXcom
 {
 
-RuleSoldierBonus::RuleSoldierBonus(const std::string &name, int listOrder) : _name(name), _visibilityAtDark(0), _frontArmor(0), _sideArmor(0), _leftArmorDiff(0), _rearArmor(0), _underArmor(0), _listOrder(listOrder)
+RuleSoldierBonus::RuleSoldierBonus(const std::string &name, int listOrder) : _name(name), _frontArmor(0), _sideArmor(0), _leftArmorDiff(0), _rearArmor(0), _underArmor(0), _listOrder(listOrder)
 {
 }
 
@@ -42,6 +42,10 @@ void RuleSoldierBonus::load(const YAML::Node &node, Mod* mod, const ModScript &p
 	}
 
 	_visibilityAtDark = node["visibilityAtDark"].as<int>(_visibilityAtDark);
+	_visibilityAtDay = node["visibilityAtDay"].as<int>(_visibilityAtDay);
+	_psiVision = node["psiVision"].as<int>(_psiVision);
+	_heatVision = node["heatVision"].as<int>(_heatVision);
+
 	_frontArmor = node["frontArmor"].as<int>(_frontArmor);
 	_sideArmor = node["sideArmor"].as<int>(_sideArmor);
 	_leftArmorDiff = node["leftArmorDiff"].as<int>(_leftArmorDiff);

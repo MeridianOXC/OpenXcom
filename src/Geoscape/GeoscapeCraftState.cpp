@@ -192,16 +192,18 @@ GeoscapeCraftState::GeoscapeCraftState(Craft *craft, Globe *globe, Waypoint *way
 
 	_txtBase->setText(tr("STR_BASE_UC").arg(_craft->getBase()->getName()));
 
-	int speed = _craft->getSpeed();
-	if (_craft->isInDogfight())
 	{
-		Ufo *ufo = dynamic_cast<Ufo*>(_craft->getDestination());
-		if (ufo)
+		int speed = _craft->getSpeed();
+		if (_craft->isInDogfight())
 		{
-			speed = ufo->getSpeed();
+			Ufo *ufo = dynamic_cast<Ufo*>(_craft->getDestination());
+			if (ufo)
+			{
+				speed = ufo->getSpeed();
+			}
 		}
+		_txtSpeed->setText(tr("STR_SPEED_").arg(Unicode::formatNumber(speed)));
 	}
-	_txtSpeed->setText(tr("STR_SPEED_").arg(Unicode::formatNumber(speed)));
 
 	_txtMaxSpeed->setText(tr("STR_MAXIMUM_SPEED_UC").arg(Unicode::formatNumber(_craft->getCraftStats().speedMax)));
 

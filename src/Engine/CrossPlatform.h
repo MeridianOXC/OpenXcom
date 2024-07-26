@@ -207,13 +207,15 @@ namespace CrossPlatform
 	/// Searches the data folders and returns the full path for a folder
 	/// when given a relative path, like "common".  returns the passed-in
 	/// dir name if the folder is not found
-	std::string searchDataFolder(const std::string &foldername);
+	std::string searchDataFolder(const std::string &foldername, std::size_t size = 0);
 	/// Creates a folder.
 	bool createFolder(const std::string &path);
 	/// Terminates a path.
 	std::string convertPath(const std::string &path);
 	/// Returns the list of files in a folder as a vector of tuples (filename, id_dir, mtime)
 	std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::string &path, const std::string &ext = "");
+	/// Checks if the path has a minimum size (number of contents, not bytes).
+	bool folderMinSize(const std::string &path, std::size_t size);
 	/// Checks if the path is an existing folder.
 	bool folderExists(const std::string &path);
 	/// Checks if the path is an existing file.
@@ -222,6 +224,8 @@ namespace CrossPlatform
 	bool deleteFile(const std::string &path);
 	/// Gets the pathless filename of a file.
 	std::string baseFilename(const std::string &path);
+	/// Gets the pathless dir of a file.
+	std::string dirFilename(const std::string &path);
 	/// Sanitizes the characters in a filename.
 	std::string sanitizeFilename(const std::string &filename);
 	/// Removes the extension from a filename.

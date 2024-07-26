@@ -210,6 +210,15 @@ class ModScript
 		TryMeleeAttackItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
 	};
 
+	struct SellCostItemParser : ScriptParserEvents<Output, const RuleItem*, const SavedGame*, int>
+	{
+		SellCostItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+	struct BuyCostItemParser : ScriptParserEvents<Output, const RuleItem*, const SavedGame*, int>
+	{
+		BuyCostItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
+	};
+
 	struct StatsForNerdsItemParser : ScriptParserEvents<ScriptOutputArgs<>, const RuleItem*, StatsForNerdsState*, const SavedGame*>
 	{
 		StatsForNerdsItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod);
@@ -360,6 +369,9 @@ public:
 	using CreateItem = MACRO_NAMED_SCRIPT("createItem", CreateItemParser);
 	using NewTurnItem = MACRO_NAMED_SCRIPT("newTurnItem", NewTurnItemParser);
 
+	using SellCostItem = MACRO_NAMED_SCRIPT("sellCostItem", SellCostItemParser);
+	using BuyCostItem = MACRO_NAMED_SCRIPT("buyCostItem", BuyCostItemParser);
+
 	using StatsForNerdsItem = MACRO_NAMED_SCRIPT("statsForNerdsItem", StatsForNerdsItemParser);
 
 	////////////////////////////////////////////////////////////
@@ -469,6 +481,9 @@ public:
 
 		CreateItem,
 		NewTurnItem,
+
+		SellCostItem,
+		BuyCostItem,
 
 		StatsForNerdsItem
 	>;

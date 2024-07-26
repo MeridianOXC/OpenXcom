@@ -201,6 +201,8 @@ public:
 	int getDifficultyCoefficient() const;
 	/// Gets the sell price coefficient.
 	int getSellPriceCoefficient() const;
+	/// Gets the buy price coefficient.
+	int getBuyPriceCoefficient() const;
 	/// Gets the game ending.
 	GameEnding getEnding() const;
 	/// Sets the game ending.

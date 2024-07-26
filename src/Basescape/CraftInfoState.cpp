@@ -31,6 +31,7 @@
 #include "../Interface/TextEdit.h"
 #include "../Engine/SurfaceSet.h"
 #include "../Engine/Action.h"
+#include "../Savegame/ItemContainer.h"
 #include "../Savegame/Craft.h"
 #include "../Mod/RuleCraft.h"
 #include "../Savegame/CraftWeapon.h"
@@ -318,9 +319,79 @@ void CraftInfoState::init()
 		}
 
 		Surface *frame3 = texture->getFrame(39);
-		for (int i = 0; i < _craft->getNumEquipment(); i += 4, x += 10)
+
+		using ArrayIndexes = std::array<int, 3>;
+		using ArraySurfaces = std::array<const Surface *, 3>;
+		std::map<ArrayIndexes, std::tuple<ArraySurfaces, size_t>, std::greater<>> itemsBySprite;
+
+		for (auto& item : *_craft->getItems()->getContents())
 		{
-			frame3->blitNShade(_equip, x, 0);
+			ArrayIndexes ind = { };
+
+			// fill default values
+			for (auto& arr : ind)
+			{
+				arr = -1;
+			}
+
+			// load values from config, zip will clip range to min length of one of arguments
+			for (auto [arr, prev] : Collections::zipTie(Collections::range(ind), Collections::range(item.first->getCustomItemPreviewIndex())))
+			{
+				arr = prev;
+			}
+
+			auto& pos = itemsBySprite[ind];
+
+			// update surfaces if not set yet
+			for (auto [surf, arr] : Collections::zipTie(Collections::range(std::get<ArraySurfaces>(pos)), Collections::range(ind)))
+			{
+				if (surf != nullptr || arr < 0)
+				{
+					break;
+				}
+
+				surf = customItemPreviews->getFrame(arr);
+			}
+
+			std::get<size_t>(pos) += item.second;
+		}
+
+		for (const auto& pair : itemsBySprite)
+		{
+			const auto& pos = pair.second;
+			if (std::get<ArraySurfaces>(pos)[0])
+			{
+				// new logic for items grouped by sprite
+				size_t i = 4, next = 8;
+
+				// draw icons for next "fibonacci" item count
+				do
+				{
+					for (auto& s : std::get<ArraySurfaces>(pos))
+					{
+						if (s)
+						{
+							s->blitNShade(_equip, x, 0);
+							x += 10;
+							i = std::exchange(next, next + i); // calling this here make multi part sprites occupy similar size to single part ones
+						}
+						else
+						{
+							break;
+						}
+					}
+				}
+				while (i <= std::get<size_t>(pos));
+			}
+			else
+			{
+				// classic behavior
+				for (size_t i = 0; i < std::get<size_t>(pos); i += 4)
+				{
+					frame3->blitNShade(_equip, x, 0);
+					x += 10;
+				}
+			}
 		}
 	}
 	else

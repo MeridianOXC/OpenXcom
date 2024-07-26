@@ -89,6 +89,8 @@ enum class BattleActionOrigin { CENTRE = 0, LEFT, RIGHT }; // Used for off-centr
 
 struct BattleActionCost;
 class BattleItem;
+class SavedGame;
+class Base;
 class RuleSkill;
 class Unit;
 class SurfaceSet;
@@ -448,14 +450,20 @@ public:
 	Unit* getVehicleUnit() const;
 	/// Gets the item's size.
 	double getSize() const;
+
 	/// Gets the item's monthly buy limit.
 	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
-	/// Gets the item's purchase cost.
+	/// Gets the item's basic purchase cost.
 	int getBuyCost() const;
-	/// Gets the item's sale cost.
+	/// Gets the item's purchase cost.
+	int getBuyCostAdjusted(const Base* base, const SavedGame* save) const;
+	/// Gets the item's basic sale cost.
 	int getSellCost() const;
+	/// Gets the item's sale cost.
+	int getSellCostAdjusted(const Base* base, const SavedGame* save) const;
 	/// Gets the item's transfer time.
 	int getTransferTime() const;
+
 	/// Gets the item's weight.
 	int getWeight() const;
 	/// Gets the item's maximum throw range.

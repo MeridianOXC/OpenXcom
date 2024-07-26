@@ -178,7 +178,7 @@ de:
   STR_UPDATE_CHECK_DESC: "Wenn aktiviert, überprüft OpenXcom automatisch nach neuen Updates und gewährt die Option ein Update durchzuführen mit einem Mausklick."
   STR_UFO_LANDING_ALERT: "UFO gelandet Alarm"
   STR_UFO_LANDING_ALERT_DESC: "Wenn aktiviert wird eine Nachricht angezeigt wenn ein erfasstes UFO landet."
-  STR_REMEMBER_DISABLED_CRAFT_WEAPONS: "Bedenke deaktivierte hergestellte Waffen"
+  STR_REMEMBER_DISABLED_CRAFT_WEAPONS: "Speicher deaktivierte Schiffs-Waffen"
   STR_WOUNDED_DEFEND_BASE_IF: "Verwundete verteidigen (TP über x%)"
   STR_WOUNDED_DEFEND_BASE_IF_DESC: "Verwundete Soldaten verteidigen die Basis wenn ihre Gesundheit über dem angegebenen Wert liegt."
   STR_PLAY_BRIEFING_MUSIC_DURING_EQUIPMENT: "Einsatzbesprechungsmusik spielt länger"

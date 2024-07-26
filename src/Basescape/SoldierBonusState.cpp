@@ -21,6 +21,7 @@
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
 #include "../Engine/Options.h"
+#include "../Engine/HelperMeta.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextButton.h"
 #include "../Interface/TextList.h"
@@ -107,6 +108,10 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 	_lstSummary->setVisible(false);
 
 	int visibilityAtDark = 0;
+	int visibilityAtDay = 0;
+	int psiVision = 0;
+	int heatVision = 0;
+
 	int frontArmor = 0, leftArmor = 0, rightArmor = 0, rearArmor = 0, underArmor = 0;
 	UnitStats stats;
 	bool timeRecovery = false, energyRecovery = false, moraleRecovery = false, healthRecovery = false, stunRecovery = false, manaRecovery = false;
@@ -117,7 +122,12 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 		rightArmor += bonusRule->getRightSideArmor();
 		rearArmor  += bonusRule->getRearArmor();
 		underArmor += bonusRule->getUnderArmor();
+
 		visibilityAtDark += bonusRule->getVisibilityAtDark();
+		visibilityAtDay += bonusRule->getVisibilityAtDay();
+		psiVision += bonusRule->getPsiVision();
+		heatVision += bonusRule->getHeatVision();
+
 		stats += *bonusRule->getStats();
 		timeRecovery = timeRecovery || bonusRule->getTimeRecoveryRaw()->isModded();
 		energyRecovery = energyRecovery || bonusRule->getEnergyRecoveryRaw()->isModded();
@@ -150,25 +160,62 @@ SoldierBonusState::SoldierBonusState(Base *base, size_t soldier) : _base(base), 
 		_lstSummary->addRow(2, tr("STR_PSIONIC_STRENGTH").c_str(), std::to_string(stats.psiStrength).c_str());
 	if (stats.psiSkill != 0)
 		_lstSummary->addRow(2, tr("STR_PSIONIC_SKILL").c_str(), std::to_string(stats.psiSkill).c_str());
-	if (frontArmor != 0 || leftArmor != 0 || rightArmor != 0 || rearArmor != 0 || underArmor != 0)
+
+
+	helper::SingleRun gap;
+
+
+	gap.reset();
+	if (frontArmor != 0)
 	{
-		_lstSummary->addRow(1, "");
-		if (frontArmor != 0)
-			_lstSummary->addRow(2, tr("STR_FRONT_ARMOR_UC").c_str(), std::to_string(frontArmor).c_str());
-		if (leftArmor != 0)
-			_lstSummary->addRow(2, tr("STR_LEFT_ARMOR_UC").c_str(), std::to_string(leftArmor).c_str());
-		if (rightArmor != 0)
-			_lstSummary->addRow(2, tr("STR_RIGHT_ARMOR_UC").c_str(), std::to_string(rightArmor).c_str());
-		if (rearArmor != 0)
-			_lstSummary->addRow(2, tr("STR_REAR_ARMOR_UC").c_str(), std::to_string(rearArmor).c_str());
-		if (underArmor != 0)
-			_lstSummary->addRow(2, tr("STR_UNDER_ARMOR_UC").c_str(), std::to_string(underArmor).c_str());
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_FRONT_ARMOR_UC").c_str(), std::to_string(frontArmor).c_str());
 	}
+	if (leftArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_LEFT_ARMOR_UC").c_str(), std::to_string(leftArmor).c_str());
+	}
+	if (rightArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_RIGHT_ARMOR_UC").c_str(), std::to_string(rightArmor).c_str());
+	}
+	if (rearArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_REAR_ARMOR_UC").c_str(), std::to_string(rearArmor).c_str());
+	}
+	if (underArmor != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("STR_UNDER_ARMOR_UC").c_str(), std::to_string(underArmor).c_str());
+	}
+
+
+	gap.reset();
 	if (visibilityAtDark != 0)
 	{
-		_lstSummary->addRow(1, "");
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
 		_lstSummary->addRow(2, tr("visibilityAtDark").c_str(), std::to_string(visibilityAtDark).c_str());
 	}
+	if (visibilityAtDay != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("visibilityAtDay").c_str(), std::to_string(visibilityAtDay).c_str());
+	}
+	if (psiVision != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("psiVision").c_str(), std::to_string(psiVision).c_str());
+	}
+	if (heatVision != 0)
+	{
+		if (gap.tryRun()) _lstSummary->addRow(1, "");
+		_lstSummary->addRow(2, tr("heatVision").c_str(), std::to_string(heatVision).c_str());
+	}
+
+
 	if (timeRecovery || energyRecovery || moraleRecovery || healthRecovery || stunRecovery || manaRecovery)
 	{
 		_lstSummary->addRow(1, "");

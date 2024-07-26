@@ -367,7 +367,7 @@ el:
   STR_CENTER_ON_UFO_TIME_5_SECONDS: "ΚΕΝΤΡΑΡΕ ΣΤΟ ΑΤΙΑ - ΧΡΟΝΟΣ = 5 Δευτ."
   STR_TRACKING_LOST: "ΙΧΝΟΣ ΧΑΘΗΚΕ"
   STR_REDIRECT_CRAFT: "ΝΕΑ ΠΟΡΕΙΑ ΣΚΑΦΟΥΣ"
-  STR_GO_TO_LAST_KNOWN_UFO_POSITION: "ΠΗΓΑΙΝΕ ΣΤΗΝ ΤΕΛΕΥΤΑΙΑ ΓΝΩΣΤΗ ΘΕΣΗ"
+  STR_GO_TO_LAST_KNOWN_UFO_POSITION: "ΠΗΓΑΙΝΕ ΣΤΗΝ ΤΕΛΕΥΤΑΙΑ ΓΝΩΣΤΗ ΘΕΣΗ ΑΤΙΑ"
   STR_UFO_: "ΑΤΙΑ-{0}"
   STR_ALIEN_BASE_: "ΕΞΩΓΗΙΝΗ ΒΑΣΗ-{0}"
   STR_CRASH_SITE_: "ΣΗΜΕΙΟ ΣΥΝΤΡΙΒΗΣ-{0}"

@@ -184,12 +184,14 @@ std::string Mod::DEBRIEF_MUSIC_GOOD;
 std::string Mod::DEBRIEF_MUSIC_BAD;
 int Mod::DIFFICULTY_COEFFICIENT[5];
 int Mod::SELL_PRICE_COEFFICIENT[5];
+int Mod::BUY_PRICE_COEFFICIENT[5];
 int Mod::DIFFICULTY_BASED_RETAL_DELAY[5];
 int Mod::UNIT_RESPONSE_SOUNDS_FREQUENCY[4];
 int Mod::PEDIA_FACILITY_RENDER_PARAMETERS[4];
 bool Mod::EXTENDED_ITEM_RELOAD_COST;
 bool Mod::EXTENDED_INVENTORY_SLOT_SORTING;
 bool Mod::EXTENDED_RUNNING_COST;
+int Mod::EXTENDED_MOVEMENT_COST_ROUNDING;
 bool Mod::EXTENDED_HWP_LOAD_ORDER;
 int Mod::EXTENDED_MELEE_REACTIONS;
 int Mod::EXTENDED_TERRAIN_MELEE;
@@ -275,6 +277,12 @@ void Mod::resetGlobalStatics()
 	SELL_PRICE_COEFFICIENT[3] = 100;
 	SELL_PRICE_COEFFICIENT[4] = 100;
 
+	BUY_PRICE_COEFFICIENT[0] = 100;
+	BUY_PRICE_COEFFICIENT[1] = 100;
+	BUY_PRICE_COEFFICIENT[2] = 100;
+	BUY_PRICE_COEFFICIENT[3] = 100;
+	BUY_PRICE_COEFFICIENT[4] = 100;
+
 	DIFFICULTY_BASED_RETAL_DELAY[0] = 0;
 	DIFFICULTY_BASED_RETAL_DELAY[1] = 0;
 	DIFFICULTY_BASED_RETAL_DELAY[2] = 0;
@@ -294,6 +302,7 @@ void Mod::resetGlobalStatics()
 	EXTENDED_ITEM_RELOAD_COST = false;
 	EXTENDED_INVENTORY_SLOT_SORTING = false;
 	EXTENDED_RUNNING_COST = false;
+	EXTENDED_MOVEMENT_COST_ROUNDING = 0;
 	EXTENDED_HWP_LOAD_ORDER = false;
 	EXTENDED_MELEE_REACTIONS = 0;
 	EXTENDED_TERRAIN_MELEE = 0;
@@ -2418,6 +2427,7 @@ void Mod::loadMod(const std::vector<FileMap::FileRecord> &rulesetFiles, ModScrip
 		Log(LOG_VERBOSE) << "- " << filerec.fullpath;
 		try
 		{
+			_scriptGlobal->fileLoad(filerec.fullpath);
 			loadFile(filerec, parsers);
 		}
 		catch (Exception &e)
@@ -2645,6 +2655,7 @@ void Mod::loadConstants(const YAML::Node &node)
 	EXTENDED_ITEM_RELOAD_COST = node["extendedItemReloadCost"].as<bool>(EXTENDED_ITEM_RELOAD_COST);
 	EXTENDED_INVENTORY_SLOT_SORTING = node["extendedInventorySlotSorting"].as<bool>(EXTENDED_INVENTORY_SLOT_SORTING);
 	EXTENDED_RUNNING_COST = node["extendedRunningCost"].as<bool>(EXTENDED_RUNNING_COST);
+	EXTENDED_MOVEMENT_COST_ROUNDING = node["extendedMovementCostRounding"].as<int>(EXTENDED_MOVEMENT_COST_ROUNDING);
 	EXTENDED_HWP_LOAD_ORDER = node["extendedHwpLoadOrder"].as<bool>(EXTENDED_HWP_LOAD_ORDER);
 	EXTENDED_MELEE_REACTIONS = node["extendedMeleeReactions"].as<int>(EXTENDED_MELEE_REACTIONS);
 	EXTENDED_TERRAIN_MELEE = node["extendedTerrainMelee"].as<int>(EXTENDED_TERRAIN_MELEE);
@@ -3287,6 +3298,15 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		for (YAML::const_iterator i = doc["sellPriceCoefficient"].begin(); i != doc["sellPriceCoefficient"].end() && num < MaxDifficultyLevels; ++i)
 		{
 			SELL_PRICE_COEFFICIENT[num] = (*i).as<int>(SELL_PRICE_COEFFICIENT[num]);
+			++num;
+		}
+	}
+	if (doc["buyPriceCoefficient"])
+	{
+		size_t num = 0;
+		for (YAML::const_iterator i = doc["buyPriceCoefficient"].begin(); i != doc["buyPriceCoefficient"].end() && num < MaxDifficultyLevels; ++i)
+		{
+			BUY_PRICE_COEFFICIENT[num] = (*i).as<int>(BUY_PRICE_COEFFICIENT[num]);
 			++num;
 		}
 	}

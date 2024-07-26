@@ -120,15 +120,15 @@ void getErrorDialog()
 #if !defined( _WIN32 ) && !defined(__MOBILE__)
 	if (system(NULL))
 	{
-		if (getenv("KDE_SESSION_UID") && system("which kdialog 2>&1 > /dev/null") == 0)
+		if (getenv("KDE_SESSION_UID") && system("which kdialog > /dev/null 2>&1") == 0)
 			errorDlg = "kdialog --error ";
-		else if (system("which zenity 2>&1 > /dev/null") == 0)
+		else if (system("which zenity > /dev/null 2>&1") == 0)
 			errorDlg = "zenity --no-wrap --error --text=";
-		else if (system("which kdialog 2>&1 > /dev/null") == 0)
+		else if (system("which kdialog > /dev/null 2>&1") == 0)
 			errorDlg = "kdialog --error ";
-		else if (system("which gdialog 2>&1 > /dev/null") == 0)
+		else if (system("which gdialog > /dev/null 2>&1") == 0)
 			errorDlg = "gdialog --msgbox ";
-		else if (system("which xdialog 2>&1 > /dev/null") == 0)
+		else if (system("which xdialog > /dev/null 2>&1") == 0)
 			errorDlg = "xdialog --msgbox ";
 	}
 #endif
@@ -286,7 +286,10 @@ std::vector<std::string> findDataFolders()
 		Log(LOG_DEBUG) << "findDataFolders(): SHGetSpecialFolderPathW: " << path;
 		if (seen.end() == seen.find(path)) { seen.insert(path); list.push_back(path); }
 	}
-
+#ifdef DATADIR
+	snprintf(path, MAX_PATH, "%s\\", DATADIR);
+	list.push_back(path);
+#endif
 	// Get binary directory
 	if (GetModuleFileNameW(NULL, pathW, MAX_PATH) != 0)
 	{
@@ -326,7 +329,8 @@ std::vector<std::string> findDataFolders()
 	char path[MAXPATHLEN];
 
 	// Get user-specific data folders
-	if (char const *const xdg_data_home = getenv("XDG_DATA_HOME"))
+	char const *const xdg_data_home = getenv("XDG_DATA_HOME");
+	if (xdg_data_home && *xdg_data_home)
  	{
 		snprintf(path, MAXPATHLEN, "%s/openxcom/", xdg_data_home);
  	}
@@ -339,9 +343,13 @@ std::vector<std::string> findDataFolders()
 #endif
  	}
  	list.push_back(path);
-
+#ifdef DATADIR
+	snprintp(path, MAXPATHLEN, "%s/" DATADIR);
+	list.push_back(path);
+#endif
 	// Get global data folders
-	if (char const *const xdg_data_dirs = getenv("XDG_DATA_DIRS"))
+	char const *const xdg_data_dirs = getenv("XDG_DATA_DIRS");
+	if (xdg_data_dirs && *xdg_data_dirs)
 	{
 		char xdg_data_dirs_copy[strlen(xdg_data_dirs)+1];
 		strcpy(xdg_data_dirs_copy, xdg_data_dirs);
@@ -353,16 +361,18 @@ std::vector<std::string> findDataFolders()
 			dir = strtok(0, ":");
 		}
 	}
+	else
+	{
 #ifdef __APPLE__
-	list.push_back("/Users/Shared/OpenXcom/");
+		list.push_back("/Users/Shared/OpenXcom/");
 #else
-	list.push_back("/usr/local/share/openxcom/");
-	list.push_back("/usr/share/openxcom/");
-#ifdef DATADIR
-	snprintf(path, MAXPATHLEN, "%s/", DATADIR);
-	list.push_back(path);
+		list.push_back("/usr/local/share/openxcom/");
+		list.push_back("/usr/share/openxcom/");
 #endif
-
+	}
+#ifdef INSTALLDIR
+	snprintf(path, MAXPATHLEN, "%s", INSTALLDIR);
+	list.push_back(path);
 #endif
 
 #ifdef __linux
@@ -377,6 +387,7 @@ std::vector<std::string> findDataFolders()
 			if (dir_pos != std::string::npos) {
 				std::string dir = exe_path.substr(0, dir_pos);
 				list.push_back( dir.append("/") );
+				list.push_back( dir.append("/../share/openxcom/") ); // Relative FHS
 			}
 		}
 	}
@@ -549,7 +560,6 @@ std::string searchDataFile(const std::string &filename)
 		path = dataPath + name;
 		if (fileExists(path))
 		{
-			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}
@@ -558,25 +568,36 @@ std::string searchDataFile(const std::string &filename)
 	return filename;
 }
 
-std::string searchDataFolder(const std::string &foldername)
+std::string searchDataFolder(const std::string &foldername, std::size_t size)
 {
 	// Correct folder separator
 	std::string name = foldername;
+	std::string path;
 
-	// Check current data path
-	std::string path = Options::getDataFolder() + name;
-	if (folderExists(path))
+	// Set miminum possible of dirs
+	std::size_t minNumOfElementsInFolder = (
+		foldername == "TFTD" || foldername == "UFO" ? 9 : // At least 9 dictionaries with original data data
+		foldername == "common" ? 6 : // Files: "Language/", "Palettes/", "Resources/", "Shaders/", "SoldierName/", "openxcom.png"
+		foldername == "standard" ? 20 : // Now 48 mods, some buffer if some decide to drop some mods
+		size
+	);
+
+	if (Options::getDataFolder() != "")
 	{
-		return path;
+		// Check current data path
+		path = Options::getDataFolder() + name;
+		if (folderMinSize(path, minNumOfElementsInFolder))
+		{
+			return path;
+		}
 	}
 
 	// Check every other path
 	for (auto& dataPath : Options::getDataList())
 	{
 		path = dataPath + name;
-		if (folderExists(path))
+		if (folderMinSize(path, minNumOfElementsInFolder))
 		{
-			Options::setDataFolder(dataPath);
 			return path;
 		}
 	}
@@ -704,6 +725,27 @@ std::vector<std::tuple<std::string, bool, time_t>> getFolderContents(const std::
 }
 
 /**
+ * Gets the contents of a folder and checks
+ * if they meet a required minimum size.
+ * @param path Full path to folder.
+ * @param size Size of the folder (number of contents).
+ * @return False if the folder doesn't exist or doesn't meet the size.
+ */
+bool folderMinSize(const std::string &path, std::size_t size)
+{
+	if (!folderExists(path))
+	{
+		return false;
+	}
+	if (size == 0)
+	{
+		return true;
+	}
+
+	return (getFolderContents(path).size() >= size);
+}
+
+/**
  * Checks if a certain path exists and is a folder.
  * @param path Full path to folder.
  * @return Does it exist?
@@ -790,6 +832,30 @@ std::string baseFilename(const std::string &path)
 	else
 	{
 		filename = path.substr(sep + 1);
+	}
+	return filename;
+}
+
+/**
+ * Returns the directory from a specified path.
+ * @param path Full path.
+ * @return Directory component.
+ */
+std::string dirFilename(const std::string &path)
+{
+	size_t sep = path.find_last_of('/');
+	std::string filename;
+	if (sep == std::string::npos)
+	{
+		filename = "";
+	}
+	else if (sep == path.size() - 1)
+	{
+		return dirFilename(path.substr(0, path.size() - 1));
+	}
+	else
+	{
+		filename = path.substr(0, sep + 1);
 	}
 	return filename;
 }
@@ -2077,6 +2143,22 @@ static auto dummy = ([]
 	assert(!isHigherThanCurrentVersion(create(1, 2, 1, 3), {1, 2, 2, 2}));
 	assert(!isHigherThanCurrentVersion(create(1, 2, 1, 3), {1, 3, 1, 2}));
 
+	return 0;
+})();
+
+static auto dummyPaths = ([]
+{
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc") == "ccc");
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc/") == "ccc");
+	assert(CrossPlatform::baseFilename("aaa/bbb/ccc//") == "ccc");
+	assert(CrossPlatform::baseFilename("/ccc") == "ccc");
+	assert(CrossPlatform::baseFilename("ccc") == "ccc");
+
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc/") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("aaa/bbb/ccc//") == "aaa/bbb/");
+	assert(CrossPlatform::dirFilename("/ccc") == "/");
+	assert(CrossPlatform::dirFilename("ccc") == "");
 	return 0;
 })();
 

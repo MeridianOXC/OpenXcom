@@ -1012,6 +1012,16 @@ int SavedGame::getSellPriceCoefficient() const
 }
 
 /**
+ * Returns the game's buy price coefficient based
+ * on the current difficulty level.
+ * @return Buy price coefficient.
+ */
+int SavedGame::getBuyPriceCoefficient() const
+{
+	return Mod::BUY_PRICE_COEFFICIENT[std::min((int)_difficulty, 4)];
+}
+
+/**
  * Returns the game's current ending.
  * @return Ending state.
  */
@@ -1503,15 +1513,15 @@ const RuleResearch* SavedGame::selectGetOneFree(const RuleResearch* research)
 		{
 			if (isResearched(pair.first, false))
 			{
-				for (auto* research : pair.second)
+				for (auto* res : pair.second)
 				{
-					if (isResearchRuleStatusDisabled(research->getName()))
+					if (isResearchRuleStatusDisabled(res->getName()))
 					{
 						continue; // skip disabled topics
 					}
-					if (!isResearched(research, false))
+					if (!isResearched(res, false))
 					{
-						possibilities.push_back(research);
+						possibilities.push_back(res);
 					}
 				}
 			}
@@ -3432,6 +3442,18 @@ void randomRangeSymmetricScript(RNG::RandomState* rs, int& val, int max)
 	}
 }
 
+void difficultyLevelScript(const SavedGame* sg, int& val)
+{
+	if (sg)
+	{
+		val = sg->getDifficulty();
+	}
+	else
+	{
+		val = 0;
+	}
+}
+
 void getDaysPastEpochScript(const GameTime* p, int& val)
 {
 	if (p)
@@ -3595,6 +3617,8 @@ void SavedGame::ScriptRegister(ScriptParserBase* parser)
 
 	sgg.add<&getTimeScript>("getTime", "Get global time that is Greenwich Mean Time");
 	sgg.add<&getRandomScript>("getRandomState");
+
+	sgg.add<&difficultyLevelScript>("difficultyLevel", "Get difficulty level");
 
 	sgg.add<&isResearchedScript>("isResearched");
 

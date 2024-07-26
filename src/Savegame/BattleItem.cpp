@@ -20,6 +20,7 @@
 #include "BattleItem.h"
 #include "BattleUnit.h"
 #include "Tile.h"
+#include "SavedGame.h"
 #include "SavedBattleGame.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleItem.h"
@@ -1737,6 +1738,33 @@ ModScript::TryMeleeAttackItemParser::TryMeleeAttackItemParser(ScriptGlobal* shar
 		"add melee_attack_success defense_strength_penalty;\n"
 		"return melee_attack_success;\n"
 	);
+}
+
+ModScript::SellCostItemParser::SellCostItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"cost_current",
+	"cost_base",
+
+	"item_rule",
+	"geoscape_game",
+	"difficulty_coefficient"
+}
+{
+	BindBase b { this };
+
+	b.addCustomPtr<const Mod>("rules", mod);
+}
+ModScript::BuyCostItemParser::BuyCostItemParser(ScriptGlobal* shared, const std::string& name, Mod* mod) : ScriptParserEvents{ shared, name,
+	"cost_current",
+	"cost_base",
+
+	"item_rule",
+	"geoscape_game",
+	"difficulty_coefficient"
+}
+{
+	BindBase b { this };
+
+	b.addCustomPtr<const Mod>("rules", mod);
 }
 
 /**

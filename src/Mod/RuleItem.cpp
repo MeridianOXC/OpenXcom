@@ -26,6 +26,7 @@
 #include "RuleInventory.h"
 #include "RuleDamageType.h"
 #include "RuleSoldier.h"
+#include "../Savegame/SavedGame.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Engine/Exception.h"
 #include "../Engine/Collections.h"
@@ -933,6 +934,25 @@ int RuleItem::getBuyCost() const
 }
 
 /**
+ * Gets the item's purchase cost.
+ * @param base Current base from where item is bought
+ * @param save Game
+ * @return Current cost
+ */
+int RuleItem::getBuyCostAdjusted(const Base* base, const SavedGame* save) const
+{
+	(void)base; //TODO: not exposed to scripts yet
+
+	int buyPriceCoefficient = save->getBuyPriceCoefficient();
+	int cost = getBuyCost();
+	int adjusted = ((int64_t)cost) * buyPriceCoefficient / 100;
+
+	adjusted = ModScript::scriptFunc2<ModScript::BuyCostItem>(this, adjusted, cost, this, save, buyPriceCoefficient);
+
+	return adjusted;
+}
+
+/**
  * Gets the amount of money this item
  * is worth to sell.
  * @return The sell cost.
@@ -940,6 +960,25 @@ int RuleItem::getBuyCost() const
 int RuleItem::getSellCost() const
 {
 	return _costSell;
+}
+
+/**
+ * Gets the item's sale cost.
+ * @param base Current base from where item is sold
+ * @param save Game
+ * @return Current cost
+ */
+int RuleItem::getSellCostAdjusted(const Base* base, const SavedGame* save) const
+{
+	(void)base; //TODO: not exposed to scripts yet
+
+	int sellPriceCoefficient = save->getSellPriceCoefficient();
+	int cost = getSellCost();
+	int adjusted = ((int64_t)cost) * sellPriceCoefficient / 100;
+
+	adjusted = ModScript::scriptFunc2<ModScript::SellCostItem>(this, adjusted, cost, this, save, sellPriceCoefficient);
+
+	return adjusted;
 }
 
 /**

@@ -578,12 +578,12 @@ void createControlsOTHER()
 static bool _gameIsInstalled(const std::string &gameName)
 {
 	// look for game data in either the data or user directories
-	std::string dataGameFolder = CrossPlatform::searchDataFolder(gameName);
+	std::string dataGameFolder = CrossPlatform::searchDataFolder(gameName, 8);
 	std::string dataGameZipFile = CrossPlatform::searchDataFile(gameName + ".zip");
 	std::string userGameFolder = _userFolder + gameName;
 	std::string userGameZipFile = _userFolder + gameName + ".zip";
-	return (CrossPlatform::folderExists(dataGameFolder)	&& CrossPlatform::getFolderContents(dataGameFolder).size() >= 8)
-	    || (CrossPlatform::folderExists(userGameFolder)	&& CrossPlatform::getFolderContents(userGameFolder).size() >= 8)
+	return (CrossPlatform::folderMinSize(dataGameFolder, 8))
+	    || (CrossPlatform::folderMinSize(userGameFolder, 8))
 		||  CrossPlatform::fileExists( dataGameZipFile )
 		||  CrossPlatform::fileExists( userGameZipFile );
 }
@@ -647,8 +647,13 @@ static void loadArgs()
 	for (size_t i = 1; i < argv.size(); ++i)
 	{
 		auto& arg = argv[i];
-		if (arg.size() > 1 && arg[0] == '-')
+		if ((arg[0] == '-' || arg[0] == '/') && arg.length() > 1)
 		{
+			if (arg == "--")
+			{
+				break;
+			}
+
 			std::string argname;
 			if (arg[1] == '-' && arg.length() > 2)
 				argname = arg.substr(2, arg.length()-1);
@@ -716,7 +721,7 @@ static void loadArgs()
 static bool showHelp()
 {
 	std::ostringstream help;
-	help << "OpenXcom v" << OPENXCOM_VERSION_SHORT << std::endl;
+	help << "OpenXcom " << OPENXCOM_VERSION_SHORT << std::endl;
 	help << "Usage: openxcom [OPTION]..." << std::endl << std::endl;
 	help << "-data PATH" << std::endl;
 	help << "        use PATH as the default Data Folder instead of auto-detecting" << std::endl << std::endl;
@@ -728,13 +733,24 @@ static bool showHelp()
 	help << "        set MOD to the current master mod (eg. -master xcom2)" << std::endl << std::endl;
 	help << "-KEY VALUE" << std::endl;
 	help << "        override option KEY with VALUE (eg. -displayWidth 640)" << std::endl << std::endl;
+	help << "-continue" << std::endl;
+	help << "        load last save" << std::endl << std::endl;
+	help << "-version" << std::endl;
+	help << "        show version number" << std::endl << std::endl;
 	help << "-help" << std::endl;
 	help << "-?" << std::endl;
 	help << "        show command-line help" << std::endl;
-	for (auto& arg: CrossPlatform::getArgs())
+	auto& argv = CrossPlatform::getArgs();
+	for (size_t i = 1; i < argv.size(); ++i)
 	{
+		auto& arg = argv[i];
 		if ((arg[0] == '-' || arg[0] == '/') && arg.length() > 1)
 		{
+			if (arg == "--")
+			{
+				break;
+			}
+
 			std::string argname;
 			if (arg[1] == '-' && arg.length() > 2)
 				argname = arg.substr(2, arg.length()-1);
@@ -746,6 +762,23 @@ static bool showHelp()
 				std::cout << help.str();
 				return true;
 			}
+			if (argname == "version")
+			{
+				std::cout << OPENXCOM_VERSION_SHORT << OPENXCOM_VERSION_GIT << std::endl;
+				return true;
+			}
+			if (argname == "cont" || argname == "continue")
+			{
+				continue;
+			}
+
+			// skip next option argument, only couple options do not have it.
+			++i;
+		}
+		else
+		{
+			std::cerr << "Unknown parameter '" << arg << "'" << std::endl;
+			return true;
 		}
 	}
 	return false;
@@ -1002,6 +1035,8 @@ void refreshMods()
 
 void updateMods()
 {
+	setDataFolder(CrossPlatform::dirFilename(CrossPlatform::searchDataFolder("common")));
+
 	// pick up stuff in common before-hand
 	FileMap::clear(false, Options::oxceEmbeddedOnly);
 

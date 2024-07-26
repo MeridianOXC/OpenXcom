@@ -141,6 +141,8 @@ private:
 	int _intelligence, _aggression;
 	int _maxViewDistanceAtDark, _maxViewDistanceAtDay;
 	int _maxViewDistanceAtDarkSquared;
+	int _psiVision = 0;
+	int _heatVision = 0;
 	SpecialAbility _specab;
 	Armor *_armor;
 	SoldierGender _gender;
@@ -574,16 +576,21 @@ public:
 	int getIntelligence() const;
 	/// Get the unit's aggression.
 	int getAggression() const;
+	/// Get the units's special ability.
+	int getSpecialAbility() const;
+
 	/// Helper method.
 	int getMaxViewDistance(int baseVisibility, int nerf, int buff) const;
 	/// Get maximum view distance at dark.
 	int getMaxViewDistanceAtDark(const BattleUnit* otherUnit) const;
+	/// Max view distance at dark squared.
 	int getMaxViewDistanceAtDarkSquared() const;
 	/// Get maximum view distance at day.
 	int getMaxViewDistanceAtDay(const BattleUnit* otherUnit) const;
-	/// Get the units's special ability.
-	int getSpecialAbility() const;
-
+	/// Get unit psi vision with bonuses.
+	int getPsiVision() const { return _psiVision; }
+	/// Get unit heat vision with bonuses.
+	int getHeatVision() const { return _heatVision; }
 
 	/// Gets the unit's spawn unit.
 	const Unit *getSpawnUnit() const;

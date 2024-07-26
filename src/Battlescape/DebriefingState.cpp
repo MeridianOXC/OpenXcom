@@ -2432,8 +2432,13 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base, C
 				bi->getUnit()->getGeoscapeSoldier()->setCorpseRecovered(true);
 			}
 
+			// ammo in weapon are handled by weapon itself.
+			if (bi->isAmmo())
+			{
+				// noting
+			}
 			// put items back in the base
-			if (checkForRecovery(bi, rule))
+			else if (checkForRecovery(bi, rule))
 			{
 				bool recoverWeapon = true;
 				switch (rule->getBattleType())
