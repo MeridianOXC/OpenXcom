@@ -3609,6 +3609,24 @@ void getTileEditableScript(SavedBattleGame* sbg, Tile*& t, int x, int y, int z)
 	}
 }
 
+
+bool filterUnitScript(SavedBattleGame* sbg, BattleUnit* unit)
+{
+	return unit && !unit->isIgnored() && unit->getStatus() != STATUS_DEAD;
+}
+
+bool filterUnitFactionScript(SavedBattleGame* sbg, BattleUnit* unit, int i)
+{
+	return filterUnitScript(sbg, unit) && unit->getFaction() == i;
+}
+
+
+bool filterItemScript(SavedBattleGame* sbg, BattleItem* item)
+{
+	return item && !item->isOwnerIgnored();
+}
+
+
 void setAlienItemLevelScript(SavedBattleGame* sbg, int val)
 {
 	if (sbg)
@@ -3671,6 +3689,9 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 	sbg.add<&SavedBattleGame::getAnimFrame>("getAnimFrame");
 	sbg.add<&getTileScript>("getTile", "Get tile on position x, y, z");
 	sbg.add<&getTileEditableScript>("getTile", "Get tile on position x, y, z");
+	sbg.addList<&filterUnitScript, &SavedBattleGame::_units>("getUnits", "Get list of all units");
+	sbg.addList<&filterUnitFactionScript, &SavedBattleGame::_units>("getUnits.byFaction", "Get list of units from faction");
+	sbg.addList<&filterItemScript, &SavedBattleGame::_items>("getItems", "Get list of all items");
 
 	sbg.add<&SavedBattleGame::getAlienItemLevel>("getAlienItemLevel");
 	sbg.add<&setAlienItemLevelScript>("setAlienItemLevel");

@@ -488,22 +488,10 @@ public:
 		return { begin, end };
 	}
 
-	template<typename T>
-	static Range<T*> range(std::vector<T>& v)
+	template<typename C>
+	static auto range(C& collection) -> Range<decltype(std::data(collection))>
 	{
-		return { v.data(), v.data() + v.size() };
-	}
-
-	template<typename T>
-	static Range<const T*> range(const std::vector<T>& v)
-	{
-		return { v.data(), v.data() + v.size() };
-	}
-
-	template<typename T, int N>
-	static Range<T*> range(T (&a)[N])
-	{
-		return { std::begin(a), std::end(a) };
+		return { std::data(collection), std::data(collection) + std::size(collection) };
 	}
 
 	template<typename ItA, typename ItB>

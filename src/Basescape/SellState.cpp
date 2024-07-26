@@ -259,7 +259,7 @@ void SellState::delayedInit()
 		}
 		if (qty > 0 && (Options::canSellLiveAliens || !rule->isAlien()))
 		{
-			TransferRow row = { TRANSFER_ITEM, rule, tr(itemType), rule->getSellCost(), qty, 0, 0, rule->getListOrder(), rule->getSize(), qty * rule->getSize(), (int64_t)qty * rule->getSellCost() };
+			TransferRow row = { TRANSFER_ITEM, rule, tr(itemType), rule->getSellCostAdjusted(_base, _game->getSavedGame()), qty, 0, 0, rule->getListOrder(), rule->getSize(), qty * rule->getSize(), (int64_t)qty * rule->getSellCostAdjusted(_base, _game->getSavedGame()) };
 			if ((_debriefingState != 0) && (_game->getSavedGame()->getAutosell(rule)))
 			{
 				row.amount = qty;
@@ -320,8 +320,7 @@ void SellState::delayedInit()
 		}
 	}
 
-	int64_t adjustedTotal = _total * _game->getSavedGame()->getSellPriceCoefficient() / 100;
-	_txtSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(adjustedTotal)));
+	_txtSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(_total)));
 
 	_cbxCategory->setOptions(_cats, true);
 	_cbxCategory->onChange((ActionHandler)&SellState::cbxCategoryChange);
@@ -474,8 +473,6 @@ void SellState::updateList()
 	_lstItems->clearList();
 	_rows.clear();
 
-	int sellPriceCoefficient = _game->getSavedGame()->getSellPriceCoefficient();
-
 	size_t selCategory = _cbxCategory->getSelected();
 	const std::string selectedCategory = _cats[selCategory];
 	bool categoryFilterEnabled = (selectedCategory != "STR_ALL_ITEMS");
@@ -545,7 +542,6 @@ void SellState::updateList()
 		ssQty << _items[i].qtySrc - _items[i].amount;
 		ssAmount << _items[i].amount;
 		int64_t adjustedCost = _items[i].cost;
-		adjustedCost = adjustedCost * sellPriceCoefficient / 100;
 		_lstItems->addRow(4, name.c_str(), ssQty.str().c_str(), ssAmount.str().c_str(), Unicode::formatFunding(adjustedCost).c_str());
 		_rows.push_back(i);
 		if (_items[i].amount > 0)
@@ -565,8 +561,7 @@ void SellState::updateList()
  */
 void SellState::btnOkClick(Action *)
 {
-	int64_t adjustedTotal = _total * _game->getSavedGame()->getSellPriceCoefficient() / 100;
-	_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + adjustedTotal);
+	_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() + _total);
 
 	auto cleanUpContainer = [&](ItemContainer* container, const RuleItem* rule, int toRemove) -> int
 	{
@@ -1068,8 +1063,7 @@ void SellState::updateItemStrings()
 	_lstItems->setCellText(_sel, 2, ss.str());
 	ss2 << getRow().qtySrc - getRow().amount;
 	_lstItems->setCellText(_sel, 1, ss2.str());
-	int64_t adjustedTotal = _total * _game->getSavedGame()->getSellPriceCoefficient() / 100;
-	_txtSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(adjustedTotal)));
+	_txtSales->setText(tr("STR_VALUE_OF_SALES").arg(Unicode::formatFunding(_total)));
 
 	if (getRow().amount > 0)
 	{

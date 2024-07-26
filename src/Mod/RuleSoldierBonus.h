@@ -43,7 +43,12 @@ public:
 
 private:
 	std::string _name;
-	int _visibilityAtDark;
+
+	int _visibilityAtDark = 0;
+	int _visibilityAtDay = 0;
+	int _psiVision = 0;
+	int _heatVision = 0;
+
 	int _frontArmor, _sideArmor, _leftArmorDiff, _rearArmor, _underArmor;
 	UnitStats _stats;
 	int _listOrder;
@@ -60,8 +65,16 @@ public:
 	void load(const YAML::Node &node, Mod* mod, const ModScript &parsers);
 	/// Gets the soldier bonus unique name/type.
 	const std::string &getName() const { return _name; }
+
 	/// Gets the bonus to night vision (in tiles).
 	int getVisibilityAtDark() const { return _visibilityAtDark; }
+	/// Gets the bonus to day vision (in tiles).
+	int getVisibilityAtDay() const { return _visibilityAtDay; }
+	/// Gets the bonus to psi vision (in tiles).
+	int getPsiVision() const { return _psiVision; }
+	/// Gets the bonus to heat vision (in tiles).
+	int getHeatVision() const { return _heatVision; }
+
 	/// Gets the bonus to front armor.
 	int getFrontArmor() const { return _frontArmor; }
 	/// Gets the bonus to left side armor.

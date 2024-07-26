@@ -19,6 +19,7 @@
  */
 #include "Position.h"
 #include "../Mod/RuleItem.h"
+#include "../Engine/HelperMeta.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -131,36 +132,6 @@ struct BattlescapeTally
  */
 class BattlescapeGame
 {
-	class SingleRun
-	{
-		bool _done = false;
-
-	public:
-
-		/**
-		 * Check if this function was already ran.
-		 * @return True if this is first time, False if any other until reseted.
-		 */
-		bool tryRun()
-		{
-			if (_done)
-			{
-				return false;
-			}
-
-			_done = true;
-			return true;
-		}
-
-		/**
-		 * Reset stat to starting condition.
-		 */
-		void reset()
-		{
-			_done = false;
-		}
-	};
-
 private:
 	SavedBattleGame *_save;
 	BattlescapeState *_parentState;
@@ -173,8 +144,8 @@ private:
 	bool _endConfirmationHandled;
 	bool _allEnemiesNeutralized;
 
-	SingleRun _endTurnProcessed;
-	SingleRun _triggerProcessed;
+	helper::SingleRun _endTurnProcessed;
+	helper::SingleRun _triggerProcessed;
 
 	/// Ends the turn.
 	void endTurn();

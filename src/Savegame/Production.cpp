@@ -163,8 +163,8 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 				{
 					if (getSellItems())
 					{
-						int64_t adjustedSellValue = i.first->getSellCost();
-						adjustedSellValue = adjustedSellValue * i.second * g->getSellPriceCoefficient() / 100;
+						int64_t adjustedSellValue = i.first->getSellCostAdjusted(b, g);
+						adjustedSellValue *= i.second;
 						g->setFunds(g->getFunds() + adjustedSellValue);
 					}
 					else

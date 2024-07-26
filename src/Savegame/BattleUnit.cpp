@@ -150,16 +150,24 @@ void BattleUnit::updateArmorFromSoldier(const Mod *mod, Soldier *soldier, Armor 
 		_stats = *soldier->getStatsWithAllBonuses();
 	}
 
-	int visibilityBonus = 0;
+	int visibilityDarkBonus = 0;
+	int visibilityDayBonus = 0;
+	int psiVision = 0;
+	int heatVision =  0;
 	for (const auto* bonusRule : *soldier->getBonuses(nullptr))
 	{
-		visibilityBonus += bonusRule->getVisibilityAtDark();
+		visibilityDarkBonus += bonusRule->getVisibilityAtDark();
+		visibilityDayBonus += bonusRule->getVisibilityAtDay();
+		psiVision += bonusRule->getPsiVision();
+		heatVision += bonusRule->getHeatVision();
 	}
 	_maxViewDistanceAtDark = _armor->getVisibilityAtDark() ? _armor->getVisibilityAtDark() : 9;
-	_maxViewDistanceAtDark += visibilityBonus;
-	_maxViewDistanceAtDark = Clamp(_maxViewDistanceAtDark, 1, mod->getMaxViewDistance());
+	_maxViewDistanceAtDark = Clamp(_maxViewDistanceAtDark + visibilityDarkBonus, 1, mod->getMaxViewDistance());
 	_maxViewDistanceAtDarkSquared = _maxViewDistanceAtDark * _maxViewDistanceAtDark;
 	_maxViewDistanceAtDay = _armor->getVisibilityAtDay() ? _armor->getVisibilityAtDay() : mod->getMaxViewDistance();
+	_maxViewDistanceAtDay = Clamp(_maxViewDistanceAtDay + visibilityDayBonus, 1, mod->getMaxViewDistance());
+	_psiVision = _armor->getPsiVision() + psiVision;
+	_heatVision = _armor->getHeatVision() + heatVision;
 
 
 	_maxArmor[SIDE_FRONT] = _armor->getFrontArmor();
@@ -495,6 +503,8 @@ void BattleUnit::updateArmorFromNonSoldier(const Mod* mod, Armor* newArmor, int 
 	_maxViewDistanceAtDark = _armor->getVisibilityAtDark() ? _armor->getVisibilityAtDark() : _originalFaction == FACTION_HOSTILE ? mod->getMaxViewDistance() : 9;
 	_maxViewDistanceAtDarkSquared = _maxViewDistanceAtDark * _maxViewDistanceAtDark;
 	_maxViewDistanceAtDay = _armor->getVisibilityAtDay() ? _armor->getVisibilityAtDay() : mod->getMaxViewDistance();
+	_psiVision = _armor->getPsiVision();
+	_heatVision =  _armor->getHeatVision();
 
 
 	_maxArmor[SIDE_FRONT] = _armor->getFrontArmor();
@@ -1772,7 +1782,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		if (isWoundable())
 		{
-			setValueMax(_fatalWounds[bodypart], std::get<toWound>(args.data), 0, 100);
+			setValueMax(_fatalWounds[bodypart], std::get<toWound>(args.data), 0, UnitStats::BaseStatLimit);
 			moraleChange(-std::get<toWound>(args.data));
 		}
 
@@ -1871,9 +1881,9 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		if (rand.percent(std::get<arg_specialDamageTransformChance>(args.data)) && specialDamageTransform
 			&& !getSpawnUnit())
 		{
-			auto& typeName = specialDamageTransform->getZombieUnit(this);
-			auto* type = save->getMod()->getUnit(typeName);
-			if (type->getArmor()->getSize() <= getArmor()->getSize())
+			auto& spawnName = specialDamageTransform->getZombieUnit(this);
+			auto* spawnType = save->getMod()->getUnit(spawnName);
+			if (spawnType->getArmor()->getSize() <= getArmor()->getSize())
 			{
 				UnitFaction faction = specialDamageTransform->getZombieUnitFaction();
 				if (faction == FACTION_NONE)
@@ -1891,11 +1901,11 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 				// converts the victim to a zombie on death
 				setRespawn(true);
 				setSpawnUnitFaction(faction);
-				setSpawnUnit(type);
+				setSpawnUnit(spawnType);
 			}
 			else
 			{
-				Log(LOG_ERROR) << "Transforming armor type '" << this->getArmor()->getType() << "' to unit type '" << typeName << "' is not allowed because of bigger armor size";
+				Log(LOG_ERROR) << "Transforming armor type '" << this->getArmor()->getType() << "' to unit type '" << spawnName << "' is not allowed because of bigger armor size";
 			}
 		}
 
@@ -4127,7 +4137,7 @@ void BattleUnit::setFatalWound(int wound, UnitBodyPart part)
 {
 	if (part < 0 || part >= BODYPART_MAX)
 		return;
-	_fatalWounds[part] = Clamp(wound, 0, 100);
+	_fatalWounds[part] = Clamp(wound, 0, UnitStats::BaseStatLimit);
 }
 
 /**
@@ -4143,7 +4153,7 @@ void BattleUnit::heal(UnitBodyPart part, int woundAmount, int healthAmount)
 		return;
 	}
 
-	setValueMax(_fatalWounds[part], -woundAmount, 0, 100);
+	setValueMax(_fatalWounds[part], -woundAmount, 0, UnitStats::BaseStatLimit);
 	setValueMax(_health, healthAmount, std::min(_health, 1), getBaseStats()->health); //Hippocratic Oath: First do no harm
 
 }
@@ -6292,10 +6302,12 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 
 	bu.add<&BattleUnit::getVisible>("isVisible");
 	bu.add<&makeVisibleScript>("makeVisible");
+
 	bu.add<&BattleUnit::getMaxViewDistanceAtDark>("getMaxViewDistanceAtDark", "get maximum visibility distance in tiles to another unit at dark");
 	bu.add<&BattleUnit::getMaxViewDistanceAtDay>("getMaxViewDistanceAtDay", "get maximum visibility distance in tiles to another unit at day");
 	bu.add<&BattleUnit::getMaxViewDistance>("getMaxViewDistance", "calculate maximum visibility distance consider camouflage, first arg is base visibility, second arg is cammo reduction, third arg is anti-cammo boost");
-
+	bu.add<&BattleUnit::getPsiVision>("getPsiVision");
+	bu.add<&BattleUnit::getHeatVision>("getHeatVision");
 
 	bu.add<&setSpawnUnitScript>("setSpawnUnit", "set type of zombie will be spawn from current unit, it will reset everything to default (hostile & instant)");
 	bu.add<&getSpawnUnitScript>("getSpawnUnit", "get type of zombie will be spawn from current unit");

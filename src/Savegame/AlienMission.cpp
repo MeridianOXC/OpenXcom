@@ -878,12 +878,16 @@ void AlienMission::ufoReachedWaypoint(Ufo &ufo, Game &engine, const Globe &globe
 	ufo.setAltitude(trajectory.getAltitude(nextWaypoint));
 	ufo.setTrajectoryPoint(nextWaypoint);
 	const RuleRegion &regionRules = *mod.getRegion(_region, true);
-	std::pair<double, double> pos = getWaypoint(wave, trajectory, nextWaypoint, globe, regionRules, ufo);
 
-	Waypoint *wp = new Waypoint();
-	wp->setLongitude(pos.first);
-	wp->setLatitude(pos.second);
-	ufo.setDestination(wp);
+	{
+		std::pair<double, double> pos = getWaypoint(wave, trajectory, nextWaypoint, globe, regionRules, ufo);
+
+		Waypoint *wp = new Waypoint();
+		wp->setLongitude(pos.first);
+		wp->setLatitude(pos.second);
+		ufo.setDestination(wp);
+	}
+
 	if (ufo.getAltitude() != "STR_GROUND")
 	{
 		if (ufo.getLandId() != 0)

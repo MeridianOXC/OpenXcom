@@ -105,6 +105,39 @@ struct StaticError
 	static constexpr bool value = false;
 };
 
+/**
+ * Helper for making some code run only once
+ */
+class SingleRun
+{
+	bool _done = false;
+
+public:
+
+	/**
+	 * Check if this function was already ran.
+	 * @return True if this is first time, False if any other until reseted.
+	 */
+	bool tryRun()
+	{
+		if (_done)
+		{
+			return false;
+		}
+
+		_done = true;
+		return true;
+	}
+
+	/**
+	 * Reset stat to starting condition.
+	 */
+	void reset()
+	{
+		_done = false;
+	}
+};
+
 
 } //namespace helper
 

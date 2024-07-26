@@ -23,6 +23,7 @@
 #include "../Savegame/SavedBattleGame.h"
 #include "../Savegame/Tile.h"
 #include "../Mod/Armor.h"
+#include "../Mod/Mod.h"
 #include "../Savegame/BattleUnit.h"
 #include "../Engine/Options.h"
 #include "../fmath.h"
@@ -712,8 +713,13 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		assert(false && "Unreachable code in pathfinding cost");
 	}
 
-	const int timeCost = (cost.TimePercent - 1 + (costDiv / 2)) / costDiv;
-	const int energyCost = (cost.EnergyPercent - 1 + (costDiv / 2)) / costDiv;
+	const int timeCost = Mod::EXTENDED_MOVEMENT_COST_ROUNDING == 0 ? (cost.TimePercent) / costDiv :
+		                 Mod::EXTENDED_MOVEMENT_COST_ROUNDING == 1 ? (cost.TimePercent + (costDiv / 2)) / costDiv :
+		                                                             (cost.TimePercent - 1 + (costDiv / 2)) / costDiv;
+
+	const int energyCost = Mod::EXTENDED_MOVEMENT_COST_ROUNDING == 0 ? (cost.EnergyPercent) / costDiv :
+		                   Mod::EXTENDED_MOVEMENT_COST_ROUNDING == 1 ? (cost.EnergyPercent + (costDiv / 2)) / costDiv :
+		                                                               (cost.EnergyPercent - 1 + (costDiv / 2)) / costDiv;
 
 	return { { Clamp(timeCost, 1, INVALID_MOVE_COST - 1), Clamp(energyCost, 0, INVALID_MOVE_COST) }, { firePenaltyCost, 0 }, pos };
 }

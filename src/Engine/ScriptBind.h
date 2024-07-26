@@ -1312,6 +1312,91 @@ struct BindFunc : BindFuncImpl<decltype(F), F> //Work araound ICC 19.0.1 bug
 };
 
 
+template<typename T, auto Func, auto... X>
+struct BindListInitImpl
+{
+	static RetEnum func() = delete;
+};
+
+template<typename T, typename V, typename... Args, auto... X, bool (*Func)(T*, V* v, Args...)>
+struct BindListInitImpl<bool (*)(T*, V* v, Args...), Func, X...>
+{
+	static RetEnum func(T* t, Args... args, ScriptArgSeparator, int& curr, int& limit)
+	{
+		if (t)
+		{
+			curr = 0;
+			limit = BindMemberInvoke<X...>::f(t).size();
+			for (auto* u : BindMemberInvoke<X...>::f(t))
+			{
+				if (Func(t, u, std::forward<Args>(args)...))
+				{
+					break;
+				}
+				++curr;
+			}
+		}
+		else
+		{
+			curr = 0;
+			limit = 0;
+		}
+		return RetContinue;
+	}
+};
+template<auto Func, auto... X>
+struct BindListInit : BindListInitImpl<decltype(Func), Func, X...>
+{
+
+};
+
+template<typename T, auto Func, auto... X>
+struct BindListLoopImpl
+{
+	static RetEnum func() = delete;
+};
+
+template<typename T, typename V, typename... Args, auto... X, bool (*Func)(T*, V* v, Args...)>
+struct BindListLoopImpl<bool (*)(T*, V* v, Args...), Func, X...>
+{
+	static RetEnum func(T* t, Args... args, ScriptArgSeparator, int& curr, int& limit, ScriptArgSeparator, V*& r)
+	{
+		if (t)
+		{
+			if ((size_t)curr < BindMemberInvoke<X...>::f(t).size())
+			{
+				r = BindMemberInvoke<X...>::f(t).at(curr);
+			}
+			else
+			{
+				r = nullptr;
+			}
+			++curr;
+			for (;(size_t)curr < BindMemberInvoke<X...>::f(t).size(); ++curr)
+			{
+				if (Func(t, BindMemberInvoke<X...>::f(t).at(curr), std::forward<Args>(args)...))
+				{
+					break;
+				}
+			}
+		}
+		else
+		{
+			r = nullptr;
+			curr = 0;
+			limit = 0;
+		}
+		return RetContinue;
+	}
+};
+
+template<auto Func, auto... X>
+struct BindListLoop : BindListLoopImpl<decltype(Func), Func, X...>
+{
+
+};
+
+
 
 
 template<typename T, T X>
@@ -1583,6 +1668,13 @@ struct Bind : BindBase
 	void addRules(const std::string& get)
 	{
 		add<Y>(get);
+	}
+
+	template<auto Func, auto... MemPtrR>
+	void addList(const std::string& name, const std::string& description = BindBase::functionWithoutDescription)
+	{
+		addCustomFunc<helper::BindListInit<MACRO_CLANG_AUTO_HACK(Func), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(name) + ".init", BindBase::functionInvisible);
+		addCustomFunc<helper::BindListLoop<MACRO_CLANG_AUTO_HACK(Func), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(name) + ".list", description);
 	}
 
 	template<auto X>

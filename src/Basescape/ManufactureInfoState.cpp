@@ -257,8 +257,8 @@ void ManufactureInfoState::initProfitInfo ()
 	{
 		for (auto& pair : manuf->getProducedItems())
 		{
-			int64_t adjustedSellValue = pair.first->getSellCost();
-			adjustedSellValue = adjustedSellValue * pair.second * _game->getSavedGame()->getSellPriceCoefficient() / 100;
+			int64_t adjustedSellValue = pair.first->getSellCostAdjusted(_base, _game->getSavedGame());
+			adjustedSellValue *= pair.second;
 			_producedItemsValue += adjustedSellValue;
 		}
 	}
@@ -391,6 +391,7 @@ void ManufactureInfoState::moreEngineer(int change)
 	}
 	else if (availableWorkSpace <= 0 && availableEngineer > 0 && _production->isQueuedOnly() && _production->getRules()->getRequiredSpace() > 0)
 	{
+		_timerMoreEngineer->stop();
 		_game->pushState(new ErrorMessageState(
 			tr("STR_NOT_ENOUGH_WORK_SPACE"),
 			_palette,

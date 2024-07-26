@@ -99,6 +99,7 @@ void SoldierDiary::load(const YAML::Node& node, const Mod *mod)
 	_shotAtCounter10in1Mission = node["shotAtCounter10in1Mission"].as<int>(_shotAtCounter10in1Mission);
 	_hitCounter5in1Mission = node["hitCounter5in1Mission"].as<int>(_hitCounter5in1Mission);
 	_timesWoundedTotal = node["timesWoundedTotal"].as<int>(_timesWoundedTotal);
+	_KIA = node["killedInAction"].as<int>(_KIA);
 	_allAliensKilledTotal = node["allAliensKilledTotal"].as<int>(_allAliensKilledTotal);
 	_allAliensStunnedTotal = node["allAliensStunnedTotal"].as<int>(_allAliensStunnedTotal);
 	_woundsHealedTotal = node["woundsHealedTotal"].as<int>(_woundsHealedTotal);
@@ -112,6 +113,7 @@ void SoldierDiary::load(const YAML::Node& node, const Mod *mod)
 	_wholeMedikitTotal = node["wholeMedikitTotal"].as<int>(_wholeMedikitTotal);
 	_braveryGainTotal = node["braveryGainTotal"].as<int>(_braveryGainTotal);
 	_bestOfRank = node["bestOfRank"].as<int>(_bestOfRank);
+	_MIA = node["missingInAction"].as<int>(_MIA);
 	_bestSoldier = node["bestSoldier"].as<bool>(_bestSoldier);
 	_martyrKillsTotal = node["martyrKillsTotal"].as<int>(_martyrKillsTotal);
 	_postMortemKills = node["postMortemKills"].as<int>(_postMortemKills);
@@ -151,6 +153,7 @@ YAML::Node SoldierDiary::save() const
 	if (_shotAtCounter10in1Mission) node["shotAtCounter10in1Mission"] = _shotAtCounter10in1Mission;
 	if (_hitCounter5in1Mission) node["hitCounter5in1Mission"] = _hitCounter5in1Mission;
 	if (_timesWoundedTotal) node["timesWoundedTotal"] = _timesWoundedTotal;
+	if (_KIA) node["killedInAction"] = _KIA;
 	if (_allAliensKilledTotal) node["allAliensKilledTotal"] = _allAliensKilledTotal;
 	if (_allAliensStunnedTotal) node["allAliensStunnedTotal"] = _allAliensStunnedTotal;
 	if (_woundsHealedTotal) node["woundsHealedTotal"] = _woundsHealedTotal;
@@ -164,6 +167,7 @@ YAML::Node SoldierDiary::save() const
 	if (_wholeMedikitTotal) node["wholeMedikitTotal"] = _wholeMedikitTotal;
 	if (_braveryGainTotal) node["braveryGainTotal"] = _braveryGainTotal;
 	if (_bestOfRank) node["bestOfRank"] = _bestOfRank;
+	if (_MIA) node["missingInAction"] = _MIA;
 	if (_bestSoldier) node["bestSoldier"] = _bestSoldier;
 	if (_martyrKillsTotal) node["martyrKillsTotal"] = _martyrKillsTotal;
 	if (_postMortemKills) node["postMortemKills"] = _postMortemKills;
