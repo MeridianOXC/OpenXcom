@@ -110,6 +110,7 @@ Inventory::Inventory(Game *game, int width, int height, int x, int y, bool base)
 
 	_groundSlotsX = (Screen::ORIGINAL_WIDTH - _inventorySlotGround->getX()) / RuleInventory::SLOT_W;
 	_groundSlotsY = (Screen::ORIGINAL_HEIGHT - _inventorySlotGround->getY()) / RuleInventory::SLOT_H;
+	_xMax = 0;
 	_occupiedSlotsCache.resize(_groundSlotsY, std::vector<char>(_groundSlotsX * 2, false));
 #ifdef __MOBILE__
 	_longPressTimer = new Timer(Options::longPressDuration, true);
@@ -187,7 +188,7 @@ void Inventory::setSelectedUnit(BattleUnit *unit, bool resetGroundOffset)
 	_selUnit = unit;
 	if (resetGroundOffset)
 	{
-		_groundOffset = 999;
+		_groundOffset = 9999;
 		arrangeGround(1);
 	}
 }
@@ -293,17 +294,17 @@ void Inventory::drawGridLabels(bool showTuCost)
 		// Draw label
 		text.setX(i->getX());
 		text.setY(i->getY() - text.getFont()->getHeight() - text.getFont()->getSpacing());
-		if (showTuCost && _selItem != 0)
+		if (showTuCost && _selItem != 0 && _selItem->getSlot() != i)
 		{
 			std::ostringstream ss;
-			ss << _game->getLanguage()->getString(i->getId());
+			ss << _game->getLanguage()->getString(i->getId()).arg(1 + _groundOffset / _groundSlotsX).arg(1 + _xMax / _groundSlotsX);
 			ss << ":";
 			ss << _selItem->getMoveToCost(i);
 			text.setText(ss.str().c_str());
 		}
 		else
 		{
-			text.setText(_game->getLanguage()->getString(i->getId()));
+			text.setText(_game->getLanguage()->getString(i->getId()).arg(1 + _groundOffset / _groundSlotsX).arg(1 + _xMax / _groundSlotsX));
 		}
 		text.blit(_gridLabels->getSurface());
 	}
@@ -1506,7 +1507,7 @@ void Inventory::arrangeGround(int alterOffset)
 	int y = 0;
 	bool donePlacing = false;
 	bool canPlace = false;
-	int xMax = 0;
+	_xMax = 0;
 	_stackLevel.clear();
 
 	if (_selUnit != 0)
@@ -1584,7 +1585,7 @@ void Inventory::arrangeGround(int alterOffset)
 
 				// Start searching at the x value where we last placed an item of this size.
 				// But also don't let more than half a screen behind the furtherst item (because we want to keep similar items together).
-				x = std::max(xMax - slotsX/2, startIndexCacheX[itemTypeSample->getRules()->getInventoryHeight()][itemTypeSample->getRules()->getInventoryWidth()]);
+				x = std::max(_xMax - slotsX/2, startIndexCacheX[itemTypeSample->getRules()->getInventoryHeight()][itemTypeSample->getRules()->getInventoryWidth()]);
 				y = 0;
 				donePlacing = false;
 				while (!donePlacing)
@@ -1607,7 +1608,7 @@ void Inventory::arrangeGround(int alterOffset)
 					}
 					if (canPlace) // Found a place for this item stack.
 					{
-						xMax = std::max(xMax, x + itemTypeSample->getRules()->getInventoryWidth());
+						_xMax = std::max(_xMax, x + itemTypeSample->getRules()->getInventoryWidth());
 						if ( (x + startIndexCacheX[0].size() ) >= occupiedSlots[0].size())
 						{
 							// Filled enough for the widest item to potentially request occupancy checks outside of current cache. Expand slot cache.
@@ -1659,7 +1660,7 @@ void Inventory::arrangeGround(int alterOffset)
 	}
 	if (alterOffset > 0)
 	{
-		if (xMax >= _groundOffset + slotsX)
+		if (_xMax >= _groundOffset + slotsX)
 		{
 			_groundOffset += slotsX;
 		}
@@ -1676,13 +1677,14 @@ void Inventory::arrangeGround(int alterOffset)
 		// if too much, as many steps forward as possible
 		if (_groundOffset < 0)
 		{
-			while (xMax >= _groundOffset + slotsX)
+			while (_xMax >= _groundOffset + slotsX)
 			{
 				_groundOffset += slotsX;
 			}
 		}
 	}
 	drawItems();
+	drawGridLabels(!Options::oxceDisableInventoryTuCost);
 }
 
 /**

@@ -73,9 +73,10 @@ private:
 	int _nvColor;
 	Game *_game;
 	SavedBattleGame *_save;
+	bool _isTFTD;
 	Surface *_arrow;
 	Surface *_stunIndicator, *_woundIndicator, *_burnIndicator, *_shockIndicator;
-	bool _anyIndicator, _isAltPressed;
+	bool _anyIndicator, _isAltPressed, _isCtrlPressed;
 	int _spriteWidth, _spriteHeight;
 	int _selectorX, _selectorY;
 	int _mouseX, _mouseY;
@@ -162,6 +163,8 @@ public:
 	bool getFollowProjectile() const { return _followProjectile; }
 	/// Gets alt pressed flag.
 	bool isAltPressed() const { return _isAltPressed; }
+	/// Gets ctrl pressed flag.
+	bool isCtrlPressed() const { return _isCtrlPressed; }
 	/// Add new vapor particle.
 	void addVaporParticle(Position pos, Particle particle);
 	/// Get all vapor for tile.

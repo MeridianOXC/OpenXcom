@@ -155,10 +155,21 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 				Craft *craft = new Craft(ruleCraft, b, g->getId(ruleCraft->getType()));
 				craft->initFixedWeapons(m);
 				craft->checkup();
-				b->getCrafts()->push_back(craft);
+				int transferTimeCraft = std::max(0, _rules->getTransferTimes().size() < 3 ? 0 : _rules->getTransferTimes().at(2));
+				if (transferTimeCraft > 0)
+				{
+					Transfer* t = new Transfer(transferTimeCraft);
+					t->setCraft(craft);
+					b->getTransfers()->push_back(t);
+				}
+				else
+				{
+					b->getCrafts()->push_back(craft);
+				}
 			}
 			else
 			{
+				int transferTimeItems = std::max(0, _rules->getTransferTimes().empty() ? 0 : _rules->getTransferTimes().front());
 				for (const auto& i : _rules->getProducedItems())
 				{
 					if (getSellItems())
@@ -169,17 +180,26 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 					}
 					else
 					{
-						b->getStorageItems()->addItem(i.first, i.second);
+						if (transferTimeItems > 0)
+						{
+							Transfer* t = new Transfer(transferTimeItems);
+							t->setItems(i.first, i.second);
+							b->getTransfers()->push_back(t);
+						}
+						else
+						{
+							b->getStorageItems()->addItem(i.first, i.second);
+							if (i.first->getBattleType() == BT_NONE)
+							{
+								for (auto* c : *b->getCrafts())
+								{
+									c->reuseItem(i.first);
+								}
+							}
+						}
 						if (!_rules->getRandomProducedItems().empty())
 						{
 							_randomProductionInfo[i.first->getType()] += i.second;
-						}
-						if (i.first->getBattleType() == BT_NONE)
-						{
-							for (auto* c : *b->getCrafts())
-							{
-								c->reuseItem(i.first);
-							}
 						}
 					}
 				}
@@ -187,6 +207,7 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 			// Random manufacture
 			if (!_rules->getRandomProducedItems().empty())
 			{
+				int transferTimeItems = std::max(0, _rules->getTransferTimes().empty() ? 0 : _rules->getTransferTimes().front());
 				int totalWeight = 0;
 				for (const auto& itemSet : _rules->getRandomProducedItems())
 				{
@@ -202,15 +223,24 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 					{
 						for (const auto& i : itemSet.second)
 						{
-							b->getStorageItems()->addItem(i.first, i.second);
-							_randomProductionInfo[i.first->getType()] += i.second;
-							if (i.first->getBattleType() == BT_NONE)
+							if (transferTimeItems > 0)
 							{
-								for (auto* c : *b->getCrafts())
+								Transfer* t = new Transfer(transferTimeItems);
+								t->setItems(i.first, i.second);
+								b->getTransfers()->push_back(t);
+							}
+							else
+							{
+								b->getStorageItems()->addItem(i.first, i.second);
+								if (i.first->getBattleType() == BT_NONE)
 								{
-									c->reuseItem(i.first);
+									for (auto* c : *b->getCrafts())
+									{
+										c->reuseItem(i.first);
+									}
 								}
 							}
+							_randomProductionInfo[i.first->getType()] += i.second;
 						}
 						// break outer loop
 						break;
@@ -221,15 +251,16 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 			const std::string &spawnedPersonType = _rules->getSpawnedPersonType();
 			if (spawnedPersonType != "")
 			{
+				int transferTimePersonnel = std::max(1, _rules->getTransferTimes().size() < 2 ? 24 : _rules->getTransferTimes().at(1));
 				if (spawnedPersonType == "STR_SCIENTIST")
 				{
-					Transfer *t = new Transfer(24);
+					Transfer *t = new Transfer(transferTimePersonnel);
 					t->setScientists(1);
 					b->getTransfers()->push_back(t);
 				}
 				else if (spawnedPersonType == "STR_ENGINEER")
 				{
-					Transfer *t = new Transfer(24);
+					Transfer *t = new Transfer(transferTimePersonnel);
 					t->setEngineers(1);
 					b->getTransfers()->push_back(t);
 				}
@@ -238,7 +269,7 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 					RuleSoldier *rule = m->getSoldier(spawnedPersonType);
 					if (rule != 0)
 					{
-						Transfer *t = new Transfer(24);
+						Transfer *t = new Transfer(transferTimePersonnel);
 						int nationality = g->selectSoldierNationalityByLocation(m, rule, b);
 						Soldier *s = m->genSoldier(g, rule, nationality);
 						s->load(_rules->getSpawnedSoldierTemplate(), m, g, m->getScriptGlobal(), true); // load from soldier template

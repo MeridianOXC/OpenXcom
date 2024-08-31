@@ -112,7 +112,7 @@ public:
 	/// Cleans up the UnitSprite.
 	~UnitSprite();
 	/// Draws the unit.
-	void draw(const BattleUnit* unit, int part, int x, int y, int shade, GraphSubset mask, bool isAltPressed);
+	void draw(const BattleUnit* unit, int part, int x, int y, int shade, GraphSubset mask, bool drawFacingIndicator);
 };
 
 } //namespace OpenXcom

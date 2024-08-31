@@ -2135,6 +2135,11 @@ interfaces: #done
         color: 1
   - type: inventory
     elements:
+      - id: textSlot
+        color: 48
+        color2: 16
+        pos: [65, 95]
+        size: [70, 9]
       - id: textName
         color: 48
       - id: textTUs

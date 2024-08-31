@@ -50,7 +50,7 @@ class Ufo : public MovingTarget
 {
 public:
 	static const char *ALTITUDE_STRING[];
-	enum UfoStatus { FLYING, LANDED, CRASHED, DESTROYED };
+	enum UfoStatus { FLYING, LANDED, CRASHED, DESTROYED, IGNORE_ME };
 
 	/// Name of class used in script.
 	static constexpr const char *ScriptName = "Ufo";

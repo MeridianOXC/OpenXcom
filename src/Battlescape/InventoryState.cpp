@@ -108,6 +108,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	// Create objects
 	_bg = new Surface(320, 200, 0, 0);
 	_soldier = new Surface(320, 200, 0, 0);
+	_txtPosition = new Text(70, 9, 65, 95);
 	_txtName = new TextEdit(this, 210, 17, 28, 6);
 	_txtTus = new Text(40, 9, 245, 24);
 	_txtWeight = new Text(70, 9, 245, 24);
@@ -170,6 +171,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	add(_btnLinks, "buttonLinks", "inventory", _bg);
 	add(_selAmmo);
 	add(_inv);
+	add(_txtPosition, "textSlot", "inventory", _bg);
 
 	// move the TU display down to make room for the weight display
 	if (Options::showMoreStatsInInventoryView)
@@ -180,6 +182,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	centerAllSurfaces();
 
 
+	_txtPosition->setHighContrast(true);
 
 	_txtName->setBig();
 	_txtName->setHighContrast(true);
@@ -215,7 +218,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnApplyPersonalTemplateClick, Options::keyInvLoadPersonalEquipment);
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::btnShowPersonalTemplateClick, Options::keyInvShowPersonalEquipment);
 	_btnOk->setTooltip("STR_OK");
-	_btnOk->onMouseIn((ActionHandler)&InventoryState::txtTooltipIn);
+	_btnOk->onMouseIn((ActionHandler)&InventoryState::txtTooltipInExtraOK);
 	_btnOk->onMouseOut((ActionHandler)&InventoryState::txtTooltipOut);
 	_btnOk->onKeyboardPress((ActionHandler)&InventoryState::invMouseOver, SDLK_LALT);
 	_btnOk->onKeyboardRelease((ActionHandler)&InventoryState::invMouseOver, SDLK_LALT);
@@ -414,6 +417,29 @@ void InventoryState::init()
 
 	_soldier->clear();
 	_btnRank->clear();
+
+	if (Options::oxceInventoryShowUnitSlot)
+	{
+		int unitSlot = 1;
+		int totalSlots = 99;
+		for (auto* tmpUnit : *_battleGame->getUnits())
+		{
+			if (tmpUnit == unit)
+			{
+				if (!_noCraft && _battleGame->getMissionType() != "STR_BASE_DEFENSE")
+				{
+					auto* tmpCraft = unit->getGeoscapeSoldier() ? unit->getGeoscapeSoldier()->getCraft() : nullptr;
+					if (tmpCraft)
+					{
+						totalSlots = tmpCraft->getMaxUnitsClamped();
+					}
+				}
+				break;
+			}
+			unitSlot += tmpUnit->getArmor()->getTotalSize();
+		}
+		_txtPosition->setText(tr("STR_SLOT").arg(unitSlot).arg(totalSlots));
+	}
 
 	_txtName->setBig();
 	_txtName->setText(unit->getName(_game->getLanguage()));
@@ -2108,6 +2134,46 @@ void InventoryState::think()
 	}
 	State::think();
 }
+
+/**
+ * Shows a tooltip for the OK button.
+ * @param action Pointer to an action.
+ */
+void InventoryState::txtTooltipInExtraOK(Action *action)
+{
+	if (_inv->getSelectedItem() == 0 && Options::battleTooltips)
+	{
+		_currentTooltip = action->getSender()->getTooltip();
+
+		std::ostringstream ss;
+		ss << tr(_currentTooltip);
+
+		if (!_tu && !_base)
+		{
+			ss << " - ";
+
+			if (_battleGame->getGlobalShade() <= 0)
+			{
+				// day (0)
+				ss << tr("STR_DAY");
+			}
+			else if (_battleGame->getGlobalShade() > _game->getMod()->getMaxDarknessToSeeUnits())
+			{
+				// night (10-15); note: this is configurable in the ruleset (in OXCE only)
+				ss << tr("STR_NIGHT");
+			}
+			else
+			{
+				// dusk/dawn (1-9)
+				ss << tr("STR_DAY");
+				ss << "*";
+			}
+		}
+
+		_txtItem->setText(ss.str().c_str());
+	}
+}
+
 
 /**
  * Shows a tooltip for the appropriate button.

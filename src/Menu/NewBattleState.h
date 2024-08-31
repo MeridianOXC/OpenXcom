@@ -30,6 +30,7 @@ enum class NewBattleSelectType { MISSION = 0, TERRAIN, ALIENRACE, GLOBETEXTURE }
 class TextButton;
 class TextEdit;
 class TextList;
+class ToggleTextButton;
 class Window;
 class Text;
 class ComboBox;
@@ -56,6 +57,7 @@ private:
 	Text *_txtGlobeTexture;
 	TextButton *_btnGlobeTexture;
 	TextButton *_btnGlobeTextureToggle;
+	ToggleTextButton *_btnUfoCrashed;
 	TextList *_lstSelect;
 	TextEdit *_btnQuickSearch;
 	std::map<Surface*, bool> _surfaceBackup;
@@ -77,6 +79,8 @@ public:
 	NewBattleState();
 	/// Cleans up the New Battle state.
 	~NewBattleState();
+	/// Handle keypresses.
+	void handle(Action* action) override;
 	/// Resets state.
 	void init() override;
 	/// Loads New Battle settings.

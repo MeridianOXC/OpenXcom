@@ -86,7 +86,7 @@ namespace OpenXcom
  * @param id ID to assign to the craft (0 to not assign).
  */
 Craft::Craft(const RuleCraft *rules, Base *base, int id) : MovingTarget(),
-	_rules(rules), _base(base), _fuel(0), _damage(0), _shield(0),
+	_rules(rules), _base(base), _fuel(0), _excessFuel(0), _damage(0), _shield(0),
 	_interceptionOrder(0), _takeoff(0), _weapons(),
 	_status("STR_READY"), _lowFuel(false), _mission(false),
 	_inBattlescape(false), _inDogfight(false), _stats(),
@@ -148,6 +148,7 @@ void Craft::load(const YAML::Node &node, const ScriptGlobal *shared, const Mod *
 {
 	MovingTarget::load(node);
 	_fuel = node["fuel"].as<int>(_fuel);
+	_excessFuel = node["excessFuel"].as<int>(_excessFuel);
 	_damage = node["damage"].as<int>(_damage);
 	_shield = node["shield"].as<int>(_shield);
 
@@ -373,6 +374,8 @@ YAML::Node Craft::save(const ScriptGlobal *shared) const
 	YAML::Node node = MovingTarget::save();
 	node["type"] = _rules->getType();
 	node["fuel"] = _fuel;
+	if (_excessFuel != 0)
+		node["excessFuel"] = _excessFuel;
 	node["damage"] = _damage;
 	node["shield"] = _shield;
 	for (const auto* cw : _weapons)
@@ -802,11 +805,6 @@ void Craft::addCraftStats(const RuleCraftStats& s)
 	setDamage(_damage + s.damageMax); //you need "fix" new damage capability first before use.
 	_stats += s;
 
-	int overflowFuel = _fuel - _stats.fuelMax;
-	if (overflowFuel > 0 && _rules->getRefuelItem())
-	{
-		_base->getStorageItems()->addItem(_rules->getRefuelItem(), overflowFuel / _rules->getRefuelRate());
-	}
 	setFuel(_fuel);
 
 	recalcSpeedMaxRadian();
@@ -850,6 +848,16 @@ void Craft::setFuel(int fuel)
 	_fuel = fuel;
 	if (_fuel > _stats.fuelMax)
 	{
+		int overflowFuel = _fuel - _stats.fuelMax + _excessFuel;
+		if (overflowFuel > 0 && _rules->getRefuelItem())
+		{
+			int returnQty = overflowFuel / _rules->getRefuelRate();
+			if (returnQty > 0)
+			{
+				_base->getStorageItems()->addItem(_rules->getRefuelItem(), returnQty);
+			}
+			_excessFuel = overflowFuel % _rules->getRefuelRate();
+		}
 		_fuel = _stats.fuelMax;
 	}
 	else if (_fuel < 0)

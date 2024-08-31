@@ -26,6 +26,7 @@ namespace OpenXcom
 
 class RuleAlienMission;
 class AlienDeployment;
+class Ufo;
 
 /**
  * Represents an alien mission site on the world.
@@ -40,6 +41,8 @@ private:
 	size_t _secondsRemaining;
 	std::string _race, _city;
 	bool _inBattlescape, _detected;
+	Ufo* _ufo;
+	int _ufoUniqueId;
 public:
 	/// Creates a mission site.
 	MissionSite(const RuleAlienMission *rules, const AlienDeployment *deployment, const AlienDeployment *alienWeaponDeploy);
@@ -85,6 +88,12 @@ public:
 	bool getDetected() const;
 	/// Sets the mission site's detection state.
 	void setDetected(bool detected);
+	/// Gets the mission site's corresponding Ufo.
+	Ufo* getUfo() const { return _ufo; }
+	/// Sets the mission site's corresponding Ufo.
+	void setUfo(Ufo* ufo) { _ufo = ufo; }
+	/// DO NOT USE! Used only for loading saved games.
+	int getUfoUniqueId() const { return _ufoUniqueId; }
 };
 
 }

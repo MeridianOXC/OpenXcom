@@ -37,6 +37,16 @@ struct RandomizedItems
 	RandomizedItems() : amount(1), mixed(false) { /*Empty by Design*/ };
 };
 
+struct ExtendedItems
+{
+	std::string type;
+	std::vector<Position> pos;
+	int fuseTimerMin;
+	int fuseTimerMax;
+	std::vector<std::pair<std::string, int> > ammoDef;
+	ExtendedItems() : fuseTimerMin(-1), fuseTimerMax(-1) { /*Empty by Design*/ };
+};
+
 /**
  * Represents a Terrain Map Block.
  * It contains constant info about this mapblock, like its name, dimensions, attributes...
@@ -50,15 +60,16 @@ private:
 	int _size_x, _size_y, _size_z;
 	std::vector<int> _groups, _revealedFloors;
 	std::map<std::string, std::vector<Position> > _items;
-	std::vector<RandomizedItems> _randomizedItems;
 	std::map<std::string, std::pair<int, int> > _itemsFuseTimer;
+	std::vector<RandomizedItems> _randomizedItems;
+	std::vector<ExtendedItems> _extendedItems;
 public:
 	MapBlock(const std::string &name);
 	~MapBlock();
 	/// Loads the map block from YAML.
 	void load(const YAML::Node& node);
 	/// Gets the mapblock's name (used for MAP generation).
-	std::string getName() const;
+	const std::string& getName() const;
 	/// Gets the mapblock's x size.
 	int getSizeX() const;
 	/// Gets the mapblock's y size.
@@ -71,12 +82,14 @@ public:
 	bool isInGroup(int group);
 	/// Gets if this floor should be revealed or not.
 	bool isFloorRevealed(int floor);
-	/// Gets the layout for any items that belong in this map block.
-	const std::map<std::string, std::vector<Position> > *getItems() const;
-	/// Gets the layout for any randomized items that belong in this map block.
-	const std::vector<RandomizedItems> *getRandomizedItems() const;
-	/// Gets the fuse timer for any items that belong in this map block.
-	const std::map<std::string, std::pair<int, int> > *getItemsFuseTimers() const;
+	/// Gets the items and their positioning for any items associated with this block.
+	const std::map<std::string, std::vector<Position> > *getItems() const { return &_items; }
+	/// Gets the predefined fuse timers for items on this block.
+	const std::map<std::string, std::pair<int, int> > *getItemsFuseTimers() const { return &_itemsFuseTimer; }
+	/// Gets the to-be-randomized items and their positioning for any items associated with this block.
+	const std::vector<RandomizedItems> *getRandomizedItems() const { return &_randomizedItems; }
+	/// Gets the layout for any items that belong in this map block. Extended syntax.
+	const std::vector<ExtendedItems> *getExtendedItems() const { return &_extendedItems; }
 
 };
 

@@ -68,34 +68,38 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 		}
 	}
 
+	int extraRows = Clamp(Options::oxceInterceptTableSize, 8, 80) - 8;
+	int extraHeight = 8 * extraRows;
+	int offset = extraHeight / 2;
+
 	// Create objects
 	if (Options::oxceInterceptGuiMaintenanceTime > 0)
 	{
-		_window = new Window(this, 320, 140, 0, 30, POPUP_HORIZONTAL);
-		_btnCancel = new TextButton(_base ? 142 : 288, 16, 16, 146);
-		_btnGotoBase = new TextButton(142, 16, 162, 146);
-		_txtTitle = new Text(300, 17, 10, 46);
+		_window = new Window(this, 320, 140 + extraHeight, 0, 30 - offset, POPUP_HORIZONTAL);
+		_btnCancel = new TextButton(_base ? 142 : 288, 16, 16, 146 + offset);
+		_btnGotoBase = new TextButton(142, 16, 162, 146 + offset);
+		_txtTitle = new Text(300, 17, 10, 46 - offset);
 		int x = 14;
-		_txtCraft = new Text(WIDTH_CRAFT, 9, x, 70);
+		_txtCraft = new Text(WIDTH_CRAFT, 9, x, 70 - offset);
 		x += WIDTH_CRAFT;
-		_txtStatus = new Text(WIDTH_STATUS, 9, x, 70);
+		_txtStatus = new Text(WIDTH_STATUS, 9, x, 70 - offset);
 		x += WIDTH_STATUS;
-		_txtBase = new Text(WIDTH_BASE, 9, x, 70);
+		_txtBase = new Text(WIDTH_BASE, 9, x, 70 - offset);
 		x += WIDTH_BASE;
-		_txtWeapons = new Text(WIDTH_WEAPONS+4, 17, x-4, 62);
-		_lstCrafts = new TextList(290, 64, 12, 78);
+		_txtWeapons = new Text(WIDTH_WEAPONS+4, 17, x-4, 62 - offset);
+		_lstCrafts = new TextList(290, 64 + extraHeight, 12, 78 - offset);
 	}
 	else
 	{
-		_window = new Window(this, 320, 140, 0, 30, POPUP_HORIZONTAL);
-		_btnCancel = new TextButton(_base ? 142 : 288, 16, 16, 146);
-		_btnGotoBase = new TextButton(142, 16, 162, 146);
-		_txtTitle = new Text(300, 17, 10, 46);
-		_txtCraft = new Text(86, 9, 14, 70);
-		_txtStatus = new Text(70, 9, 100, 70);
-		_txtBase = new Text(80, 9, 170, 70);
-		_txtWeapons = new Text(80, 17, 238, 62);
-		_lstCrafts = new TextList(288, 64, 8, 78);
+		_window = new Window(this, 320, 140 + extraHeight, 0, 30 - offset, POPUP_HORIZONTAL);
+		_btnCancel = new TextButton(_base ? 142 : 288, 16, 16, 146 + offset);
+		_btnGotoBase = new TextButton(142, 16, 162, 146 + offset);
+		_txtTitle = new Text(300, 17, 10, 46 - offset);
+		_txtCraft = new Text(86, 9, 14, 70 - offset);
+		_txtStatus = new Text(70, 9, 100, 70 - offset);
+		_txtBase = new Text(80, 9, 170, 70 - offset);
+		_txtWeapons = new Text(80, 17, 238, 62 - offset);
+		_lstCrafts = new TextList(288, 64 + extraHeight, 8, 78 - offset);
 	}
 
 	// Set palette

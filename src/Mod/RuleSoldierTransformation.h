@@ -45,8 +45,8 @@ private:
 	std::map<std::string, int> _requiredCommendations;
 	int _listOrder, _cost, _transferTime, _recoveryTime;
 	int _minRank;
-	bool _includeBonusesForMinStats;
-	UnitStats _requiredMinStats, _flatOverallStatChange, _percentOverallStatChange, _percentGainedStatChange;
+	bool _includeBonusesForMinStats, _includeBonusesForMaxStats;
+	UnitStats _requiredMinStats, _requiredMaxStats, _flatOverallStatChange, _percentOverallStatChange, _percentGainedStatChange;
 	UnitStats _flatMin, _flatMax, _percentMin, _percentMax, _percentGainedMin, _percentGainedMax;
 	bool _showMinMax;
 	UnitStats _rerollStats;
@@ -95,8 +95,12 @@ public:
 	const std::vector<std::string > &getForbiddenPreviousTransformations() const;
 	/// Gets whether or not to include soldier bonuses when checking required min stats.
 	bool getIncludeBonusesForMinStats() const { return _includeBonusesForMinStats; }
+	/// Gets whether or not to include soldier bonuses when checking required max stats.
+	bool getIncludeBonusesForMaxStats() const { return _includeBonusesForMaxStats; }
 	/// Gets the minimum stats a soldier needs to be eligible for this project
 	const UnitStats &getRequiredMinStats() const;
+	/// Gets the maximum stats a soldier can have to be eligible for this project
+	const UnitStats &getRequiredMaxStats() const;
 	/// Gets the list of items necessary to complete this project
 	const std::map<std::string, int> &getRequiredItems() const;
 	/// Gets the list of commendations necessary to complete this project

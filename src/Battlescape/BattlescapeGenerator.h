@@ -113,6 +113,8 @@ private:
 	void loadRMP(MapBlock *mapblock, int xoff, int yoff, int zoff, int segment);
 	/// Checks a terrain requested by a command and loads it if necessary
 	int loadExtraTerrain(RuleTerrain *terrain);
+	/// Hide the "weapon pile".
+	void sendItemsToLimbo();
 	/// Fills power sources with an alien fuel object.
 	void fuelPowerSources();
 	/// Possibly explodes ufo power sources.

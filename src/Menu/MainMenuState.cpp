@@ -198,7 +198,12 @@ MainMenuState::MainMenuState(bool updateCheck)
 void MainMenuState::init()
 {
 	State::init();
-	if (Options::getLoadLastSave() && _game->getSavedGame()->getList(_game->getLanguage(), true).size() > 0)
+	if (Options::getLoadLastSave() && !Options::getLoadThisSave().empty())
+	{
+		Log(LOG_INFO) << "Loading saved game passed as parameter";
+		btnLoadClick(NULL);
+	}
+	else if (Options::getLoadLastSave() && _game->getSavedGame()->getList(_game->getLanguage(), true).size() > 0)
 	{
 		Log(LOG_INFO) << "Loading last saved game";
 		btnLoadClick(NULL);

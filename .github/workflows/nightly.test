@@ -1,0 +1,143 @@
+name: Nightly
+on:
+  push:
+    branches:
+      - test
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        shell: bash
+        run: |
+          echo "DATEFILE=`git log -1 --date=format:\"%Y_%m_%d_%H%M\" --format=\"%ad\"`" >> $GITHUB_ENV
+          echo "DATEVERSION=`git log -1 --date=format:\"%Y-%m-%d %H:%M\" --format=\"%ad\"`" >> $GITHUB_ENV
+
+      - name: Setup version info
+        shell: bash
+        run: |
+          sed -i "s/GAME_VERSION_GIT \"[^\"]*\"/GAME_VERSION_GIT \" git ${{ env.DATEVERSION }}\"/" install/win/version.nsh
+          sed -i "s/GAME_DATE_GIT \"[^\"]*\"/GAME_DATE_GIT \"${{ env.DATEFILE }}\"/" install/win/version.nsh
+
+          sed -i "s/OPENXCOM_VERSION_GIT \"[^\"]*\"/OPENXCOM_VERSION_GIT \" git ${{ env.DATEVERSION }}\"/" src/version.h
+
+          echo "FILENAME=oxce_git_${{ env.DATEFILE }}" >> $GITHUB_ENV
+
+      - name: Install XP Toolset
+        shell: powershell
+        run: |
+          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $WorkLoads = '--add Microsoft.VisualStudio.Component.WinXP'
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"", $WorkLoads, '--quiet', '--norestart', '--nocache')
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode -eq 0) {
+              Write-Host "components have been successfully added"
+          } else {
+              Write-Host "components were not installed"
+          }
+
+      - name: Download dependencies
+        shell: powershell
+        run: |
+          Invoke-WebRequest -Uri "https://openxcom.org/download/dev/openxcom-deps-win-vc2017.zip" -OutFile "openxcom-deps-win-vc2017-newest.zip"
+          Expand-Archive -Path "openxcom-deps-win-vc2017-newest.zip"
+          Copy-Item -Recurse -Path "openxcom-deps-win-vc2017-newest\deps\*" -Destination "deps"
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Compile source (x86 only)
+        env:
+          VC_FLAGS: /v:minimal /m /p:BuildInParallel=true /p:PreferredToolArchitecture=x64 /p:Configuration=Release_XP
+        run: |
+          cd src
+          msbuild OpenXcom.2010.sln ${{ env.VC_FLAGS }} /p:Platform=Win32
+          cd ..
+          Rename-Item -Path "bin\Win32\Release_XP" -NewName "Release"
+
+      - name: Create nightly ZIP (x86 only)
+        shell: powershell
+        run: |
+          New-Item -ItemType "directory" -Path "artifacts"
+          Compress-Archive -Path "bin\Win32\Release\OpenXcom.exe", "bin\Win32\*.dll", "bin\common", "bin\standard", "bin\TFTD", "bin\UFO", "LICENSE.txt" -DestinationPath "artifacts\${{ env.FILENAME }}_win32_xp.zip"
+
+      - name: Get SHA hashes
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: test
+
+      - name: Generate build log
+        run: |
+          git log --pretty=format:"<strong>%an, %ad</strong>%n%B" -n 10 --date=iso-local ${{ env.NX_BASE }}..${{ env.NX_HEAD }} > artifacts\${{ env.FILENAME }}.log
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FILENAME }}_windows
+          path: artifacts/*
+
+  linux:
+    name: Linux
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        run: |
+          echo "DATEFILE=`git log -1 --date=format:\"%Y_%m_%d_%H%M\" --format=\"%ad\"`" >> $GITHUB_ENV
+          echo "DATEVERSION=`git log -1 --date=format:\"%Y-%m-%d %H:%M\" --format=\"%ad\"`" >> $GITHUB_ENV
+          echo "CMAKE_BUILD_PARALLEL_LEVEL=`getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || echo 2`" >> $GITHUB_ENV
+
+      - name: Setup version info
+        run: |
+          sed -i "s/OPENXCOM_VERSION_GIT \"[^\"]*\"/OPENXCOM_VERSION_GIT \" git ${{ env.DATEVERSION }}\"/" src/version.h
+          echo "FILENAME=oxce_git_${{ env.DATEFILE }}" >> $GITHUB_ENV
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install appstream libfuse2 libsdl1.2-dev libsdl-mixer1.2-dev libsdl-image1.2-dev libsdl-gfx1.2-dev libyaml-cpp-dev
+
+      - name: Install LinuxDeploy
+        uses: miurahr/install-linuxdeploy-action@v1
+        with:
+          plugins: appimage
+
+      - name: Compile source code
+        run: |
+          cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          make -j$(nproc)
+          make install DESTDIR=AppDir
+
+      - name: Generate AppImage
+        run: |
+          rm -rf AppDir/usr/share/openxcom/UFO
+          rm -rf AppDir/usr/share/openxcom/TFTD
+          linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+          mkdir artifacts
+          mv OpenXcom-x86_64.AppImage artifacts/${{ env.FILENAME }}-x86_64.AppImage
+
+      - name: Get SHA hashes
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: test
+
+      - name: Generate build log
+        run: |
+          git log --pretty=format:"<strong>%an, %ad</strong>%n%B" -n 10 --date=iso-local ${{ env.NX_BASE }}..${{ env.NX_HEAD }} > artifacts/${{ env.FILENAME }}.log
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FILENAME }}_linux
+          path: artifacts/*

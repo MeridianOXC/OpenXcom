@@ -21,3 +21,4 @@ ja:
   SETUP_WARNING_UFO: "X-COM 1 が指定先に見つかりません。${GAME_NAME}のインストールには正常なオリジナル版X-COMのインストール済みフォルダが必要です。続けますか？"
   SETUP_WARNING_TFTD: "X-COM 2 が指定先に見つかりません。${GAME_NAME}のインストールには正常なオリジナル版X-COMのインストール済みフォルダが必要です。続けますか？"
   SETUP_WARNING_XCU: "XcomUtilがインストｰルされています。${GAME_NAME}はXcomUtilと互換性がなく、不具合が発生するかもしれません。続けますか?"
+  SETUP_ERROR_PORTABLE: "インストールフォルダはポータブルには対応しません"

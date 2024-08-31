@@ -27,6 +27,7 @@
 #include "../Interface/TextButton.h"
 #include "../Interface/ToggleTextButton.h"
 #include "../Interface/Window.h"
+#include "../Menu/CutsceneState.h"
 #include "../Menu/ErrorMessageState.h"
 #include "../Mod/City.h"
 #include "../Mod/Mod.h"
@@ -34,6 +35,7 @@
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleRegion.h"
 #include "../Mod/RuleSoldier.h"
+#include "../Mod/RuleVideo.h"
 #include "../Savegame/Base.h"
 #include "../Savegame/ItemContainer.h"
 #include "../Savegame/Region.h"
@@ -116,7 +118,11 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
 	_txtQuantity->setVisible(false);
 	_lstTransfers->setVisible(false);
 
-	if (_lstTransfers->getTexts() == 0 || !Options::oxceGeoscapeEventsInstantDelivery)
+	if (_eventRule.getInvert())
+	{
+		_btnItemsArriving->setText(tr("STR_SUMMARY"));
+	}
+	else if (_lstTransfers->getTexts() == 0 || !Options::oxceGeoscapeEventsInstantDelivery)
 	{
 		_btnOk->setX((_btnOk->getX() + _btnItemsArriving->getX()) / 2);
 		_btnItemsArriving->setVisible(false);
@@ -292,9 +298,53 @@ void GeoscapeEventState::eventLogic()
 
 	for (auto& ti : itemsToTransfer)
 	{
-		if (Options::oxceGeoscapeEventsInstantDelivery)
+		if (rule.getInvert())
+		{
+			RuleItem* r = mod->getItem(ti.first, true);
+			int removed = 0;
+			for (auto* xbase : *save->getBases())
+			{
+				int bQty = xbase->getStorageItems()->getItem(r);
+				if (bQty > 0)
+				{
+					int toRemove = std::min(bQty, ti.second);
+					xbase->getStorageItems()->removeItem(r, toRemove);
+					ti.second -= toRemove;
+					removed += toRemove;
+				}
+				if (ti.second <= 0) break; // already removed enough
+			}
+			if (ti.second > 0)
+			{
+				for (auto* xbase : *save->getBases())
+				{
+					for (auto* xcraft : *xbase->getCrafts())
+					{
+						int cQty = xcraft->getItems()->getItem(r);
+						if (cQty > 0 && xcraft->getStatus() != "STR_OUT")
+						{
+							int toRemove = std::min(cQty, ti.second);
+							xcraft->getItems()->removeItem(r, toRemove);
+							ti.second -= toRemove;
+							removed += toRemove;
+						}
+						if (ti.second <= 0) break; // already removed enough
+					}
+					if (ti.second <= 0) break; // already removed enough
+				}
+			}
+
+			std::ostringstream ss;
+			ss << -removed;
+			_lstTransfers->addRow(2, tr(ti.first).c_str(), ss.str().c_str());
+		}
+		else if (Options::oxceGeoscapeEventsInstantDelivery)
 		{
 			hq->getStorageItems()->addItem(mod->getItem(ti.first, true), ti.second);
+
+			std::ostringstream ss;
+			ss << ti.second;
+			_lstTransfers->addRow(2, tr(ti.first).c_str(), ss.str().c_str());
 		}
 		else
 		{
@@ -302,10 +352,6 @@ void GeoscapeEventState::eventLogic()
 			t->setItems(mod->getItem(ti.first, true), ti.second);
 			hq->getTransfers()->push_back(t);
 		}
-
-		std::ostringstream ss;
-		ss << ti.second;
-		_lstTransfers->addRow(2, tr(ti.first).c_str(), ss.str().c_str());
 	}
 
 	// 3b. spawn craft into the HQ
@@ -425,11 +471,25 @@ void GeoscapeEventState::btnOkClick(Action *)
 {
 	_game->popState();
 
-	Base *base = _game->getSavedGame()->getBases()->front();
-	if (_game->getSavedGame()->getMonthsPassed() > -1 && Options::storageLimitsEnforced && base != 0 && base->storesOverfull())
+	if (!_eventRule.getCutscene().empty())
 	{
-		_game->pushState(new SellState(base, 0));
-		_game->pushState(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(base->getName()), _palette, _game->getMod()->getInterface("debriefing")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("debriefing")->getElement("errorPalette")->color));
+		_game->pushState(new CutsceneState(_eventRule.getCutscene()));
+		if (_game->getSavedGame()->getEnding() == END_NONE)
+		{
+			const RuleVideo* videoRule = _game->getMod()->getVideo(_eventRule.getCutscene(), true);
+			if (videoRule->getWinGame()) _game->getSavedGame()->setEnding(END_WIN);
+			if (videoRule->getLoseGame()) _game->getSavedGame()->setEnding(END_LOSE);
+		}
+	}
+
+	if (_game->getSavedGame()->getEnding() == END_NONE)
+	{
+		Base* base = _game->getSavedGame()->getBases()->front();
+		if (_game->getSavedGame()->getMonthsPassed() > -1 && Options::storageLimitsEnforced && base != 0 && base->storesOverfull())
+		{
+			_game->pushState(new SellState(base, 0));
+			_game->pushState(new ErrorMessageState(tr("STR_STORAGE_EXCEEDED").arg(base->getName()), _palette, _game->getMod()->getInterface("debriefing")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("debriefing")->getElement("errorPalette")->color));
+		}
 	}
 
 	if (!_bonusResearchName.empty())

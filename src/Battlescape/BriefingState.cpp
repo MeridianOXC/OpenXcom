@@ -72,19 +72,30 @@ BriefingState::BriefingState(Craft *craft, Base *base, bool infoOnly, BriefingDa
 
 	std::string mission = battleSave->getMissionType();
 	AlienDeployment *deployment = _game->getMod()->getDeployment(mission);
-	Ufo * ufo = 0;
-	if (!deployment && craft)
+	if (mission == "STR_BASE_DEFENSE")
 	{
-		ufo = dynamic_cast <Ufo*> (craft->getDestination());
-		if (ufo) // landing site or crash site.
+		AlienDeployment* customDeployment = _game->getMod()->getDeployment(battleSave->getAlienCustomDeploy());
+		if (customDeployment && !customDeployment->getBriefingData().desc.empty())
 		{
-			std::string ufoMissionName = ufo->getRules()->getType();
-			if (!battleSave->getAlienCustomMission().empty())
+			deployment = customDeployment;
+		}
+	}
+	else
+	{
+		Ufo* ufo = 0;
+		if (!deployment && craft)
+		{
+			ufo = dynamic_cast <Ufo*> (craft->getDestination());
+			if (ufo) // landing site or crash site.
 			{
-				// fake underwater UFO
-				ufoMissionName = battleSave->getAlienCustomMission();
+				std::string ufoMissionName = ufo->getRules()->getType();
+				if (!battleSave->getAlienCustomMission().empty())
+				{
+					// fake underwater UFO
+					ufoMissionName = battleSave->getAlienCustomMission();
+				}
+				deployment = _game->getMod()->getDeployment(ufoMissionName);
 			}
-			deployment = _game->getMod()->getDeployment(ufoMissionName);
 		}
 	}
 

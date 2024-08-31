@@ -63,7 +63,17 @@ SaveGameState::SaveGameState(OptionsOrigin origin, SaveType type, SDL_Color *pal
 		_filename = SavedGame::QUICKSAVE;
 		break;
 	case SAVE_AUTO_GEOSCAPE:
-		_filename = SavedGame::AUTOSAVE_GEOSCAPE;
+		if (Options::oxceGeoAutosaveFrequency > 0 && Options::oxceGeoAutosaveSlots >= 2 && Options::oxceGeoAutosaveSlots <= 10 && currentTurn > 0)
+		{
+			// multi-slot autosave
+			int slotIndex = (currentTurn / Options::oxceGeoAutosaveFrequency) % Options::oxceGeoAutosaveSlots;
+			_filename = "_" + std::to_string(slotIndex) + SavedGame::AUTOSAVE_GEOSCAPE;
+		}
+		else
+		{
+			// classic autosave
+			_filename = SavedGame::AUTOSAVE_GEOSCAPE;
+		}
 		break;
 	case SAVE_AUTO_BATTLESCAPE:
 		if (currentTurn > 0 && Options::autosaveSlots >= 2 && Options::autosaveSlots <= 10)

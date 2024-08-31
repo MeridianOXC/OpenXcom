@@ -21,3 +21,4 @@ nl:
   SETUP_WARNING_UFO: "X-COM 1 was niet in de map gevonden. ${GAME_NAME} vergt een geldige installatie van X-COM om uit te voeren. Doorgaan?"
   SETUP_WARNING_TFTD: "X-COM 2 was niet in de map gevonden. ${GAME_NAME} vergt een geldige installatie van X-COM om uit te voeren. Doorgaan?"
   SETUP_WARNING_XCU: "XcomUtil gedetecteerd. ${GAME_NAME} is niet compatibel met XcomUtil en zou niet correct kunnen werken. Doorgaan?"
+  SETUP_ERROR_PORTABLE: "De installatie map bevindt zich in een beschermde locatie. \nDit wordt niet ondersteund voor draagbare installaties."

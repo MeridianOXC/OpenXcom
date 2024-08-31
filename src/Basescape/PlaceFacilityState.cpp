@@ -353,7 +353,10 @@ void PlaceFacilityState::viewClick(Action *)
 			{
 				_base->getStorageItems()->removeItem(item.first, item.second.first);
 			}
-			_game->popState();
+			if (!_game->isShiftPressed())
+			{
+				_game->popState();
+			}
 		}
 	}
 }
