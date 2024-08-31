@@ -161,6 +161,8 @@ public:
 	bool ignoreBaseDefenses() const { return _ignoreBaseDefenses; }
 	/// Should the mission site despawn even if targeted?
 	bool despawnEvenIfTargeted() const { return _despawnEvenIfTargeted; }
+	/// Should the original UFO be respawned when the mission site despawns?
+	bool respawnUfoAfterSiteDespawn() const { return _respawnUfoAfterSiteDespawn; }
 	/// Should the spawned alien base be revealed immediately?
 	bool showAlienBase() const { return _showAlienBase; }
 	/// Gets the ID of the research topic that interrupts this mission (if any).
@@ -210,6 +212,8 @@ private:
 	bool _ignoreBaseDefenses;
 	/// Should the mission site despawn even if targeted?
 	bool _despawnEvenIfTargeted;
+	/// Should the original UFO be respawned when the mission site despawns?
+	bool _respawnUfoAfterSiteDespawn;
 	/// Should the spawned alien base be revealed immediately?
 	bool _showAlienBase;
 	/// the research topic that interrupts this mission type (when discovered)

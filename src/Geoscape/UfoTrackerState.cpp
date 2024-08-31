@@ -54,21 +54,25 @@ UfoTrackerState::UfoTrackerState(GeoscapeState *state, Globe *globe) : _state(st
 	const int WIDTH_SPEED = 32;
 	_screen = false;
 
+	int extraRows = Clamp(Options::oxceInterceptTableSize, 8, 80) - 8;
+	int extraHeight = 8 * extraRows;
+	int offset = extraHeight / 2;
+
 	// Create objects
-	_window = new Window(this, 320, 140, 0, 30, POPUP_HORIZONTAL);
-	_btnCancel = new TextButton(288, 16, 16, 146);
-	_txtTitle = new Text(300, 17, 10, 46);
+	_window = new Window(this, 320, 140 + extraHeight, 0, 30 - offset, POPUP_HORIZONTAL);
+	_btnCancel = new TextButton(288, 16, 16, 146 + offset);
+	_txtTitle = new Text(300, 17, 10, 46 - offset);
 	int x = 14;
-	_txtObject = new Text(WIDTH_OBJECT, 9, x, 70);
+	_txtObject = new Text(WIDTH_OBJECT, 9, x, 70 - offset);
 	x += WIDTH_OBJECT;
-	_txtSize = new Text(WIDTH_SIZE, 9, x, 70);
+	_txtSize = new Text(WIDTH_SIZE, 9, x, 70 - offset);
 	x += WIDTH_SIZE;
-	_txtAltitude = new Text(WIDTH_ALTITUDE, 9, x, 70);
+	_txtAltitude = new Text(WIDTH_ALTITUDE, 9, x, 70 - offset);
 	x += WIDTH_ALTITUDE;
-	_txtHeading = new Text(WIDTH_HEADING, 9, x, 70);
+	_txtHeading = new Text(WIDTH_HEADING, 9, x, 70 - offset);
 	x += WIDTH_HEADING;
-	_txtSpeed = new Text(WIDTH_SPEED+16, 17, x-16, 70); // 16 pixels overlap for translators
-	_lstObjects = new TextList(290, 64, 12, 78);
+	_txtSpeed = new Text(WIDTH_SPEED+16, 17, x-16, 70 - offset); // 16 pixels overlap for translators
+	_lstObjects = new TextList(290, 64 + extraHeight, 12, 78 - offset);
 
 	// Set palette
 	setInterface("ufoTracker");
@@ -131,7 +135,7 @@ UfoTrackerState::UfoTrackerState(GeoscapeState *state, Globe *globe) : _state(st
 
 	for (auto* ufo : *_game->getSavedGame()->getUfos())
 	{
-		if (!ufo->getDetected())
+		if (!ufo->getDetected() || ufo->getStatus() == Ufo::IGNORE_ME)
 			continue;
 
 		std::ostringstream ss1;

@@ -1216,11 +1216,17 @@ void DebriefingState::prepareDebriefing()
 	}
 
 	// mission site disappears (even when you abort)
+	Ufo* ignoredUfo = nullptr;
 	for (auto msIt = save->getMissionSites()->begin(); msIt != save->getMissionSites()->end(); ++msIt)
 	{
 		MissionSite* ms = (*msIt);
 		if (ms->isInBattlescape())
 		{
+			if (ms->getUfo())
+			{
+				ignoredUfo = ms->getUfo();
+				ms->setUfo(nullptr);
+			}
 			_missionStatistics->alienRace = ms->getAlienRace();
 			delete ms;
 			save->getMissionSites()->erase(msIt);
@@ -1575,19 +1581,22 @@ void DebriefingState::prepareDebriefing()
 						{
 							if (weapon)
 							{
-								const RuleItem *primaryRule = weapon->getRules();
-								const BattleItem *ammoItem = weapon->getAmmoForSlot(0);
-								const RuleItem *compatible = primaryRule->getVehicleClipAmmo();
-								if (primaryRule->getVehicleUnit() && compatible && ammoItem != 0 && ammoItem->getAmmoQuantity() > 0)
+								const RuleItem* primaryWeaponRule = weapon->getRules();
+								const RuleItem* fixedAmmoRule = primaryWeaponRule->getVehicleClipAmmo();
+								if (primaryWeaponRule->getVehicleUnit() && fixedAmmoRule)
 								{
-									int total = ammoItem->getAmmoQuantity();
-
-									if (primaryRule->getClipSize()) // meaning this tank can store multiple clips
+									const BattleItem* fixedAmmoItem = weapon->getAmmoForSlot(primaryWeaponRule->getVehicleFixedAmmoSlot());
+									if (fixedAmmoItem != 0 && fixedAmmoItem->getAmmoQuantity() > 0)
 									{
-										total /= ammoItem->getRules()->getClipSize();
-									}
+										int total = fixedAmmoItem->getAmmoQuantity();
 
-									addItemsToBaseStores(compatible, base, total, false);
+										if (primaryWeaponRule->getClipSize()) // meaning this tank can store multiple clips
+										{
+											total /= fixedAmmoItem->getRules()->getClipSize();
+										}
+
+										addItemsToBaseStores(fixedAmmoRule, base, total, false);
+									}
 								}
 							}
 						};
@@ -2161,6 +2170,20 @@ void DebriefingState::prepareDebriefing()
 		_eventToSpawn = _game->getMod()->getEvent(ruleDeploy->chooseFailureEvent());
 	}
 
+	if (ignoredUfo)
+	{
+		if (!success || aborted || playersSurvived <= 0)
+		{
+			// either "reactivate" the corresponding Ufo
+			ignoredUfo->getMission()->ufoLifting(*ignoredUfo, *save);
+		}
+		else
+		{
+			// or finally destroy it
+			ignoredUfo->setStatus(Ufo::DESTROYED);
+		}
+	}
+
 	// remember the base for later use (of course only if it's not lost already (in that case base=0))
 	_base = base;
 }
@@ -2488,16 +2511,37 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base, C
 					}
 				}
 			}
-			// special case of fixed weapons on a soldier's armor, but not HWPs
+			// special case of fixed weapons on a soldier's armor (and HWPs, but only non-fixed ammo)
 			// makes sure we recover the ammunition from this weapon
-			else if (rule->isFixed() && bi->getOwner() && bi->getOwner()->getOriginalFaction() == FACTION_PLAYER && bi->getOwner()->getGeoscapeSoldier())
+			else if (rule->isFixed() && bi->getOwner() && bi->getOwner()->getOriginalFaction() == FACTION_PLAYER)
 			{
 				switch (rule->getBattleType())
 				{
 					case BT_FIREARM:
 					case BT_MELEE:
-						// It's a weapon, count any rounds left in the clip.
-						recoveryAmmoInWeapon(bi);
+						if (bi->getOwner()->getGeoscapeSoldier())
+						{
+							// It's a weapon, count any rounds left in the clip.
+							recoveryAmmoInWeapon(bi);
+						}
+						else
+						{
+							BattleItem* hwpFixedAmmoItem = nullptr;
+							if (rule->getVehicleUnit() && rule->getVehicleClipAmmo())
+							{
+								// remove fixed ammo (it will be recovered later elsewhere)
+								hwpFixedAmmoItem = bi->setAmmoForSlot(rule->getVehicleFixedAmmoSlot(), nullptr);
+							}
+
+							// recover the rest (i.e. non-fixed ammo)
+							recoveryAmmoInWeapon(bi);
+
+							if (hwpFixedAmmoItem)
+							{
+								// put fixed ammo back in
+								bi->setAmmoForSlot(rule->getVehicleFixedAmmoSlot(), hwpFixedAmmoItem);
+							}
+						}
 						break;
 					default:
 						break;

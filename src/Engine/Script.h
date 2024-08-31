@@ -189,6 +189,10 @@ constexpr ArgSpecEnum operator^(ArgSpecEnum a, ArgSpecEnum b)
 enum ArgEnum : ArgEnumBase
 {
 	ArgInvalid = ArgSpecSize * 0,
+	ArgPlaceholder,
+	ArgUnknowSimple,
+	ArgUnknowSegment,
+	ArgInvalidMax,
 
 	ArgNull = ArgSpecSize * 1,
 	ArgInt = ArgSpecSize * 2,
@@ -198,6 +202,8 @@ enum ArgEnum : ArgEnumBase
 
 	ArgMax = ArgSpecSize * 6,
 };
+
+static_assert(ArgInvalidMax < ArgNull, "Overlap of different ranges");
 
 /**
  * Next available value for arg type.
@@ -233,28 +239,28 @@ constexpr ArgEnum ArgSpecRemove(ArgEnum arg, ArgSpecEnum spec)
  */
 constexpr bool ArgIsReg(ArgEnum arg)
 {
-	return (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecReg)) == static_cast<ArgEnumBase>(ArgSpecReg);
+	return ArgBase(arg) != ArgInvalid && (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecReg)) == static_cast<ArgEnumBase>(ArgSpecReg);
 }
 /**
  * Test if argument type is variable (writeable register).
  */
 constexpr bool ArgIsVar(ArgEnum arg)
 {
-	return (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecVar)) == static_cast<ArgEnumBase>(ArgSpecVar);
+	return ArgBase(arg) != ArgInvalid && (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecVar)) == static_cast<ArgEnumBase>(ArgSpecVar);
 }
 /**
  * Test if argument type is pointer.
  */
 constexpr bool ArgIsPtr(ArgEnum arg)
 {
-	return (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecPtr)) == static_cast<ArgEnumBase>(ArgSpecPtr);
+	return ArgBase(arg) != ArgInvalid && (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecPtr)) == static_cast<ArgEnumBase>(ArgSpecPtr);
 }
 /**
  * Test if argument type is editable pointer.
  */
 constexpr bool ArgIsPtrE(ArgEnum arg)
 {
-	return (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecPtrE)) == static_cast<ArgEnumBase>(ArgSpecPtrE);
+	return ArgBase(arg) != ArgInvalid && (static_cast<ArgEnumBase>(arg) & static_cast<ArgEnumBase>(ArgSpecPtrE)) == static_cast<ArgEnumBase>(ArgSpecPtrE);
 }
 /**
  * Compatibility between operation argument type and variable type. Greater numbers mean bigger compatibility.
@@ -265,7 +271,7 @@ constexpr bool ArgIsPtrE(ArgEnum arg)
 constexpr int ArgCompatible(ArgEnum argType, ArgEnum varType, size_t overloadSize)
 {
 	return
-		argType == ArgInvalid ? 0 :
+		ArgBase(argType) == ArgInvalid ? 0 :
 		ArgIsVar(argType) && argType != varType ? 0 :
 		ArgBase(argType) != ArgBase(varType) ? 0 :
 		ArgIsReg(argType) != ArgIsReg(varType) ? 0 :
@@ -888,12 +894,12 @@ protected:
 
 public:
 	/// Default constructor.
-	constexpr ScriptRange() : _begin{ nullptr }, _end{ nullptr }
+	constexpr ScriptRange() noexcept : _begin{ nullptr }, _end{ nullptr }
 	{
 
 	}
 	/// Constructor.
-	constexpr ScriptRange(ptr b, ptr e) : _begin{ b }, _end{ e }
+	constexpr ScriptRange(ptr b, ptr e) noexcept : _begin{ b }, _end{ e }
 	{
 
 	}
@@ -927,26 +933,26 @@ class ScriptRef : public ScriptRange<char>
 {
 public:
 	/// Default constructor.
-	constexpr ScriptRef() = default;
+	constexpr ScriptRef() noexcept = default;
 
 	/// Copy constructor.
-	constexpr ScriptRef(const ScriptRef&) = default;
+	constexpr ScriptRef(const ScriptRef&) noexcept = default;
 
 	/// Constructor from char array.
 	template<int I>
-	constexpr explicit ScriptRef(const char (&p)[I]) : ScriptRange{ p , p + I - 1 }
+	constexpr explicit ScriptRef(const char (&p)[I]) noexcept : ScriptRange{ p , p + I - 1 }
 	{
 
 	}
 
 	/// Constructor from range of pointers.
-	constexpr ScriptRef(ptr b, ptr e) : ScriptRange{ b, e }
+	constexpr ScriptRef(ptr b, ptr e) noexcept : ScriptRange{ b, e }
 	{
 
 	}
 
 	/// Copy assignment.
-	constexpr ScriptRef& operator=(const ScriptRef& r) = default;
+	constexpr ScriptRef& operator=(const ScriptRef& r) noexcept = default;
 
 
 

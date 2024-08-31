@@ -62,6 +62,7 @@ private:
 	const RuleCraft* _producedCraft;
 	std::vector<std::pair<int, std::map<std::string, int> > > _randomProducedItemsNames;
 	std::vector<std::pair<int, std::map<const RuleItem*, int> > > _randomProducedItems;
+	std::vector<int> _transferTimes;
 	int _listOrder;
 public:
 	static const int MANU_STATUS_NEW = 0;
@@ -117,6 +118,8 @@ public:
 	const YAML::Node& getSpawnedSoldierTemplate() const { return _spawnedSoldier; }
 	/// Is it possible to use auto-sell feature for this manufacturing project?
 	bool canAutoSell() const;
+	/// Gets the transfer time info.
+	const std::vector<int>& getTransferTimes() const { return _transferTimes; }
 	/// Gets the list weight for this manufacture item.
 	int getListOrder() const;
 };

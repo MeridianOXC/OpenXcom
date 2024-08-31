@@ -426,6 +426,10 @@ void ConfirmDestinationState::btnTransferClick(Action *)
 			if (soldier->getCraft() == _crafts.front())
 			{
 				soldier->setPsiTraining(false);
+				if (soldier->isInTraining())
+				{
+					soldier->setReturnToTrainingWhenHealed(true);
+				}
 				soldier->setTraining(false);
 				targetBase->getSoldiers()->push_back(soldier);
 				soldierIt = currentBase->getSoldiers()->erase(soldierIt);

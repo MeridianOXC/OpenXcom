@@ -54,6 +54,7 @@
 #include "TransferBaseState.h"
 #include "TechTreeViewerState.h"
 #include "../Ufopaedia/Ufopaedia.h"
+#include "../Menu/ErrorMessageState.h"
 
 namespace OpenXcom
 {
@@ -999,6 +1000,26 @@ void SellState::increase()
  */
 void SellState::changeByValue(int change, int dir)
 {
+	if (dir > 0 && getRow().type == TRANSFER_ITEM)
+	{
+		const RuleItem* tmpItem = (const RuleItem*)getRow().rule;;
+		if (!tmpItem->getSellActionMessage().empty() && !_game->isShiftPressed())
+		{
+			_timerInc->stop();
+			_timerDec->stop();
+			RuleInterface* menuInterface = _game->getMod()->getInterface("buyMenu");
+			_game->pushState(new ErrorMessageState(
+				tr(tmpItem->getSellActionMessage()),
+				_palette,
+				menuInterface->getElement("errorMessage")->color,
+				"BACK13.SCR",
+				menuInterface->getElement("errorPalette")->color)
+			);
+
+			return;
+		}
+	}
+
 	if (dir > 0)
 	{
 		if (0 >= change || getRow().qtySrc <= getRow().amount) return;

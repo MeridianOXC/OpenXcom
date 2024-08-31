@@ -23,6 +23,8 @@
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "GeoscapeState.h"
+#include "Globe.h"
+#include "../Savegame/Target.h"
 #include "../Engine/Options.h"
 
 namespace OpenXcom
@@ -34,7 +36,8 @@ namespace OpenXcom
  * @param state Pointer to the Geoscape state.
  * @param msg Error message.
  */
-CraftErrorState::CraftErrorState(GeoscapeState *state, const std::string &msg, bool enableHotkeys) : _state(state)
+CraftErrorState::CraftErrorState(GeoscapeState *state, const std::string &msg, bool enableHotkeys, Target* centerOnTarget) :
+	_state(state), _centerOnTarget(centerOnTarget)
 {
 	_screen = false;
 
@@ -107,6 +110,10 @@ void CraftErrorState::btnOkClick(Action *)
 void CraftErrorState::btnOk5SecsClick(Action *)
 {
 	_state->timerReset();
+	if (_centerOnTarget)
+	{
+		_state->getGlobe()->center(_centerOnTarget->getLongitude(), _centerOnTarget->getLatitude());
+	}
 	_game->popState();
 }
 

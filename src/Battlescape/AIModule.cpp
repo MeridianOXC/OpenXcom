@@ -275,7 +275,6 @@ void AIModule::think(BattleAction *action)
 		return;
 	}
 
-	Mod *mod = _save->getBattleState()->getGame()->getMod();
 	if (action->weapon)
 	{
 		const RuleItem *rule = action->weapon->getRules();
@@ -306,8 +305,8 @@ void AIModule::think(BattleAction *action)
 		}
 	}
 
-	BattleItem *grenade = _unit->getGrenadeFromBelt();
-	_grenade = grenade != 0 && _save->getTurn() >= grenade->getRules()->getAIUseDelay(mod);
+	BattleItem *grenadeItem = _unit->getGrenadeFromBelt(_save);
+	_grenade = grenadeItem != 0;
 
 	if (_spottingEnemies && !_escapeTUs)
 	{
@@ -322,7 +321,7 @@ void AIModule::think(BattleAction *action)
 	setupAttack();
 	setupPatrol();
 
-	if (_psiAction.type != BA_NONE && !_didPsi && _save->getTurn() >= _psiAction.weapon->getRules()->getAIUseDelay(mod))
+	if (_psiAction.type != BA_NONE && !_didPsi && _save->getTurn() >= _psiAction.weapon->getRules()->getAIUseDelay(_save->getMod()))
 	{
 		_didPsi = true;
 		action->type = _psiAction.type;
@@ -449,7 +448,7 @@ void AIModule::think(BattleAction *action)
 		action->target = _attackAction.target;
 		// this may have changed to a grenade.
 		action->weapon = _attackAction.weapon;
-		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->getBattleType() == BT_GRENADE)
+		if (action->weapon && action->type == BA_THROW && action->weapon->getRules()->isGrenadeOrProxy())
 		{
 			_unit->spendCost(_unit->getActionTUs(BA_PRIME, action->weapon));
 			_unit->spendTimeUnits(4);
@@ -628,7 +627,7 @@ void AIModule::setupPatrol()
 						_patrolAction.weapon = _attackAction.weapon;
 						_patrolAction.type = BA_SNAPSHOT;
 						_patrolAction.updateTU();
-						_foundBaseModuleToDestroy = _save->getBattleGame()->getMod()->getAIDestroyBaseFacilities();
+						_foundBaseModuleToDestroy = _save->getMod()->getAIDestroyBaseFacilities();
 						return;
 					}
 				}
@@ -1426,7 +1425,7 @@ bool AIModule::selectSpottedUnitForSniper()
 		// We know we have a grenade, now we need to know if we have the TUs to throw it
 		costThrow.type = BA_THROW;
 		costThrow.actor = _attackAction.actor;
-		costThrow.weapon = _unit->getGrenadeFromBelt();
+		costThrow.weapon = _unit->getGrenadeFromBelt(_save);
 		costThrow.updateTU();
 		costThrow.Time += 4; // Vanilla TUs for AI picking up grenade from belt
 		costThrow += _attackAction.actor->getActionTUs(BA_PRIME, costThrow.weapon);
@@ -1492,7 +1491,7 @@ int AIModule::scoreFiringMode(BattleAction *action, BattleUnit *target, bool che
 	}
 
 	// Get base accuracy for the action
-	int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getBattleGame()->getMod());
+	int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getMod());
 	int distanceSq = _unit->distance3dToUnitSq(target);
 	int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
@@ -1544,9 +1543,10 @@ int AIModule::scoreFiringMode(BattleAction *action, BattleUnit *target, bool che
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	if (action->type == BA_THROW && _grenade)
 	{
-		tuCost = _unit->getActionTUs(action->type, _unit->getGrenadeFromBelt()).Time;
+		auto* grenadeItem = _unit->getGrenadeFromBelt(_save);
+		tuCost = _unit->getActionTUs(action->type, grenadeItem).Time;
 		tuCost += 4;
-		tuCost += _unit->getActionTUs(BA_PRIME, _unit->getGrenadeFromBelt()).Time;
+		tuCost += _unit->getActionTUs(BA_PRIME, grenadeItem).Time;
 	}
 	int tuTotal = _unit->getBaseStats()->tu;
 
@@ -1791,7 +1791,9 @@ void AIModule::evaluateAIMode()
 	// enforce the validity of our decision, and try fallback behaviour according to priority.
 	if (_AIMode == AI_COMBAT)
 	{
-		if (_save->getTile(_attackAction.target) && _save->getTile(_attackAction.target)->getUnit())
+		auto* xtile = _save->getTile(_attackAction.target);
+		bool throwingGrenadeOrProxy = _attackAction.type == BA_THROW && _attackAction.weapon && _attackAction.weapon->getRules()->isGrenadeOrProxy();
+		if (xtile && (xtile->getUnit() || throwingGrenadeOrProxy)) // https://openxcom.org/forum/index.php?topic=12145.0
 		{
 			if (_attackAction.type != BA_RETHINK)
 			{
@@ -1843,7 +1845,7 @@ bool AIModule::findFirePoint()
 	const int BASE_SYSTEMATIC_SUCCESS = 100;
 	const int FAST_PASS_THRESHOLD = 125;
 	bool waitIfOutsideWeaponRange = _unit->getGeoscapeSoldier() ? false : _unit->getUnitRules()->waitIfOutsideWeaponRange();
-	bool extendedFireModeChoiceEnabled = _save->getBattleGame()->getMod()->getAIExtendedFireModeChoice();
+	bool extendedFireModeChoiceEnabled = _save->getMod()->getAIExtendedFireModeChoice();
 	int bestScore = 0;
 	_attackAction.type = BA_RETHINK;
 	for (const auto& randomPosition : randomTileSearch)
@@ -2276,7 +2278,7 @@ void AIModule::projectileAction()
 	bool waitIfOutsideWeaponRange = _unit->getGeoscapeSoldier() ? false : _unit->getUnitRules()->waitIfOutsideWeaponRange();
 
 	// Do we want to use the extended firing mode scoring?
-	bool extendedFireModeChoiceEnabled = _save->getBattleGame()->getMod()->getAIExtendedFireModeChoice();
+	bool extendedFireModeChoiceEnabled = _save->getMod()->getAIExtendedFireModeChoice();
 	if (!waitIfOutsideWeaponRange && extendedFireModeChoiceEnabled)
 	{
 		// Note: this will also check for the weapon's max range
@@ -2286,7 +2288,7 @@ void AIModule::projectileAction()
 	}
 
 	// Do we want to check if the weapon is in range?
-	bool aiRespectsMaxRange = _save->getBattleGame()->getMod()->getAIRespectMaxRange();
+	bool aiRespectsMaxRange = _save->getMod()->getAIRespectMaxRange();
 	if (!waitIfOutsideWeaponRange && aiRespectsMaxRange)
 	{
 		// If we want to check and it's not in range, perhaps we should re-think shooting
@@ -2378,7 +2380,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 		{
 			if (_grenade)
 			{
-				testAction.weapon = _unit->getGrenadeFromBelt();
+				testAction.weapon = _unit->getGrenadeFromBelt(_save);
 			}
 			else
 			{
@@ -2394,14 +2396,14 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 		// Add a random factor to the firing mode score based on intelligence
 		// An intelligence value of 10 will decrease this random factor to 0
 		// Default values for and intelligence value of 0 will make this a 50% to 150% roll
-		int intelligenceModifier = _save->getBattleGame()->getMod()->getAIFireChoiceIntelCoeff() * std::max(10 - _unit->getIntelligence(), 0);
+		int intelligenceModifier = _save->getMod()->getAIFireChoiceIntelCoeff() * std::max(10 - _unit->getIntelligence(), 0);
 		newScore = newScore * (100 + RNG::generate(-intelligenceModifier, intelligenceModifier)) / 100;
 
 		// More aggressive units get a modifier to the score for autoshots
 		// Aggression = 0 lowers the score, aggro = 1 is no modifier, aggro > 1 bumps up the score by 5% (configurable) for each increment over 1
 		if (i == BA_AUTOSHOT)
 		{
-			newScore = newScore * (100 + (_unit->getAggression() - 1) * _save->getBattleGame()->getMod()->getAIFireChoiceAggroCoeff()) / 100;
+			newScore = newScore * (100 + (_unit->getAggression() - 1) * _save->getMod()->getAIFireChoiceAggroCoeff()) / 100;
 		}
 
 		if (newScore > score)
@@ -2425,7 +2427,7 @@ void AIModule::extendedFireModeChoice(BattleActionCost& costAuto, BattleActionCo
 void AIModule::grenadeAction()
 {
 	// do we have a grenade on our belt?
-	BattleItem *grenade = _unit->getGrenadeFromBelt();
+	BattleItem *grenade = _unit->getGrenadeFromBelt(_save);
 	BattleAction action;
 	action.weapon = grenade;
 	action.type = BA_THROW;
@@ -2446,16 +2448,40 @@ void AIModule::grenadeAction()
 		{
 			return;
 		}
-		Position originVoxel = _save->getTileEngine()->getOriginVoxel(action, 0);
-		Position targetVoxel = action.target.toVoxel() + Position (8,8, (2 + -_save->getTile(action.target)->getTerrainLevel()));
-		// are we within range?
-		if (_save->getTileEngine()->validateThrow(action, originVoxel, targetVoxel, _save->getDepth()))
+		std::vector<std::pair<Position, int>> shifts;
+		if (grenade->getRules()->getBattleType() == BT_PROXIMITYGRENADE)
 		{
-			_attackAction.weapon = grenade;
-			_attackAction.target = action.target;
-			_attackAction.type = BA_THROW;
-			_rifle = false;
-			_melee = false;
+			// let's try to not throw the proxy below xcom's feet, otherwise they'll just throw it straight back :)
+			if (action.target.x < _save->getMapSizeX() - 1) shifts.push_back(std::make_pair(Position(1, 0, 0), _unit->distance3dToPositionSq(action.target + Position(1, 0, 0))));
+			if (action.target.y < _save->getMapSizeY() - 1) shifts.push_back(std::make_pair(Position(0, 1, 0), _unit->distance3dToPositionSq(action.target + Position(0, 1, 0))));
+			if (action.target.x > 0) shifts.push_back(std::make_pair(Position(-1, 0, 0), _unit->distance3dToPositionSq(action.target + Position(-1, 0, 0))));
+			if (action.target.y > 0) shifts.push_back(std::make_pair(Position(0, -1, 0), _unit->distance3dToPositionSq(action.target + Position(0, -1, 0))));
+			//RNG::shuffle(shifts);
+			std::sort(shifts.begin(), shifts.end(), [](auto& left, auto& right) {
+				return left.second < right.second;
+			});
+			// PS: if someone wants to calculate a better target spot (based on multiple enemies, RNG, day of the week or position of the stars), be my guest
+		}
+		else
+		{
+			// normal grenade
+			shifts.push_back(std::make_pair(Position(0, 0, 0), 0));
+		}
+		Position originVoxel = _save->getTileEngine()->getOriginVoxel(action, 0);
+		for (auto& shift : shifts)
+		{
+			Position targetTile = action.target + shift.first;
+			Position targetVoxel = targetTile.toVoxel() + Position(8,8, (2 + -_save->getTile(targetTile)->getTerrainLevel()));
+			// are we within range?
+			if (_save->getTileEngine()->validateThrow(action, originVoxel, targetVoxel, _save->getDepth()))
+			{
+				_attackAction.weapon = grenade;
+				_attackAction.target = targetTile;
+				_attackAction.type = BA_THROW;
+				_rifle = false;
+				_melee = false;
+				break;
+			}
 		}
 	}
 }

@@ -27,6 +27,7 @@ class TextButton;
 class Window;
 class Text;
 class GeoscapeState;
+class Target;
 
 /**
  * Window used to notify the player when
@@ -36,12 +37,13 @@ class CraftErrorState : public State
 {
 private:
 	GeoscapeState *_state;
+	Target* _centerOnTarget;
 	TextButton *_btnOk, *_btnOk5Secs;
 	Window *_window;
 	Text *_txtMessage;
 public:
 	/// Creates the Craft Error state.
-	CraftErrorState(GeoscapeState *state, const std::string &msg, bool enableHotkeys = true);
+	CraftErrorState(GeoscapeState *state, const std::string &msg, bool enableHotkeys = true, Target* centerOnTarget = nullptr);
 	/// Cleans up the Craft Error state.
 	~CraftErrorState();
 	/// Handler for clicking the OK button.

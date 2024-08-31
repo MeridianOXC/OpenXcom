@@ -1128,7 +1128,7 @@ void CraftEquipmentState::loadGlobalLoadout(int index, bool onlyAddItems)
 */
 void CraftEquipmentState::btnLoadClick(Action *)
 {
-	if (!_isNewBattle)
+	//if (!_isNewBattle)
 	{
 		_game->pushState(new CraftEquipmentLoadState(this));
 		_returningFromGlobalTemplates = true;

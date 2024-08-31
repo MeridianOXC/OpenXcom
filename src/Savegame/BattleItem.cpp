@@ -1495,6 +1495,13 @@ void setStimulantQuantityScript(BattleItem* bt, int i)
 	}
 }
 
+
+void commonBattleItemAnimations(ScriptParserBase* parser)
+{
+	SavedBattleGame::ScriptRegisterUnitAnimations(parser);
+}
+
+
 } // namespace
 
 /**
@@ -1531,6 +1538,7 @@ void BattleItem::ScriptRegister(ScriptParserBase* parser)
 	bi.add<&BattleItem::isAmmo>("isAmmo");
 	bi.add<&BattleItem::isSpecialWeapon>("isSpecialWeapon");
 
+	bi.add<&BattleItem::getRules, &RuleItem::getClipSize>("getAmmoQuantityMax");
 	bi.add<&BattleItem::getAmmoQuantity>("getAmmoQuantity");
 	bi.add<&setAmmoQuantityScript>("setAmmoQuantity");
 
@@ -1599,6 +1607,7 @@ ModScript::RecolorItemParser::RecolorItemParser(ScriptGlobal* shared, const std:
 	BindBase b { this };
 
 	commonImpl(b, mod);
+	commonBattleItemAnimations(this);
 
 	setDefault("add_shade new_pixel shade; return new_pixel;");
 }
@@ -1615,6 +1624,7 @@ ModScript::SelectItemParser::SelectItemParser(ScriptGlobal* shared, const std::s
 	BindBase b { this };
 
 	commonImpl(b, mod);
+	commonBattleItemAnimations(this);
 
 	setDefault("add sprite_index sprite_offset; return sprite_index;");
 }

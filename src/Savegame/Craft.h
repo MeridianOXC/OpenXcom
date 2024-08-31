@@ -88,7 +88,7 @@ public:
 private:
 	const RuleCraft *_rules;
 	Base *_base;
-	int _fuel, _damage, _shield, _interceptionOrder, _takeoff;
+	int _fuel, _excessFuel, _damage, _shield, _interceptionOrder, _takeoff;
 	std::vector<CraftWeapon*> _weapons;
 	ItemContainer *_items;
 	ItemContainer *_tempSoldierItems;

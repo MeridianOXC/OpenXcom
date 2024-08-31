@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MissionSite.h"
+#include "Ufo.h"
 #include "../Engine/Language.h"
 #include "../Mod/RuleAlienMission.h"
 #include "../Mod/AlienDeployment.h"
@@ -27,7 +28,9 @@ namespace OpenXcom
 /**
  * Initializes a mission site.
  */
-MissionSite::MissionSite(const RuleAlienMission *rules, const AlienDeployment *deployment, const AlienDeployment *alienCustomDeploy) : Target(), _rules(rules), _deployment(deployment), _missionCustomDeploy(alienCustomDeploy), _texture(-1), _secondsRemaining(0), _inBattlescape(false), _detected(false)
+MissionSite::MissionSite(const RuleAlienMission *rules, const AlienDeployment *deployment, const AlienDeployment *alienCustomDeploy) : Target(),
+	_rules(rules), _deployment(deployment), _missionCustomDeploy(alienCustomDeploy),
+	_texture(-1), _secondsRemaining(0), _inBattlescape(false), _detected(false), _ufo(nullptr), _ufoUniqueId(-1)
 {
 }
 
@@ -51,6 +54,8 @@ void MissionSite::load(const YAML::Node &node)
 	_inBattlescape = node["inBattlescape"].as<bool>(_inBattlescape);
 	_detected = node["detected"].as<bool>(_detected);
 	//_missionCustomDeploy loaded outside
+	_ufoUniqueId = node["ufoUniqueId"].as<int>(_ufoUniqueId);
+	// _ufo loaded outside
 }
 
 /**
@@ -71,6 +76,10 @@ YAML::Node MissionSite::save() const
 	if (_inBattlescape)
 		node["inBattlescape"] = _inBattlescape;
 	node["detected"] = _detected;
+	if (_ufo)
+	{
+		node["ufoUniqueId"] = _ufo->getUniqueId();
+	}
 	return node;
 }
 

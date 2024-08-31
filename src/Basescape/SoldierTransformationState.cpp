@@ -521,6 +521,14 @@ void SoldierTransformationState::performTransformation()
 
 	if (_transformationRule->getTransferTime() > 0 || _transformationRule->isCreatingClone() || _sourceSoldier->getDeath())
 	{
+		// handle training (transfer rules)
+		destinationSoldier->setPsiTraining(false);
+		if (destinationSoldier->isInTraining())
+		{
+			destinationSoldier->setReturnToTrainingWhenHealed(true);
+		}
+		destinationSoldier->setTraining(false);
+
 		int transferTime = _transformationRule->getTransferTime() > 0 ? _transformationRule->getTransferTime() : 24;
 		Transfer *transfer = new Transfer(transferTime);
 		transfer->setSoldier(destinationSoldier);

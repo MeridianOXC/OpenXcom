@@ -33,6 +33,7 @@
 #include "../Interface/Text.h"
 #include "../Interface/TextList.h"
 #include "../Savegame/Base.h"
+#include "../Savegame/BattleUnit.h"
 #include "../Savegame/Soldier.h"
 #include "../Savegame/SavedGame.h"
 #include "SoldierInfoState.h"
@@ -668,6 +669,24 @@ void SoldiersState::btnInventoryClick(Action *)
 		bgen.setBase(_base);
 		bgen.runInventory(0);
 
+		// pre-select the soldier under the mouse cursor (if possible)
+		if (_availableOptions.empty() || _cbxScreenActions->getSelected() == 0)
+		{
+			size_t idx = _lstSoldiers->getSelectedRow();
+			if (idx < _base->getSoldiers()->size())
+			{
+				int soldierId = _base->getSoldiers()->at(idx)->getId();
+				for (auto* unit : *bgame->getUnits())
+				{
+					if (unit->getId() == soldierId)
+					{
+						bgame->setSelectedUnit(unit);
+						break;
+					}
+				}
+			}
+		}
+
 		_game->getScreen()->clear();
 		_game->pushState(new InventoryState(false, 0, _base, true));
 	}
@@ -692,7 +711,14 @@ void SoldiersState::lstSoldiersClick(Action *action)
 	}
 	if (selAction == "STR_SOLDIER_INFO")
 	{
-		_game->pushState(new SoldierInfoState(_base, _lstSoldiers->getSelectedRow()));
+		if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+		{
+			btnInventoryClick(nullptr);
+		}
+		else
+		{
+			_game->pushState(new SoldierInfoState(_base, _lstSoldiers->getSelectedRow()));
+		}
 	}
 	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
 	{

@@ -45,7 +45,7 @@ class InventoryState : public State
 {
 private:
 	Surface *_bg, *_soldier;
-	Text *_txtItem, *_txtAmmo, *_txtWeight, *_txtTus, *_txtStatLine1, *_txtStatLine2, *_txtStatLine3, *_txtStatLine4;
+	Text *_txtItem, *_txtAmmo, *_txtWeight, *_txtTus, *_txtStatLine1, *_txtStatLine2, *_txtStatLine3, *_txtStatLine4, *_txtPosition;
 	TextEdit *_txtName;
 	TextEdit *_btnQuickSearch;
 	BattlescapeButton *_btnOk, *_btnPrev, *_btnNext, *_btnUnload, *_btnGround, *_btnRank, *_btnArmor;
@@ -146,6 +146,8 @@ public:
 	void handle(Action *action) override;
 	/// Runs state functionality every cycle.
 	void think() override;
+	/// Handler for showing tooltip with extra information (day/night indicator).
+	void txtTooltipInExtraOK(Action *action);
 	/// Handler for showing tooltip.
 	void txtTooltipIn(Action *action);
 	/// Handler for hiding tooltip.

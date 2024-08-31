@@ -113,6 +113,18 @@ void ListLoadState::init()
 	{
 		// make it so that this fires only once
 		Options::expendLoadLastSave();
+
+		// if the save was explicitly specified, load that one and skip all checks and confirmations
+		if (!Options::getLoadThisSave().empty())
+		{
+			// hide the ui
+			toggleScreen();
+			hideAll();
+
+			_game->pushState(new LoadGameState(_origin, Options::getLoadThisSave(), _palette));
+			return;
+		}
+
 		// find the absolutely latest save game including quick and autos
 		time_t timestamp = 0;
 		int idx = -1, i = 0;

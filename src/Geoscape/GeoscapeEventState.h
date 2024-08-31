@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <map>
 #include "../Engine/State.h"
 
 namespace OpenXcom
@@ -42,6 +43,7 @@ private:
 	ToggleTextButton *_btnItemsArriving;
 	TextList *_lstTransfers;
 
+	std::map<std::string, int> _itemsRemoved;
 	std::string _researchName;
 	std::string _bonusResearchName;
 	const RuleEvent &_eventRule;

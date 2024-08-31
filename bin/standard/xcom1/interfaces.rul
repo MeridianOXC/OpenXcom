@@ -2031,6 +2031,11 @@ interfaces:
         color: 133
   - type: inventory
     elements:
+      - id: textSlot
+        color: 64
+        color2: 16
+        pos: [65, 95]
+        size: [70, 9]
       - id: textName
         color: 64
       - id: textTUs

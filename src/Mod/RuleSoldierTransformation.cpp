@@ -30,10 +30,11 @@ RuleSoldierTransformation::RuleSoldierTransformation(const std::string &name, in
 	_name(name),
 	_keepSoldierArmor(false), _createsClone(false), _needsCorpseRecovered(true),
 	_allowsDeadSoldiers(false), _allowsLiveSoldiers(false), _allowsWoundedSoldiers(false),
-	_listOrder(listOrder), _cost(0), _transferTime(0), _recoveryTime(0), _minRank(0), _includeBonusesForMinStats(false),
+	_listOrder(listOrder), _cost(0), _transferTime(0), _recoveryTime(0), _minRank(0), _includeBonusesForMinStats(false), _includeBonusesForMaxStats(false),
 	_showMinMax(false), _lowerBoundAtMinStats(true), _upperBoundAtMaxStats(false), _upperBoundAtStatCaps(false), _upperBoundType(0),
 	_reset(false), _resetRank(false)
 {
+	_requiredMaxStats = UnitStats::scalar(9999); // set all default max stats to 9999
 }
 
 /**
@@ -65,7 +66,13 @@ void RuleSoldierTransformation::load(const YAML::Node &node, Mod* mod)
 	mod->loadUnorderedNames(_name, _requiredPreviousTransformations, node["requiredPreviousTransformations"]);
 	mod->loadUnorderedNames(_name, _forbiddenPreviousTransformations, node["forbiddenPreviousTransformations"]);
 	_includeBonusesForMinStats = node["includeBonusesForMinStats"].as<bool >(_includeBonusesForMinStats);
+	_includeBonusesForMaxStats = node["includeBonusesForMaxStats"].as<bool >(_includeBonusesForMaxStats);
 	_requiredMinStats = node["requiredMinStats"].as<UnitStats >(_requiredMinStats);
+	if (node["requiredMaxStats"])
+	{
+		UnitStats tmp = node["requiredMaxStats"].as<UnitStats >(_requiredMaxStats);
+		_requiredMaxStats.merge(tmp);
+	}
 	mod->loadUnorderedNamesToInt(_name, _requiredItems, node["requiredItems"]);
 	mod->loadUnorderedNamesToInt(_name, _requiredCommendations, node["requiredCommendations"]);
 	_cost = node["cost"].as<int>(_cost);
@@ -225,6 +232,15 @@ const std::vector<std::string > &RuleSoldierTransformation::getForbiddenPrevious
 const UnitStats &RuleSoldierTransformation::getRequiredMinStats() const
 {
 	return _requiredMinStats;
+}
+
+/**
+ * Gets the maximum stats a soldier can have to be eligible for this project
+ * @return The stat requirements
+ */
+const UnitStats &RuleSoldierTransformation::getRequiredMaxStats() const
+{
+	return _requiredMaxStats;
 }
 
 /**

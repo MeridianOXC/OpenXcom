@@ -147,7 +147,7 @@ const float TilesToVexels = 16.0f;
  * @param type String defining the type.
  */
 RuleItem::RuleItem(const std::string &type, int listOrder) :
-	_type(type), _name(type), _vehicleUnit(nullptr), _size(0.0),
+	_type(type), _name(type), _vehicleUnit(nullptr), _vehicleFixedAmmoSlot(0), _size(0.0),
 	_monthlyBuyLimit(0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3), _throwRange(0), _underwaterThrowRange(0),
 	_bigSprite(-1), _floorSprite(-1), _handSprite(120), _bulletSprite(-1), _specialIconSprite(-1),
 	_hitAnimation(0), _hitAnimFrames(-1), _hitMissAnimation(-1), _hitMissAnimFrames(-1),
@@ -339,6 +339,8 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	mod->loadUnorderedNamesToInt(_type, _recoveryDividers, node["recoveryDividers"]);
 	_recoveryTransformationsName = node["recoveryTransformations"].as< std::map<std::string, std::vector<int> > >(_recoveryTransformationsName);
 	mod->loadUnorderedNames(_type, _categories, node["categories"]);
+
+	_vehicleFixedAmmoSlot = node["vehicleFixedAmmoSlot"].as<int>(_vehicleFixedAmmoSlot);
 	_size = node["size"].as<double>(_size);
 	_monthlyBuyLimit = node["monthlyBuyLimit"].as<int>(_monthlyBuyLimit);
 	_costBuy = node["costBuy"].as<int>(_costBuy);
@@ -482,6 +484,7 @@ void RuleItem::load(const YAML::Node &node, Mod *mod, const ModScript& parsers)
 	_primeActionMessage = node["primeActionMessage"].as<std::string>(_primeActionMessage);
 	_unprimeActionName = node["unprimeActionName"].as<std::string>(_unprimeActionName);
 	_unprimeActionMessage = node["unprimeActionMessage"].as<std::string>(_unprimeActionMessage);
+	_sellActionMessage = node["sellActionMessage"].as<std::string>(_sellActionMessage);
 	_fuseType = (BattleFuseType)node["fuseType"].as<int>(_fuseType);
 	_hiddenOnMinimap = node["hiddenOnMinimap"].as<bool>(_hiddenOnMinimap);
 	_clipSize = node["clipSize"].as<int>(_clipSize);
@@ -767,18 +770,25 @@ void RuleItem::afterLoad(const Mod* mod)
 	}
 	if (_vehicleUnit)
 	{
-		if (_compatibleAmmo[0].size() > 1)
+		if (_vehicleFixedAmmoSlot != 0 && _vehicleFixedAmmoSlot != -1)
 		{
-			throw Exception("Vehicle weapons support only one ammo type");
+			throw Exception("Vehicle primary weapon fixed ammo slot can be only 0 or -1.");
 		}
-		if (_compatibleAmmo[0].size() == 1)
+		if (_vehicleFixedAmmoSlot > -1)
 		{
-			auto* ammo = _compatibleAmmo[0][0];
-			if (ammo->getClipSize() > 0 && getClipSize() > 0)
+			if (_compatibleAmmo[_vehicleFixedAmmoSlot].size() > 1)
 			{
-				if (getClipSize() % ammo->getClipSize())
+				throw Exception("Vehicle weapons support only one ammo type");
+			}
+			if (_compatibleAmmo[_vehicleFixedAmmoSlot].size() == 1)
+			{
+				auto* ammo = _compatibleAmmo[_vehicleFixedAmmoSlot].front();
+				if (ammo->getClipSize() > 0 && getClipSize() > 0)
 				{
-					throw Exception("Vehicle weapon clip size is not a multiple of '" + ammo->getType() +  "' clip size");
+					if (getClipSize() % ammo->getClipSize())
+					{
+						throw Exception("Vehicle weapon clip size is not a multiple of '" + ammo->getType() + "' clip size");
+					}
 				}
 			}
 		}
@@ -1427,7 +1437,7 @@ int RuleItem::getAccuracyThrow() const
  * Gets the item's accuracy for close quarters combat.
  * @return The close quarters accuracy.
  */
-int RuleItem::getAccuracyCloseQuarters(Mod *mod) const
+int RuleItem::getAccuracyCloseQuarters(const Mod *mod) const
 {
 	return _accuracyCloseQuarters != -1 ? _accuracyCloseQuarters : mod->getCloseQuartersAccuracyGlobal();
 }
@@ -1570,7 +1580,11 @@ int RuleItem::getTUUnload(int slot) const
  */
 const RuleItem* RuleItem::getVehicleClipAmmo() const
 {
-	return _compatibleAmmo[0].empty() ? nullptr : _compatibleAmmo[0].front();
+	if (_vehicleFixedAmmoSlot > -1)
+	{
+		return _compatibleAmmo[_vehicleFixedAmmoSlot].empty() ? nullptr : _compatibleAmmo[_vehicleFixedAmmoSlot].front();
+	}
+	return nullptr;
 }
 
 /**
@@ -1675,6 +1689,14 @@ const RuleDamageType *RuleItem::getMeleeType() const
 BattleType RuleItem::getBattleType() const
 {
 	return _battleType;
+}
+
+/**
+ * Is the item's type BT_GRENADE or BT_PROXIMITYGRENADE?
+ */
+bool RuleItem::isGrenadeOrProxy() const
+{
+	return _battleType == BT_GRENADE || _battleType == BT_PROXIMITYGRENADE;
 }
 
 /**
@@ -2090,8 +2112,10 @@ int RuleItem::getAIUseDelay(const Mod *mod) const
 		return mod->getAIUseDelayMelee();
 
 	case BT_GRENADE:
-	case BT_PROXIMITYGRENADE:
 		return mod->getAIUseDelayGrenade();
+
+	case BT_PROXIMITYGRENADE:
+		return mod->getAIUseDelayProxy();
 
 	case BT_PSIAMP:
 		return mod->getAIUseDelayPsionic();
@@ -2628,7 +2652,7 @@ const std::vector<int> &RuleItem::getCustomItemPreviewIndex() const
 * Gets the kneel bonus (15% bonus is encoded as 100+15 = 115).
 * @return Kneel bonus.
 */
-int RuleItem::getKneelBonus(Mod *mod) const
+int RuleItem::getKneelBonus(const Mod *mod) const
 {
 	return _kneelBonus != -1 ? _kneelBonus : mod->getKneelBonusGlobal();
 }
@@ -2637,7 +2661,7 @@ int RuleItem::getKneelBonus(Mod *mod) const
 * Gets the one-handed penalty (20% penalty is encoded as 100-20 = 80).
 * @return One-handed penalty.
 */
-int RuleItem::getOneHandedPenalty(Mod *mod) const
+int RuleItem::getOneHandedPenalty(const Mod *mod) const
 {
 	return _oneHandedPenalty != -1 ? _oneHandedPenalty : mod->getOneHandedPenaltyGlobal();
 }

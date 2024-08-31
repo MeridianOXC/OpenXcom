@@ -33,7 +33,7 @@ namespace OpenXcom
 class RuleEvent
 {
 private:
-	std::string _name, _description, _background, _music;
+	std::string _name, _description, _background, _music, _cutscene;
 	std::vector<std::string> _regionList;
 	bool _alignBottom;
 	bool _city;
@@ -49,6 +49,7 @@ private:
 	std::vector<std::string> _researchList;
 	std::string _interruptResearch;
 	int _timer, _timerRandom;
+	bool _invert;
 public:
 	/// Creates a blank RuleEvent.
 	RuleEvent(const std::string &name);
@@ -66,6 +67,8 @@ public:
 	const std::string &getBackground() const { return _background; }
 	/// Gets the event's music.
 	const std::string &getMusic() const { return _music; }
+	/// Gets the cutscene to play when the event dialog is closed.
+	const std::string &getCutscene() const { return _cutscene; }
 	/// Gets a list of regions where this event can occur.
 	const std::vector<std::string> &getRegionList() const { return _regionList; }
 	/// Is this event city specific?
@@ -105,6 +108,8 @@ public:
 	int getTimer() const { return _timer; }
 	/// Gets value for calculation of random part of delay for this event.
 	int getTimerRandom() const { return _timerRandom; }
+	/// Should the event remove items instead of adding them?
+	bool getInvert() const { return _invert; }
 };
 
 }

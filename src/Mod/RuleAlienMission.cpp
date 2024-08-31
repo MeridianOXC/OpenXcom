@@ -70,7 +70,7 @@ namespace OpenXcom
 RuleAlienMission::RuleAlienMission(const std::string &type) :
 	_type(type), _skipScoutingPhase(false), _points(0), _objective(OBJECTIVE_SCORE), _spawnZone(-1),
 	_retaliationOdds(-1), _endlessInfiltration(true), _multiUfoRetaliation(false), _multiUfoRetaliationExtra(false),
-	_ignoreBaseDefenses(false), _despawnEvenIfTargeted(false), _showAlienBase(false),
+	_ignoreBaseDefenses(false), _despawnEvenIfTargeted(false), _respawnUfoAfterSiteDespawn(false), _showAlienBase(false),
 	_operationType(AMOT_SPACE), _operationSpawnZone(-1),
 	_targetBaseOdds(0)
 {
@@ -121,6 +121,7 @@ void RuleAlienMission::load(const YAML::Node &node)
 	}
 	_ignoreBaseDefenses = node["ignoreBaseDefenses"].as<bool>(_ignoreBaseDefenses);
 	_despawnEvenIfTargeted = node["despawnEvenIfTargeted"].as<bool>(_despawnEvenIfTargeted);
+	_respawnUfoAfterSiteDespawn = node["respawnUfoAfterSiteDespawn"].as<bool>(_respawnUfoAfterSiteDespawn);
 	_showAlienBase = node["showAlienBase"].as<bool>(_showAlienBase);
 	_interruptResearch = node["interruptResearch"].as<std::string>(_interruptResearch);
 	_siteType = node["siteType"].as<std::string>(_siteType);

@@ -183,7 +183,8 @@ namespace OpenXcom
  * @param type String defining the type.
  */
 AlienDeployment::AlienDeployment(const std::string &type) :
-	_type(type), _missionBountyItemCount(1), _bughuntMinTurn(0), _width(0), _length(0), _height(0), _civilians(0), _markCiviliansAsVIP(false), _civilianSpawnNodeRank(0),
+	_type(type), _missionBountyItemCount(1), _bughuntMinTurn(0), _forcePercentageOutsideUfo(false),
+	_width(0), _length(0), _height(0), _civilians(0), _markCiviliansAsVIP(false), _civilianSpawnNodeRank(0),
 	_shade(-1), _minShade(-1), _maxShade(-1), _finalDestination(false), _isAlienBase(false), _isHidden(false), _fakeUnderwaterSpawnChance(0),
 	_alert("STR_ALIENS_TERRORISE"), _alertBackground("BACK03.SCR"), _alertDescription(""), _alertSound(-1),
 	_markerName("STR_TERROR_SITE"), _markerIcon(-1), _durationMin(0), _durationMax(0), _minDepth(0), _maxDepth(0),
@@ -191,7 +192,7 @@ AlienDeployment::AlienDeployment(const std::string &type) :
 	_objectiveType(-1), _objectivesRequired(0), _objectiveCompleteScore(0), _objectiveFailedScore(0), _despawnPenalty(0), _abortPenalty(0), _points(0),
 	_turnLimit(0), _cheatTurn(20), _chronoTrigger(FORCE_LOSE), _keepCraftAfterFailedMission(false), _allowObjectiveRecovery(false), _escapeType(ESCAPE_NONE), _vipSurvivalPercentage(0),
 	_baseDetectionRange(0), _baseDetectionChance(100), _huntMissionMaxFrequency(60), _huntMissionRaceFromAlienBase(true),
-	_resetAlienBaseAgeAfterUpgrade(false), _resetAlienBaseAge(false)
+	_resetAlienBaseAgeAfterUpgrade(false), _resetAlienBaseAge(false), _noWeaponPile(false)
 {
 }
 
@@ -239,6 +240,7 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	_missionBountyItem = node["missionBountyItem"].as<std::string>(_missionBountyItem);
 	_missionBountyItemCount = node["missionBountyItemCount"].as<int>(_missionBountyItemCount);
 	_bughuntMinTurn = node["bughuntMinTurn"].as<int>(_bughuntMinTurn);
+	_forcePercentageOutsideUfo = node["forcePercentageOutsideUfo"].as<bool>(_forcePercentageOutsideUfo);
 	_data = node["data"].as< std::vector<DeploymentData> >(_data);
 	_reinforcements = node["reinforcements"].as< std::vector<ReinforcementsData> >(_reinforcements);
 	_width = node["width"].as<int>(_width);
@@ -357,6 +359,7 @@ void AlienDeployment::load(const YAML::Node &node, Mod *mod)
 	_resetAlienBaseAgeAfterUpgrade = node["resetAlienBaseAgeAfterUpgrade"].as<bool>(_resetAlienBaseAgeAfterUpgrade);
 	_resetAlienBaseAge = node["resetAlienBaseAge"].as<bool>(_resetAlienBaseAge);
 	_upgradeRace = node["upgradeRace"].as<std::string>(_upgradeRace);
+	_noWeaponPile = node["noWeaponPile"].as<bool>(_noWeaponPile);
 }
 
 /**

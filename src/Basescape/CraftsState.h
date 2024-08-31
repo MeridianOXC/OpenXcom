@@ -40,6 +40,8 @@ private:
 	Text *_txtTitle, *_txtBase, *_txtName, *_txtStatus, *_txtWeapon, *_txtCrew, *_txtHwp;
 	TextList *_lstCrafts;
 	Base *_base;
+
+	void initList(size_t scrl);
 public:
 	/// Creates the Crafts state.
 	CraftsState(Base *base);

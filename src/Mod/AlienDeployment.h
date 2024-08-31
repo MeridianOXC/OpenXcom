@@ -99,6 +99,7 @@ private:
 	std::string _missionBountyItem;
 	int _missionBountyItemCount;
 	int _bughuntMinTurn;
+	bool _forcePercentageOutsideUfo;
 	std::vector<DeploymentData> _data;
 	std::vector<ReinforcementsData> _reinforcements;
 	int _width, _length, _height, _civilians;
@@ -133,6 +134,7 @@ private:
 	std::vector<std::pair<size_t, WeightedOptions*> > _alienBaseUpgrades;
 	bool _resetAlienBaseAgeAfterUpgrade, _resetAlienBaseAge;
 	std::string _upgradeRace;
+	bool _noWeaponPile;
 public:
 	/// Creates a blank Alien Deployment ruleset.
 	AlienDeployment(const std::string &type);
@@ -176,6 +178,8 @@ public:
 	int getMissionBountyItemCount() const { return _missionBountyItemCount; }
 	/// Gets the bug hunt mode minimum turn requirement (default = 0 = not used).
 	int getBughuntMinTurn() const;
+	/// Should `percentageOutsideUfo` be forced for all kinds of missions? (instead of just UFO crash/landing sites)
+	bool getForcePercentageOutsideUfo() const { return _forcePercentageOutsideUfo; }
 	/// Gets a pointer to the data.
 	const std::vector<DeploymentData>* getDeploymentData() const;
 	/// Gets the highest used alien rank.
@@ -307,6 +311,8 @@ public:
 	/// Gets the new race for an alien base after an upgrade (into this type).
 	const std::string& getUpgradeRace() const { return _upgradeRace; }
 
+	/// Should items on the "weapon pile" be hidden from the player?
+	bool getNoWeaponPile() const { return _noWeaponPile; }
 };
 
 }

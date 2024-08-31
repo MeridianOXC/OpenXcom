@@ -57,7 +57,7 @@ CraftsState::CraftsState(Base *base) : _base(base)
 	_txtWeapon = new Text(50, 17, 160, 40);
 	_txtCrew = new Text(58, 9, 210, 40);
 	_txtHwp = new Text(46, 9, 268, 40);
-	_lstCrafts = new TextList(288, 118, 8, 58);
+	_lstCrafts = new TextList(288, 112, 8, 58);
 
 	// Set palette
 	setInterface("craftSelect");
@@ -122,6 +122,15 @@ CraftsState::~CraftsState()
 void CraftsState::init()
 {
 	State::init();
+
+	initList(0);
+}
+
+/**
+ * Shows the crafts in a list at specified offset/scroll.
+ */
+void CraftsState::initList(size_t scrl)
+{
 	_lstCrafts->clearList();
 	for (const auto* craft : *_base->getCrafts())
 	{
@@ -131,6 +140,9 @@ void CraftsState::init()
 		ss3 << craft->getNumTotalVehicles();
 		_lstCrafts->addRow(5, craft->getName(_game->getLanguage()).c_str(), tr(craft->getStatus()).c_str(), ss.str().c_str(), ss2.str().c_str(), ss3.str().c_str());
 	}
+
+	if (scrl)
+		_lstCrafts->scrollTo(scrl);
 }
 
 /**
@@ -166,21 +178,46 @@ void CraftsState::lstCraftsClick(Action *action)
 	}
 	else if (_game->isRightClick(action))
 	{
-		if (row > 0)
+		bool shift = _game->isShiftPressed();
+		if (shift && row < (crafts.size() - 1))
+		{
+			// move craft down in the list
+			std::swap(crafts[row], crafts[row + 1]);
+
+			// warp mouse
+			if (row != _lstCrafts->getVisibleRows() - 1 + _lstCrafts->getScroll())
+			{
+#ifndef __MOBILE__
+				SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() + static_cast<Uint16>(8 * action->getYScale()));
+#endif
+			}
+			else
+			{
+				_lstCrafts->scrollDown(false);
+			}
+
+			// reload the UI
+			initList(_lstCrafts->getScroll());
+		}
+		if (!shift && row > 0)
 		{
 			// move craft up in the list
 			std::swap(crafts[row], crafts[row - 1]);
 
 			// warp mouse
-			if (row != _lstCrafts->getScroll() && _lstCrafts->getScroll() == 0)
+			if (row != _lstCrafts->getScroll())
 			{
 #ifndef __MOBILE__
 				SDL_WarpMouseInWindow(NULL, (action->getLeftBlackBand() + action->getXMouse()), (action->getTopBlackBand() + action->getYMouse() - static_cast<Uint16>(8 * action->getYScale())));
 #endif
 			}
+			else
+			{
+				_lstCrafts->scrollUp(false);
+			}
 
 			// reload the UI
-			init();
+			initList(_lstCrafts->getScroll());
 		}
 	}
 	else if (_game->isMiddleClick(action))

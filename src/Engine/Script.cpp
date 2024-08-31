@@ -710,10 +710,23 @@ public:
 			auto ref = ph.getReferece(*this);
 			if (ref)
 				return ref;
+
+			auto type = ArgUnknowSimple;
+
+			for (auto& c : *this)
+			{
+				if (c == '.')
+				{
+					// look like `abc.def`
+					type = std::max(type, ArgUnknowSegment);
+				}
+			}
+
+			return ScriptRefData{ *this, type };
 		}
 		else if (getType() == TokenText)
 		{
-			return ScriptRefData{ *this, ArgText, };
+			return ScriptRefData{ *this, ArgText, static_cast<const ScriptRef&>(*this) };
 		}
 		return ScriptRefData{ *this, ArgInvalid };
 	}
@@ -1049,7 +1062,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		bool is(CharClasses t) const { return decode & t; }
 
 		/// Is this symbol starting next token?
-		bool isStartOfNextToken() const { return is(CC_spec | CC_none); }
+		bool isStartOfNextToken() const { return c == 0 || is(CC_spec | CC_none); }
 	};
 
 	auto peekCharacter = [&]() -> NextSymbol const
@@ -1082,6 +1095,12 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		--_begin;
 		if (*_begin == '\n') --_linePos;
 	};
+
+	//end of sequence, quit.
+	if (_begin == _end)
+	{
+		return SelectedToken{ };
+	}
 
 	//find first no whitespace character.
 	if (peekCharacter().is(CC_none))
@@ -1800,7 +1819,7 @@ bool parseConditionImpl(ParserWriter& ph, ScriptRefData truePos, ScriptRefData f
 		return false;
 	}
 
-	const auto proc = ph.parser.getProc(ScriptRef{ equalFunc ? "test_eq" : "test_le" });
+	const auto proc = ph.parser.getProc(equalFunc ? ScriptRef{ "test_eq" } : ScriptRef{ "test_le" });
 	if (parseOverloadProc(ph, proc, std::begin(conditionArgs), std::end(conditionArgs)) == false)
 	{
 		Log(LOG_ERROR) << "Unsupported operator: '" + begin[0].name.toString() + "'";
@@ -2033,7 +2052,14 @@ bool parseLoop(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData*
 			c &= !!r;
 			c &= loopArgs.tryPushBack(r);
 			c &= parseVariableImpl(ph, r);
-			return r;
+			if (c)
+			{
+				return r;
+			}
+			else
+			{
+				return {};
+			}
 		};
 
 
@@ -2339,9 +2365,19 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	}
 
 	++begin;
-	if (begin[0].type != ArgInvalid || !begin[0].name || begin[0].name.find('.') != std::string::npos)
+	if (begin[0].type != ArgUnknowSimple || !begin[0].name)
 	{
 		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "'";
+		return false;
+	}
+	if (ph.parser.getType(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing type";
+		return false;
+	}
+	if (ph.parser.getProc(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing function";
 		return false;
 	}
 
@@ -2371,9 +2407,84 @@ bool parseVar(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* 
 	}
 	else
 	{
-		Log(LOG_ERROR) << "Error in processing 'end'";
+		Log(LOG_ERROR) << "Error in processing 'var'";
 		return false;
 	}
+}
+
+/**
+ * Parser of `const` operation that define local variables.
+ */
+bool parseConst(const ScriptProcData& spd, ParserWriter& ph, const ScriptRefData* begin, const ScriptRefData* end)
+{
+	auto spec = ArgSpecNone;
+	if (begin != end)
+	{
+		if (begin[0].name == ScriptRef{ "ptr" })
+		{
+			spec = spec | ArgSpecPtr;
+			++begin;
+		}
+		else if (begin[0].name == ScriptRef{ "ptre" })
+		{
+			spec = spec | ArgSpecPtrE;
+			++begin;
+		}
+	}
+	auto size = std::distance(begin, end);
+	if (3 != size)
+	{
+		Log(LOG_ERROR) << "Invalid length of 'const' definition";
+		return false;
+	}
+
+	// adding new custom variables of type selected type.
+	auto type_curr = ph.parser.getType(begin[0].name);
+	if (!type_curr)
+	{
+		Log(LOG_ERROR) << "Invalid type '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	if (type_curr->meta.size == 0 && !(spec & ArgSpecPtr))
+	{
+		Log(LOG_ERROR) << "Can't create const of type '" << begin[0].name.toString() << "', require 'ptr'";
+		return false;
+	}
+
+	++begin;
+	if (begin[0].type != ArgUnknowSimple || !begin[0].name)
+	{
+		Log(LOG_ERROR) << "Invalid const name '" << begin[0].name.toString() << "'";
+		return false;
+	}
+	if (ph.parser.getType(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing type";
+		return false;
+	}
+	if (ph.parser.getProc(begin[0].name))
+	{
+		Log(LOG_ERROR) << "Invalid variable name '" << begin[0].name.toString() << "' same as existing function";
+		return false;
+	}
+
+	auto type =  ArgSpecAdd(type_curr->type, spec);
+
+	if (type != begin[1].type)
+	{
+		Log(LOG_ERROR) << "Invalid value '"<< begin[1].name.toString() << "' for const type '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	auto reg = ph.addConst(begin[0].name, type, begin[1].value);
+	if (!reg)
+	{
+		Log(LOG_ERROR) << "Invalid type for const '" << begin[0].name.toString() << "'";
+		return false;
+	}
+
+	return true;
 }
 
 /**
@@ -3023,7 +3134,7 @@ bool ParserWriter::pushTextTry(const ScriptRefData& data)
 {
 	if (data && data.type == ArgText)
 	{
-		refTexts.pushPosition(*this, refTexts.addValue(data.name));
+		refTexts.pushPosition(*this, refTexts.addValue(data.getValue<ScriptRef>()));
 		return true;
 	}
 	return false;
@@ -3089,6 +3200,42 @@ ScriptRefData ParserWriter::addReg(const ScriptRef& s, ArgEnum type)
 		regStack.push_back(data);
 	}
 	regIndexUsed = static_cast<RegEnum>(meta.needRegSpace(regIndexUsed));
+	return data;
+}
+
+/**
+ * Add new local const definition.
+ * @param s optional name of const
+ * @param type type of reg
+ * @return Reg data
+ */
+ScriptRefData ParserWriter::addConst(const ScriptRef& s, ArgEnum type, ScriptValueData value)
+{
+	if (!s)
+	{
+		return {};
+	}
+
+	if (getReferece(s))
+	{
+		return {};
+	}
+
+	if (ArgIsReg(type))
+	{
+		return {};
+	}
+
+	auto meta = getRegMeta(parser, type);
+	if (!meta)
+	{
+		return {};
+	}
+
+	ScriptRefData data = { s, type, value };
+
+	regStack.push_back(data);
+
 	return data;
 }
 
@@ -3175,6 +3322,7 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	buildin("else", &parseElse);
 	buildin("end", &parseEnd);
 	buildin("var", &parseVar);
+	buildin("const", &parseConst);
 	buildin("debug_log", &parseDebugLog);
 	buildin("debug_assert", &parseDummy);
 	buildin("loop", &parseLoop);
@@ -3201,13 +3349,15 @@ ScriptParserBase::ScriptParserBase(ScriptGlobal* shared, const std::string& name
 	auto phName = addNameRef("_");
 	auto seperatorName = addNameRef("__");
 	auto varName = addNameRef("var");
+	auto constName = addNameRef("const");
 
 	addSortHelper(_typeList, { labelName, ArgLabel, { } });
 	addSortHelper(_typeList, { nullName, ArgNull, { } });
 	addSortHelper(_refList, { nullName, ArgNull });
-	addSortHelper(_refList, { phName, (ArgEnum)(ArgInvalid + ArgSpecReg) });
+	addSortHelper(_refList, { phName, ArgPlaceholder });
 	addSortHelper(_refList, { seperatorName, ArgSep });
 	addSortHelper(_refList, { varName, ArgInvalid });
+	addSortHelper(_refList, { constName, ArgInvalid });
 
 	_shared->initParserGlobals(this);
 }
@@ -3589,7 +3739,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 		valid &= label.getType() == TokenSymbol || label.getType() == TokenNone;
 		valid &= op.getType() == TokenSymbol;
 		for (size_t i = 0; i < ScriptMaxArg; ++i)
-			valid &= args[i].getType() == TokenSymbol || args[i].getType() == TokenNumber || args[i].getType() == TokenNone || args[i].getType() == TokenText;
+			valid &= args[i].getType() != TokenInvalid;
 		valid &= f.getType() == TokenSemicolon;
 
 		if (!valid)
@@ -3621,7 +3771,7 @@ bool ScriptParserBase::parseBase(ScriptContainerBase& destScript, const std::str
 
 		// test validity of operation positions
 		auto isReturn = (op == ScriptRef{ "return" });
-		auto isVarDef = (op == ScriptRef{ "var" });
+		auto isVarDef = (op == ScriptRef{ "var" }) || (op == ScriptRef{ "const" });
 		auto isBegin = (op == ScriptRef{ "if" }) || (op == ScriptRef{ "else" }) || (op == ScriptRef{ "begin" }) || (op == ScriptRef{ "loop" });
 		auto isEnd = (op == ScriptRef{ "end" }) || (op == ScriptRef{ "else" }); // `else;` is begin and end of scope
 		auto isBreak = (op == ScriptRef{ "continue" } || op == ScriptRef{ "break" });
@@ -4878,6 +5028,70 @@ static auto dummyTestScriptOverloadSeperator = ([]
 		assert(std::get<int>(o) && "args 'funcSep x y z __'");
 		assert(callFunc(o, std::begin(args), std::end(args)) == 3);
 	}
+
+	return 0;
+})();
+
+
+[[maybe_unused]]
+static auto dummyTestScriptRefTokens = ([]
+{
+	{
+		ScriptRefTokens srt{"aaaa bb"};
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"aaaa"} && next.getType() == TokenSymbol);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"bb"} && next.getType() == TokenSymbol);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next.getType() == TokenNone);
+		}
+	}
+
+	{
+		ScriptRefTokens srt{"0x10 1234"};
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"0x10"} && next.getType() == TokenNumber);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"1234"} && next.getType() == TokenNumber);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next.getType() == TokenNone);
+		}
+	}
+
+	auto getType = [](ScriptRef ref, TokenEnum next = TokenNone)
+	{
+		ScriptRefTokens srt{ref.begin(), ref.end()};
+		return srt.getNextToken(next).getType();
+	};
+
+	assert(getType(ScriptRef{":"}) == TokenInvalid);
+	assert(getType(ScriptRef{":"}, TokenColon) == TokenColon);
+	assert(getType(ScriptRef{";"}) == TokenNone);
+	assert(getType(ScriptRef{";"}, TokenSemicolon) == TokenSemicolon);
+	assert(getType(ScriptRef{"\"aaa\""}) == TokenText);
+	assert(getType(ScriptRef{"0x1"}) == TokenNumber);
+	assert(getType(ScriptRef{""}) == TokenNone);
+	assert(getType(ScriptRef{" "}) == TokenNone);
+	assert(getType(ScriptRef{"#aaaaa"}) == TokenNone);
+	assert(getType(ScriptRef{"  #  1235"}) == TokenNone);
+	assert(getType(ScriptRef{"  #  \n1235"}) == TokenNumber);
+	assert(getType(ScriptRef{" a"}) == TokenSymbol);
+	assert(getType(ScriptRef{" \na"}) == TokenSymbol);
+	assert(getType(ScriptRef{"a111"}) == TokenSymbol);
+
+
+	assert(getType(ScriptRef{"0x"}) == TokenInvalid);
+	assert(getType(ScriptRef{"0xk"}) == TokenInvalid);
 
 	return 0;
 })();

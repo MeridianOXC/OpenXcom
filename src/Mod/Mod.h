@@ -218,14 +218,14 @@ private:
 	int _maxStaticLightDistance, _maxDynamicLightDistance, _enhancedLighting;
 	int _costHireEngineer, _costHireScientist;
 	int _costEngineer, _costScientist, _timePersonnel, _hireByCountryOdds, _hireByRegionOdds, _initialFunding;
-	int _aiUseDelayBlaster, _aiUseDelayFirearm, _aiUseDelayGrenade, _aiUseDelayMelee, _aiUseDelayPsionic;
+	int _aiUseDelayBlaster, _aiUseDelayFirearm, _aiUseDelayGrenade, _aiUseDelayProxy, _aiUseDelayMelee, _aiUseDelayPsionic;
 	int _aiFireChoiceIntelCoeff, _aiFireChoiceAggroCoeff;
 	bool _aiExtendedFireModeChoice, _aiRespectMaxRange, _aiDestroyBaseFacilities;
 	bool _aiPickUpWeaponsMoreActively, _aiPickUpWeaponsMoreActivelyCiv;
 	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor, _minReactionAccuracy;
 	int _chanceToStopRetaliation;
 	bool _lessAliensDuringBaseDefense;
-	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry;
+	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry, _infiltrateRandomCountryInTheRegion;
 	bool _allowAlienBasesOnWrongTextures;
 	int _kneelBonusGlobal, _oneHandedPenaltyGlobal;
 	int _enableCloseQuartersCombat, _closeQuartersAccuracyGlobal, _closeQuartersTuCostGlobal, _closeQuartersEnergyCostGlobal, _closeQuartersSneakUpGlobal;
@@ -821,6 +821,8 @@ public:
 	int getAIUseDelayFirearm() const  {return _aiUseDelayFirearm;}
 	/// Gets first turn when AI can use grenades.
 	int getAIUseDelayGrenade() const  {return _aiUseDelayGrenade;}
+	/// Gets first turn when AI can use proxy grenades.
+	int getAIUseDelayProxy() const  {return _aiUseDelayProxy;}
 	/// Gets first turn when AI can use martial arts.
 	int getAIUseDelayMelee() const {return _aiUseDelayMelee;}
 	/// Gets first turn when AI can use psionic abilities.
@@ -855,6 +857,8 @@ public:
 	bool getAllowCountriesToCancelAlienPact() const { return _allowCountriesToCancelAlienPact; }
 	/// Should alien infiltration bases be built close to the infiltrated country?
 	bool getBuildInfiltrationBaseCloseToTheCountry() const { return _buildInfiltrationBaseCloseToTheCountry; }
+	/// Should alien infiltration pick countries in a region randomly (or in a pre-defined ruleset order)?
+	bool getInfiltrateRandomCountryInTheRegion() const { return _infiltrateRandomCountryInTheRegion; }
 	/// Should alien bases be allowed (in worst case) on invalid globe textures or not?
 	bool getAllowAlienBasesOnWrongTextures() const { return _allowAlienBasesOnWrongTextures; }
 	/// Gets the global kneel bonus (default = 115).

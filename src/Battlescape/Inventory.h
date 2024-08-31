@@ -68,6 +68,7 @@ private:
 	bool _dragging, _clicked;
 
 	int _depth, _groundSlotsX, _groundSlotsY;
+	int _xMax;
 	RuleInventory *_inventorySlotRightHand = nullptr;
 	RuleInventory *_inventorySlotLeftHand = nullptr;
 	RuleInventory *_inventorySlotBackPack = nullptr;

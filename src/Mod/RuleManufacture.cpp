@@ -66,6 +66,7 @@ void RuleManufacture::load(const YAML::Node &node, Mod* mod)
 	{
 		_spawnedSoldier = node["spawnedSoldier"];
 	}
+	_transferTimes = node["transferTimes"].as< std::vector<int> >(_transferTimes);
 	_listOrder = node["listOrder"].as<int>(_listOrder);
 }
 

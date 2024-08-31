@@ -1516,7 +1516,7 @@ void BattlescapeState::selectNextPlayerUnit(bool checkReselect, bool setReselect
 	{
 		BattleUnit *unit = _save->selectNextPlayerUnit(checkReselect, setReselect, checkInventory);
 		updateSoldierInfo(checkFOV);
-		if (unit) _map->getCamera()->centerOnPosition(unit->getPosition());
+		if (unit && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(unit->getPosition());
 		_battleGame->cancelAllActions();
 		_battleGame->getCurrentAction()->actor = unit;
 		_battleGame->setupCursor();
@@ -1535,7 +1535,7 @@ void BattlescapeState::selectPreviousPlayerUnit(bool checkReselect, bool setRese
 	{
 		BattleUnit *unit = _save->selectPreviousPlayerUnit(checkReselect, setReselect, checkInventory);
 		updateSoldierInfo();
-		if (unit) _map->getCamera()->centerOnPosition(unit->getPosition());
+		if (unit && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(unit->getPosition());
 		_battleGame->cancelAllActions();
 		_battleGame->getCurrentAction()->actor = unit;
 		_battleGame->setupCursor();
@@ -2933,6 +2933,19 @@ inline void BattlescapeState::handle(Action *action)
 				bool shiftPressed = _game->isShiftPressed();
 				bool altPressed = _game->isAltPressed();
 
+				// "shift-hotkey" - select without centering
+				if (shiftPressed)
+				{
+					if (key == Options::keyBattleNextUnit)
+					{
+						btnNextSoldierClick(action);
+					}
+					else if (key == Options::keyBattlePrevUnit)
+					{
+						btnPrevSoldierClick(action);
+					}
+				}
+
 				// "ctrl-b" - reopen briefing
 				if (key == SDLK_b && ctrlPressed)
 				{
@@ -3000,6 +3013,25 @@ inline void BattlescapeState::handle(Action *action)
 						}
 					}
 					_game->pushState(new InfoboxState(ss.str()));
+				}
+				// "alt-c" - custom marker
+				else if (key == SDLK_c && altPressed)
+				{
+					BattleUnit* unitUnderTheCursor = nullptr;
+					{
+						Position newPos;
+						_map->getSelectorPosition(&newPos);
+						Tile* tile = _save->getTile(newPos);
+						if (tile)
+						{
+							unitUnderTheCursor = tile->getOverlappingUnit(_save);
+						}
+					}
+					// mark a friendly unit under the cursor
+					if (unitUnderTheCursor && unitUnderTheCursor->getFaction() == FACTION_PLAYER && !unitUnderTheCursor->isOut())
+					{
+						unitUnderTheCursor->setCustomMarker((unitUnderTheCursor->getCustomMarker() + 1) % 5); // rotate 4 colors + turned off
+					}
 				}
 				// "ctrl-m" - melee damage preview
 				else if (key == SDLK_m && ctrlPressed)

@@ -105,6 +105,7 @@ private:
 	UnitStats _exp, _expTmp;
 	int _motionPoints;
 	int _scannedTurn;
+	int _customMarker;
 	int _kills;
 	int _faceDirection; // used only during strafing moves
 	std::vector<int> _meleeAttackedBy;
@@ -372,7 +373,7 @@ public:
 	/// Calculate psi attack accuracy.
 	static int getPsiAccuracy(BattleActionAttack::ReadOnly attack);
 	/// Calculate firing accuracy.
-	static int getFiringAccuracy(BattleActionAttack::ReadOnly attack, Mod *mod);
+	static int getFiringAccuracy(BattleActionAttack::ReadOnly attack, const Mod *mod);
 	/// Calculate accuracy modifier.
 	int getAccuracyModifier(const BattleItem *item = 0) const;
 	/// Get the current reaction score.
@@ -437,7 +438,7 @@ public:
 	/// Gets the item in the main hand.
 	BattleItem *getMainHandWeapon(bool quickest = true, bool reactions = false) const;
 	/// Gets a grenade from the belt, if any.
-	BattleItem *getGrenadeFromBelt() const;
+	BattleItem *getGrenadeFromBelt(const SavedBattleGame* battle) const;
 	/// Gets the item from right hand.
 	BattleItem *getRightHandWeapon() const;
 	/// Gets the item from left hand.
@@ -528,6 +529,10 @@ public:
 	int getScannedTurn() const { return _scannedTurn; }
 	/// Set turn when unit was scanned by the motion scanner.
 	void setScannedTurn(int turn) { _scannedTurn = turn; }
+	/// Get unit custom marker.
+	int getCustomMarker() const { return _customMarker; }
+	/// Set unit custom marker.
+	void setCustomMarker(int customMarker) { _customMarker = customMarker; }
 	/// Gets the unit's armor.
 	const Armor *getArmor() const;
 	/// Sets the unit's name.
