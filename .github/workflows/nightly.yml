@@ -126,7 +126,6 @@ jobs:
           linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
           mkdir artifacts
           mv OpenXcom-x86_64.AppImage artifacts/${{ env.FILENAME }}-x86_64.AppImage
-          chmod +x artifacts/${{ env.FILENAME }}-x86_64.AppImage
 
       - name: Get SHA hashes
         uses: nrwl/nx-set-shas@v4
