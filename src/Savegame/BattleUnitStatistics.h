@@ -94,13 +94,13 @@ struct BattleUnitKills
 		node["race"] = race;
 		node["weapon"] = weapon;
 		node["weaponAmmo"] = weaponAmmo;
-		node["status"] = (int)status;
-		node["faction"] = (int)faction;
-		node["mission"] = mission;
-		node["turn"] = turn;
-		node["side"] = (int)side;
-		node["bodypart"] = (int)bodypart;
-		node["id"] = id;
+		node["status"] = std::to_string((int)status);
+		node["faction"] = std::to_string((int)faction);
+		node["mission"] = std::to_string(mission);
+		node["turn"] = std::to_string(turn);
+		node["side"] = std::to_string((int)side);
+		node["bodypart"] = std::to_string((int)bodypart);
+		node["id"] = std::to_string(id);
 		return node;
 	}
 
