@@ -1145,6 +1145,12 @@
     <ClCompile Include="Interface\ProgressBar.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\SoldierDiaryLightState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
+    <ClCompile Include="Battlescape\NoExperienceState.cpp">
+      <Filter>Battlescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2353,6 +2359,12 @@
     </ClInclude>
     <ClInclude Include="Interface\ProgressBar.h">
       <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\SoldierDiaryLightState.h">
+      <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Battlescape\NoExperienceState.h">
+      <Filter>Battlescape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -464,6 +464,10 @@ void NewBattleState::load(const std::string &filename)
 	{
 		_game->getSavedGame()->loadTemplates(globalTemplates, _game->getMod());
 	}
+	if (const YAML::Node& ufopediaRuleStatus = starter["ufopediaRuleStatus"])
+	{
+		_game->getSavedGame()->loadUfopediaRuleStatus(ufopediaRuleStatus);
+	}
 
 }
 

@@ -1612,6 +1612,21 @@ interfaces:
         border: 213  # gold
       - id: button
         color: 213   # gold
+  - type: soldierDiaryLight
+    backgroundImage: BACK14.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 213   # gold
+      - id: list
+        color: 208   # white
+        border: 213  # gold
+      - id: button
+        color: 213   # gold
   - type: soldierBonus
     backgroundImage: BACK14.SCR
     palette: PAL_BASESCAPE

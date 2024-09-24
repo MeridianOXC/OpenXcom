@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2010-2016 OpenXcom Developers.
+ * Copyright 2010-2019 OpenXcom Developers.
  *
  * This file is part of OpenXcom.
  *
@@ -17,12 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "../Engine/State.h"
 
-#define OPENXCOM_VERSION_ENGINE "Extended"
-#define OPENXCOM_VERSION_SHORT "Extended 7.14.2"
-#define OPENXCOM_VERSION_LONG "7.14.2.0"
-#define OPENXCOM_VERSION_NUMBER 7,14,2,0
+namespace OpenXcom
+{
 
-#ifndef OPENXCOM_VERSION_GIT
-#define OPENXCOM_VERSION_GIT " (v2024-09-24)"
-#endif
+class Window;
+class Text;
+class TextButton;
+class TextList;
+
+/**
+ * NoExperience window that displays a list of soldiers without any experience points gained in the current mission.
+ */
+class NoExperienceState : public State
+{
+private:
+	Window *_window;
+	Text *_txtTitle;
+	TextButton *_btnCancel;
+	TextList *_lstSoldiers;
+public:
+	/// Creates the NoExperience state.
+	NoExperienceState();
+	/// Cleans up the NoExperience state.
+	~NoExperienceState() = default;
+	/// Handler for clicking the Cancel button.
+	void btnCancelClick(Action *action);
+};
+
+}

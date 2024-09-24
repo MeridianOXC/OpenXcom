@@ -44,6 +44,7 @@ set ( basescape_src
   Basescape/SoldierArmorState.cpp
   Basescape/SoldierAvatarState.cpp
   Basescape/SoldierBonusState.cpp
+  Basescape/SoldierDiaryLightState.cpp
   Basescape/SoldierDiaryMissionState.cpp
   Basescape/SoldierDiaryOverviewState.cpp
   Basescape/SoldierDiaryPerformanceState.cpp
@@ -104,6 +105,7 @@ set ( battlescape_src
   Battlescape/MiniMapState.cpp
   Battlescape/MiniMapView.cpp
   Battlescape/NextTurnState.cpp
+  Battlescape/NoExperienceState.cpp
   Battlescape/Particle.cpp
   Battlescape/Pathfinding.cpp
   Battlescape/PathfindingNode.cpp

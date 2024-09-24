@@ -91,6 +91,7 @@ public:
 	/// Handler for clicking the Armor button.
 	void btnArmorClick(Action *action);
 	void btnArmorClickRight(Action *action);
+	void btnDiaryLightClick(Action *action);
 	void btnArmorClickMiddle(Action *action);
 	/// Methods for handling the global equipment layout save/load hotkeys.
 	void saveGlobalLayout(int index, bool includingArmor);

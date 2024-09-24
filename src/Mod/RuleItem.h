@@ -352,7 +352,8 @@ private:
 	bool _medikitTargetSelf, _medikitTargetImmune;
 	int _medikitTargetMatrix;
 	std::string _medikitBackground;
-	int _woundRecovery, _healthRecovery, _stunRecovery, _energyRecovery, _manaRecovery, _moraleRecovery, _painKillerRecovery;
+	int _woundRecovery, _healthRecovery, _stunRecovery, _energyRecovery, _manaRecovery, _moraleRecovery;
+	float _painKillerRecovery;
 
 	int _recoveryPoints;
 	int _armor;

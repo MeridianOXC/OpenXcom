@@ -369,6 +369,7 @@
     <ClCompile Include="Basescape\SellState.cpp" />
     <ClCompile Include="Basescape\SoldierArmorState.cpp" />
     <ClCompile Include="Basescape\SoldierBonusState.cpp" />
+    <ClCompile Include="Basescape\SoldierDiaryLightState.cpp" />
     <ClCompile Include="Basescape\SoldierDiaryMissionState.cpp" />
     <ClCompile Include="Basescape\SoldierDiaryOverviewState.cpp" />
     <ClCompile Include="Basescape\SoldierDiaryPerformanceState.cpp" />
@@ -427,6 +428,7 @@
     <ClCompile Include="Battlescape\MiniMapState.cpp" />
     <ClCompile Include="Battlescape\MiniMapView.cpp" />
     <ClCompile Include="Battlescape\NextTurnState.cpp" />
+    <ClCompile Include="Battlescape\NoExperienceState.cpp" />
     <ClCompile Include="Battlescape\Pathfinding.cpp" />
     <ClCompile Include="Battlescape\PathfindingNode.cpp" />
     <ClCompile Include="Battlescape\PathfindingOpenSet.cpp" />
@@ -753,6 +755,7 @@
     <ClInclude Include="Basescape\SellState.h" />
     <ClInclude Include="Basescape\SoldierArmorState.h" />
     <ClInclude Include="Basescape\SoldierBonusState.h" />
+    <ClInclude Include="Basescape\SoldierDiaryLightState.h" />
     <ClInclude Include="Basescape\SoldierDiaryMissionState.h" />
     <ClInclude Include="Basescape\SoldierDiaryOverviewState.h" />
     <ClInclude Include="Basescape\SoldierDiaryPerformanceState.h" />
@@ -811,6 +814,7 @@
     <ClInclude Include="Battlescape\MiniMapState.h" />
     <ClInclude Include="Battlescape\MiniMapView.h" />
     <ClInclude Include="Battlescape\NextTurnState.h" />
+    <ClInclude Include="Battlescape\NoExperienceState.h" />
     <ClInclude Include="Battlescape\Pathfinding.h" />
     <ClInclude Include="Battlescape\PathfindingNode.h" />
     <ClInclude Include="Battlescape\PathfindingOpenSet.h" />

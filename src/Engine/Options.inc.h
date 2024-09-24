@@ -61,8 +61,9 @@ OPT SDL_Keycode keyGeoDailyPilotExperience, keyGeoUfoTracker, keyGeoTechTreeView
 	keyRemoveEquipmentFromCraft,
 	keyRemoveArmorFromCraft, keyRemoveArmorFromAllCrafts,
 	keyRemoveSoldiersFromTraining, keyAddSoldiersToTraining,
-	keyInventoryArmor, keyInventoryAvatar, keyInventorySave, keyInventoryLoad,
+	keyInventoryArmor, keyInventoryAvatar, keyInventoryDiaryLight, keyInventorySave, keyInventoryLoad,
 	keyInvSavePersonalEquipment, keyInvLoadPersonalEquipment, keyInvShowPersonalEquipment,
+	keyBattleUnitUp, keyBattleUnitDown,
 	keyBattleShowLayers,
 	keyBattleUseSpecial,
 	keyBattleActionItem1, keyBattleActionItem2, keyBattleActionItem3, keyBattleActionItem4, keyBattleActionItem5,
@@ -119,6 +120,8 @@ OPT bool oxceRawScreenShots;
 OPT bool oxceFirstPersonViewFisheyeProjection;
 OPT bool oxceThumbButtons;
 OPT int oxceThrottleMouseMoveEvent;
+OPT bool oxceDisableThinkingProgressBar;
+OPT bool oxceSortDiscoveredVectorByName;
 
 OPT bool oxceEmbeddedOnly;
 OPT bool oxceListVFSContents;

@@ -56,7 +56,8 @@ namespace OpenXcom
  * @param base Pointer to the base to get info from. NULL to use the dead soldiers list.
  * @param soldierId ID of the selected soldier.
  */
-SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId, bool forceLimits) : _base(base), _soldierId(soldierId), _forceLimits(forceLimits), _soldier(0)
+SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId, bool forceLimits, bool readOnly) :
+	_base(base), _soldierId(soldierId), _forceLimits(forceLimits), _readOnly(readOnly), _soldier(0)
 {
 	if (_base == 0)
 	{
@@ -277,6 +278,10 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId, bool forceLimit
 
 	_btnArmor->setText(tr("STR_ARMOR"));
 	_btnArmor->onMouseClick((ActionHandler)&SoldierInfoState::btnArmorClick);
+	if (_readOnly)
+	{
+		_btnArmor->setVisible(false);
+	}
 
 	_btnBonuses->setText(tr("STR_BONUSES_BUTTON")); // tiny button, default translation is " "
 	_btnBonuses->onMouseClick((ActionHandler)&SoldierInfoState::btnBonusesClick);
@@ -289,7 +294,7 @@ SoldierInfoState::SoldierInfoState(Base *base, size_t soldierId, bool forceLimit
 	{
 		_game->getSavedGame()->getAvailableTransformations(availableTransformations, _game->getMod(), _base);
 	}
-	if (availableTransformations.empty())
+	if (_readOnly || availableTransformations.empty())
 	{
 		_btnTransformations->setVisible(false);
 	}
@@ -477,7 +482,7 @@ void SoldierInfoState::init()
 
 	_btnArmor->setText(wsArmor);
 
-	_btnSack->setVisible(_game->getSavedGame()->getMonthsPassed() > -1 && !(_soldier->getCraft() && _soldier->getCraft()->getStatus() == "STR_OUT"));
+	_btnSack->setVisible(!_readOnly && _game->getSavedGame()->getMonthsPassed() > -1 && !(_soldier->getCraft() && _soldier->getCraft()->getStatus() == "STR_OUT"));
 
 	_txtRank->setText(tr("STR_RANK_").arg(tr(_soldier->getRankString())));
 

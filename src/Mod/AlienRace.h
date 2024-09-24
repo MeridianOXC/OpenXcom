@@ -43,9 +43,10 @@ private:
 	std::vector<std::string> _members;
 	std::vector< std::vector<std::string> > _membersRandom;
 	int _retaliationAggression;
+	int _listOrder;
 public:
 	/// Creates a blank alien race ruleset.
-	AlienRace(const std::string &id);
+	AlienRace(const std::string &id, int listOrder);
 	/// Cleans up the alien race ruleset.
 	~AlienRace();
 	/// Loads alien race data from YAML.
@@ -64,6 +65,8 @@ public:
 	int getRetaliationAggression() const;
 	/// Returns a list of retaliation missions based on the given month.
 	WeightedOptions* retaliationMissionWeights(const size_t monthsPassed) const;
+	/// Get the list weight for this alien race.
+	int getListOrder() const { return _listOrder; }
 };
 
 }

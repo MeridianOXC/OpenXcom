@@ -597,7 +597,7 @@ void SavedGame::load(const std::string &filename, Mod *mod, Language *lang)
 	sortReserchVector(_discovered);
 
 	_generatedEvents = doc["generatedEvents"].as< std::map<std::string, int> >(_generatedEvents);
-	_ufopediaRuleStatus = doc["ufopediaRuleStatus"].as< std::map<std::string, int> >(_ufopediaRuleStatus);
+	loadUfopediaRuleStatus(doc["ufopediaRuleStatus"]);
 	_manufactureRuleStatus = doc["manufactureRuleStatus"].as< std::map<std::string, int> >(_manufactureRuleStatus);
 	_researchRuleStatus = doc["researchRuleStatus"].as< std::map<std::string, int> >(_researchRuleStatus);
 	_monthlyPurchaseLimitLog = doc["monthlyPurchaseLimitLog"].as< std::map<std::string, int> >(_monthlyPurchaseLimitLog);
@@ -775,6 +775,11 @@ void SavedGame::loadTemplates(const YAML::Node& doc, const Mod* mod)
 	}
 }
 
+void SavedGame::loadUfopediaRuleStatus(const YAML::Node& node)
+{
+	_ufopediaRuleStatus = node.as< std::map<std::string, int> >(_ufopediaRuleStatus);
+}
+
 /**
  * Saves a saved game's contents to a YAML file.
  * @param filename YAML filename.
@@ -891,9 +896,21 @@ void SavedGame::save(const std::string &filename, Mod *mod) const
 	{
 		node["geoscapeEvents"].push_back(ge->save());
 	}
-	for (const auto* research : _discovered)
+	if (Options::oxceSortDiscoveredVectorByName)
 	{
-		node["discovered"].push_back(research->getName());
+		auto discoveredCopy = _discovered;
+		std::sort(discoveredCopy.begin(), discoveredCopy.end(), [&](const RuleResearch* a, const RuleResearch* b) { return a->getName().compare(b->getName()) < 0; });
+		for (const auto* research : discoveredCopy)
+		{
+			node["discovered"].push_back(research->getName());
+		}
+	}
+	else
+	{
+		for (const auto* research : _discovered)
+		{
+			node["discovered"].push_back(research->getName());
+		}
 	}
 	for (const auto* research : _poppedResearch)
 	{
@@ -1621,7 +1638,7 @@ void SavedGame::addFinishedResearch(const RuleResearch * research, const Mod * m
 		const RuleResearch *currentQueueItem = queue.at(currentQueueIndex);
 
 		// 1. Find out and remember if the currentQueueItem has any undiscovered non-disabled "protected unlocks" or "getOneFree"
-		bool hasUndiscoveredProtectedUnlocks = hasUndiscoveredProtectedUnlock(currentQueueItem, mod);
+		bool hasUndiscoveredProtectedUnlocks = hasUndiscoveredProtectedUnlock(currentQueueItem);
 		bool hasAnyUndiscoveredGetOneFrees = hasUndiscoveredGetOneFree(currentQueueItem, false);
 
 		// 2. If the currentQueueItem was *not* already discovered before, add it to discovered research
@@ -1805,7 +1822,7 @@ void SavedGame::getAvailableResearchProjects(std::vector<RuleResearch *> &projec
 			{
 				// This research topic still has some more undiscovered non-disabled and *AVAILABLE* "getOneFree" topics, keep it!
 			}
-			else if (hasUndiscoveredProtectedUnlock(research, mod))
+			else if (hasUndiscoveredProtectedUnlock(research))
 			{
 				// This research topic still has one or more undiscovered non-disabled "protected unlocks", keep it!
 			}
@@ -2152,10 +2169,9 @@ bool SavedGame::hasUndiscoveredGetOneFree(const RuleResearch * r, bool checkOnly
 /**
  * Returns if a research still has undiscovered non-disabled "protected unlocks".
  * @param r Research to check.
- * @param mod the Game Mod
  * @return Whether it has any undiscovered non-disabled "protected unlocks" or not.
  */
-bool SavedGame::hasUndiscoveredProtectedUnlock(const RuleResearch * r, const Mod * mod) const
+bool SavedGame::hasUndiscoveredProtectedUnlock(const RuleResearch * r) const
 {
 	// Note: checking for not yet discovered unlocks protected by "requires" (which also implies cost = 0)
 	for (const auto* unlock : r->getUnlocked())
@@ -2254,17 +2270,27 @@ bool SavedGame::isResearched(const std::vector<const RuleResearch *> &research, 
 }
 
 /**
- * Returns if a certain item has been obtained, i.e. is present directly in the base stores.
- * Items in and on craft, in transfer, worn by soldiers, etc. are ignored!!
+ * Returns if a certain item has been obtained, i.e. is present in the base stores or on a craft.
+ * Items in transfer, worn by soldiers, etc. are ignored!!
  * @param itemType Item ID.
  * @return Whether it's obtained or not.
  */
-bool SavedGame::isItemObtained(const std::string &itemType) const
+bool SavedGame::isItemObtained(const std::string &itemType, const Mod* mod) const
 {
-	for (auto* xbase : _bases)
+	const RuleItem* item = mod->getItem(itemType);
+	if (item)
 	{
-		if (xbase->getStorageItems()->getItem(itemType) > 0)
-			return true;
+		for (auto* xbase : _bases)
+		{
+			if (xbase->getStorageItems()->getItem(item) > 0)
+				return true;
+
+			for (auto* xcraft : *xbase->getCrafts())
+			{
+				if (xcraft->getItems()->getItem(item) > 0)
+					return true;
+			}
+		}
 	}
 	return false;
 }
@@ -3363,7 +3389,7 @@ void SavedGame::handlePrimaryResearchSideEffects(const std::vector<const RuleRes
 					{
 						// This research topic still has some more undiscovered non-disabled and *AVAILABLE* "getOneFree" topics, keep it!
 					}
-					else if (hasUndiscoveredProtectedUnlock(myResearchRule, mod))
+					else if (hasUndiscoveredProtectedUnlock(myResearchRule))
 					{
 						// This research topic still has one or more undiscovered non-disabled "protected unlocks", keep it!
 					}

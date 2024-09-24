@@ -35,6 +35,7 @@
 #include "../Engine/Options.h"
 #include "../Interface/ComboBox.h"
 #include "../Mod/RuleSoldier.h"
+#include "../Basescape/SoldierInfoState.h"
 #include "../Basescape/SoldierSortUtil.h"
 #include <algorithm>
 #include "../Engine/Unicode.h"
@@ -47,7 +48,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to handle.
  */
-AllocatePsiTrainingState::AllocatePsiTrainingState(Base *base) : _sel(0), _base(base), _origSoldierOrder(*_base->getSoldiers())
+AllocatePsiTrainingState::AllocatePsiTrainingState(Base *base) : _sel(0), _base(base), _origSoldierOrder(*_base->getSoldiers()), _doNotReset(false)
 {
 	// Create objects
 	_window = new Window(this, 320, 200, 0, 0);
@@ -178,6 +179,7 @@ AllocatePsiTrainingState::AllocatePsiTrainingState(Base *base) : _sel(0), _base(
 	_lstSoldiers->onLeftArrowClick((ActionHandler)&AllocatePsiTrainingState::lstItemsLeftArrowClick);
 	_lstSoldiers->onRightArrowClick((ActionHandler)&AllocatePsiTrainingState::lstItemsRightArrowClick);
 	_lstSoldiers->onMouseClick((ActionHandler)&AllocatePsiTrainingState::lstSoldiersClick);
+	_lstSoldiers->onMouseClick((ActionHandler)&AllocatePsiTrainingState::lstSoldiersClick, SDL_BUTTON_RIGHT);
 	//_lstSoldiers->onMousePress((ActionHandler)&AllocatePsiTrainingState::lstSoldiersMousePress);
 }
 /**
@@ -284,6 +286,14 @@ void AllocatePsiTrainingState::btnPlusClick(Action *action)
 void AllocatePsiTrainingState::init()
 {
 	State::init();
+
+	// coming back from SoldierInfoState
+	if (_doNotReset)
+	{
+		_doNotReset = false;
+		return;
+	}
+
 	_base->prepareSoldierStatsWithBonuses(); // refresh stats for sorting
 	initList(0);
 }
@@ -510,6 +520,11 @@ void AllocatePsiTrainingState::lstSoldiersClick(Action *action)
 			_txtRemaining->setText(tr("STR_REMAINING_PSI_LAB_CAPACITY").arg(_labSpace));
 			s->setPsiTraining(false);
 		}
+	}
+	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	{
+		_doNotReset = true;
+		_game->pushState(new SoldierInfoState(_base, _sel, true, true));
 	}
 }
 

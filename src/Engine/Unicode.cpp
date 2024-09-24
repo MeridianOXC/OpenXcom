@@ -45,6 +45,9 @@
 
 namespace OpenXcom
 {
+
+std::string OXCE_CURRENCY_SYMBOL = "$";
+
 namespace Unicode
 {
 
@@ -738,7 +741,10 @@ std::string formatNumber(int64_t value, const std::string &currency)
 	}
 	if (!currency.empty())
 	{
-		s.insert(0, currency);
+		if (currency.length() > 1) // Note: size in bytes, not characters!
+			s.append(currency);
+		else
+			s.insert(0, currency);
 	}
 	if (negative)
 	{
@@ -755,7 +761,7 @@ std::string formatNumber(int64_t value, const std::string &currency)
  */
 std::string formatFunding(int64_t funds)
 {
-	return formatNumber(funds, "$");
+	return formatNumber(funds, OXCE_CURRENCY_SYMBOL);
 }
 
 /**
