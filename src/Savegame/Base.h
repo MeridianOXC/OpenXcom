@@ -319,12 +319,15 @@ public:
 	BasePlacementErrors isAreaInUse(BaseAreaSubset area, const RuleBaseFacility* replacement = nullptr) const;
 	/// Gets available base functionality.
 	RuleBaseFacilityFunctions getProvidedBaseFunc(BaseAreaSubset skip) const;
+	RuleBaseFacilityFunctions getInherentProvidedBaseFunc() const { return _provideBaseFunc; }
 	/// Gets used base functionality.
 	RuleBaseFacilityFunctions getRequireBaseFunc(BaseAreaSubset skip) const;
 	/// Gets forbidden base functionality.
 	RuleBaseFacilityFunctions getForbiddenBaseFunc(BaseAreaSubset skip) const;
+	RuleBaseFacilityFunctions getInherentForbiddenBaseFunc() const { return _forbiddenBaseFunc; }
 	/// Gets future base functionality.
 	RuleBaseFacilityFunctions getFutureBaseFunc(BaseAreaSubset skip) const;
+	RuleBaseFacilityFunctions getInherentFutureBaseFunc() const { return _provideBaseFunc; }
 	/// Checks if it is possible to build another facility of a given type.
 	bool isMaxAllowedLimitReached(RuleBaseFacility *rule) const;
 

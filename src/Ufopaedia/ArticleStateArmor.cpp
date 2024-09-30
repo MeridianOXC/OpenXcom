@@ -55,11 +55,12 @@ namespace OpenXcom
 			setStandardPalette("PAL_BATTLEPEDIA");
 		}
 
-		_buttonColor = _game->getMod()->getInterface("articleArmor")->getElement("button")->color;
-		_textColor = _game->getMod()->getInterface("articleArmor")->getElement("text")->color;
-		_textColor2 = _game->getMod()->getInterface("articleArmor")->getElement("text")->color2;
-		_listColor1 = _game->getMod()->getInterface("articleArmor")->getElement("list")->color;
-		_listColor2 = _game->getMod()->getInterface("articleArmor")->getElement("list")->color2;
+		RuleInterface* itf = _game->getMod()->getInterface("articleArmor");
+		_buttonColor = itf->getElement("button")->color;
+		_textColor = itf->getElement("text")->color;
+		_textColor2 = itf->getElement("text")->color2;
+		_listColor1 = itf->getElement("list")->color;
+		_listColor2 = itf->getElement("list")->color2;
 
 		ArticleState::initLayout();
 
@@ -76,6 +77,12 @@ namespace OpenXcom
 		_txtTitle->setColor(_textColor);
 		_txtTitle->setBig();
 		_txtTitle->setText(tr(defs->getTitleForPage(_state->current_page)));
+
+		// optional background image
+		if (!defs->customPalette && !itf->getBackgroundImage().empty())
+		{
+			_game->getMod()->getSurface(itf->getBackgroundImage())->blitNShade(_bg, 0, 0);
+		}
 
 		if (customArmorSprite)
 		{

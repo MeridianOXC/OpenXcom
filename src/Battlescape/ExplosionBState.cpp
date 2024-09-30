@@ -103,8 +103,16 @@ void ExplosionBState::init()
 		}
 		else
 		{
-			_power += itemRule->getPowerBonus(_attack);
-			_power -= itemRule->getPowerRangeReduction(_range);
+			if (_attack.weapon_item && _attack.weapon_item->getRules()->getIgnoreAmmoPower())
+			{
+				_power += _attack.weapon_item->getRules()->getPowerBonus(_attack);
+				_power -= _attack.weapon_item->getRules()->getPowerRangeReduction(_range);
+			}
+			else
+			{
+				_power += itemRule->getPowerBonus(_attack);
+				_power -= itemRule->getPowerRangeReduction(_range);
+			}
 
 			_radius = itemRule->getExplosionRadius(_attack);
 			_damageType = itemRule->getDamageType();

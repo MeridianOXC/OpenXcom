@@ -46,7 +46,10 @@ Unit::Unit(const std::string &type) :
  */
 Unit::~Unit()
 {
-
+	for (auto* opts : _weightedBuiltInWeapons)
+	{
+		delete opts;
+	}
 }
 
 /**
@@ -113,6 +116,15 @@ void Unit::load(const YAML::Node &node, Mod *mod)
 	if (node["builtInWeapons"])
 	{
 		_builtInWeaponsNames.push_back(node["builtInWeapons"].as<std::vector<std::string> >());
+	}
+	if (const YAML::Node& weights = node["weightedBuiltInWeaponSets"])
+	{
+		for (int nn = 0; (size_t)nn < weights.size(); ++nn)
+		{
+			WeightedOptions* nw = new WeightedOptions();
+			nw->load(weights[nn]);
+			_weightedBuiltInWeapons.push_back(nw);
+		}
 	}
 
 	mod->loadSoundOffset(_type, _deathSound, node["deathSound"], "BATTLE.CAT");

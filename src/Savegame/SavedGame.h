@@ -156,6 +156,7 @@ private:
 	int _toggleBrightness;
 	int _monthsPassed;
 	int _daysPassed;
+	int _vehiclesLost;
 	std::string _graphRegionToggles;
 	std::string _graphCountryToggles;
 	std::string _graphFinanceToggles;
@@ -417,6 +418,9 @@ public:
 	/// Return the day counter.
 	int getDaysPassed() const { return _daysPassed; }
 	void increaseDaysPassed() { _daysPassed++; }
+	/// Return the vehicles lost counter.
+	int getVehiclesLost() const { return _vehiclesLost; }
+	void increaseVehiclesLost() { _vehiclesLost++; }
 	/// Return the GraphRegionToggles.
 	const std::string &getGraphRegionToggles() const;
 	/// Return the GraphCountryToggles.

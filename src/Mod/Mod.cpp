@@ -61,6 +61,7 @@
 #include "RuleCraftWeapon.h"
 #include "RuleItemCategory.h"
 #include "RuleItem.h"
+#include "RuleWeaponSet.h"
 #include "RuleUfo.h"
 #include "RuleTerrain.h"
 #include "MapScript.h"
@@ -650,6 +651,10 @@ Mod::~Mod()
 		delete pair.second;
 	}
 	for (auto& pair : _items)
+	{
+		delete pair.second;
+	}
+	for (auto& pair : _weaponSets)
 	{
 		delete pair.second;
 	}
@@ -2254,6 +2259,7 @@ void Mod::loadAll()
 
 	afterLoadHelper("research", this, _research, &RuleResearch::afterLoad);
 	afterLoadHelper("items", this, _items, &RuleItem::afterLoad);
+	afterLoadHelper("weaponSets", this, _weaponSets, &RuleWeaponSet::afterLoad);
 	afterLoadHelper("manufacture", this, _manufacture, &RuleManufacture::afterLoad);
 	afterLoadHelper("armors", this, _armors, &Armor::afterLoad);
 	afterLoadHelper("units", this, _units, &Unit::afterLoad);
@@ -2795,6 +2801,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		if (rule != 0)
 		{
 			rule->load(*i, this, parsers);
+		}
+	}
+	for (YAML::const_iterator i : iterateRules("weaponSets", "type"))
+	{
+		RuleWeaponSet* rule = loadRule(*i, &_weaponSets);
+		if (rule != 0)
+		{
+			rule->load(*i, this);
 		}
 	}
 	for (YAML::const_iterator i : iterateRules("ufos", "type"))
@@ -4115,6 +4129,16 @@ RuleItem *Mod::getItem(const std::string &id, bool error) const
 const std::vector<std::string> &Mod::getItemsList() const
 {
 	return _itemsIndex;
+}
+
+/**
+ * Returns the rules for the specified weapon set.
+ * @param type Weapon set type.
+ * @return Rules for the weapon set.
+ */
+RuleWeaponSet* Mod::getWeaponSet(const std::string& type, bool error) const
+{
+	return getRule(type, "WeaponSet", _weaponSets, error);
 }
 
 /**

@@ -50,5 +50,6 @@ en-US:
   GLOBE_TEXTURE_10: "Forest/Jungle 3"
   GLOBE_TEXTURE_11: "Forest/Jungle 4"
   GLOBE_TEXTURE_12: "Polar 2"
+  STR_LANDED: "Landed"
 #==================================================================================================================
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

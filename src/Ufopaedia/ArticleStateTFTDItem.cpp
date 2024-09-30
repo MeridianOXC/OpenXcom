@@ -124,12 +124,19 @@ namespace OpenXcom
 			_txtAmmoDamage[i]->setColor(_ammoColor);
 		}
 
-		auto addAmmoDamagePower = [&](int pos, const RuleItem *rule)
+		auto addAmmoDamagePower = [&](int pos, const RuleItem *rule, const RuleItem* weaponRule)
 		{
 			_txtAmmoType[pos]->setText(tr(getDamageTypeText(rule->getDamageType()->ResistType)));
 
 			ss.str("");ss.clear();
-			ss << rule->getPower();
+			if (weaponRule->getIgnoreAmmoPower())
+			{
+				ss << weaponRule->getPower();
+			}
+			else
+			{
+				ss << rule->getPower();
+			}
 			if (rule->getShotgunPellets())
 			{
 				ss << "x" << rule->getShotgunPellets();
@@ -143,7 +150,7 @@ namespace OpenXcom
 				if (item->getHidePower()) break;
 				if (ammo_data->empty())
 				{
-					addAmmoDamagePower(0, item);
+					addAmmoDamagePower(0, item, item);
 				}
 				else
 				{
@@ -160,7 +167,7 @@ namespace OpenXcom
 								--skipShow;
 								continue;
 							}
-							addAmmoDamagePower(currShow, type);
+							addAmmoDamagePower(currShow, type, item);
 
 							++currShow;
 							if (currShow == maxShow)
@@ -176,7 +183,7 @@ namespace OpenXcom
 			case BT_PROXIMITYGRENADE:
 			case BT_MELEE:
 				if (item->getHidePower()) break;
-				addAmmoDamagePower(0, item);
+				addAmmoDamagePower(0, item, item);
 				break;
 			default: break;
 		}

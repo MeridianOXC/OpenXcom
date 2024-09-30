@@ -50,6 +50,7 @@
 #include "../Mod/RuleItem.h"
 #include "../Mod/RuleSoldier.h"
 #include "../Mod/RuleSoldierBonus.h"
+#include "../Mod/RuleWeaponSet.h"
 #include "../fallthrough.h"
 #include "../fmath.h"
 #include "../Engine/Language.h"
@@ -1990,12 +1991,18 @@ void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
 		auto& buildin = rule->getBuiltInWeapons();
 		if (!buildin.empty())
 		{
-			if (itemLevel >= buildin.size())
-			{
-				itemLevel = buildin.size() -1;
-			}
+			int idx = itemLevel >= buildin.size() ? buildin.size() - 1 : itemLevel;
 			// Built in weapons: the unit has this weapon regardless of loadout or what have you.
-			addFixedItems(unit, buildin.at(itemLevel));
+			addFixedItems(unit, buildin.at(idx));
+		}
+
+		auto& buildin2 = rule->getWeightedBuiltInWeapons();
+		if (!buildin2.empty())
+		{
+			int idx2 = itemLevel >= buildin2.size() ? buildin2.size() - 1 : itemLevel;
+			auto* weights = buildin2.at(idx2);
+			auto* weaponSetRule = _rule->getWeaponSet(weights->choose());
+			addFixedItems(unit, weaponSetRule->getWeapons());
 		}
 
 		// terrorist alien's equipment is a special case - they are fitted with a weapon which is the alien's name with suffix _WEAPON

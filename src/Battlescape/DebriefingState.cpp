@@ -1531,6 +1531,7 @@ void DebriefingState::prepareDebriefing()
 				else
 				{ // non soldier player = tank
 					addStat("STR_TANKS_DESTROYED", 1, -value);
+					save->increaseVehiclesLost();
 				}
 			}
 			else if (oldFaction == FACTION_NEUTRAL)

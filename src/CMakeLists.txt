@@ -86,6 +86,7 @@ set ( battlescape_src
   Battlescape/CommendationState.cpp
   Battlescape/ConfirmEndMissionState.cpp
   Battlescape/DebriefingState.cpp
+  Battlescape/ExperienceOverviewState.cpp
   Battlescape/Explosion.cpp
   Battlescape/ExplosionBState.cpp
   Battlescape/ExtendedBattlescapeLinksState.cpp
@@ -335,6 +336,7 @@ set ( mod_src
   Mod/RuleTerrain.cpp
   Mod/RuleUfo.cpp
   Mod/RuleVideo.cpp
+  Mod/RuleWeaponSet.cpp
   Mod/SoldierNamePool.cpp
   Mod/SoundDefinition.cpp
   Mod/StatString.cpp

@@ -109,6 +109,7 @@ OPT int oxceShowAccuracyOnCrosshair;
 OPT bool oxceAutoSell;
 OPT bool oxceAutomaticPromotions;
 OPT bool oxceEnableOffCentreShooting;
+OPT int oxceCrashedOrLanded;
 
 // OXCE hidden, accessible only via options.cfg
 /**
@@ -174,3 +175,5 @@ OPT std::string newOpenGLShader;
 OPT std::vector< std::pair<std::string, bool> > mods; // ordered list of available mods (lowest priority to highest) and whether they are active
 OPT SoundFormat currentSound;
 OPT std::string systemLocale;
+
+OPT int battleXcomSpeedOrig;

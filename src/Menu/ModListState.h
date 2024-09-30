@@ -42,7 +42,7 @@ private:
 	Text *_txtMaster;
 	ComboBox *_cbxMasters;
 	TextList *_lstMods;
-	TextButton *_btnOk, *_btnCancel;
+	TextButton *_btnOk, *_btnCancel, *_btnOpenFolder;
 	Text *_txtTooltip;
 	std::string _currentTooltip;
 	std::vector<const ModInfo *> _masters;
@@ -82,6 +82,8 @@ public:
 	void txtTooltipOut(Action *action);
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
+	/// Handler for clicking the Open Folder button.
+	void btnOpenFolderClick(Action *action);
 	/// Handler for clicking the Cancel button.
 	void btnCancelClick(Action *action);
 };

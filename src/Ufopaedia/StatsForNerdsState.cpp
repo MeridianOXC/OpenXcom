@@ -2238,6 +2238,7 @@ void StatsForNerdsState::initItemList()
 		addSingleString(ss, itemRule->getNameAsAmmo(), "nameAsAmmo");
 		addInteger(ss, itemRule->getListOrder(), "listOrder");
 		addBoolean(ss, itemRule->getHidePower(), "hidePower");
+		addBoolean(ss, itemRule->getIgnoreAmmoPower(), "ignoreAmmoPower");
 
 		addSection("{Inventory}", "", _white);
 		addVectorOfIntegers(ss, itemRule->getCustomItemPreviewIndex(), "customItemPreviewIndex");

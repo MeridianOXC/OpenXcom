@@ -522,6 +522,24 @@ void GeoscapeState::handle(Action *action)
 
 	if (action->getDetails()->type == SDL_KEYDOWN)
 	{
+		if (!_dogfights.empty() && _dogfights.size() > _minimizedDogfights)
+		{
+			if (action->getDetails()->key.keysym.sym == SDLK_1)
+			{
+				Options::dogfightSpeed = 50;
+				_dogfightTimer->setInterval(Options::dogfightSpeed);
+			}
+			else if (action->getDetails()->key.keysym.sym == SDLK_2)
+			{
+				Options::dogfightSpeed = 35;
+				_dogfightTimer->setInterval(Options::dogfightSpeed);
+			}
+			else if (action->getDetails()->key.keysym.sym == SDLK_3)
+			{
+				Options::dogfightSpeed = 20;
+				_dogfightTimer->setInterval(Options::dogfightSpeed);
+			}
+		}
 		// "ctrl-d" - enable debug mode
 		if (Options::debug && action->getDetails()->key.keysym.sym == SDLK_d && _game->isCtrlPressed())
 		{

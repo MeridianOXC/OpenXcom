@@ -539,6 +539,8 @@ public:
 	void setName(const std::string &name);
 	/// Gets the unit's name.
 	std::string getName(Language *lang, bool debugAppendId = false) const;
+	/// Gets the unit's gained experience points.
+	const UnitStats* getExpStats() const { return &_exp; }
 	/// Gets the unit's stats.
 	UnitStats *getBaseStats();
 	/// Gets the unit's stats.

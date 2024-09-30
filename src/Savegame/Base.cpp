@@ -2174,10 +2174,10 @@ BasePlacementErrors Base::isAreaInUse(BaseAreaSubset area, const RuleBaseFacilit
 
 	Av available;
 	Av removed;
-	RuleBaseFacilityFunctions provide;
+	RuleBaseFacilityFunctions provide = _provideBaseFunc;
 	RuleBaseFacilityFunctions require;
-	RuleBaseFacilityFunctions forbidden;
-	RuleBaseFacilityFunctions future;
+	RuleBaseFacilityFunctions forbidden = _forbiddenBaseFunc;
+	RuleBaseFacilityFunctions future = _provideBaseFunc;
 	RuleBaseFacilityFunctions missed;
 
 	int removedBuildings = 0;
