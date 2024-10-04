@@ -13,7 +13,7 @@ The dependencies you require are following:
 
 We recommend using [Homebrew](https://brew.sh) to facilitate this.  With a working brew utility installed, run the following:
 ```
-$ brew install cmake yaml-cpp --with-static-lib sdl sdl_gfx sdl_image sdl_mixer --with-flac --with-libmikmod --with-libvorbis --with-static-lib
+$ brew install cmake yaml-cpp sdl12-compat sdl_gfx sdl_image sdl_mixer webp
 ```
 This should install all of these necessary dependencies to their appropriate place under /usr/local.
 
