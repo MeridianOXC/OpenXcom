@@ -58,5 +58,6 @@ en-US:
   GLOBE_TEXTURE_10: "Sunken Liner 2"
   GLOBE_TEXTURE_11: "Research Facility 2"
   GLOBE_TEXTURE_12: "Mayan Temple 2"
+  STR_LANDED: "Touched Down"
 #==================================================================================================================
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

@@ -38,4 +38,5 @@ pl:
   GLOBE_TEXTURE_10: "Las/Dżungla 3"
   GLOBE_TEXTURE_11: "Las/Dżungla 4"
   GLOBE_TEXTURE_12: "Polarny 2"
+  STR_LANDED: "Lądowanie"
   STR_SHOT_TYPE_AUTO: "Seria (x{0})"

@@ -2307,6 +2307,7 @@ alienDeployments: #done
     terrains:
       - A_BASE
     race: STR_LOBSTERMAN
+    markerName: STR_ALIEN_BASE
     script: ALIEN_COLONY_P2
     briefing:
       title: STR_ALIEN_COLONY_ATTACK_MISSION

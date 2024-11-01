@@ -61,6 +61,7 @@
 #include "RuleCraftWeapon.h"
 #include "RuleItemCategory.h"
 #include "RuleItem.h"
+#include "RuleWeaponSet.h"
 #include "RuleUfo.h"
 #include "RuleTerrain.h"
 #include "MapScript.h"
@@ -198,6 +199,8 @@ int Mod::EXTENDED_TERRAIN_MELEE;
 int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
 bool Mod::EXTENDED_EXPERIENCE_AWARD_SYSTEM;
 
+extern std::string OXCE_CURRENCY_SYMBOL;
+
 constexpr size_t MaxDifficultyLevels = 5;
 
 
@@ -308,6 +311,8 @@ void Mod::resetGlobalStatics()
 	EXTENDED_TERRAIN_MELEE = 0;
 	EXTENDED_UNDERWATER_THROW_FACTOR = 0;
 	EXTENDED_EXPERIENCE_AWARD_SYSTEM = true; // FIXME: change default to false in OXCE v8.0+ ?
+
+	OXCE_CURRENCY_SYMBOL = "$";
 }
 
 /**
@@ -428,14 +433,14 @@ Mod::Mod() :
 	_crewEmergencyEvacuationSurvivalChance(100), _pilotsEmergencyEvacuationSurvivalChance(100),
 	_soldiersPerRank({-1, -1, 5, 11, 23, 30}),
 	_pilotAccuracyZeroPoint(55), _pilotAccuracyRange(40), _pilotReactionsZeroPoint(55), _pilotReactionsRange(60),
-	_performanceBonusFactor(0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
+	_performanceBonusFactor(0.0), _enableNewResearchSorting(false), _displayCustomCategories(0), _shareAmmoCategories(false), _showDogfightDistanceInKm(false), _showFullNameInAlienInventory(false),
 	_alienInventoryOffsetX(80), _alienInventoryOffsetBigUnit(32),
 	_hidePediaInfoButton(false), _extraNerdyPediaInfoType(0),
 	_giveScoreAlsoForResearchedArtifacts(false), _statisticalBulletConservation(false), _stunningImprovesMorale(false),
 	_tuRecoveryWakeUpNewTurn(100), _shortRadarRange(0), _buildTimeReductionScaling(100),
 	_defeatScore(0), _defeatFunds(0), _difficultyDemigod(false), _startingTime(6, 1, 1, 1999, 12, 0, 0), _startingDifficulty(0),
 	_baseDefenseMapFromLocation(0), _disableUnderwaterSounds(false), _enableUnitResponseSounds(false), _pediaReplaceCraftFuelWithRangeType(-1),
-	_facilityListOrder(0), _craftListOrder(0), _itemCategoryListOrder(0), _itemListOrder(0),
+	_facilityListOrder(0), _craftListOrder(0), _itemCategoryListOrder(0), _itemListOrder(0), _armorListOrder(0), _alienRaceListOrder(0),
 	_researchListOrder(0),  _manufactureListOrder(0), _soldierBonusListOrder(0), _transformationListOrder(0), _ufopaediaListOrder(0), _invListOrder(0), _soldierListOrder(0),
 	_modCurrent(0), _statePalette(0)
 {
@@ -646,6 +651,10 @@ Mod::~Mod()
 		delete pair.second;
 	}
 	for (auto& pair : _items)
+	{
+		delete pair.second;
+	}
+	for (auto& pair : _weaponSets)
 	{
 		delete pair.second;
 	}
@@ -2250,6 +2259,7 @@ void Mod::loadAll()
 
 	afterLoadHelper("research", this, _research, &RuleResearch::afterLoad);
 	afterLoadHelper("items", this, _items, &RuleItem::afterLoad);
+	afterLoadHelper("weaponSets", this, _weaponSets, &RuleWeaponSet::afterLoad);
 	afterLoadHelper("manufacture", this, _manufacture, &RuleManufacture::afterLoad);
 	afterLoadHelper("armors", this, _armors, &Armor::afterLoad);
 	afterLoadHelper("units", this, _units, &Unit::afterLoad);
@@ -2661,6 +2671,11 @@ void Mod::loadConstants(const YAML::Node &node)
 	EXTENDED_TERRAIN_MELEE = node["extendedTerrainMelee"].as<int>(EXTENDED_TERRAIN_MELEE);
 	EXTENDED_UNDERWATER_THROW_FACTOR = node["extendedUnderwaterThrowFactor"].as<int>(EXTENDED_UNDERWATER_THROW_FACTOR);
 	EXTENDED_EXPERIENCE_AWARD_SYSTEM = node["extendedExperienceAwardSystem"].as<bool>(EXTENDED_EXPERIENCE_AWARD_SYSTEM);
+
+	if (node["extendedCurrencySymbol"])
+	{
+		OXCE_CURRENCY_SYMBOL = node["extendedCurrencySymbol"].as<std::string>(OXCE_CURRENCY_SYMBOL);
+	}
 }
 
 /**
@@ -2788,6 +2803,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			rule->load(*i, this, parsers);
 		}
 	}
+	for (YAML::const_iterator i : iterateRules("weaponSets", "type"))
+	{
+		RuleWeaponSet* rule = loadRule(*i, &_weaponSets);
+		if (rule != 0)
+		{
+			rule->load(*i, this);
+		}
+	}
 	for (YAML::const_iterator i : iterateRules("ufos", "type"))
 	{
 		RuleUfo *rule = loadRule(*i, &_ufos, &_ufosIndex);
@@ -2815,7 +2838,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 	for (YAML::const_iterator i : iterateRules("armors", "type"))
 	{
-		Armor *rule = loadRule(*i, &_armors, &_armorsIndex);
+		Armor *rule = loadRule(*i, &_armors, &_armorsIndex, "type", RuleListOrderedFactory<Armor>{ _armorListOrder, 100 });
 		if (rule != 0)
 		{
 			rule->load(*i, this, parsers);
@@ -2847,7 +2870,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	}
 	for (YAML::const_iterator i : iterateRules("alienRaces", "id"))
 	{
-		AlienRace *rule = loadRule(*i, &_alienRaces, &_aliensIndex, "id");
+		AlienRace *rule = loadRule(*i, &_alienRaces, &_aliensIndex, "id", RuleListOrderedFactory<AlienRace>{ _alienRaceListOrder, 100 });
 		if (rule != 0)
 		{
 			rule->load(*i, this);
@@ -3219,7 +3242,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 			index++;
 		}
 	}
-	_performanceBonusFactor = doc["performanceBonusFactor"].as<int>(_performanceBonusFactor);
+	_performanceBonusFactor = doc["performanceBonusFactor"].as<double>(_performanceBonusFactor);
 	_enableNewResearchSorting = doc["enableNewResearchSorting"].as<bool>(_enableNewResearchSorting);
 	_displayCustomCategories = doc["displayCustomCategories"].as<int>(_displayCustomCategories);
 	_shareAmmoCategories = doc["shareAmmoCategories"].as<bool>(_shareAmmoCategories);
@@ -3790,6 +3813,10 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 	{
 		save->loadTemplates(globalTemplates, this);
 	}
+	if (const YAML::Node& ufopediaRuleStatus = startingBaseByDiff["ufopediaRuleStatus"])
+	{
+		save->loadUfopediaRuleStatus(ufopediaRuleStatus);
+	}
 	save->getBases()->push_back(base);
 
 	// Correct IDs
@@ -4102,6 +4129,16 @@ RuleItem *Mod::getItem(const std::string &id, bool error) const
 const std::vector<std::string> &Mod::getItemsList() const
 {
 	return _itemsIndex;
+}
+
+/**
+ * Returns the rules for the specified weapon set.
+ * @param type Weapon set type.
+ * @return Rules for the weapon set.
+ */
+RuleWeaponSet* Mod::getWeaponSet(const std::string& type, bool error) const
+{
+	return getRule(type, "WeaponSet", _weaponSets, error);
 }
 
 /**
@@ -4844,13 +4881,14 @@ struct compareRule<Armor>
 		const RuleItem *rule1 = armor1->getStoreItem();
 		const RuleItem *rule2 = armor2->getStoreItem();
 		if (!rule1 && !rule2)
-			return (armor1 < armor2); // tiebreaker, don't care about order, pointers are as good as any
+			return (armor1->getListOrder() < armor2->getListOrder()); // tiebreaker
 		else if (!rule1)
 			return true;
 		else if (!rule2)
 			return false;
 		else
-			return (rule1->getListOrder() < rule2->getListOrder());
+			return (rule1->getListOrder() < rule2->getListOrder() ||
+				   (rule1->getListOrder() == rule2->getListOrder() && armor1->getListOrder() < armor2->getListOrder()));
 	}
 };
 
@@ -4934,6 +4972,7 @@ void Mod::sortLists()
 	std::sort(_ufopaediaIndex.begin(), _ufopaediaIndex.end(), compareRule<ArticleDefinition>(this));
 	std::sort(_ufopaediaCatIndex.begin(), _ufopaediaCatIndex.end(), compareSection(this));
 	std::sort(_soldiersIndex.begin(), _soldiersIndex.end(), compareRule<RuleSoldier>(this, (compareRule<RuleSoldier>::RuleLookup) & Mod::getSoldier));
+	std::sort(_aliensIndex.begin(), _aliensIndex.end(), compareRule<AlienRace>(this, (compareRule<AlienRace>::RuleLookup) & Mod::getAlienRace));
 }
 
 /**

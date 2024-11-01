@@ -60,6 +60,7 @@ private:
 	SoldierDiaryDisplay _display;
 	int _lastScrollPos;
 	TextButton *_group;
+	bool _doNotReset;
 
 public:
 	/// Creates the Soldier Diary Totals state.

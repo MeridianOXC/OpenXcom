@@ -144,6 +144,20 @@ void BuildFacilitiesState::populateBuildList()
 				continue;
 			}
 		}
+		// but we can still check at least the inherent base funcs (of the base country/region)
+		else
+		{
+			if ((_base->getInherentForbiddenBaseFunc() & prov).any())
+			{
+				_disabledFacilities.push_back(rule);
+				continue;
+			}
+			if ((_base->getInherentFutureBaseFunc() & forb).any())
+			{
+				_disabledFacilities.push_back(rule);
+				continue;
+			}
+		}
 		_facilities.push_back(rule);
 	}
 

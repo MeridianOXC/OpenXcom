@@ -196,7 +196,7 @@ MonthlyReportState::MonthlyReportState(Globe *globe) : _gameOver(0), _ratingTota
 	ss2 << tr("STR_MAINTENANCE") << "> " << Unicode::TOK_COLOR_FLIP << Unicode::formatFunding(_game->getSavedGame()->getBaseMaintenance());
 	_txtMaintenance->setText(ss2.str());
 
-	int performanceBonus = _ratingTotal * _game->getMod()->getPerformanceBonusFactor();
+	int performanceBonus = _game->getMod()->getPerformanceBonus(_ratingTotal);
 	if (performanceBonus > 0)
 	{
 		// increase funds by performance bonus

@@ -103,6 +103,8 @@ public:
 	LocalizedText tr(const std::string &id, SoldierGender gender) const;
 	/// redraw all the text-type surfaces.
 	void redrawText();
+	/// does the state only have one text list (to scroll)?
+	bool hasOnlyOneScrollableTextList() const;
 	/// center all surfaces relative to the screen.
 	void centerAllSurfaces();
 	/// lower all surfaces by half the screen height.
@@ -133,6 +135,11 @@ public:
 	virtual void recenter(int dX, int dY);
 	/// Returns the pointer to the game object
 	static Game *getGame();
+
+	/// Gets cursor X coordinate.
+	int getCursorX() const;
+	/// Gets cursor Y coordinate.
+	int getCursorY() const;
 };
 
 }

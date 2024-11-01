@@ -48,8 +48,9 @@ ModListState::ModListState() : _curMasterIdx(0)
 	_cbxMasters = new ComboBox(this, 305, 16, 8, 18);
 	_lstMods = new TextList(288, 104, 8, 40);
 
-	_btnOk = new TextButton(148, 16, 8, 176);
-	_btnCancel = new TextButton(148, 16, 164, 176);
+	_btnOk = new TextButton(100, 16, 8, 176);
+	_btnOpenFolder = new TextButton(100, 16, 110, 176);
+	_btnCancel = new TextButton(100, 16, 212, 176);
 
 	_txtTooltip = new Text(305, 25, 8, 148);
 
@@ -61,6 +62,7 @@ ModListState::ModListState() : _curMasterIdx(0)
 	add(_txtMaster, "text", "modsMenu");
 	add(_lstMods, "optionLists", "modsMenu");
 	add(_btnOk, "button2", "modsMenu");
+	add(_btnOpenFolder, "button2", "modsMenu");
 	add(_btnCancel, "button2", "modsMenu");
 	add(_txtTooltip, "tooltip", "modsMenu");
 
@@ -144,6 +146,12 @@ ModListState::ModListState() : _curMasterIdx(0)
 	_btnOk->setText(tr("STR_OK"));
 	_btnOk->onMouseClick((ActionHandler)&ModListState::btnOkClick);
 	_btnOk->onKeyboardPress((ActionHandler)&ModListState::btnOkClick, Options::keyOk);
+
+	_btnOpenFolder->setText(tr("STR_OPEN_MODS_FOLDER"));
+	_btnOpenFolder->onMouseClick((ActionHandler)&ModListState::btnOpenFolderClick);
+#ifdef __MOBILE__
+	_btnOpenFolder->setVisible(false);
+#endif
 
 	_btnCancel->setText(tr("STR_CANCEL"));
 	_btnCancel->onMouseClick((ActionHandler)&ModListState::btnCancelClick);
@@ -497,6 +505,16 @@ void ModListState::btnOkClick(Action *)
 	{
 		_game->popState();
 	}
+}
+
+/**
+ * Opens the mods folder.
+ * @param action Pointer to an action.
+ */
+void ModListState::btnOpenFolderClick(Action *)
+{
+	std::string path = Options::getUserFolder() + "mods";
+	CrossPlatform::openExplorer(path);
 }
 
 /**

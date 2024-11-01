@@ -20,6 +20,7 @@
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/ProgressBar.h"
+#include "../Engine/Options.h"
 #include "../Engine/Palette.h"
 
 namespace OpenXcom
@@ -53,6 +54,12 @@ BattlescapeMessage::BattlescapeMessage(int width, int height, int x, int y) : Su
 	_txtThinking->setHighContrast(true);
 
 	_progressBar = new ProgressBar(102, 5, HORIZONTAL_OFFSET, VERTICAL_OFFSET);
+
+	if (Options::oxceDisableThinkingProgressBar)
+	{
+		_txtThinking->setVisible(false);
+		_progressBar->setVisible(false);
+	}
 }
 
 /**

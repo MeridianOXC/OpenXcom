@@ -36,6 +36,7 @@ private:
 	BattleType _compatibleBattleType;
 	bool _isPsiRequired;
 	bool _checkHandsOnly;
+	bool _checkHandsOnly2;
 	RuleItemUseCost _cost;
 	RuleItemUseCost _flat;
 	std::vector<std::string> _compatibleWeaponNames;
@@ -66,6 +67,8 @@ public:
 	bool isPsiRequired() const { return _isPsiRequired; }
 	/// Should the check for compatible items only consider the hands (or also the inventory and specialweapon)?
 	bool checkHandsOnly() const { return _checkHandsOnly; }
+	/// Should the check for compatible items (by battle type) only consider the hands (or also the inventory and specialweapon)?
+	bool checkHandsOnly2() const { return _checkHandsOnly2; }
 	/// Gets the use cost for this skill.
 	const RuleItemUseCost& getCost() const { return _cost; }
 	/// Gets the flat vs. percentage cost flags for the use cost of this skill.

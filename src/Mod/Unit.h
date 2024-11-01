@@ -22,6 +22,7 @@
 #include <yaml-cpp/yaml.h>
 #include <SDL_types.h>
 #include "../Engine/RNG.h"
+#include "../Savegame/WeightedOptions.h"
 
 namespace OpenXcom
 {
@@ -449,6 +450,7 @@ private:
 	std::string _meleeWeapon, _psiWeapon;
 	std::vector<std::vector<std::string> > _builtInWeaponsNames;
 	std::vector<std::vector<const RuleItem*> > _builtInWeapons;
+	std::vector<WeightedOptions*> _weightedBuiltInWeapons;
 	bool _capturable;
 	bool _canSurrender, _autoSurrender;
 	bool _isLeeroyJenkins;
@@ -549,6 +551,8 @@ public:
 	const std::string &getPsiWeapon() const;
 	/// Gets a vector of integrated items this unit has available.
 	const std::vector<std::vector<const RuleItem*> > &getBuiltInWeapons() const;
+	/// Gets a vector of integrated item options this unit has available.
+	const std::vector<WeightedOptions*>& getWeightedBuiltInWeapons() const { return _weightedBuiltInWeapons; }
 	/// Gets whether the alien can be captured alive.
 	bool getCapturable() const;
 	/// Checks if this unit can surrender.

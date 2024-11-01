@@ -156,6 +156,7 @@ private:
 	int _toggleBrightness;
 	int _monthsPassed;
 	int _daysPassed;
+	int _vehiclesLost;
 	std::string _graphRegionToggles;
 	std::string _graphCountryToggles;
 	std::string _graphFinanceToggles;
@@ -189,6 +190,7 @@ public:
 	/// Loads a saved game from YAML.
 	void load(const std::string &filename, Mod *mod, Language *lang);
 	void loadTemplates(const YAML::Node& doc, const Mod* mod);
+	void loadUfopediaRuleStatus(const YAML::Node& node);
 	/// Saves a saved game to YAML.
 	void save(const std::string &filename, Mod *mod) const;
 	/// Gets the game name.
@@ -330,7 +332,7 @@ public:
 	/// Gets if a research still has undiscovered non-disabled "getOneFree".
 	bool hasUndiscoveredGetOneFree(const RuleResearch * r, bool checkOnlyAvailableTopics) const;
 	/// Gets if a research still has undiscovered non-disabled "protected unlocks".
-	bool hasUndiscoveredProtectedUnlock(const RuleResearch * r, const Mod * mod) const;
+	bool hasUndiscoveredProtectedUnlock(const RuleResearch * r) const;
 	/// Gets if a certain research has been completed.
 	bool isResearched(const std::string &research, bool considerDebugMode = true) const;
 	/// Gets if a certain research has been completed.
@@ -340,7 +342,7 @@ public:
 	/// Gets if a certain list of research topics has been completed.
 	bool isResearched(const std::vector<const RuleResearch *> &research, bool considerDebugMode = true, bool skipDisabled = false) const;
 	/// Gets if a certain item has been obtained.
-	bool isItemObtained(const std::string &itemType) const;
+	bool isItemObtained(const std::string &itemType, const Mod* mod) const;
 	/// Gets if a certain facility has been built.
 	bool isFacilityBuilt(const std::string &facilityType) const;
 	/// Gets if a certain soldier type has been hired.
@@ -416,6 +418,9 @@ public:
 	/// Return the day counter.
 	int getDaysPassed() const { return _daysPassed; }
 	void increaseDaysPassed() { _daysPassed++; }
+	/// Return the vehicles lost counter.
+	int getVehiclesLost() const { return _vehiclesLost; }
+	void increaseVehiclesLost() { _vehiclesLost++; }
 	/// Return the GraphRegionToggles.
 	const std::string &getGraphRegionToggles() const;
 	/// Return the GraphCountryToggles.

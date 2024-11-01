@@ -720,7 +720,7 @@ void Map::drawUnit(UnitSprite &unitSprite, Tile *unitTile, Tile *currTile, Posit
 	{
 		shade = std::min(+NIGHT_VISION_SHADE, shade);
 	}
-	unitSprite.draw(bu, part, tileScreenPosition.x + offsets.ScreenOffset.x, tileScreenPosition.y + offsets.ScreenOffset.y, shade, mask, _isAltPressed && _isCtrlPressed);
+	unitSprite.draw(bu, part, tileScreenPosition.x + offsets.ScreenOffset.x, tileScreenPosition.y + offsets.ScreenOffset.y, shade, mask, _isAltPressed && !_isCtrlPressed);
 }
 
 /**
@@ -1492,8 +1492,16 @@ void Map::drawTerrain(Surface *surface)
 										if (rule->getBattleType() != BT_PSIAMP || action->type == BA_USE)
 										{
 											int totalDamage = 0;
-											totalDamage += rule->getPowerBonus(attack);
-											totalDamage -= rule->getPowerRangeReduction(distance * 16);
+											if (weapon->getIgnoreAmmoPower())
+											{
+												totalDamage += weapon->getPowerBonus(attack);
+												totalDamage -= weapon->getPowerRangeReduction(distance * 16);
+											}
+											else
+											{
+												totalDamage += rule->getPowerBonus(attack);
+												totalDamage -= rule->getPowerRangeReduction(distance * 16);
+											}
 											if (totalDamage < 0) totalDamage = 0;
 											if (_cursorType != CT_WAYPOINT)
 												ss << "\n";

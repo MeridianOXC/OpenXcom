@@ -58,6 +58,7 @@ class RuleCraft;
 class RuleCraftWeapon;
 class RuleItemCategory;
 class RuleItem;
+class RuleWeaponSet;
 struct RuleDamageType;
 class RuleUfo;
 class RuleTerrain;
@@ -171,6 +172,7 @@ private:
 	std::map<std::string, RuleCraftWeapon*> _craftWeapons;
 	std::map<std::string, RuleItemCategory*> _itemCategories;
 	std::map<std::string, RuleItem*> _items;
+	std::map<std::string, RuleWeaponSet*> _weaponSets;
 	std::map<std::string, RuleUfo*> _ufos;
 	std::map<std::string, RuleTerrain*> _terrains;
 	std::map<std::string, MapDataSet*> _mapDataSets;
@@ -248,7 +250,7 @@ private:
 	std::array<int, (size_t)(RANK_COMMANDER + 1)> _soldiersPerRank;
 	int _pilotAccuracyZeroPoint, _pilotAccuracyRange, _pilotReactionsZeroPoint, _pilotReactionsRange;
 	int _pilotBraveryThresholds[3];
-	int _performanceBonusFactor;
+	double _performanceBonusFactor;
 	bool _enableNewResearchSorting;
 	int _displayCustomCategories;
 	bool _shareAmmoCategories, _showDogfightDistanceInKm, _showFullNameInAlienInventory;
@@ -302,7 +304,7 @@ private:
 	std::vector<std::string> _alienMissionsIndex, _terrainIndex, _customPalettesIndex, _arcScriptIndex, _eventScriptIndex, _eventIndex, _missionScriptIndex;
 	std::vector<std::vector<int> > _alienItemLevels;
 	std::vector<std::array<SDL_Color, TransparenciesOpacityLevels>> _transparencies;
-	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _researchListOrder,  _manufactureListOrder;
+	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _armorListOrder, _alienRaceListOrder, _researchListOrder,  _manufactureListOrder;
 	int _soldierBonusListOrder, _transformationListOrder, _ufopaediaListOrder, _invListOrder, _soldierListOrder;
 	std::vector<ModData> _modData;
 	ModData* _modCurrent;
@@ -707,6 +709,8 @@ public:
 	RuleItem *getItem(const std::string &id, bool error = false) const;
 	/// Gets the available items.
 	const std::vector<std::string> &getItemsList() const;
+	/// Gets the ruleset for a weapon set type.
+	RuleWeaponSet* getWeaponSet(const std::string& type, bool error = false) const;
 	/// Gets the ruleset for a UFO type.
 	RuleUfo *getUfo(const std::string &id, bool error = false) const;
 	/// Gets the available UFOs.
@@ -957,8 +961,8 @@ public:
 	int getPilotBraveryThresholdBold() const { return _pilotBraveryThresholds[1]; }
 	/// Gets the pilot's bravery needed for normal approach speed
 	int getPilotBraveryThresholdNormal() const { return _pilotBraveryThresholds[2]; }
-	/// Gets a performance bonus factor
-	int getPerformanceBonusFactor() const { return _performanceBonusFactor; }
+	/// Gets a performance bonus for a given score
+	int getPerformanceBonus(int score) const { return (int)(score * _performanceBonusFactor); }
 	/// Should the player have the option to sort the 'New Research' list?
 	bool getEnableNewResearchSorting() const { return _enableNewResearchSorting; }
 	/// Should custom categories be used in Buy/Sell/Transfer GUIs? 0=no, 1=yes, custom only, 2=both vanilla and custom.

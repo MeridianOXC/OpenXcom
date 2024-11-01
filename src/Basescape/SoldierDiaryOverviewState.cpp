@@ -46,7 +46,8 @@ namespace OpenXcom
  * @param soldierId ID of the selected soldier.
  * @param soldierInfoState Pointer to the Soldier Info screen.
  */
-SoldierDiaryOverviewState::SoldierDiaryOverviewState(Base *base, size_t soldierId, SoldierInfoState *soldierInfoState) : _base(base), _soldierId(soldierId), _soldierInfoState(soldierInfoState)
+SoldierDiaryOverviewState::SoldierDiaryOverviewState(Base *base, size_t soldierId, SoldierInfoState *soldierInfoState) :
+	_base(base), _soldierId(soldierId), _soldierInfoState(soldierInfoState), _doNotReset(false)
 {
 	if (_base == 0)
 	{
@@ -175,6 +176,14 @@ SoldierDiaryOverviewState::~SoldierDiaryOverviewState()
 void SoldierDiaryOverviewState::init()
 {
 	State::init();
+
+	// coming back from SoldierDiaryMissionState
+	if (_doNotReset)
+	{
+		_doNotReset = false;
+		return;
+	}
+
 	if (_list->empty())
 	{
 		_game->popState();
@@ -328,6 +337,7 @@ void SoldierDiaryOverviewState::btnNextClick(Action *)
 void SoldierDiaryOverviewState::lstDiaryInfoClick(Action *)
 {
 	int absoluteRowEntry = _lstDiary->getSelectedRow();
+	_doNotReset = true;
 	_game->pushState(new SoldierDiaryMissionState(_soldier, absoluteRowEntry));
 }
 

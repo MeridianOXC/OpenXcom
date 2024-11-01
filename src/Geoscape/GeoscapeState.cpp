@@ -522,6 +522,24 @@ void GeoscapeState::handle(Action *action)
 
 	if (action->getDetails()->type == SDL_KEYDOWN)
 	{
+		if (!_dogfights.empty() && _dogfights.size() > _minimizedDogfights)
+		{
+			if (action->getDetails()->key.keysym.sym == SDLK_1)
+			{
+				Options::dogfightSpeed = 50;
+				_dogfightTimer->setInterval(Options::dogfightSpeed);
+			}
+			else if (action->getDetails()->key.keysym.sym == SDLK_2)
+			{
+				Options::dogfightSpeed = 35;
+				_dogfightTimer->setInterval(Options::dogfightSpeed);
+			}
+			else if (action->getDetails()->key.keysym.sym == SDLK_3)
+			{
+				Options::dogfightSpeed = 20;
+				_dogfightTimer->setInterval(Options::dogfightSpeed);
+			}
+		}
 		// "ctrl-d" - enable debug mode
 		if (Options::debug && action->getDetails()->key.keysym.sym == SDLK_d && _game->isCtrlPressed())
 		{
@@ -2761,7 +2779,7 @@ void GeoscapeState::time1Day()
 	{
 		int month = _game->getSavedGame()->getMonthsPassed();
 		int currentScore = _game->getSavedGame()->getCurrentScore(month + 1);
-		int performanceBonus = currentScore * mod->getPerformanceBonusFactor();
+		int performanceBonus = mod->getPerformanceBonus(currentScore);
 		if (performanceBonus < 0)
 		{
 			performanceBonus = 0; // bonus only, no malus
@@ -3490,7 +3508,7 @@ void GeoscapeState::determineAlienMissions()
 	Mod *mod = _game->getMod();
 	int month = _game->getSavedGame()->getMonthsPassed();
 	int currentScore = save->getCurrentScore(month); // _monthsPassed was already increased by 1
-	int performanceBonus = currentScore * mod->getPerformanceBonusFactor();
+	int performanceBonus = mod->getPerformanceBonus(currentScore);
 	if (performanceBonus < 0)
 	{
 		performanceBonus = 0; // bonus only, no malus
@@ -3575,7 +3593,7 @@ void GeoscapeState::determineAlienMissions()
 					// item requirements
 					for (auto& triggerItem : arcScript->getItemTriggers())
 					{
-						triggerHappy = (save->isItemObtained(triggerItem.first) == triggerItem.second);
+						triggerHappy = (save->isItemObtained(triggerItem.first, mod) == triggerItem.second);
 						if (!triggerHappy)
 							break;
 					}
@@ -3749,7 +3767,7 @@ void GeoscapeState::determineAlienMissions()
 				// item requirements
 				for (auto& triggerItem : command->getItemTriggers())
 				{
-					triggerHappy = (save->isItemObtained(triggerItem.first) == triggerItem.second);
+					triggerHappy = (save->isItemObtained(triggerItem.first, mod) == triggerItem.second);
 					if (!triggerHappy)
 						break;
 				}
@@ -3915,7 +3933,7 @@ void GeoscapeState::determineAlienMissions()
 					// item requirements
 					for (auto& triggerItem : eventScript->getItemTriggers())
 					{
-						triggerHappy = (save->isItemObtained(triggerItem.first) == triggerItem.second);
+						triggerHappy = (save->isItemObtained(triggerItem.first, mod) == triggerItem.second);
 						if (!triggerHappy)
 							break;
 					}

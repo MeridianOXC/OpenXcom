@@ -136,8 +136,11 @@ jobs:
         run: |
           git log --pretty=format:"<strong>%an, %ad</strong>%n%B" -n 10 --date=iso-local ${{ env.NX_BASE }}..${{ env.NX_HEAD }} > artifacts/${{ env.FILENAME }}.log
 
+      - name: Create .tar.gz archive
+        run: tar -czvf ${{ env.FILENAME }}_linux.tar.gz -C artifacts .
+
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.FILENAME }}_linux
-          path: artifacts/*
+          name: ${{ env.FILENAME }}_linux.tar.gz
+          path: ${{ env.FILENAME }}_linux.tar.gz

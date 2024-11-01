@@ -21,3 +21,4 @@ pt-BR:
   SETUP_WARNING_UFO: "X-COM 1 não foi encontrado na pasta. ${GAME_NAME} requer uma instalação válida de X-COM para rodar. Continuar?"
   SETUP_WARNING_TFTD: "X-COM 2 não foi encontrado na pasta. ${GAME_NAME} requer uma instalação válida de X-COM para rodar. Continuar?"
   SETUP_WARNING_XCU: "XcomUtil foi detectado. ${GAME_NAME} não é compatível com o XcomUtil e poderá não funcionar corretamente. Continuar?"
+  SETUP_ERROR_PORTABLE: "A pasta de instalação não é portátil."

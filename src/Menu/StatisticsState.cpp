@@ -173,6 +173,7 @@ void StatisticsState::listStats()
 	allSoldiers.insert(allSoldiers.end(), save->getDeadSoldiers()->begin(), save->getDeadSoldiers()->end());
 	int soldiersRecruited = allSoldiers.size();
 	int soldiersLost = save->getDeadSoldiers()->size();
+	int vehiclesLost = save->getVehiclesLost();
 
 	int aliensKilled = 0, aliensCaptured = 0, friendlyKills = 0;
 	int daysWounded = 0, longestMonths = 0;
@@ -299,6 +300,7 @@ void StatisticsState::listStats()
 	}
 	_lstStats->addRow(2, tr("STR_SOLDIERS_RECRUITED").c_str(), Unicode::formatNumber(soldiersRecruited).c_str());
 	_lstStats->addRow(2, tr("STR_SOLDIERS_LOST").c_str(), Unicode::formatNumber(soldiersLost).c_str());
+	_lstStats->addRow(2, tr("STR_VEHICLES_LOST").c_str(), Unicode::formatNumber(vehiclesLost).c_str()); // "STR_TANKS_DESTROYED" from DebriefingState
 	if (Options::soldierDiaries)
 	{
 		_lstStats->addRow(2, tr("STR_ALIEN_KILLS").c_str(), Unicode::formatNumber(aliensKilled).c_str());

@@ -33,7 +33,7 @@ const std::string Armor::NONE = "STR_NONE";
  * type of armor.
  * @param type String defining the type.
  */
-Armor::Armor(const std::string &type) :
+Armor::Armor(const std::string &type, int listOrder) :
 	_type(type), _infiniteSupply(false), _frontArmor(0), _sideArmor(0), _leftArmorDiff(0), _rearArmor(0), _underArmor(0),
 	_drawingRoutine(0), _drawBubbles(false), _movementType(MT_WALK), _specab(SPECAB_NONE), _turnBeforeFirstStep(false), _turnCost(1), _moveSound(-1), _size(1), _weight(0),
 	_visibilityAtDark(0), _visibilityAtDay(0),
@@ -45,7 +45,7 @@ Armor::Armor(const std::string &type) :
 	_overKill(0.5f), _meleeDodgeBackPenalty(0),
 	_allowsRunning(defBoolNullable), _allowsStrafing(defBoolNullable), _allowsSneaking(defBoolNullable), _allowsKneeling(defBoolNullable), _allowsMoving(1),
 	_isPilotArmor(false), _allowTwoMainWeapons(false), _instantWoundRecovery(false),
-	_standHeight(-1), _kneelHeight(-1), _floatHeight(-1)
+	_standHeight(-1), _kneelHeight(-1), _floatHeight(-1), _listOrder(listOrder)
 {
 	for (int i=0; i < DAMAGE_TYPES; i++)
 		_damageModifier[i] = 1.0f;
@@ -246,6 +246,7 @@ void Armor::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 	_standHeight = node["standHeight"].as<int>(_standHeight);
 	_kneelHeight = node["kneelHeight"].as<int>(_kneelHeight);
 	_floatHeight = node["floatHeight"].as<int>(_floatHeight);
+	_listOrder = node["listOrder"].as<int>(_listOrder);
 }
 
 /**

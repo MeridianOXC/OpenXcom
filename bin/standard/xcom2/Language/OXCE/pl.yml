@@ -46,4 +46,5 @@ pl:
   GLOBE_TEXTURE_10: "Zatopiony liniowiec 2"
   GLOBE_TEXTURE_11: "Stanowisko badawcze 2"
   GLOBE_TEXTURE_12: "Świątynia Majów 2"
+  STR_LANDED: "Osiadnięcie"
   STR_SHOT_TYPE_AUTO: "Seria (x{0})"
