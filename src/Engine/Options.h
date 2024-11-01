@@ -129,6 +129,8 @@ namespace Options
 	std::string getActiveMaster();
 	/// Gets the master mod info.
 	const ModInfo* getActiveMasterInfo();
+	/// Gets the xcom ruleset info.
+	const ModInfo* getXcomRulesetInfo();
 	/// Gets the map of mod ids to mod infos
 	const std::map<std::string, ModInfo> &getModInfos();
 	/// Refreshes the mods.

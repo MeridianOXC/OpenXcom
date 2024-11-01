@@ -26,7 +26,7 @@
 ;Defines
 
 	!define GAME_NAME "OpenXcom Extended"
-	!define GAME_VERSION "7.14.4"
+	!define GAME_VERSION "7.15.0"
 	!define GAME_AUTHOR "OpenXcom Developers"
 	!include "version.nsh"
 

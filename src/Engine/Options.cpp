@@ -471,9 +471,11 @@ void createAdvancedOptionsOXCE()
 #ifdef __MOBILE__
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, true, "STR_OXCE_LINKS", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, true, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceQuickSearchButton", &oxceQuickSearchButton, true, "", "HIDDEN"));
 #else
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, false, "STR_OXCE_LINKS", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceQuickSearchButton", &oxceQuickSearchButton, false, "", "HIDDEN"));
 #endif
 
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceHighlightNewTopics", &oxceHighlightNewTopics, true, "STR_HIGHLIGHT_NEW", "STR_GENERAL"));
@@ -1149,6 +1151,18 @@ std::string getActiveMaster()
 const ModInfo* getActiveMasterInfo()
 {
 	return &_modInfos.at(_masterMod);
+}
+
+/**
+ * Gets the xcom ruleset info.
+ */
+const ModInfo* getXcomRulesetInfo()
+{
+	if (_modInfos.find("xcom1") != _modInfos.end())
+		return &_modInfos.at("xcom1");
+	else if (_modInfos.find("xcom2") != _modInfos.end())
+		return &_modInfos.at("xcom2");
+	else return nullptr;
 }
 
 bool getLoadLastSave()

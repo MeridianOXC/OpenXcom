@@ -34,7 +34,7 @@ private:
 	/// Adds a new menu item for an action.
 	void addItem(const RuleSkill* skill, int *id, SDL_Keycode key);
 	/// Choose an action weapon based on given parameters.
-	void chooseWeaponForSkill(BattleAction* action, const std::vector<const RuleItem*> &compatibleWeaponTypes, BattleType compatibleWeaponType, bool checkHandsOnly);
+	void chooseWeaponForSkill(BattleAction* action, const RuleSkill* skillRules);
 public:
 	/// Creates the Skill Menu state.
 	SkillMenuState(BattleAction *action, int x, int y);

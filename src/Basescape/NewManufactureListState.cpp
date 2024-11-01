@@ -129,7 +129,7 @@ NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _sho
 
 	_btnQuickSearch->setText(""); // redraw
 	_btnQuickSearch->onEnter((ActionHandler)&NewManufactureListState::btnQuickSearchApply);
-	_btnQuickSearch->setVisible(false);
+	_btnQuickSearch->setVisible(Options::oxceQuickSearchButton);
 
 	_btnOk->onKeyboardRelease((ActionHandler)&NewManufactureListState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
 }

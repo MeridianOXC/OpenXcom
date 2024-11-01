@@ -38,4 +38,5 @@ ru:
   GLOBE_TEXTURE_10: "Лес/Джунгли 3"
   GLOBE_TEXTURE_11: "Лес/Джунгли 4"
   GLOBE_TEXTURE_12: "Заполярье 2"
+  STR_LANDED: "Посадка"
   STR_SHOT_TYPE_AUTO: "Очер. (x{0})"

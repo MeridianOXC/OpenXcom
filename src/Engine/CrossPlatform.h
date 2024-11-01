@@ -297,6 +297,10 @@ extern "C" {
 	bool isHigherThanCurrentVersion(const std::string& newVersion);
 	/// Is the given version number higher than the given version number?
 	bool isHigherThanCurrentVersion(const std::array<int, 4>& newVersion, const int (&ver)[4]);
+	/// Is the given version number lower than the minimum required version number?
+	bool isLowerThanRequiredVersion(const std::string& dataVersion);
+	/// Is the first version number lower than the second version number?
+	bool isLowerThanRequiredVersion(const std::array<int, 4>& dataVersion, const int(&ver)[4]);
 	/// Gets the path to the executable file.
 	std::string getExeFolder();
 	/// Gets the file name of the executable file.

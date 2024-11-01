@@ -46,4 +46,5 @@ ru:
   GLOBE_TEXTURE_10: "Затонувший лайнер 2"
   GLOBE_TEXTURE_11: "Подводная станция 2"
   GLOBE_TEXTURE_12: "Храм майя 2"
+  STR_LANDED: "Посадка"
   STR_SHOT_TYPE_AUTO: "Очер. (x{0})"

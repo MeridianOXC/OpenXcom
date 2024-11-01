@@ -38,4 +38,5 @@ it:
   GLOBE_TEXTURE_10: "Foresta/Giungla 3"
   GLOBE_TEXTURE_11: "Foresta/Giungla 4"
   GLOBE_TEXTURE_12: "Polare 2"
+  STR_LANDED: "Atterrato"
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

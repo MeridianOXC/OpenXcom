@@ -991,6 +991,7 @@ void NewBattleState::fillList(NewBattleSelectType selectType, bool isRightClick)
 		_btnCancel->setVisible(true);
 		_btnRandom->setVisible(false);
 		_lstSelect->setVisible(true);
+		_btnQuickSearch->setVisible(Options::oxceQuickSearchButton);
 	}
 
 	std::string searchString = _btnQuickSearch->getText();

@@ -14,7 +14,7 @@ ru:
   STR_RECONFIGURE_DIRS_BTN: "Изменить"
   STR_LOG_DESTINATION: "Журналирование"
   STR_LOG_FILE: "Файл"
-  STR_LOG_FILE_DESC: "Запись событий в openxcom.log. Производительность может значительно снизиться!"
+  STR_LOG_FILE_DESC: "Запись событий в openxcom.log. Может серьезно влиять на производительность."
   STR_LOG_SYSTEM: "Logcat"
   STR_LOG_SYSTEM_DESC: "Запись событий в системный журнал. Отключение может немного повысить производительность, но полезная информация не будет сохраняться в логе."
   STR_DEBUG_OPTIONS: "Отладка"

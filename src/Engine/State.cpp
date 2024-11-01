@@ -524,6 +524,23 @@ void State::redrawText()
 }
 
 /**
+ * does the state only have one text list (to scroll)?
+ */
+bool State::hasOnlyOneScrollableTextList() const
+{
+	int count = 0;
+	for (auto* surface : _surfaces)
+	{
+		TextList* list = dynamic_cast<TextList*>(surface);
+		if (list && (list->getRowsDoNotUse() > list->getVisibleRows()))
+		{
+			count++;
+		}
+	}
+	return (count == 1);
+}
+
+/**
  * Changes the current modal surface. If a surface is modal,
  * then only that surface can receive events. This is used
  * when an element needs to take priority over everything else,
@@ -639,6 +656,16 @@ void State::recenter(int dX, int dY)
 		surface->setX(surface->getX() + dX / 2);
 		surface->setY(surface->getY() + dY / 2);
 	}
+}
+
+int State::getCursorX() const
+{
+	return _game->getCursor()->getX();
+}
+
+int State::getCursorY() const
+{
+	return _game->getCursor()->getY();
 }
 
 void State::setGamePtr(Game* game)

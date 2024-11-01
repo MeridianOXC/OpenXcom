@@ -909,7 +909,7 @@ void TextList::clearList()
  * @param toMax If true then scrolls to the top of the list. false => one row up
  * @param scrollByWheel If true then use wheel scroll, otherwise scroll normally.
  */
-void TextList::scrollUp(bool toMax, bool scrollByWheel)
+void TextList::scrollUp(bool toMax, bool scrollByWheel, size_t howMany)
 {
 	if (!_scrolling)
 		return;
@@ -927,7 +927,7 @@ void TextList::scrollUp(bool toMax, bool scrollByWheel)
 			}
 			else
 			{
-				scrollTo(_scroll - 1);
+				scrollTo(_scroll - std::min(howMany, _scroll));
 			}
 		}
 	}
@@ -938,7 +938,7 @@ void TextList::scrollUp(bool toMax, bool scrollByWheel)
  * @param toMax If true then scrolls to the bottom of the list. false => one row down
  * @param scrollByWheel If true then use wheel scroll, otherwise scroll normally.
  */
-void TextList::scrollDown(bool toMax, bool scrollByWheel)
+void TextList::scrollDown(bool toMax, bool scrollByWheel, size_t howMany)
 {
 	if (!_scrolling)
 		return;
@@ -956,7 +956,7 @@ void TextList::scrollDown(bool toMax, bool scrollByWheel)
 			}
 			else
 			{
-				scrollTo(_scroll + 1);
+				scrollTo(_scroll + howMany);
 			}
 		}
 	}
@@ -1123,6 +1123,32 @@ void TextList::handle(Action *action, State *state)
 			_arrowRight[i]->handle(action, state);
 		}
 	}
+	// scrolling by keyboard
+	if (action->getDetails()->type == SDL_KEYDOWN &&
+		_rows.size() > _visibleRows &&
+		(state->hasOnlyOneScrollableTextList() || isMouseCursorOverMe(state)))
+	{
+		if (action->getDetails()->key.keysym.sym == SDLK_PAGEDOWN)
+		{
+			scrollDown(false, false, _visibleRows);
+		}
+		else if (action->getDetails()->key.keysym.sym == SDLK_PAGEUP)
+		{
+			scrollUp(false, false, _visibleRows);
+		}
+	}
+}
+
+bool TextList::isMouseCursorOverMe(State* state) const
+{
+	if (state->getCursorX() < _x ||
+		state->getCursorX() > _x + _width ||
+		state->getCursorY() < _y ||
+		state->getCursorY() > _y + _height)
+	{
+		return false;
+	}
+	return true;
 }
 
 /**

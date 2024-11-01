@@ -2012,6 +2012,42 @@ bool isHigherThanCurrentVersion(const std::array<int, 4>& newOxceVersion, const 
 }
 
 /**
+ * Is the given version number lower than the minimum required version number?
+ * @param dataVersion Version to compare.
+ * @return True if the given version number is lower than the minimum required version number.
+ */
+bool isLowerThanRequiredVersion(const std::string& dataVersion)
+{
+	return isLowerThanRequiredVersion(parseVersion(dataVersion), { MIN_REQUIRED_RULESET_VERSION_NUMBER });
+}
+
+/**
+ * Is the first version number lower than the second version number?
+ * @param dataVersion Version to compare.
+ * @param ver Minimum required version.
+ * @return True if the first version number is lower than the second version number.
+ */
+bool isLowerThanRequiredVersion(const std::array<int, 4>& dataVersion, const int(&ver)[4])
+{
+	bool isLower = false;
+
+	for (size_t k = 0; k < std::size(ver); ++k)
+	{
+		if (dataVersion[k] < ver[k])
+		{
+			isLower = true;
+			break;
+		}
+		else if (dataVersion[k] > ver[k])
+		{
+			break;
+		}
+	}
+
+	return isLower;
+}
+
+/**
  * Gets the path to the executable file.
  * @return Path to the EXE file.
  */

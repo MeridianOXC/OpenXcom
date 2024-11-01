@@ -288,7 +288,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnQuickSearch->setHighContrast(true);
 	_btnQuickSearch->setText(""); // redraw
 	_btnQuickSearch->onEnter((ActionHandler)&InventoryState::btnQuickSearchApply);
-	_btnQuickSearch->setVisible(false);
+	_btnQuickSearch->setVisible(Options::oxceQuickSearchButton);
 
 	_btnOk->onKeyboardRelease((ActionHandler)&InventoryState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
 

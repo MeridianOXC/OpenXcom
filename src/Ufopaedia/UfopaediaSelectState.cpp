@@ -99,7 +99,7 @@ namespace OpenXcom
 
 		_btnQuickSearch->setText(""); // redraw
 		_btnQuickSearch->onEnter((ActionHandler)&UfopaediaSelectState::btnQuickSearchApply);
-		_btnQuickSearch->setVisible(false);
+		_btnQuickSearch->setVisible(Options::oxceQuickSearchButton);
 
 		_btnOk->onKeyboardRelease((ActionHandler)&UfopaediaSelectState::btnQuickSearchToggle, Options::keyToggleQuickSearch);
 	}

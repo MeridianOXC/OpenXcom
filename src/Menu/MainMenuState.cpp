@@ -187,6 +187,46 @@ MainMenuState::MainMenuState(bool updateCheck)
 	}
 #endif
 
+	if (!_btnUpdate->getVisible())
+	{
+		int problemCode = 0;
+		// standard
+		const ModInfo* xcomInfo = Options::getXcomRulesetInfo();
+		if (xcomInfo && CrossPlatform::isLowerThanRequiredVersion(xcomInfo->getVersion()))
+		{
+			problemCode = 1;
+			Log(LOG_ERROR) << "ERROR: The content of the 'standard' folder is too old!";
+			_txtUpdateInfo->setText("ERROR: The content of the 'standard' folder is too old!");
+		}
+		// common
+		try
+		{
+			YAML::Node doc = FileMap::getYAML("dont-touch.me");
+			if (doc["version"])
+			{
+				if (CrossPlatform::isLowerThanRequiredVersion(doc["version"].as<std::string>()))
+				{
+					problemCode = 2;
+					Log(LOG_ERROR) << "ERROR: The content of the 'common' folder is too old!";
+					_txtUpdateInfo->setText("ERROR: The content of the 'common' folder is too old!");
+				}
+			}
+		}
+		catch (Exception& e)
+		{
+			problemCode = 3;
+			Log(LOG_ERROR) << "ERROR: The content of the 'common' folder is too old!!";
+			_txtUpdateInfo->setText("ERROR: The content of the 'common' folder is too old!!");
+			Log(LOG_ERROR) << e.what();
+		}
+		// result
+		if (problemCode > 0)
+		{
+			_txtUpdateInfo->setColor(81); // hardcoded, readable both in xcom1 and xcom2
+			_txtUpdateInfo->setVisible(true);
+		}
+	}
+
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setBig();
 	std::ostringstream title;

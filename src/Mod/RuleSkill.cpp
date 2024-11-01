@@ -25,7 +25,7 @@ namespace OpenXcom
 {
 
 RuleSkill::RuleSkill(const std::string& type) : _type(type),
-	_targetMode(BA_NONE), _compatibleBattleType(BT_NONE), _isPsiRequired(false), _checkHandsOnly(true)
+	_targetMode(BA_NONE), _compatibleBattleType(BT_NONE), _isPsiRequired(false), _checkHandsOnly(true), _checkHandsOnly2(false)
 {
 }
 
@@ -53,6 +53,7 @@ void RuleSkill::load(const YAML::Node& node, Mod *mod, const ModScript& parsers)
 
 	_isPsiRequired = node["isPsiRequired"].as<bool>(_isPsiRequired);
 	_checkHandsOnly = node["checkHandsOnly"].as<bool>(_checkHandsOnly);
+	_checkHandsOnly2 = node["checkHandsOnly2"].as<bool>(_checkHandsOnly2);
 
 	_cost.loadCost(node, "Use");
 	_flat.loadPercent(node, "Use");

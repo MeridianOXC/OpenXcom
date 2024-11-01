@@ -46,4 +46,5 @@ it:
   GLOBE_TEXTURE_10: "Transatlantico Inabissato 2"
   GLOBE_TEXTURE_11: "Struttura di Ricerca 2"
   GLOBE_TEXTURE_12: "Tempio Maya 2"
+  STR_LANDED: "Fermo"
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

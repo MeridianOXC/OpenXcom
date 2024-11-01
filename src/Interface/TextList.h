@@ -175,9 +175,9 @@ public:
 	/// Clears the list.
 	void clearList();
 	/// Scrolls the list up.
-	void scrollUp(bool toMax, bool scrollByWheel = false);
+	void scrollUp(bool toMax, bool scrollByWheel = false, size_t howMany = 1);
 	/// Scrolls the list down.
-	void scrollDown(bool toMax, bool scrollByWheel = false);
+	void scrollDown(bool toMax, bool scrollByWheel = false, size_t howMany = 1);
 	/// Sets the list scrolling.
 	void setScrolling(bool scrolling, int scrollPos = 4);
 	/// Draws the text onto the text list.
@@ -188,6 +188,7 @@ public:
 	void think() override;
 	/// Handles arrow buttons.
 	void handle(Action *action, State *state) override;
+	bool isMouseCursorOverMe(State* state) const;
 	/// Special handling for mouse presses.
 	void mousePress(Action *action, State *state) override;
 	/// Special handling for mousewheel events.
