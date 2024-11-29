@@ -20,7 +20,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -56,7 +56,7 @@ public:
 	/// Cleans up the Starting Conditions ruleset.
 	~RuleStartingCondition();
 	/// Loads Starting Conditions data from YAML.
-	void load(const YAML::Node& node, Mod *mod);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets the Starting Conditions's type.

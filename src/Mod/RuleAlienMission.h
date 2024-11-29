@@ -20,7 +20,7 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -132,7 +132,7 @@ public:
 	/// Gets a race based on the game time and the racial distribution.
 	std::string generateRace(const size_t monthsPassed) const;
 	/// Loads alien mission data from YAML.
-	void load(const YAML::Node &node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the number of waves.
 	size_t getWaveCount() const { return _waves.size(); }
 	/// Gets the full wave information.
@@ -231,5 +231,8 @@ private:
 	/// The region distribution over game time. Works only for "gen missions" spawned by an alien base.
 	std::vector<std::pair<size_t, WeightedOptions*> > _regionWeights;
 };
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, MissionWave* val);
 
 }

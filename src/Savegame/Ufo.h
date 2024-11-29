@@ -19,7 +19,7 @@
  */
 
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "Craft.h"
 #include "MovingTarget.h"
 #include "../Mod/RuleUfo.h"
@@ -94,13 +94,13 @@ public:
 	/// Cleans up the UFO.
 	~Ufo();
 	/// Loads the UFO from YAML.
-	void load(const YAML::Node& node, const ScriptGlobal *shared, const Mod &ruleset, SavedGame &game);
+	void load(const YAML::YamlNodeReader& reader, const ScriptGlobal *shared, const Mod &ruleset, SavedGame &game);
 	/// Finishes loading the UFO from YAML (called after XCOM craft are loaded).
-	void finishLoading(const YAML::Node& node, SavedGame &save);
+	void finishLoading(const YAML::YamlNodeReader& reader, SavedGame& save);
 	/// Saves the UFO to YAML.
-	YAML::Node save(const ScriptGlobal *shared, bool newBattle) const;
+	void save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared, bool newBattle) const;
 	/// Saves the UFO's ID to YAML.
-	YAML::Node saveId() const override;
+	void saveId(YAML::YamlNodeWriter writer) const override;
 	/// Gets the UFO's type.
 	std::string getType() const override;
 	/// Gets the UFO's ruleset.

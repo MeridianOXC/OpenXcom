@@ -19,7 +19,7 @@
  */
 #include <string>
 #include <map>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "Unit.h"
 #include "RuleBaseFacilityFunctions.h"
 
@@ -60,7 +60,7 @@ public:
 	/// Default constructor
 	RuleSoldierTransformation(const std::string &name, int listOrder);
 	/// Loads the project data from YAML
-	void load(const YAML::Node& node, Mod* mod);
+	void load(const YAML::YamlNodeReader& reader, Mod* mod);
 	/// Gets the unique name id of the project
 	const std::string &getName() const;
 	/// Gets the list weight of the project

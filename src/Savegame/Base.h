@@ -21,7 +21,8 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <yaml-cpp/yaml.h>
+#include <list>
+#include "../Engine/Yaml.h"
 #include "../Mod/RuleBaseFacilityFunctions.h"
 
 #ifndef BASEFACILITIESITERATOR
@@ -135,14 +136,14 @@ public:
 	/// Cleans up the base.
 	~Base();
 	/// Loads the base from YAML.
-	void load(const YAML::Node& node, SavedGame *save, bool newGame, bool newBattleGame = false);
+	void load(const YAML::YamlNodeReader& reader, SavedGame *save, bool newGame, bool newBattleGame = false);
 	/// Finishes loading the base (more specifically all craft in the base) from YAML.
-	void finishLoading(const YAML::Node& node, SavedGame *save);
+	void finishLoading(const YAML::YamlNodeReader& reader, SavedGame *save);
 	void calculateServices(SavedGame* save);
 	/// Tests whether the base facilities are within the base boundaries and not overlapping.
 	bool isOverlappingOrOverflowing();
 	/// Saves the base to YAML.
-	YAML::Node save() const override;
+	void save(YAML::YamlNodeWriter writer) const override;
 	/// Gets the base's type.
 	std::string getType() const override;
 	/// Gets the base's name.

@@ -42,14 +42,14 @@ RuleWeaponSet::~RuleWeaponSet()
  * @param node YAML node.
  * @param mod Mod handle.
  */
-void RuleWeaponSet::load(const YAML::Node& node, Mod* mod)
+void RuleWeaponSet::load(const YAML::YamlNodeReader& reader, Mod* mod)
 {
-	if (const YAML::Node& parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	mod->loadUnorderedNames(_type, _weaponNames, node["weapons"]);
+	mod->loadUnorderedNames(_type, _weaponNames, reader["weapons"]);
 }
 
 /**

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "BattlescapeGame.h"
 #include "Position.h"
 #include "../Savegame/BattleUnit.h"
@@ -71,9 +71,9 @@ public:
 	/// Resets the unsaved AI state.
 	void reset();
 	/// Loads the AI Module from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Saves the AI Module to YAML.
-	YAML::Node save() const;
+	void save(YAML::YamlNodeWriter writer) const;
 	/// Runs Module functionality every AI cycle.
 	void think(BattleAction *action);
 	/// Sets the "unit was hit" flag true.

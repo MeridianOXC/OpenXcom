@@ -42,11 +42,11 @@ RuleMusic::~RuleMusic()
  * Loads info about the music track.
  * @param node yaml node to read from.
  */
-void RuleMusic::load(const YAML::Node& node)
+void RuleMusic::load(const YAML::YamlNodeReader& reader)
 {
-	_name = node["name"].as<std::string>(_name);
-	_catPos = node["catPos"].as<int>(_catPos);
-	_normalization = node["normalization"].as<float>(_normalization);
+	reader.tryRead("name", _name);
+	reader.tryRead("catPos", _catPos);
+	reader.tryRead("normalization", _normalization);
 }
 
 /**

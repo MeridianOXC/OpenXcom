@@ -18,7 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "RuleEvent.h"
 #include "ModScript.h"
 #include "RuleBaseFacilityFunctions.h"
@@ -60,7 +60,7 @@ public:
 	/// Cleans up the country ruleset.
 	~RuleCountry();
 	/// Loads the country from YAML.
-	void load(const YAML::Node& node, const ModScript& parsers, Mod* mod);
+	void load(const YAML::YamlNodeReader& reader, const ModScript& parsers, Mod* mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets the country's type.

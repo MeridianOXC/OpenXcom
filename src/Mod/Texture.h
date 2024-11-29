@@ -20,7 +20,7 @@
 #include "../fmath.h"
 #include <string>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -54,7 +54,7 @@ public:
 	/// Cleans up the texture.
 	~Texture();
 	/// Loads the texture from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the list of terrain criteria.
 	std::vector<TerrainCriteria> *getTerrain();
 	/// Gets a random texture terrain for a given target.
@@ -73,43 +73,7 @@ public:
 	const std::string &getStartingCondition() const { return _startingCondition; }
 };
 
-}
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, TerrainCriteria* val);
 
-namespace YAML
-{
-	template<>
-	struct convert < OpenXcom::TerrainCriteria >
-	{
-		static Node encode(const OpenXcom::TerrainCriteria& rhs)
-		{
-			Node node;
-			node["name"] = rhs.name;
-			node["weight"] = rhs.weight;
-			std::vector<double> area;
-			area.push_back(rhs.lonMin);
-			area.push_back(rhs.lonMax);
-			area.push_back(rhs.latMin);
-			area.push_back(rhs.latMax);
-			node["area"] = area;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::TerrainCriteria& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-
-			rhs.name = node["name"].as<std::string>(rhs.name);
-			rhs.weight = node["weight"].as<int>(rhs.weight);
-			if (node["area"])
-			{
-				std::vector<double> area = node["area"].as< std::vector<double> >();
-				rhs.lonMin = Deg2Rad(area[0]);
-				rhs.lonMax = Deg2Rad(area[1]);
-				rhs.latMin = Deg2Rad(area[2]);
-				rhs.latMax = Deg2Rad(area[3]);
-			}
-			return true;
-		}
-	};
 }

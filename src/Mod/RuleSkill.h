@@ -53,7 +53,7 @@ public:
 	/// Cleans up the soldier skill ruleset.
 	~RuleSkill() = default;
 	/// Loads the soldier skill data from YAML.
-	void load(const YAML::Node& node, Mod *mod, const ModScript& parsers);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 

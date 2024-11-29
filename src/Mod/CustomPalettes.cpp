@@ -40,11 +40,11 @@ CustomPalettes::~CustomPalettes()
  * Loads the custom palette from YAML.
  * @param node YAML node.
  */
-void CustomPalettes::load(const YAML::Node &node)
+void CustomPalettes::load(const YAML::YamlNodeReader& reader)
 {
-	_target = node["target"].as<std::string>(_target);
-	_file = node["file"].as<std::string>(_file);
-	_palette = node["palette"].as< std::map<int, Position> >(_palette);
+	reader.tryRead("target", _target);
+	reader.tryRead("file", _file);
+	reader.tryRead("palette", _palette);
 }
 
 /**

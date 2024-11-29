@@ -70,43 +70,42 @@ const int Node::nodeRank[8][7] = {
  * Loads the UFO from a YAML file.
  * @param node YAML node.
  */
-void Node::load(const YAML::Node &node)
+void Node::load(const YAML::YamlNodeReader& reader)
 {
-	_id = node["id"].as<int>(_id);
-	_pos = node["position"].as<Position>(_pos);
-	//_segment = node["segment"].as<int>(_segment);
-	_type = node["type"].as<int>(_type);
-	_rank = node["rank"].as<int>(_rank);
-	_flags = node["flags"].as<int>(_flags);
-	_reserved = node["reserved"].as<int>(_reserved);
-	_priority = node["priority"].as<int>(_priority);
-	_allocated = node["allocated"].as<bool>(_allocated);
-	_nodeLinks = node["links"].as< std::vector<int> >(_nodeLinks);
-	_dummy = node["dummy"].as<bool>(_dummy);
+	reader.tryRead("id", _id);
+	reader.tryRead("position", _pos);
+	//reader.tryRead("segment", _segment);
+	reader.tryRead("type", _type);
+	reader.tryRead("rank", _rank);
+	reader.tryRead("flags", _flags);
+	reader.tryRead("reserved", _reserved);
+	reader.tryRead("priority", _priority);
+	reader.tryRead("allocated", _allocated);
+	reader.tryRead("links", _nodeLinks);
+	reader.tryRead("dummy", _dummy);
 }
 
 /**
  * Saves the UFO to a YAML file.
  * @return YAML node.
  */
-YAML::Node Node::save() const
+void Node::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
-	node["id"] = _id;
-	node["position"] = _pos;
-	//node["segment"] = _segment;
-	node["type"] = _type;
-	node["rank"] = _rank;
-	node["flags"] = _flags;
-	node["reserved"] = _reserved;
-	node["priority"] = _priority;
+	writer.setAsMap();
+	writer.setFlowStyle();
+	writer.write("id", _id);
+	writer.write("position", _pos);
+	//writer.write("segment", _segment);
+	writer.write("type", _type);
+	writer.write("rank", _rank);
+	writer.write("flags", _flags);
+	writer.write("reserved", _reserved);
+	writer.write("priority", _priority);
 	if (_allocated)
-		node["allocated"] = _allocated;
-	node["links"] = _nodeLinks;
+		writer.write("allocated", _allocated);
+	writer.write("links", _nodeLinks);
 	if (_dummy)
-		node["dummy"] = _dummy;
-	return node;
+		writer.write("dummy", _dummy);
 }
 
 /**

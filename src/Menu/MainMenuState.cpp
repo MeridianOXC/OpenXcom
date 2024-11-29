@@ -155,19 +155,19 @@ MainMenuState::MainMenuState(bool updateCheck)
 						checkProgress = 4;
 						try
 						{
-							YAML::Node doc = YAML::Load(*CrossPlatform::readFile(updateMetadataFilename));
+							YAML::YamlRootNodeReader reader(updateMetadataFilename);
 							checkProgress = 5;
-							if (doc["updateInfo"])
+							if (reader["updateInfo"])
 							{
 								checkProgress = 6;
-								std::string msg = doc["updateInfo"].as<std::string>();
+								std::string msg = reader["updateInfo"].readVal<std::string>();
 								_txtUpdateInfo->setText(msg);
 								_txtUpdateInfo->setVisible(true);
 							}
-							else if (doc["newVersion"])
+							else if (reader["newVersion"])
 							{
 								checkProgress = 7;
-								_newVersion = doc["newVersion"].as<std::string>();
+								_newVersion = reader["newVersion"].readVal<std::string>();
 								if (CrossPlatform::isHigherThanCurrentVersion(_newVersion))
 									_btnUpdate->setVisible(true);
 								else
@@ -201,10 +201,10 @@ MainMenuState::MainMenuState(bool updateCheck)
 		// common
 		try
 		{
-			YAML::Node doc = FileMap::getYAML("dont-touch.me");
-			if (doc["version"])
+			const YAML::YamlRootNodeReader& reader = FileMap::getYAML("dont-touch.me");
+			if (reader["version"])
 			{
-				if (CrossPlatform::isLowerThanRequiredVersion(doc["version"].as<std::string>()))
+				if (CrossPlatform::isLowerThanRequiredVersion(reader["version"].readVal<std::string>()))
 				{
 					problemCode = 2;
 					Log(LOG_ERROR) << "ERROR: The content of the 'common' folder is too old!";

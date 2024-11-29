@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "LoadYaml.h"
 #include "RuleStatBonus.h"
 #include "RuleDamageType.h"
@@ -139,10 +139,10 @@ struct RuleItemUseCost
 	 * @param node YAML node.
 	 * @param name Name of action type.
 	 */
-	void loadCost(const YAML::Node& node, const std::string& name)
+	void loadCost(const YAML::YamlNodeReader& reader, const std::string& name)
 	{
-		loadIntNullable(Time, node["tu" + name]);
-		if (const YAML::Node& cost = node["cost" + name])
+		loadIntNullable(Time, reader[ryml::to_csubstr("tu" + name)]);
+		if (const auto& cost = reader[ryml::to_csubstr("cost" + name)])
 		{
 			loadIntNullable(Time, cost["time"]);
 			loadIntNullable(Energy, cost["energy"]);
@@ -159,11 +159,11 @@ struct RuleItemUseCost
 	 * @param node YAML node.
 	 * @param name Name of action type.
 	 */
-	void loadPercent(const YAML::Node& node, const std::string& name)
+	void loadPercent(const YAML::YamlNodeReader& reader, const std::string& name)
 	{
-		if (const YAML::Node& cost = node["flat" + name])
+		if (const auto& cost = reader[ryml::to_csubstr("flat" + name)])
 		{
-			if (cost.IsScalar())
+			if (cost.hasVal())
 			{
 				loadBoolNullable(Time, cost);
 			}
@@ -278,7 +278,7 @@ public:
 	static const int MedikitSlots = 3;
 
 	/// Load ammo slot with checking correct range.
-	static void loadAmmoSlotChecked(int& result, const YAML::Node& node, const std::string& parentName);
+	static void loadAmmoSlotChecked(int& result, const YAML::YamlNodeReader& reader, const std::string& parentName);
 
 private:
 	std::string _ufopediaType;
@@ -396,15 +396,15 @@ private:
 	/// Get final value of cost.
 	RuleItemUseCost getDefault(const RuleItemUseCost& a, const RuleItemUseCost& b) const;
 	/// Load RuleItemUseCost from yaml.
-	void loadCost(RuleItemUseCost& a, const YAML::Node& node, const std::string& name) const;
+	void loadCost(RuleItemUseCost& a, const YAML::YamlNodeReader& reader, const std::string& name) const;
 	/// Load RuleItemUseCost as bool from yaml.
-	void loadPercent(RuleItemUseCost& a, const YAML::Node& node, const std::string& name) const;
+	void loadPercent(RuleItemUseCost& a, const YAML::YamlNodeReader& reader, const std::string& name) const;
 	/// Load RuleItemAction from yaml.
-	void loadConfAction(RuleItemAction& a, const YAML::Node& node, const std::string& name) const;
+	void loadConfAction(RuleItemAction& a, const YAML::YamlNodeReader& reader, const std::string& name) const;
 	/// Gets a random sound from a given vector.
 	int getRandomSound(const std::vector<int> &vector, int defaultValue = -1) const;
 	/// Load RuleItemFuseTrigger from yaml.
-	void loadConfFuse(RuleItemFuseTrigger& a, const YAML::Node& node, const std::string& name) const;
+	void loadConfFuse(RuleItemFuseTrigger& a, const YAML::YamlNodeReader& reader, const std::string& name) const;
 
 public:
 	/// Name of class used in script.
@@ -419,7 +419,7 @@ public:
 	/// Updates item categories based on replacement rules.
 	void updateCategories(std::map<std::string, std::string> *replacementRules);
 	/// Loads item data from YAML.
-	void load(const YAML::Node& node, Mod *mod, const ModScript& parsers);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 

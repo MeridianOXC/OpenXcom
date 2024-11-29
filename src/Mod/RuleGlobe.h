@@ -19,7 +19,7 @@
  */
 #include <list>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -45,7 +45,7 @@ public:
 	/// Cleans up the globe ruleset.
 	~RuleGlobe();
 	/// Loads the globe from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the list of world polygons.
 	std::list<Polygon*> *getPolygons();
 	/// Gets the list of world polylines.

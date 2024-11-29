@@ -22,8 +22,10 @@
 #include <string>
 #include <vector>
 #include <istream>
+#include <memory>
 #include <unordered_set>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
+#include "../Engine/CrossPlatform.h"
 #include <SDL_rwops.h>
 #include "ModInfo.h"
 
@@ -50,8 +52,9 @@ namespace FileMap
 		SDL_RWops *getRWopsReadAll() const;
 
 		std::unique_ptr<std::istream> getIStream() const;
-		YAML::Node getYAML() const;
-		std::vector<YAML::Node> getAllYAML() const;
+		RawData getUnzippedData() const;
+		YAML::YamlRootNodeReader getYAML() const;
+		std::vector<YAML::YamlNodeReader> getAllYAML() const;
 	};
 
 	/// For common operations on bunches of filenames
@@ -74,8 +77,8 @@ namespace FileMap
 	const std::vector<const FileRecord *> getSlice(const std::string &relativeFilePath);
 
 	/// Returns parsed YAML for a filename
-	YAML::Node getYAML(const std::string &relativeFilePath);
-	std::vector<YAML::Node> getAllYAML(const std::string &relativeFilePath);
+	YAML::YamlRootNodeReader getYAML(const std::string &relativeFilePath);
+	std::vector<YAML::YamlNodeReader> getAllYAML(const std::string& relativeFilePath);
 
 	/// if we have the file
 	bool fileExists(const std::string &relativeFilePath);

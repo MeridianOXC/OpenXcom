@@ -218,9 +218,9 @@ public:
 	/// Cleans up the BattleUnit.
 	~BattleUnit();
 	/// Loads the unit from YAML.
-	void load(const YAML::Node &node, const Mod *mod, const ScriptGlobal *shared);
+	void load(const YAML::YamlNodeReader& reader, const Mod *mod, const ScriptGlobal *shared);
 	/// Saves the unit to YAML.
-	YAML::Node save(const ScriptGlobal *shared) const;
+	void save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) const;
 	/// Gets the BattleUnit's ID.
 	int getId() const;
 	/// Calculates the distance squared between the unit and a given position.

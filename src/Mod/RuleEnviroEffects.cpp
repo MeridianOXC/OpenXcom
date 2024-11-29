@@ -21,45 +21,6 @@
 #include "../Mod/Armor.h"
 #include "../Mod/Mod.h"
 
-namespace YAML
-{
-	template<>
-	struct convert<OpenXcom::EnvironmentalCondition>
-	{
-		static Node encode(const OpenXcom::EnvironmentalCondition& rhs)
-		{
-			Node node;
-			node["globalChance"] = rhs.globalChance;
-			node["chancePerTurn"] = rhs.chancePerTurn;
-			node["firstTurn"] = rhs.firstTurn;
-			node["lastTurn"] = rhs.lastTurn;
-			node["message"] = rhs.message;
-			node["color"] = rhs.color;
-			node["weaponOrAmmo"] = rhs.weaponOrAmmo;
-			node["side"] = rhs.side;
-			node["bodyPart"] = rhs.bodyPart;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::EnvironmentalCondition& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-
-			rhs.globalChance = node["globalChance"].as<int>(rhs.globalChance);
-			rhs.chancePerTurn = node["chancePerTurn"].as<int>(rhs.chancePerTurn);
-			rhs.firstTurn = node["firstTurn"].as<int>(rhs.firstTurn);
-			rhs.lastTurn = node["lastTurn"].as<int>(rhs.lastTurn);
-			rhs.message = node["message"].as<std::string>(rhs.message);
-			rhs.color = node["color"].as<int>(rhs.color);
-			rhs.weaponOrAmmo = node["weaponOrAmmo"].as<std::string>(rhs.weaponOrAmmo);
-			rhs.side = node["side"].as<int>(rhs.side);
-			rhs.bodyPart = node["bodyPart"].as<int>(rhs.bodyPart);
-			return true;
-		}
-	};
-}
-
 namespace OpenXcom
 {
 
@@ -82,20 +43,20 @@ RuleEnviroEffects::~RuleEnviroEffects()
  * Loads the EnviroEffects from a YAML file.
  * @param node YAML node.
  */
-void RuleEnviroEffects::load(const YAML::Node& node, const Mod* mod)
+void RuleEnviroEffects::load(const YAML::YamlNodeReader& reader, const Mod* mod)
 {
-	if (const YAML::Node& parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	_environmentalConditions = node["environmentalConditions"].as< std::map<std::string, EnvironmentalCondition> >(_environmentalConditions);
-	mod->loadUnorderedNamesToNames(_type, _paletteTransformations, node["paletteTransformations"]);
-	mod->loadUnorderedNamesToNames(_type, _armorTransformationsName, node["armorTransformations"]);
-	_mapBackgroundColor = node["mapBackgroundColor"].as<int>(_mapBackgroundColor);
-	_ignoreAutoNightVisionUserSetting = node["ignoreAutoNightVisionUserSetting"].as<bool>(_ignoreAutoNightVisionUserSetting);
-	_inventoryShockIndicator = node["inventoryShockIndicator"].as<std::string>(_inventoryShockIndicator);
-	_mapShockIndicator = node["mapShockIndicator"].as<std::string>(_mapShockIndicator);
+	reader.tryRead("environmentalConditions", _environmentalConditions);
+	mod->loadUnorderedNamesToNames(_type, _paletteTransformations, reader["paletteTransformations"]);
+	mod->loadUnorderedNamesToNames(_type, _armorTransformationsName, reader["armorTransformations"]);
+	reader.tryRead("mapBackgroundColor", _mapBackgroundColor);
+	reader.tryRead("ignoreAutoNightVisionUserSetting", _ignoreAutoNightVisionUserSetting);
+	reader.tryRead("inventoryShockIndicator", _inventoryShockIndicator);
+	reader.tryRead("mapShockIndicator", _mapShockIndicator);
 }
 
 /**
@@ -154,6 +115,22 @@ Armor* RuleEnviroEffects::getArmorTransformation(const Armor* sourceArmor) const
 	}
 
 	return nullptr;
+}
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, EnvironmentalCondition* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryRead("globalChance", val->globalChance);
+	reader.tryRead("chancePerTurn", val->chancePerTurn);
+	reader.tryRead("firstTurn", val->firstTurn);
+	reader.tryRead("lastTurn", val->lastTurn);
+	reader.tryRead("message", val->message);
+	reader.tryRead("color", val->color);
+	reader.tryRead("weaponOrAmmo", val->weaponOrAmmo);
+	reader.tryRead("side", val->side);
+	reader.tryRead("bodyPart", val->bodyPart);
+	return true;
 }
 
 }

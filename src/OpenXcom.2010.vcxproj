@@ -127,8 +127,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\deps\include\yaml-cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;YAML_CPP_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\libs\rapidyaml\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level1</WarningLevel>
@@ -140,7 +140,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>yaml-cppd.lib;SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\deps\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -162,8 +162,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\deps\include\yaml-cpp%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;YAML_CPP_DLL;_DEBUG;_CONSOLE%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\libs\rapidyaml\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -174,7 +174,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>yaml-cppd.lib;SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\deps\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -193,8 +193,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\deps\include\yaml-cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;YAML_CPP_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\libs\rapidyaml\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level1</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -207,7 +207,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>yaml-cpp.lib;SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\deps\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -228,8 +228,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_XP|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\deps\include\yaml-cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;YAML_CPP_DLL;NDEBUG;_CONSOLE;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\libs\rapidyaml\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level1</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -242,7 +242,7 @@
       <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>yaml-cpp.lib;SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\deps\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -263,8 +263,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\deps\include\yaml-cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;YAML_CPP_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\libs\rapidyaml\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -277,7 +277,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>yaml-cpp.lib;SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\deps\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -297,8 +297,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_XP|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\deps\include\yaml-cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;YAML_CPP_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\deps\include;$(ProjectDir)..\deps\include\SDL;$(ProjectDir)..\libs\rapidyaml\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -311,7 +311,7 @@
       <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>yaml-cpp.lib;SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL_image.lib;SDL_mixer.lib;SDL_gfx.lib;SDLmain.lib;SDL.lib;SDL_gfx.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)..\deps\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -331,6 +331,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\libs\miniz\miniz.c" />
+    <ClCompile Include="..\libs\rapidyaml\c4\base64.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\char_traits.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\error.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\format.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\language.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\memory_resource.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\memory_util.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\utf.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\common.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\node.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\node_type.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\parse.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\preprocess.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\reference_resolver.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\tag.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\tree.cpp" />
+    <ClCompile Include="..\libs\rapidyaml\c4\yml\version.cpp" />
     <ClCompile Include="Basescape\BaseInfoState.cpp" />
     <ClCompile Include="Basescape\BasescapeState.cpp" />
     <ClCompile Include="Basescape\BaseView.cpp" />
@@ -433,6 +450,7 @@
     <ClCompile Include="Battlescape\Pathfinding.cpp" />
     <ClCompile Include="Battlescape\PathfindingNode.cpp" />
     <ClCompile Include="Battlescape\PathfindingOpenSet.cpp" />
+    <ClCompile Include="Battlescape\Position.cpp" />
     <ClCompile Include="Battlescape\PrimeGrenadeState.cpp" />
     <ClCompile Include="Battlescape\Projectile.cpp" />
     <ClCompile Include="Battlescape\ProjectileFlyBState.cpp" />
@@ -465,7 +483,9 @@
     <ClCompile Include="Engine\Game.cpp" />
     <ClCompile Include="Engine\GMCat.cpp" />
     <ClCompile Include="Engine\InteractiveSurface.cpp" />
-    <ClCompile Include="Engine\Language.cpp" />
+    <ClCompile Include="Engine\Language.cpp">
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Engine\LanguagePlurality.cpp" />
     <ClCompile Include="Engine\LocalizedText.cpp" />
     <ClCompile Include="Engine\ModInfo.cpp" />
@@ -492,6 +512,7 @@
     <ClCompile Include="Engine\SurfaceSet.cpp" />
     <ClCompile Include="Engine\Timer.cpp" />
     <ClCompile Include="Engine\Unicode.cpp" />
+    <ClCompile Include="Engine\Yaml.cpp" />
     <ClCompile Include="Engine\Zoom.cpp" />
     <ClCompile Include="Geoscape\AlienBaseState.cpp" />
     <ClCompile Include="Geoscape\AllocateTrainingState.cpp" />
@@ -680,7 +701,9 @@
     <ClCompile Include="Savegame\SavedGame.cpp" />
     <ClCompile Include="Savegame\SerializationHelper.cpp" />
     <ClCompile Include="Savegame\Soldier.cpp" />
-    <ClCompile Include="Savegame\Node.cpp" />
+    <ClCompile Include="Savegame\Node.cpp">
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Savegame\SoldierAvatar.cpp" />
     <ClCompile Include="Savegame\SoldierDeath.cpp" />
     <ClCompile Include="Savegame\SoldierDiary.cpp" />
@@ -717,6 +740,86 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libs\miniz\miniz.h" />
+    <ClInclude Include="..\libs\rapidyaml\c4\allocator.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\base64.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\bitmask.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\blob.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\c4_pop.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\c4_push.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\charconv.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\char_traits.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\common.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\compiler.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\config.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\cpu.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\ctor_dtor.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\dump.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\enum.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\error.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\export.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\ext\fast_float.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\ext\fast_float_all.h" />
+    <ClInclude Include="..\libs\rapidyaml\c4\ext\rng\rng.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\ext\sg14\inplace_function.h" />
+    <ClInclude Include="..\libs\rapidyaml\c4\format.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\gcc-4.8.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\hash.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\language.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\memory_resource.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\memory_util.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\platform.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\preprocessor.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\restrict.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\span.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\std.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\std_fwd.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\string.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\string_fwd.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\string_view.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\tuple.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\vector.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\std\vector_fwd.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\substr.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\substr_fwd.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\szconv.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\types.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\type_name.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\unrestrict.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\utf.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\windows.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\windows_pop.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\windows_push.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\common.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\detail\checks.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\detail\parser_dbg.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\detail\print.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\detail\stack.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\emit.def.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\emit.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\event_handler_stack.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\event_handler_tree.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\export.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\filter_processor.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\fwd.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\node.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\node_type.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\parse.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\parser_state.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\parse_engine.def.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\parse_engine.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\preprocess.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\reference_resolver.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\std\map.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\std\std.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\std\string.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\std\vector.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\tag.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\tree.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\version.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\writer.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\c4\yml\yml.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\ryml.hpp" />
+    <ClInclude Include="..\libs\rapidyaml\ryml_std.hpp" />
     <ClInclude Include="Basescape\BaseInfoState.h" />
     <ClInclude Include="Basescape\BasescapeState.h" />
     <ClInclude Include="Basescape\BaseView.h" />
@@ -892,6 +995,7 @@
     <ClInclude Include="Engine\SurfaceSet.h" />
     <ClInclude Include="Engine\Timer.h" />
     <ClInclude Include="Engine\Unicode.h" />
+    <ClInclude Include="Engine\Yaml.h" />
     <ClInclude Include="Engine\Zoom.h" />
     <ClInclude Include="fallthrough.h" />
     <ClInclude Include="fmath.h" />
@@ -1131,7 +1235,8 @@
     <ResourceCompile Include="OpenXcom.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="yaml-cpp.natvis" />
+    <Natvis Include="..\libs\rapidyaml\c4\c4core.natvis" />
+    <Natvis Include="..\libs\rapidyaml\ryml.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

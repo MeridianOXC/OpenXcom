@@ -60,50 +60,50 @@ RuleGlobe::~RuleGlobe()
  * Loads the globe from a YAML file.
  * @param node YAML node.
  */
-void RuleGlobe::load(const YAML::Node &node)
+void RuleGlobe::load(const YAML::YamlNodeReader& reader)
 {
-	if (node["data"])
+	if (const auto& data = reader["data"])
 	{
 		for (auto* polygon : _polygons)
 		{
 			delete polygon;
 		}
 		_polygons.clear();
-		loadDat(node["data"].as<std::string>());
+		loadDat(data.readVal<std::string>());
 	}
-	if (node["polygons"])
+	if (const auto& polygonsReader = reader["polygons"])
 	{
 		for (auto* polygon : _polygons)
 		{
 			delete polygon;
 		}
 		_polygons.clear();
-		for (YAML::const_iterator i = node["polygons"].begin(); i != node["polygons"].end(); ++i)
+		for (const auto& polygonReader : polygonsReader.children())
 		{
 			Polygon *polygon = new Polygon(3);
-			polygon->load(*i);
+			polygon->load(polygonReader);
 			_polygons.push_back(polygon);
 		}
 	}
-	if (node["polylines"])
+	if (const auto& polylinesReader = reader["polylines"])
 	{
 		for (auto* polyline : _polylines)
 		{
 			delete polyline;
 		}
 		_polylines.clear();
-		for (YAML::const_iterator i = node["polylines"].begin(); i != node["polylines"].end(); ++i)
+		for (const auto& polylineReader : polylinesReader.children())
 		{
 			Polyline *polyline = new Polyline(3);
-			polyline->load(*i);
+			polyline->load(polylineReader);
 			_polylines.push_back(polyline);
 		}
 	}
-	for (YAML::const_iterator i = node["textures"].begin(); i != node["textures"].end(); ++i)
+	for (const auto& textureReader : reader["textures"].children())
 	{
-		if ((*i)["id"])
+		if (textureReader["id"])
 		{
-			int id = (*i)["id"].as<int>();
+			int id = textureReader["id"].readVal<int>();
 			auto j = _textures.find(id);
 			Texture *texture;
 			if (j != _textures.end())
@@ -115,11 +115,11 @@ void RuleGlobe::load(const YAML::Node &node)
 				texture = new Texture(id);
 				_textures[id] = texture;
 			}
-			texture->load(*i);
+			texture->load(textureReader);
 		}
-		else if ((*i)["delete"])
+		else if (textureReader["delete"])
 		{
-			int id = (*i)["delete"].as<int>();
+			int id = textureReader["delete"].readVal<int>();
 			auto j = _textures.find(id);
 			if (j != _textures.end())
 			{
@@ -128,15 +128,15 @@ void RuleGlobe::load(const YAML::Node &node)
 		}
 	}
 
-	Globe::COUNTRY_LABEL_COLOR = node["countryColor"].as<int>(Globe::COUNTRY_LABEL_COLOR);
-	Globe::CITY_LABEL_COLOR = node["cityColor"].as<int>(Globe::CITY_LABEL_COLOR);
-	Globe::BASE_LABEL_COLOR = node["baseColor"].as<int>(Globe::BASE_LABEL_COLOR);
-	Globe::LINE_COLOR = node["lineColor"].as<int>(Globe::LINE_COLOR);
-	if (node["oceanPalette"])
+	reader.tryRead("countryColor", Globe::COUNTRY_LABEL_COLOR);
+	reader.tryRead("cityColor", Globe::CITY_LABEL_COLOR);
+	reader.tryRead("baseColor", Globe::BASE_LABEL_COLOR);
+	reader.tryRead("lineColor", Globe::LINE_COLOR);
+	if (reader["oceanPalette"])
 	{
-		Globe::OCEAN_COLOR = Palette::blockOffset(node["oceanPalette"].as<int>(Globe::OCEAN_COLOR));
+		Globe::OCEAN_COLOR = Palette::blockOffset(reader["oceanPalette"].readVal(Globe::OCEAN_COLOR));
 	}
-	Globe::OCEAN_SHADING = node["oceanShading"].as<bool>(Globe::OCEAN_SHADING);
+	reader.tryRead("oceanShading", Globe::OCEAN_SHADING);
 }
 
 /**

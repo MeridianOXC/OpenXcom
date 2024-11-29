@@ -49,33 +49,33 @@ ExtraSprites::~ExtraSprites()
  * @param node YAML node.
  * @param modIndex the internal index of the associated mod.
  */
-void ExtraSprites::load(const YAML::Node &node, const ModData* current)
+void ExtraSprites::load(const YAML::YamlNodeReader& reader, const ModData* current)
 {
-	_type = node["type"].as<std::string>(_type);
+	reader.tryRead("type", _type);
 
 	if (_type.empty())
 	{
 		std::string typeSingle;
-		typeSingle = node["typeSingle"].as<std::string>(typeSingle);
+		reader.tryRead("typeSingle", typeSingle);
 		if (!typeSingle.empty())
 		{
 			_type = typeSingle;
 			_singleImage = true;
 		}
 		std::string fileSingle;
-		fileSingle = node["fileSingle"].as<std::string>(fileSingle);
+		reader.tryRead("fileSingle", fileSingle);
 		if (!fileSingle.empty())
 		{
 			_sprites[0] = fileSingle;
 		}
 	}
 
-	_sprites = node["files"].as< std::map<int, std::string> >(_sprites);
-	_width = node["width"].as<int>(_width);
-	_height = node["height"].as<int>(_height);
-	_singleImage = node["singleImage"].as<bool>(_singleImage);
-	_subX = node["subX"].as<int>(_subX);
-	_subY = node["subY"].as<int>(_subY);
+	reader.tryRead("files", _sprites);
+	reader.tryRead("width", _width);
+	reader.tryRead("height", _height);
+	reader.tryRead("singleImage", _singleImage);
+	reader.tryRead("subX", _subX);
+	reader.tryRead("subY", _subY);
 	_current = current;
 }
 

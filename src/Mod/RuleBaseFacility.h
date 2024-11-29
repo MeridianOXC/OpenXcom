@@ -21,7 +21,7 @@
 #include <vector>
 #include <map>
 #include <bitset>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "RuleBaseFacilityFunctions.h"
 
 namespace OpenXcom
@@ -92,7 +92,7 @@ public:
 	/// Cleans up the facility ruleset.
 	~RuleBaseFacility();
 	/// Loads the facility from YAML.
-	void load(const YAML::Node& node, Mod *mod);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets the facility's type.

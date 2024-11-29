@@ -19,6 +19,7 @@
 #include <algorithm>
 #include "OptionInfo.h"
 #include "Exception.h"
+#include <sstream>
 
 namespace OpenXcom
 {
@@ -91,18 +92,18 @@ OptionInfo::OptionInfo(OptionOwner owner, const std::string &id, std::string *op
  * Loads an option value from the corresponding YAML.
  * @param node Options YAML node.
  */
-void OptionInfo::load(const YAML::Node &node) const
+void OptionInfo::load(const YAML::YamlNodeReader& reader) const
 {
 	switch (_type)
 	{
 	case OPTION_BOOL:
-		*(_ref.b) = node[_id].as<bool>(_def.b);
+		*(_ref.b) = reader[ryml::to_csubstr(_id)].readVal(_def.b);
 		break;
 	case OPTION_INT:
-		*(_ref.i) = node[_id].as<int>(_def.i);
+		*(_ref.i) = reader[ryml::to_csubstr(_id)].readVal(_def.i);
 		break;
 	case OPTION_KEY:
-		*(_ref.k) = (SDLKey)node[_id].as<int>(_def.k);
+		*(_ref.k) = (SDLKey)reader[ryml::to_csubstr(_id)].readVal((int)_def.k);
 		if (*(_ref.k) == SDLK_LSHIFT || *(_ref.k) == SDLK_LALT || *(_ref.k) == SDLK_LCTRL ||
 			*(_ref.k) == SDLK_RSHIFT || *(_ref.k) == SDLK_RALT || *(_ref.k) == SDLK_RCTRL)
 		{
@@ -110,7 +111,7 @@ void OptionInfo::load(const YAML::Node &node) const
 		}
 		break;
 	case OPTION_STRING:
-		*(_ref.s) = node[_id].as<std::string>(_def.s);
+		*(_ref.s) = reader[ryml::to_csubstr(_id)].readVal<std::string>(_def.s);
 		break;
 	}
 }
@@ -162,21 +163,21 @@ void OptionInfo::load(const std::map<std::string, std::string> &map, bool makeLo
  * Saves an option value to the corresponding YAML.
  * @param node Options YAML node.
  */
-void OptionInfo::save(YAML::Node &node) const
+void OptionInfo::save(YAML::YamlNodeWriter writer) const
 {
 	switch (_type)
 	{
 	case OPTION_BOOL:
-		node[_id] = *(_ref.b);
+		writer.write(writer.saveString(_id), *(_ref.b));
 		break;
 	case OPTION_INT:
-		node[_id] = *(_ref.i);
+		writer.write(writer.saveString(_id), *(_ref.i));
 		break;
 	case OPTION_KEY:
-		node[_id] = (int)*(_ref.k);
+		writer.write(writer.saveString(_id), (int)*(_ref.k));
 		break;
 	case OPTION_STRING:
-		node[_id] = *(_ref.s);
+		writer.write(writer.saveString(_id), *(_ref.s));
 		break;
 	}
 }

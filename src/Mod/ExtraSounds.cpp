@@ -49,10 +49,10 @@ ExtraSounds::~ExtraSounds()
  * @param node YAML node.
  * @param modIndex The internal index of the associated mod.
  */
-void ExtraSounds::load(const YAML::Node &node, const ModData* current)
+void ExtraSounds::load(const YAML::YamlNodeReader& reader, const ModData* current)
 {
-	_type = node["type"].as<std::string>(_type);
-	_sounds = node["files"].as< std::map<int, std::string> >(_sounds);
+	reader.tryRead("type", _type);
+	reader.tryRead("files", _sounds);
 	_current = current;
 }
 

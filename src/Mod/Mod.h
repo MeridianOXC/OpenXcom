@@ -24,7 +24,7 @@
 #include <bitset>
 #include <array>
 #include <SDL.h>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "../Engine/Options.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/Collections.h"
@@ -128,7 +128,8 @@ struct ModData
  */
 struct LoadRuleException : Exception
 {
-	LoadRuleException(const std::string& parent, const YAML::Node &node, const std::string& message) : Exception{ "Error for '" + parent + "': " + message + " at line " + std::to_string(node.Mark().line)}
+	LoadRuleException(const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& message)
+		: Exception{"Error for '" + parent + "': " + message + " at line " + std::to_string(reader.getLocationInFile().line)}
 	{
 
 	}
@@ -270,7 +271,7 @@ private:
 	RuleBaseFacilityFunctions _hireScientistsRequiresBaseFunc, _hireEngineersRequiresBaseFunc;
 
 	std::string _destroyedFacility;
-	YAML::Node _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
+	YAML::YamlString _startingBaseDefault, _startingBaseBeginner, _startingBaseExperienced, _startingBaseVeteran, _startingBaseGenius, _startingBaseSuperhuman;
 	Collections::NamesToIndex _baseFunctionNames;
 
 	GameTime _startingTime;
@@ -330,7 +331,7 @@ private:
 
 	/// Loads a ruleset from a YAML file that have basic resources configuration.
 	void loadResourceConfigFile(const FileMap::FileRecord &filerec);
-	void loadConstants(const YAML::Node &node);
+	void loadConstants(const YAML::YamlNodeReader& reader);
 	/// Loads a ruleset from a YAML file.
 	void loadFile(const FileMap::FileRecord &filerec, ModScript &parsers);
 
@@ -350,7 +351,7 @@ private:
 
 	/// Loads a ruleset element.
 	template <typename T, typename F = RuleFactory<T>>
-	T *loadRule(const YAML::Node &node, std::map<std::string, T*> *map, std::vector<std::string> *index = 0, const std::string &key = "type", F&& factory = { });
+	T* loadRule(const YAML::YamlNodeReader& reader, std::map<std::string, T*>* map, std::vector<std::string>* index = 0, const std::string& key = "type", F&& factory = {});
 	/// Gets a ruleset element.
 	template <typename T>
 	T *getRule(const std::string &id, const std::string &name, const std::map<std::string, T*> &map, bool error) const;
@@ -486,14 +487,14 @@ public:
 
 
 	/// Check for obsolete error based on year.
-	bool checkForObsoleteErrorByYear(const std::string &parent, const YAML::Node &node, const std::string &error,int year) const;
+	bool checkForObsoleteErrorByYear(const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, int year) const;
 
 	/// Check for error that we can ignore by user request.
-	bool checkForSoftError(bool check, const std::string &parent, const YAML::Node &node, const std::string &error, SeverityLevel level = LOG_WARNING) const
+	bool checkForSoftError(bool check, const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, SeverityLevel level = LOG_WARNING) const
 	{
 		if (check)
 		{
-			auto ex = LoadRuleException(parent, node, error);
+			auto ex = LoadRuleException(parent, reader, error);
 			if (Options::oxceModValidationLevel < level)
 			{
 				Log(level) << "Supressed " << ex.what();
@@ -539,52 +540,52 @@ public:
 	/// Gets the mod offset.
 	int getModOffset() const;
 	/// Get offset and index for sound set or sprite set.
-	void loadOffsetNode(const std::string &parent, int& offset, const YAML::Node &node, int shared, const std::string &set, size_t multiplier, size_t sizeScale = 1) const;
+	void loadOffsetNode(const std::string &parent, int& offset, const YAML::YamlNodeReader& reader, int shared, const std::string &set, size_t multiplier, size_t sizeScale = 1) const;
 	/// Gets the mod offset for a certain sprite.
-	void loadSpriteOffset(const std::string &parent, int& sprite, const YAML::Node &node, const std::string &set, size_t multiplier = 1) const;
+	void loadSpriteOffset(const std::string& parent, int& sprite, const YAML::YamlNodeReader& reader, const std::string& set, size_t multiplier = 1) const;
 	/// Gets the mod offset array for a certain sprite.
-	void loadSpriteOffset(const std::string &parent, std::vector<int>& sprites, const YAML::Node &node, const std::string &set) const;
+	void loadSpriteOffset(const std::string& parent, std::vector<int>& sprites, const YAML::YamlNodeReader& reader, const std::string& set) const;
 	/// Gets the mod offset for a certain sound.
-	void loadSoundOffset(const std::string &parent, int& sound, const YAML::Node &node, const std::string &set) const;
+	void loadSoundOffset(const std::string &parent, int& sound, const YAML::YamlNodeReader& reader, const std::string &set) const;
 	/// Gets the mod offset array for a certain sound.
-	void loadSoundOffset(const std::string &parent, std::vector<int>& sounds, const YAML::Node &node, const std::string &set) const;
+	void loadSoundOffset(const std::string& parent, std::vector<int>& sounds, const YAML::YamlNodeReader& reader, const std::string& set) const;
 	/// Gets the mod offset array for a certain transparency index.
-	void loadTransparencyOffset(const std::string &parent, int& index, const YAML::Node &node) const;
+	void loadTransparencyOffset(const std::string& parent, int& index, const YAML::YamlNodeReader& reader) const;
 	/// Gets the mod offset for a generic value.
 	int getOffset(int id, int max) const;
 
 	/// Gets base functions from string array in yaml.
-	void loadBaseFunction(const std::string &parent, RuleBaseFacilityFunctions& f, const YAML::Node &node);
+	void loadBaseFunction(const std::string& parent, RuleBaseFacilityFunctions& f, const YAML::YamlNodeReader& reader);
 	/// Get names of function names in given bitset.
 	std::vector<std::string> getBaseFunctionNames(RuleBaseFacilityFunctions f) const;
 
 	/// Loads a list of ints.
-	void loadInts(const std::string &parent, std::vector<int>& ints, const YAML::Node &node) const;
+	void loadInts(const std::string& parent, std::vector<int>& ints, const YAML::YamlNodeReader& reader) const;
 	/// Loads a list of ints where order of items does not matter.
-	void loadUnorderedInts(const std::string &parent, std::vector<int>& ints, const YAML::Node &node) const;
+	void loadUnorderedInts(const std::string& parent, std::vector<int>& ints, const YAML::YamlNodeReader& reader) const;
 
 	/// Loads a name.
-	void loadName(const std::string &parent, std::string& names, const YAML::Node &node) const;
+	void loadName(const std::string& parent, std::string& names, const YAML::YamlNodeReader& reader) const;
 	/// Loads a name.
-	void loadNameNull(const std::string &parent, std::string& names, const YAML::Node &node) const;
+	void loadNameNull(const std::string& parent, std::string& names, const YAML::YamlNodeReader& reader) const;
 	/// Loads a list of names.
-	void loadNames(const std::string &parent, std::vector<std::string>& names, const YAML::Node &node) const;
+	void loadNames(const std::string& parent, std::vector<std::string>& names, const YAML::YamlNodeReader& reader) const;
 	/// Loads a list of names where order of items does not matter.
-	void loadUnorderedNames(const std::string &parent, std::vector<std::string>& names, const YAML::Node &node) const;
+	void loadUnorderedNames(const std::string& parent, std::vector<std::string>& names, const YAML::YamlNodeReader& reader) const;
 
 	/// Loads a map from names to names.
-	void loadNamesToNames(const std::string &parent, std::vector<std::pair<std::string, std::vector<std::string>>>& names, const YAML::Node &node) const;
+	void loadNamesToNames(const std::string& parent, std::vector<std::pair<std::string, std::vector<std::string> > >& names, const YAML::YamlNodeReader& reader) const;
 	/// Loads a map from names to names.
-	void loadUnorderedNamesToNames(const std::string &parent, std::map<std::string, std::string>& names, const YAML::Node &node) const;
+	void loadUnorderedNamesToNames(const std::string& parent, std::map<std::string, std::string>& names, const YAML::YamlNodeReader& reader) const;
 	/// Loads a map from names to ints.
-	void loadUnorderedNamesToInt(const std::string &parent, std::map<std::string, int>& names, const YAML::Node &node) const;
+	void loadUnorderedNamesToInt(const std::string &parent, std::map<std::string, int>& names, const YAML::YamlNodeReader &reader) const;
 	/// Loads a map from names to vector of ints.
-	void loadUnorderedNamesToInts(const std::string &parent, std::map<std::string, std::vector<int>>& names, const YAML::Node &node) const;
+	void loadUnorderedNamesToInts(const std::string& parent, std::map<std::string, std::vector<int> >& names, const YAML::YamlNodeReader& reader) const;
 	/// Loads a map from names to names to int.
-	void loadUnorderedNamesToNamesToInt(const std::string &parent, std::map<std::string, std::map<std::string, int>>& names, const YAML::Node &node) const;
+	void loadUnorderedNamesToNamesToInt(const std::string& parent, std::map<std::string, std::map<std::string, int> >& names, const YAML::YamlNodeReader& reader) const;
 
 	/// Loads data for kill criteria from Commendations.
-	void loadKillCriteria(const std::string &parent, std::vector<std::vector<std::pair<int, std::vector<std::string> > > >& names, const YAML::Node &node) const;
+	void loadKillCriteria(const std::string& parent, std::vector<std::vector<std::pair<int, std::vector<std::string> > > >& names, const YAML::YamlNodeReader& reader) const;
 
 
 	/// Convert names to correct rule objects
@@ -1032,8 +1033,8 @@ public:
 	/// Gets the alien item level table.
 	const std::vector<std::vector<int> > &getAlienItemLevels() const;
 	/// Gets the player starting base.
-	const YAML::Node &getDefaultStartingBase() const;
-	const YAML::Node &getStartingBase(GameDifficulty diff) const;
+	const YAML::YamlString& getDefaultStartingBase() const;
+	const YAML::YamlString& getStartingBase(GameDifficulty diff) const;
 	/// Gets the game starting time.
 	const GameTime &getStartingTime() const;
 	/// Gets the game starting difficulty.

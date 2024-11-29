@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -39,9 +39,9 @@ public:
 	/// Cleans up the event info.
 	~GeoscapeEvent();
 	/// Loads the event from YAML.
-	void load(const YAML::Node &node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Saves the event to YAML.
-	YAML::Node save() const;
+	void save(YAML::YamlNodeWriter writer) const;
 	/// Gets the event's ruleset.
 	const RuleEvent &getRules() const { return _rule; };
 	/// Gets the minutes until the event pops up.

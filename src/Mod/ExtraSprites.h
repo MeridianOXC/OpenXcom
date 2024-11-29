@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include <string>
 #include <map>
 
@@ -49,7 +49,7 @@ public:
 	/// Cleans up the external sprite set.
 	virtual ~ExtraSprites();
 	/// Loads the data from YAML.
-	void load(const YAML::Node &node, const ModData* current);
+	void load(const YAML::YamlNodeReader& reader, const ModData* current);
 	/// Gets the sprite's type.
 	const std::string& getType() const;
 	/// Gets the list of sprites defined by this mod.

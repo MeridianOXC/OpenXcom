@@ -514,14 +514,14 @@ void CraftInfoState::btnNewBattleClick(Action *)
 	{
 		try
 		{
-			YAML::Node doc = YAML::Load(*CrossPlatform::readFile(s));
-			mission = doc["mission"].as<size_t>(0);
-			//craft = doc["craft"].as<size_t>(0);
-			darkness = doc["darkness"].as<size_t>(0);
-			terrain = doc["terrain"].as<size_t>(0);
-			alienRace = doc["alienRace"].as<size_t>(0);
-			//difficulty = doc["difficulty"].as<size_t>(0);
-			alienTech = doc["alienTech"].as<size_t>(0);
+			YAML::YamlRootNodeReader reader(s);
+			mission = reader["mission"].readVal(0);
+			//craft = reader["craft"].readVal(0);
+			darkness = reader["darkness"].readVal(0);
+			terrain = reader["terrain"].readVal(0);
+			alienRace = reader["alienRace"].readVal(0);
+			//difficulty = reader["difficulty"].readVal(0);
+			alienTech = reader["alienTech"].readVal(0);
 		}
 		catch (YAML::Exception& e)
 		{
@@ -552,19 +552,19 @@ void CraftInfoState::btnNewBattleClick(Action *)
 	// transfer also the difficulty
 	difficulty = _game->getSavedGame()->getDifficulty();
 
-	YAML::Emitter out;
-	YAML::Node node;
-	node["mission"] = mission;
-	node["craft"] = craft;
-	node["darkness"] = darkness;
-	node["terrain"] = terrain;
-	node["alienRace"] = alienRace;
-	node["difficulty"] = difficulty;
-	node["alienTech"] = alienTech;
-	node["base"] = _base->save();
-	out << node;
+	YAML::YamlRootNodeWriter writer;
+	writer.setAsMap();
+	writer.write("mission", mission);
+	writer.write("craft", craft);
+	writer.write("darkness", darkness);
+	writer.write("terrain", terrain);
+	writer.write("alienRace", alienRace);
+	writer.write("difficulty", difficulty);
+	writer.write("alienTech", alienTech);
+	_base->save(writer["base"]);
+	std::string yaml = writer.emit().yaml;
 
-	if (!CrossPlatform::writeFile(s, out.c_str()))
+	if (!CrossPlatform::writeFile(s, yaml))
 	{
 		Log(LOG_WARNING) << "Failed to save " << s;
 	}

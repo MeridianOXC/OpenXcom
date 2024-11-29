@@ -49,20 +49,20 @@ Font::~Font()
  * Loads the font from a YAML file.
  * @param node YAML node.
  */
-void Font::load(const YAML::Node &node)
+void Font::load(const YAML::YamlNodeReader& reader)
 {
-	int width = node["width"].as<int>(0);
-	int height = node["height"].as<int>(0);
-	int spacing = node["spacing"].as<int>(0);
-	_monospace = node["monospace"].as<bool>(_monospace);
-	for (YAML::const_iterator i = node["images"].begin(); i != node["images"].end(); ++i)
+	int width = reader["width"].readVal(0);
+	int height = reader["height"].readVal(0);
+	int spacing = reader["spacing"].readVal(0);
+	_monospace = reader["monospace"].readVal(_monospace);
+	for (const auto& imageReader : reader["images"].children())
 	{
 		FontImage image;
-		image.width = (*i)["width"].as<int>(width);
-		image.height = (*i)["height"].as<int>(height);
-		image.spacing = (*i)["spacing"].as<int>(spacing);
-		std::string file = "Language/" + (*i)["file"].as<std::string>();
-		UString chars = Unicode::convUtf8ToUtf32((*i)["chars"].as<std::string>());
+		image.width = imageReader["width"].readVal(width);
+		image.height = imageReader["height"].readVal(height);
+		image.spacing = imageReader["spacing"].readVal(spacing);
+		std::string file = "Language/" + imageReader["file"].readVal<std::string>();
+		UString chars = Unicode::convUtf8ToUtf32(imageReader["chars"].readVal<std::string>());
 		image.surface = new Surface(image.width, image.height);
 		image.surface->loadImage(file);
 		_images.push_back(image);

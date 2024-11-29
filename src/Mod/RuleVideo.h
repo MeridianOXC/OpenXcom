@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include <vector>
 #include <string>
 #include "../Interface/Text.h"
@@ -55,7 +55,7 @@ private:
 public:
 	RuleVideo(const std::string &type);
 	~RuleVideo();
-	void load(const YAML::Node &node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// returns whether to use the UFO audio sequence.  in general, this
 	/// should only ever be true for the vanilla UFO intro cutscene
 	bool useUfoAudioSequence() const;

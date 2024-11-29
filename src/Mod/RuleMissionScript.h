@@ -20,8 +20,9 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "../Savegame/WeightedOptions.h"
+#include <set>
 
 namespace OpenXcom
 {
@@ -51,7 +52,7 @@ public:
 	/// Deletes a mission script.
 	~RuleMissionScript();
 	/// Loads a mission script from yaml.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the name of the script command.
 	const std::string& getType() const;
 	/// Gets the name of the variable to use for keeping track of... things.

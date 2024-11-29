@@ -17,7 +17,7 @@
 * You should have received a copy of the GNU General Public License
 * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include <map>
 #include <string>
 #include <sstream>
@@ -49,51 +49,50 @@ struct MissionStatistics
 	int lootValue;
 
 	/// Load
-	void load(const YAML::Node &node)
+	void load(const YAML::YamlNodeReader& reader)
 	{
-		id = node["id"].as<int>(id);
-		markerName = node["markerName"].as<std::string>(markerName);
-		markerId = node["markerId"].as<int>(markerId);
-		time.load(node["time"]);
-		region = node["region"].as<std::string>(region);
-		country = node["country"].as<std::string>(country);
-		type = node["type"].as<std::string>(type);
-		ufo = node["ufo"].as<std::string>(ufo);
-		success = node["success"].as<bool>(success);
-		score = node["score"].as<int>(score);
-		rating = node["rating"].as<std::string>(rating);
-		alienRace = node["alienRace"].as<std::string>(alienRace);
-		daylight = node["daylight"].as<int>(daylight);
-		injuryList = node["injuryList"].as< std::map<int, int> >(injuryList);
-		valiantCrux = node["valiantCrux"].as<bool>(valiantCrux);
-		lootValue = node["lootValue"].as<int>(lootValue);
+		reader.tryRead("id", id);
+		reader.tryRead("markerName", markerName);
+		reader.tryRead("markerId", markerId);
+		time.load(reader["time"]);
+		reader.tryRead("region", region);
+		reader.tryRead("country", country);
+		reader.tryRead("type", type);
+		reader.tryRead("ufo", ufo);
+		reader.tryRead("success", success);
+		reader.tryRead("score", score);
+		reader.tryRead("rating", rating);
+		reader.tryRead("alienRace", alienRace);
+		reader.tryRead("daylight", daylight);
+		reader.tryRead("injuryList", injuryList);
+		reader.tryRead("valiantCrux", valiantCrux);
+		reader.tryRead("lootValue", lootValue);
 	}
 
 	/// Save
-	YAML::Node save() const
+	void save(YAML::YamlNodeWriter writer) const
 	{
-		YAML::Node node;
-		node["id"] = id;
+		writer.setAsMap();
+		writer.write("id", id);
 		if (!markerName.empty())
 		{
-			node["markerName"] = markerName;
-			node["markerId"] = markerId;
+			writer.write("markerName", markerName);
+			writer.write("markerId", markerId);
 		}
-		node["time"] = time.save();
-		node["region"] = region;
-		node["country"] = country;
-		node["type"] = type;
-		node["ufo"] = ufo;
-		node["success"] = success;
-		node["score"] = score;
-		node["rating"] = rating;
-		node["alienRace"] = alienRace;
-		node["daylight"] = daylight;
+		time.save(writer["time"]);
+		writer.write("region", region);
+		writer.write("country", country);
+		writer.write("type", type);
+		writer.write("ufo", ufo);
+		writer.write("success", success);
+		writer.write("score", score);
+		writer.write("rating", rating);
+		writer.write("alienRace", alienRace);
+		writer.write("daylight", daylight);
 		if (!injuryList.empty())
-			node["injuryList"] = injuryList;
-		if (valiantCrux) node["valiantCrux"] = valiantCrux;
-		if (lootValue) node["lootValue"] = lootValue;
-		return node;
+			writer.write("injuryList", injuryList);
+		if (valiantCrux) writer.write("valiantCrux", valiantCrux);
+		if (lootValue) writer.write("lootValue", lootValue);
 	}
 
 	std::string getMissionName(Language *lang) const
@@ -179,7 +178,7 @@ struct MissionStatistics
 		return false;
 	}
 
-	MissionStatistics(const YAML::Node& node) : time(0, 0, 0, 0, 0, 0, 0) { load(node); }
+	MissionStatistics(const YAML::YamlNodeReader& reader) : time(0, 0, 0, 0, 0, 0, 0) { load(reader); }
 	MissionStatistics() : id(0), markerId(0), time(0, 0, 0, 0, 0, 0, 0), region("STR_REGION_UNKNOWN"), country("STR_UNKNOWN"), ufo("NO_UFO"), success(false), score(0), alienRace("STR_UNKNOWN"), daylight(0), valiantCrux(false), lootValue(0) { }
 	~MissionStatistics() { }
 };

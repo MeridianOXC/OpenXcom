@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -70,7 +70,7 @@ public:
 	/// Cleans up the inventory ruleset.
 	~RuleInventory();
 	/// Loads inventory data from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the inventory's id.
 	const std::string& getId() const;
 	/// Gets the X position of the inventory.
@@ -93,5 +93,8 @@ public:
 	int getCost(const RuleInventory *slot) const;
 	int getListOrder() const;
 };
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, RuleSlot* val);
 
 }

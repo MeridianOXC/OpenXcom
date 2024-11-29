@@ -41,25 +41,25 @@ RuleInterface::~RuleInterface()
  * Loads the elements from a YAML file.
  * @param node YAML node.
  */
-void RuleInterface::load(const YAML::Node& node, Mod *mod)
+void RuleInterface::load(const YAML::YamlNodeReader& reader, Mod *mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	_palette = node["palette"].as<std::string>(_palette);
-	_parent = node["parent"].as<std::string>(_parent);
-	_backgroundImage = node["backgroundImage"].as<std::string>(_backgroundImage);
-	_altBackgroundImage = node["altBackgroundImage"].as<std::string>(_altBackgroundImage);
-	_music = node["music"].as<std::string>(_music);
-	mod->loadSoundOffset(_type, _sound, node["sound"], "GEO.CAT");
-	for (YAML::const_iterator i = node["elements"].begin(); i != node["elements"].end(); ++i)
+	reader.tryRead("palette", _palette);
+	reader.tryRead("parent", _parent);
+	reader.tryRead("backgroundImage", _backgroundImage);
+	reader.tryRead("altBackgroundImage", _altBackgroundImage);
+	reader.tryRead("music", _music);
+	mod->loadSoundOffset(_type, _sound, reader["sound"], "GEO.CAT");
+	for (const auto& elementReader : reader["elements"].children())
 	{
 		Element element;
-		if ((*i)["size"])
+		if (elementReader["size"])
 		{
-			std::pair<int, int> pos = (*i)["size"].as<std::pair<int, int> >();
+			std::pair<int, int> pos = elementReader["size"].readVal<std::pair<int, int> >();
 			element.w = pos.first;
 			element.h = pos.second;
 		}
@@ -67,9 +67,9 @@ void RuleInterface::load(const YAML::Node& node, Mod *mod)
 		{
 			element.w = element.h = INT_MAX;
 		}
-		if ((*i)["pos"])
+		if (elementReader["pos"])
 		{
-			std::pair<int, int> pos = (*i)["pos"].as<std::pair<int, int> >();
+			std::pair<int, int> pos = elementReader["pos"].readVal<std::pair<int, int> >();
 			element.x = pos.first;
 			element.y = pos.second;
 		}
@@ -77,13 +77,13 @@ void RuleInterface::load(const YAML::Node& node, Mod *mod)
 		{
 			element.x = element.y = INT_MAX;
 		}
-		element.color = (*i)["color"].as<int>(INT_MAX);
-		element.color2 = (*i)["color2"].as<int>(INT_MAX);
-		element.border = (*i)["border"].as<int>(INT_MAX);
-		element.custom = (*i)["custom"].as<int>(0);
-		element.TFTDMode = (*i)["TFTDMode"].as<bool>(false);
+		element.color = elementReader["color"].readVal<int>(INT_MAX);
+		element.color2 = elementReader["color2"].readVal<int>(INT_MAX);
+		element.border = elementReader["border"].readVal<int>(INT_MAX);
+		element.custom = elementReader["custom"].readVal<int>(0);
+		element.TFTDMode = elementReader["TFTDMode"].readVal(false);
 
-		std::string id = (*i)["id"].as<std::string>("");
+		std::string id = elementReader["id"].readVal<std::string>("");
 		_elements[id] = element;
 	}
 }

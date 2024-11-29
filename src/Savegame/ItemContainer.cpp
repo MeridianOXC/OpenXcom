@@ -41,23 +41,22 @@ ItemContainer::~ItemContainer()
  * Loads the item container from a YAML file.
  * @param node YAML node.
  */
-void ItemContainer::load(const YAML::Node &node, const Mod* mod)
+void ItemContainer::load(const YAML::YamlNodeReader& reader, const Mod* mod)
 {
-	if (node && node.IsMap())
+	if (!reader || !reader.isMap())
+		return;
+	_qty.clear();
+	for (const auto& item : reader.children())
 	{
-		_qty.clear();
-		for (const std::pair<YAML::Node, YAML::Node>& pair : node)
+		std::string name = item.readKey<std::string>();
+		const auto* type = mod->getItem(name);
+		if (type)
 		{
-			auto name = pair.first.as<std::string>();
-			const auto* type = mod->getItem(name);
-			if (type)
-			{
-				_qty[type] = pair.second.as<int>();
-			}
-			else
-			{
-				Log(LOG_ERROR) << "Failed to load item " << name;
-			}
+			_qty[type] = item.readVal<int>();
+		}
+		else
+		{
+			Log(LOG_ERROR) << "Failed to load item " << name;
 		}
 	}
 }
@@ -66,24 +65,17 @@ void ItemContainer::load(const YAML::Node &node, const Mod* mod)
  * Saves the item container to a YAML file.
  * @return YAML node.
  */
-YAML::Node ItemContainer::save() const
+void ItemContainer::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node(YAML::NodeType::Map);
+	writer.setAsMap();
+	// item containers are sorted alphabetically in the yaml mapping
 	std::vector<std::pair<std::string, int>> sortedItems;
-
+	sortedItems.reserve(_qty.size());
 	for (auto& pair : _qty)
-	{
 		sortedItems.push_back(std::make_pair(pair.first->getType(), pair.second));
-	}
-
-	// enforce order of positions in node
 	std::sort(sortedItems.begin(), sortedItems.end(), [](auto& a, auto& b){ return a < b; });
 	for (auto& pair : sortedItems)
-	{
-		node[pair.first] = pair.second;
-	}
-
-	return node;
+		writer.write(writer.saveString(pair.first), pair.second);
 }
 
 /**

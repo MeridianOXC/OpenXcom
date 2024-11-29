@@ -43,23 +43,22 @@ Region::~Region()
  * Loads the region from a YAML file.
  * @param node YAML node.
  */
-void Region::load(const YAML::Node &node)
+void Region::load(const YAML::YamlNodeReader& reader)
 {
-	_activityXcom = node["activityXcom"].as< std::vector<int> >(_activityXcom);
-	_activityAlien = node["activityAlien"].as< std::vector<int> >(_activityAlien);
+	reader.tryRead("activityXcom", _activityXcom);
+	reader.tryRead("activityAlien", _activityAlien);
 }
 
 /**
  * Saves the region to a YAML file.
  * @return YAML node.
  */
-YAML::Node Region::save() const
+void Region::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node["type"] = _rules->getType();
-	node["activityXcom"] = _activityXcom;
-	node["activityAlien"] = _activityAlien;
-	return node;
+	writer.setAsMap();
+	writer.write("type", _rules->getType());
+	writer.write("activityXcom", _activityXcom);
+	writer.write("activityAlien", _activityAlien);
 }
 
 /**

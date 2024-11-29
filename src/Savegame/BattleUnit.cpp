@@ -595,260 +595,242 @@ BattleUnit::~BattleUnit()
  * Loads the unit from a YAML file.
  * @param node YAML node.
  */
-void BattleUnit::load(const YAML::Node &node, const Mod *mod, const ScriptGlobal *shared)
+void BattleUnit::load(const YAML::YamlNodeReader& r, const Mod *mod, const ScriptGlobal *shared)
 {
-	_id = node["id"].as<int>(_id);
-	_faction = (UnitFaction)node["faction"].as<int>(_faction);
-	_status = (UnitStatus)node["status"].as<int>(_status);
-	_wantsToSurrender = node["wantsToSurrender"].as<bool>(_wantsToSurrender);
-	_isSurrendering = node["isSurrendering"].as<bool>(_isSurrendering);
-	_pos = node["position"].as<Position>(_pos);
-	_direction = _toDirection = node["direction"].as<int>(_direction);
-	_directionTurret = _toDirectionTurret = node["directionTurret"].as<int>(_directionTurret);
-	_tu = node["tu"].as<int>(_tu);
-	_health = node["health"].as<int>(_health);
-	_mana = node["mana"].as<int>(_mana);
-	_stunlevel = node["stunlevel"].as<int>(_stunlevel);
-	_energy = node["energy"].as<int>(_energy);
-	_morale = node["morale"].as<int>(_morale);
-	_kneeled = node["kneeled"].as<bool>(_kneeled);
-	_floating = node["floating"].as<bool>(_floating);
-	for (int i=0; i < SIDE_MAX; i++)
-		_currentArmor[i] = node["armor"][i].as<int>(_currentArmor[i]);
-	for (int i=0; i < BODYPART_MAX; i++)
-		_fatalWounds[i] = node["fatalWounds"][i].as<int>(_fatalWounds[i]);
-	_fire = node["fire"].as<int>(_fire);
-	_exp.bravery = node["expBravery"].as<int>(_exp.bravery);
-	_exp.reactions = node["expReactions"].as<int>(_exp.reactions);
-	_exp.firing = node["expFiring"].as<int>(_exp.firing);
-	_exp.throwing = node["expThrowing"].as<int>(_exp.throwing);
-	_exp.psiSkill = node["expPsiSkill"].as<int>(_exp.psiSkill);
-	_exp.psiStrength = node["expPsiStrength"].as<int>(_exp.psiStrength);
-	_exp.mana = node["expMana"].as<int>(_exp.mana);
-	_exp.melee = node["expMelee"].as<int>(_exp.melee);
-	_stats = node["currStats"].as<UnitStats>(_stats);
-	_turretType = node["turretType"].as<int>(_turretType);
-	_visible = node["visible"].as<bool>(_visible);
-	_turnsSinceSpotted = node["turnsSinceSpotted"].as<int>(_turnsSinceSpotted);
-	_turnsLeftSpottedForSnipers = node["turnsLeftSpottedForSnipers"].as<int>(_turnsLeftSpottedForSnipers);
-	_turnsSinceStunned = node["turnsSinceStunned"].as<int>(_turnsSinceStunned);
-	_killedBy = (UnitFaction)node["killedBy"].as<int>(_killedBy);
-	_moraleRestored = node["moraleRestored"].as<int>(_moraleRestored);
-	_rankInt = node["rankInt"].as<int>(_rankInt);
-	_kills = node["kills"].as<int>(_kills);
-	_dontReselect = node["dontReselect"].as<bool>(_dontReselect);
+	const auto& reader = r.useIndex();
+	reader.tryRead("id", _id);
+	reader.tryRead("faction", _faction);
+	reader.tryRead("status", _status);
+	reader.tryRead("wantsToSurrender", _wantsToSurrender);
+	reader.tryRead("isSurrendering", _isSurrendering);
+	reader.tryRead("position", _pos);
+	reader.tryRead("direction", _direction);
+	_toDirection = _direction;
+	reader.tryRead("directionTurret", _directionTurret);
+	_toDirectionTurret = _directionTurret;
+	reader.tryRead("tu", _tu);
+	reader.tryRead("health", _health);
+	reader.tryRead("mana", _mana);
+	reader.tryRead("stunlevel", _stunlevel);
+	reader.tryRead("energy", _energy);
+	reader.tryRead("morale", _morale);
+	reader.tryRead("kneeled", _kneeled);
+	reader.tryRead("floating", _floating);
+	for (int i = 0; i < SIDE_MAX; i++)
+		reader["armor"][i].tryReadVal(_currentArmor[i]);
+	for (int i = 0; i < BODYPART_MAX; i++)
+		reader["fatalWounds"][i].tryReadVal(_fatalWounds[i]);
+	reader.tryRead("fire", _fire);
+	reader.tryRead("expBravery", _exp.bravery);
+	reader.tryRead("expReactions", _exp.reactions);
+	reader.tryRead("expFiring", _exp.firing);
+	reader.tryRead("expThrowing", _exp.throwing);
+	reader.tryRead("expPsiSkill", _exp.psiSkill);
+	reader.tryRead("expPsiStrength", _exp.psiStrength);
+	reader.tryRead("expMana", _exp.mana);
+	reader.tryRead("expMelee", _exp.melee);
+	reader.tryRead("currStats", _stats);
+	reader.tryRead("turrentType", _turretType);
+	reader.tryRead("visible", _visible);
+	reader.tryRead("turnsSinceSpotted", _turnsSinceSpotted);
+	reader.tryRead("turnsLeftSpottedForSnipers", _turnsLeftSpottedForSnipers);
+	reader.tryRead("turnsSinceStunned", _turnsSinceStunned);
+	reader.tryRead("rankInt", _rankInt);
+	reader.tryRead("moraleRestored", _moraleRestored);
+	reader.tryRead("killedBy", _killedBy);
+	reader.tryRead("kills", _kills);
+	reader.tryRead("dontReselect", _dontReselect);
 	_charging = 0;
-
-	if (const YAML::Node& spawn = node["spawnUnit"])
+	if (_spawnUnit = mod->getUnit(reader["spawnUnit"].readVal<std::string>(""), false)) // ignore bugged types
 	{
-		_spawnUnit = mod->getUnit(spawn.as<std::string>(), false); //ignored bugged types
-		if (_spawnUnit)
-		{
-			_respawn = node["respawn"].as<bool>(_respawn);
-			_spawnUnitFaction = (UnitFaction)node["spawnUnitFaction"].as<int>(_spawnUnitFaction);
-		}
+		reader.tryRead("respawn", _respawn);
+		reader.tryRead("spawnUnitFaction", _spawnUnitFaction);
 	}
+	reader.tryRead("motionPoints", _motionPoints);
+	reader.tryRead("customMarker", _customMarker);
+	reader.tryRead("alreadyRespawned", _alreadyRespawned);
+	reader.tryRead("activeHand", _activeHand);
+	reader.tryRead("preferredHandForReactions", _preferredHandForReactions);
+	reader.tryRead("reactionsDisabledForLeftHand", _reactionsDisabledForLeftHand);
+	reader.tryRead("reactionsDisabledForRightHand", _reactionsDisabledForRightHand);
+	if (reader["tempUnitStatistics"])
+		_statistics->load(reader["tempUnitStatistics"]);
+	reader.tryRead("murdererId", _murdererId);
+	reader.tryRead("fatalShotSide", _fatalShotSide);
+	reader.tryRead("fatalShotBodyPart", _fatalShotBodyPart);
+	reader.tryRead("murdererWeapon", _murdererWeapon);
+	reader.tryRead("murdererWeaponAmmo", _murdererWeaponAmmo);
 
-	_motionPoints = node["motionPoints"].as<int>(0);
-	_customMarker = node["customMarker"].as<int>(0);
-	_alreadyRespawned = node["alreadyRespawned"].as<bool>(_alreadyRespawned);
-	_activeHand = node["activeHand"].as<std::string>(_activeHand);
-	_preferredHandForReactions = node["preferredHandForReactions"].as<std::string>(_preferredHandForReactions);
-	_reactionsDisabledForLeftHand = node["reactionsDisabledForLeftHand"].as<bool>(_reactionsDisabledForLeftHand);
-	_reactionsDisabledForRightHand = node["reactionsDisabledForRightHand"].as<bool>(_reactionsDisabledForRightHand);
-	if (node["tempUnitStatistics"])
-	{
-		_statistics->load(node["tempUnitStatistics"]);
-	}
-	_murdererId = node["murdererId"].as<int>(_murdererId);
-	_fatalShotSide = (UnitSide)node["fatalShotSide"].as<int>(_fatalShotSide);
-	_fatalShotBodyPart = (UnitBodyPart)node["fatalShotBodyPart"].as<int>(_fatalShotBodyPart);
-	_murdererWeapon = node["murdererWeapon"].as<std::string>(_murdererWeapon);
-	_murdererWeaponAmmo = node["murdererWeaponAmmo"].as<std::string>(_murdererWeaponAmmo);
-
-	if (const YAML::Node& p = node["recolor"])
+	if (auto& recolor = reader["recolor"])
 	{
 		_recolor.clear();
-		for (size_t i = 0; i < p.size(); ++i)
-		{
-			_recolor.push_back(std::make_pair(p[i][0].as<int>(), p[i][1].as<int>()));
-		}
+		for (size_t i = 0; i < recolor.childrenCount(); ++i)
+			_recolor.push_back(std::make_pair(recolor[i][0].readVal<Uint8>(), recolor[i][1].readVal<Uint8>()));
 	}
-	_mindControllerID = node["mindControllerID"].as<int>(_mindControllerID);
-	_summonedPlayerUnit = node["summonedPlayerUnit"].as<bool>(_summonedPlayerUnit);
-	_resummonedFakeCivilian = node["resummonedFakeCivilian"].as<bool>(_resummonedFakeCivilian);
-	_pickUpWeaponsMoreActively = node["pickUpWeaponsMoreActively"].as<bool>(_pickUpWeaponsMoreActively);
-	_disableIndicators = node["disableIndicators"].as<bool>(_disableIndicators);
-	_movementType = (MovementType)node["movementType"].as<int>(_movementType);
-	if (const YAML::Node& p = node["moveCost"])
+	reader.tryRead("mindControllerID", _mindControllerID);
+	reader.tryRead("summonedPlayerUnit", _summonedPlayerUnit);
+	reader.tryRead("resummonedFakeCivilian", _resummonedFakeCivilian);
+	reader.tryRead("pickUpWeaponsMoreActively", _pickUpWeaponsMoreActively);
+	reader.tryRead("disableIndicators", _disableIndicators);
+	reader.tryRead("movementType", _movementType);
+	if (auto& moveCost = reader["moveCost"])
 	{
-		_moveCostBase.load(p["basePercent"]);
-		_moveCostBaseFly.load(p["baseFlyPercent"]);
-		_moveCostBaseClimb.load(p["baseClimbPercent"]);
-		_moveCostBaseNormal.load(p["baseNormalPercent"]);
+		_moveCostBase.load(moveCost["basePercent"]);
+		_moveCostBaseFly.load(moveCost["baseFlyPercent"]);
+		_moveCostBaseClimb.load(moveCost["baseClimbPercent"]);
+		_moveCostBaseNormal.load(moveCost["baseNormalPercent"]);
 	}
-	_vip = node["vip"].as<bool>(_vip);
-	_bannedInNextStage = node["bannedInNextStage"].as<bool>(_bannedInNextStage);
-	_meleeAttackedBy = node["meleeAttackedBy"].as<std::vector<int> >(_meleeAttackedBy);
-
-	_scriptValues.load(node, shared);
+	reader.tryRead("vip", _vip);
+	reader.tryRead("bannedInNextStage", _bannedInNextStage);
+	reader.tryRead("meleeAttackedBy", _meleeAttackedBy);
+	_scriptValues.load(reader, shared);
 }
 
 /**
  * Saves the soldier to a YAML file.
  * @return YAML node.
  */
-YAML::Node BattleUnit::save(const ScriptGlobal *shared) const
+void BattleUnit::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) const
 {
-	YAML::Node node;
-
-	node["id"] = _id;
-	node["genUnitType"] = _type;
-	node["genUnitArmor"] = _armor->getType();
-	node["faction"] = (int)_faction;
-	node["status"] = (int)_status;
+	writer.setAsMap();
+	writer.write("id", _id);
+	writer.write("genUnitType", _type);
+	writer.write("genUnitArmor", _armor->getType());
+	writer.write("faction", _faction);
+	writer.write("status", _status);
 	if (_wantsToSurrender)
-		node["wantsToSurrender"] = _wantsToSurrender;
+		writer.write("wantsToSurrender", _wantsToSurrender);
 	if (_isSurrendering)
-		node["isSurrendering"] = _isSurrendering;
-	node["position"] = _pos;
-	node["direction"] = _direction;
-	node["directionTurret"] = _directionTurret;
-	node["tu"] = _tu;
-	node["health"] = _health;
-	node["mana"] = _mana;
-	node["stunlevel"] = _stunlevel;
-	node["energy"] = _energy;
-	node["morale"] = _morale;
+		writer.write("isSurrendering", _isSurrendering);
+	writer.write("position", _pos);
+	writer.write("direction", _direction);
+	writer.write("directionTurret", _directionTurret);
+	writer.write("tu", _tu);
+	writer.write("health", _health);
+	writer.write("mana", _mana);
+	writer.write("stunlevel", _stunlevel);
+	writer.write("energy", _energy);
+	writer.write("morale", _morale);
 	if (_kneeled)
-		node["kneeled"] = _kneeled;
+		writer.write("kneeled", _kneeled);
 	if (_floating)
-		node["floating"] = _floating;
-	node["armor"].SetStyle(YAML::EmitterStyle::Flow); for (int i=0; i < SIDE_MAX; i++) node["armor"].push_back(_currentArmor[i]);
-	node["fatalWounds"].SetStyle(YAML::EmitterStyle::Flow); for (int i=0; i < BODYPART_MAX; i++) node["fatalWounds"].push_back(_fatalWounds[i]);
-	node["fire"] = _fire;
-	node["expBravery"] = _exp.bravery;
-	node["expReactions"] = _exp.reactions;
-	node["expFiring"] = _exp.firing;
-	node["expThrowing"] = _exp.throwing;
-	node["expPsiSkill"] = _exp.psiSkill;
-	node["expPsiStrength"] = _exp.psiStrength;
-	node["expMana"] = _exp.mana;
-	node["expMelee"] = _exp.melee;
-	node["currStats"] = _stats;
+		writer.write("floating", _floating);
+	auto armorWriter = writer["armor"];
+	armorWriter.setAsSeq();
+	armorWriter.setFlowStyle();
+	for (int i = 0; i < SIDE_MAX; i++)
+		armorWriter.write(_currentArmor[i]);
+	auto fwWriter = writer["fatalWounds"];
+	fwWriter.setAsSeq();
+	fwWriter.setFlowStyle();
+	for (int i=0; i < BODYPART_MAX; i++)
+		fwWriter.write(_fatalWounds[i]);
+	writer.write("fire", _fire);
+	writer.write("expBravery", _exp.bravery);
+	writer.write("expReactions", _exp.reactions);
+	writer.write("expFiring", _exp.firing);
+	writer.write("expThrowing", _exp.throwing);
+	writer.write("expPsiSkill", _exp.psiSkill);
+	writer.write("expPsiStrength", _exp.psiStrength);
+	writer.write("expMana", _exp.mana);
+	writer.write("expMelee", _exp.melee);
+	writer.write("currStats", _stats);
 	if (_turretType > -1)
-		node["turretType"] = _turretType;
+		writer.write("turretType", _turretType);
 	if (_visible)
-		node["visible"] = _visible;
-	node["turnsSinceSpotted"] = _turnsSinceSpotted;
-	node["turnsLeftSpottedForSnipers"] = _turnsLeftSpottedForSnipers;
-	node["turnsSinceStunned"] = _turnsSinceStunned;
-	node["rankInt"] = _rankInt;
-	node["moraleRestored"] = _moraleRestored;
+		writer.write("visible", _visible);
+	writer.write("turnsSinceSpotted", _turnsSinceSpotted);
+	writer.write("turnsLeftSpottedForSnipers", _turnsLeftSpottedForSnipers);
+	writer.write("turnsSinceStunned", _turnsSinceStunned);
+	writer.write("rankInt", _rankInt);
+	writer.write("moraleRestored", _moraleRestored);
 	if (getAIModule())
-	{
-		node["AI"] = getAIModule()->save();
-	}
-	node["killedBy"] = (int)_killedBy; // does not have a default value, must always be saved
+		getAIModule()->save(writer["AI"]);
+	writer.write("killedBy", _killedBy); // does not have a default value, must always be saved
 	if (_originalFaction != _faction)
-		node["originalFaction"] = (int)_originalFaction;
+		writer.write("originalFaction", _originalFaction);
 	if (_kills)
-		node["kills"] = _kills;
+		writer.write("kills", _kills);
 	if (_faction == FACTION_PLAYER && _dontReselect)
-		node["dontReselect"] = _dontReselect;
-
+		writer.write("dontReselect", _dontReselect);
 	if (_previousOwner)
-		node["previousOwner"] = _previousOwner->getId();
-
+		writer.write("previousOwner", _previousOwner->getId());
 	if (_spawnUnit)
 	{
-		node["spawnUnit"] = _spawnUnit->getType();
-		node["respawn"] = _respawn;
-		node["spawnUnitFaction"] = (int)_spawnUnitFaction;
+		writer.write("spawnUnit", _spawnUnit->getType());
+		writer.write("respawn", _respawn);
+		writer.write("spawnUnitFaction", _spawnUnitFaction);
 	}
-
-	node["motionPoints"] = _motionPoints;
+	writer.write("motionPoints", _motionPoints);
 	if (_customMarker > 0)
-		node["customMarker"] = _customMarker;
+		writer.write("customMarker", _customMarker);
 	if (_alreadyRespawned)
-		node["alreadyRespawned"] = _alreadyRespawned;
-	node["activeHand"] = _activeHand;
+		writer.write("alreadyRespawned", _alreadyRespawned);
+	writer.write("activeHand", _activeHand);
 	if (!_preferredHandForReactions.empty())
-		node["preferredHandForReactions"] = _preferredHandForReactions;
+		writer.write("preferredHandForReactions", _preferredHandForReactions);
 	if (_reactionsDisabledForLeftHand)
-		node["reactionsDisabledForLeftHand"] = _reactionsDisabledForLeftHand;
+		writer.write("reactionsDisabledForLeftHand", _reactionsDisabledForLeftHand);
 	if (_reactionsDisabledForRightHand)
-		node["reactionsDisabledForRightHand"] = _reactionsDisabledForRightHand;
-	node["tempUnitStatistics"] = _statistics->save();
+		writer.write("reactionsDisabledForRightHand", _reactionsDisabledForRightHand);
+	_statistics->save(writer["tempUnitStatistics"]);
 	if (_murdererId)
-		node["murdererId"] = _murdererId;
+		writer.write("murdererId", _murdererId);
 	if (_fatalShotSide)
-		node["fatalShotSide"] = (int)_fatalShotSide;
+		writer.write("fatalShotSide", _fatalShotSide);
 	if (_fatalShotBodyPart)
-		node["fatalShotBodyPart"] = (int)_fatalShotBodyPart;
+		writer.write("fatalShotBodyPart", _fatalShotBodyPart);
 	if (!_murdererWeapon.empty())
-		node["murdererWeapon"] = _murdererWeapon;
+		writer.write("murdererWeapon", _murdererWeapon);
 	if (!_murdererWeaponAmmo.empty())
-		node["murdererWeaponAmmo"] = _murdererWeaponAmmo;
-
-	for (size_t i = 0; i < _recolor.size(); ++i)
-	{
-		YAML::Node p;
-		p.SetStyle(YAML::EmitterStyle::Flow);
-		p.push_back((int)_recolor[i].first);
-		p.push_back((int)_recolor[i].second);
-		node["recolor"].push_back(p);
-	}
+		writer.write("murdererWeaponAmmo", _murdererWeaponAmmo);
+	writer.write("recolor", _recolor,
+				 [](YAML::YamlNodeWriter vectorWriter, std::pair<Uint8, Uint8> pair)
+				 {
+					 auto pairWriter = vectorWriter.write();
+					 pairWriter.setAsSeq();
+					 pairWriter.setFlowStyle();
+					 pairWriter.write(pair.first);
+					 pairWriter.write(pair.second);
+				 });
 	if (_mindControllerID)
-		node["mindControllerID"] = _mindControllerID;
+		writer.write("mindControllerID", _mindControllerID);
 	if (_summonedPlayerUnit)
-		node["summonedPlayerUnit"] = _summonedPlayerUnit;
+		writer.write("summonedPlayerUnit", _summonedPlayerUnit);
 	if (_resummonedFakeCivilian)
-		node["resummonedFakeCivilian"] = _resummonedFakeCivilian;
+		writer.write("resummonedFakeCivilian", _resummonedFakeCivilian);
 	if (_pickUpWeaponsMoreActively)
-		node["pickUpWeaponsMoreActively"] = _pickUpWeaponsMoreActively;
+		writer.write("pickUpWeaponsMoreActively", _pickUpWeaponsMoreActively);
 	if (_disableIndicators)
-		node["disableIndicators"] = _disableIndicators;
+		writer.write("disableIndicators", _disableIndicators);
 
 	if (_originalMovementType != _movementType)
-		node["movementType"] = (int)_movementType;
-
+		writer.write("movementType", (int)_movementType);
+	if (_moveCostBase != _armor->getMoveCostBase() ||
+		_moveCostBaseFly != _armor->getMoveCostBaseFly() ||
+		_moveCostBaseClimb != _armor->getMoveCostBaseClimb() ||
+		_moveCostBaseNormal != _armor->getMoveCostBaseNormal())
 	{
-		YAML::Node p;
+		auto moveCostWriter = writer["moveCost"];
+		moveCostWriter.setAsMap();
+		moveCostWriter.setFlowStyle();
 		if (_moveCostBase != _armor->getMoveCostBase())
-		{
-			_moveCostBase.save(p, "basePercent");
-		}
+			_moveCostBase.save(moveCostWriter, "basePercent");
 		if (_moveCostBaseFly != _armor->getMoveCostBaseFly())
-		{
-			_moveCostBaseFly.save(p, "baseFlyPercent");
-		}
+			_moveCostBaseFly.save(moveCostWriter, "baseFlyPercent");
 		if (_moveCostBaseClimb != _armor->getMoveCostBaseClimb())
-		{
-			_moveCostBaseClimb.save(p, "baseClimbPercent");
-		}
+			_moveCostBaseClimb.save(moveCostWriter, "baseClimbPercent");
 		if (_moveCostBaseNormal != _armor->getMoveCostBaseNormal())
-		{
-			_moveCostBaseNormal.save(p, "baseNormalPercent");
-		}
-		if (!p.IsNull())
-		{
-			p.SetStyle(YAML::EmitterStyle::Flow);
-			node["moveCost"] = p;
-		}
+			_moveCostBaseNormal.save(moveCostWriter, "baseNormalPercent");
 	}
 	if (_vip)
-		node["vip"] = _vip;
+		writer.write("vip", _vip);
 	if (_bannedInNextStage)
-		node["bannedInNextStage"] = _bannedInNextStage;
+		writer.write("bannedInNextStage", _bannedInNextStage);
 	if (!_meleeAttackedBy.empty())
-	{
-		node["meleeAttackedBy"] = _meleeAttackedBy;
-	}
+		writer.write("meleeAttackedBy", _meleeAttackedBy);
 
-	_scriptValues.save(node, shared);
-
-	return node;
+	_scriptValues.save(writer, shared);
 }
 
 /**

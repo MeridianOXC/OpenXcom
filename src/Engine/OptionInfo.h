@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include <string>
 #include <map>
 #include <SDL.h>
@@ -59,11 +59,11 @@ public:
 	/// Gets a key option pointer.
 	SDLKey *asKey() const;
 	/// Loads the option from YAML.
-	void load(const YAML::Node &node) const;
+	void load(const YAML::YamlNodeReader& reader) const;
 	/// Loads the option from a map.
 	void load(const std::map<std::string, std::string> &map, bool makeLowercase) const;
 	/// Saves the option to YAML.
-	void save(YAML::Node &node) const;
+	void save(YAML::YamlNodeWriter writer) const;
 	/// Resets the option to default.
 	void reset() const;
 	/// Gets the option ID.

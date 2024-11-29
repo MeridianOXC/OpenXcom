@@ -20,7 +20,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -41,7 +41,7 @@ public:
 	/// Cleans up the converter ruleset.
 	~RuleConverter();
 	/// Loads the converter from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the offset for a specific attribute.
 	int getOffset(const std::string &id) { return _offsets[id]; }
 	/// Gets the marker ID list.

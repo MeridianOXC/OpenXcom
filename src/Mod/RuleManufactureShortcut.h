@@ -19,7 +19,7 @@
  */
 #include <string>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -39,7 +39,7 @@ public:
 	/// Deletes a RuleManufactureShortcut.
 	~RuleManufactureShortcut() = default;
 	/// Loads the RuleManufactureShortcut from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the name of a new manufacture rule to be created.
 	const std::string& getName() const { return _name; }
 	/// Gets the name of a manufacture rule to be used as a starting point.

@@ -75,7 +75,9 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <pwd.h>
+#ifndef __CYGWIN__
 #include <execinfo.h>
+#endif
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <dirent.h>
@@ -1095,25 +1097,39 @@ bool writeFile(const std::string& filename, const std::vector<unsigned char>& da
 }
 
 /**
- * Gets an istream to a file
+ * Fully reads a file and returns a stream
  * @param filename - what to readFile
  * @return the istream
  */
-std::unique_ptr<std::istream> readFile(const std::string& filename) {
-	SDL_RWops *rwops = SDL_RWFromFile(filename.c_str(), "r");
-	if (!rwops) {
+std::unique_ptr<std::istream> readFile(const std::string& filename)
+{
+	return std::unique_ptr<std::istream>(new StreamData(readFileRaw(filename)));
+}
+
+/**
+ * Fully reads a file and returns a pointer to the data
+ * @param filename - what to readFile
+ * @param pSize - returned data size
+ * @return pointer to file data
+ */
+RawData readFileRaw(const std::string& filename)
+{
+	SDL_RWops* rwops = SDL_RWFromFile(filename.c_str(), "r");
+	if (!rwops)
+	{
 		std::string err = "Failed to read " + filename + ": " + SDL_GetError();
 		Log(LOG_ERROR) << err;
 		throw Exception(err);
 	}
-	size_t size;
-	char *data = (char *)SDL_LoadFile_RW(rwops, &size, SDL_TRUE);
-	if (data == NULL) {
+	size_t s;
+	char* data = (char*)SDL_LoadFile_RW(rwops, &s, SDL_TRUE);
+	if (data == NULL)
+	{
 		std::string err = "Failed to read " + filename + ": " + SDL_GetError();
 		Log(LOG_ERROR) << err;
 		throw Exception(err);
 	}
-	return std::unique_ptr<std::istream>(new StreamData(RawData{data, size, SDL_free}));
+	return RawData(data, s, SDL_free);
 }
 
 /**
@@ -1122,9 +1138,23 @@ std::unique_ptr<std::istream> readFile(const std::string& filename) {
  * @param filename - what to read
  * @return the istream
  */
-std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename) {
-	SDL_RWops *rwops = SDL_RWFromFile(filename.c_str(), "r");
-	if (!rwops) {
+std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename)
+{
+	return std::unique_ptr<std::istream>(new StreamData(getYamlSaveHeaderRaw(filename)));
+}
+
+/**
+ * Reads a file up to and including first "\n---" sequence.
+ * To be used only for savegames.
+ * @param filename - what to read
+ * @param pSize - returned data size
+ * @return pointer to file data
+ */
+RawData getYamlSaveHeaderRaw(const std::string& filename)
+{
+	SDL_RWops* rwops = SDL_RWFromFile(filename.c_str(), "r");
+	if (!rwops)
+	{
 		std::string err = "Failed to read " + filename + ": " + SDL_GetError();
 		Log(LOG_ERROR) << err;
 		throw Exception(err);
@@ -1132,25 +1162,30 @@ std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename) {
 	const size_t chunksize = 4096;
 	size_t size = 0;
 	size_t offs = 0;
-	char *data = (char *)SDL_malloc(chunksize + 1);
-	if (data == NULL) {
+	char* data = (char*)SDL_malloc(chunksize + 1);
+	if (data == NULL)
+	{
 		std::string err(SDL_GetError());
 		Log(LOG_ERROR) << err;
 		throw Exception(err);
 	}
-	while(true) {
+	while (true)
+	{
 		auto actually_read = SDL_RWread(rwops, data + offs, 1, chunksize);
-		if (actually_read == 0 || actually_read == -1) {
+		if (actually_read == 0 || actually_read == -1)
+		{
 			break;
 		}
 		size += actually_read;
 		data[size] = 0;
 		size_t search_from = offs > 4 ? offs - 4 : 0;
-		if (NULL != strstr(data+search_from, "\n---")) {
+		if (NULL != strstr(data + search_from, "\n---"))
+		{
 			break;
 		}
-		char *newdata = (char *)SDL_realloc(data, size+chunksize+1);
-		if (newdata == NULL) {
+		char* newdata = (char*)SDL_realloc(data, size + chunksize + 1);
+		if (newdata == NULL)
+		{
 			std::string err(SDL_GetError());
 			Log(LOG_ERROR) << err;
 			throw Exception(err);
@@ -1159,7 +1194,7 @@ std::unique_ptr<std::istream> getYamlSaveHeader(const std::string& filename) {
 		offs = size;
 	}
 	SDL_RWclose(rwops);
-	return std::unique_ptr<std::istream>(new StreamData(RawData{data, size, SDL_free}));
+	return RawData(data, size, SDL_free);
 }
 
 /**

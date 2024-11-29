@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -40,9 +40,9 @@ public:
 	/// Cleans up the vehicle.
 	~Vehicle();
 	/// Loads the vehicle from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Saves the vehicle to YAML.
-	YAML::Node save() const;
+	void save(YAML::YamlNodeWriter writer) const;
 	/// Gets the vehicle's ruleset.
 	const RuleItem *getRules() const;
 	/// Gets the vehicle's ammo.

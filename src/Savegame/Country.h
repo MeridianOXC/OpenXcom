@@ -18,7 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "../Engine/Script.h"
 
 namespace OpenXcom
@@ -55,9 +55,9 @@ public:
 	/// Cleans up the country.
 	~Country();
 	/// Loads the country from YAML.
-	void load(const YAML::Node& node, const ScriptGlobal* shared);
+	void load(const YAML::YamlNodeReader& reader, const ScriptGlobal* shared);
 	/// Saves the country to YAML.
-	YAML::Node save(const ScriptGlobal* shared) const;
+	void save(YAML::YamlNodeWriter writer, const ScriptGlobal* shared) const;
 	/// Gets the country's ruleset.
 	const RuleCountry *getRules() const;
 	/// Gets the country's funding.

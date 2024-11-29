@@ -52,45 +52,40 @@ Target::~Target()
  * Loads the target from a YAML file.
  * @param node YAML node.
  */
-void Target::load(const YAML::Node &node)
+void Target::load(const YAML::YamlNodeReader& reader)
 {
-	_lon = node["lon"].as<double>(_lon);
-	_lat = node["lat"].as<double>(_lat);
-	_id = node["id"].as<int>(_id);
-	if (const YAML::Node &name = node["name"])
-	{
-		_name = name.as<std::string>();
-	}
+	reader.tryRead("lon", _lon);
+	reader.tryRead("lat", _lat);
+	reader.tryRead("id", _id);
+	reader.tryRead("name", _name);
 }
 
 /**
  * Saves the target to a YAML file.
  * @returns YAML node.
  */
-YAML::Node Target::save() const
+void Target::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node["lon"] = serializeDouble(_lon);
-	node["lat"] = serializeDouble(_lat);
+	writer.setAsMap();
+	writer.write("lon", _lon);
+	writer.write("lat", _lat);
 	if (_id)
-		node["id"] = _id;
+		writer.write("id", _id);
 	if (!_name.empty())
-		node["name"] = _name;
-	return node;
+		writer.write("name", _name);
 }
 
 /**
  * Saves the target's unique identifiers to a YAML file.
  * @return YAML node.
  */
-YAML::Node Target::saveId() const
+void Target::saveId(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node["lon"] = serializeDouble(_lon);
-	node["lat"] = serializeDouble(_lat);
-	node["type"] = getType();
-	node["id"] = _id;
-	return node;
+	writer.setAsMap();
+	writer.write("lon", _lon);
+	writer.write("lat", _lat);
+	writer.write("type", getType());
+	writer.write("id", _id);
 }
 
 /**

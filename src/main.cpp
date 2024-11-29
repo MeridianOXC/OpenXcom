@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 	std::set_terminate(exceptionLogger);
 #endif
 #endif
-
+	YAML::setGlobalErrorHandler();
 	CrossPlatform::getErrorDialog();
 	CrossPlatform::processArgs(argc, argv);
 	if (!Options::init())

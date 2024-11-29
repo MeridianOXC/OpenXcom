@@ -18,7 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "RuleCraft.h"
 #include "../Savegame/CraftWeaponProjectile.h"
 
@@ -56,7 +56,7 @@ public:
 	/// Cleans up the craft weapon ruleset.
 	~RuleCraftWeapon();
 	/// Loads craft weapon data from YAML.
-	void load(const YAML::Node& node, Mod *mod);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 
