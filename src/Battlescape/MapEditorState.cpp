@@ -2542,6 +2542,7 @@ void MapEditorState::toggleRouteMode(Action *action)
 	if (!getRouteMode())
 	{		
 		action->getDetails()->type = SDL_MOUSEBUTTONUP;
+		_nodeEditMode->toggle(false);
 		_nodeEditMode->mouseRelease(action, this);
 		_nodeEditMode->draw();
 	}
