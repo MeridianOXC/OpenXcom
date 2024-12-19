@@ -34,6 +34,17 @@ struct MapFileInfo
 	std::vector<std::string> mods;
     std::string terrain;
     std::vector<std::string> mcds;
+
+    // define equal to operator to allow matching for the purpose of std::find_if
+    bool operator == (const MapFileInfo& otherFile) const
+    {
+        return baseDirectory == otherFile.baseDirectory
+                && name == otherFile.name
+                && terrain == otherFile.terrain;
+        
+        // TODO: determine if there's a use case to check mods; most maps will be saved in the same folder as their mod
+        // This will require some refactoring if we want to use SavedGame::sanitizeModName
+    }
 };
 
 class MapEditorSave
@@ -58,8 +69,6 @@ public:
     MapFileInfo *getCurrentMapFile();
     /// Adds the data on a new edited map file to the list
     void addMap(MapFileInfo fileInfo);
-    /// Search for a specific entry in the list of edited map files
-    MapFileInfo getMapFileInfo(std::string mapDirectory, std::string mapName);
     /// Search for entries matching the given directory + map name
     size_t findMatchingFiles(MapFileInfo *fileInfo);
     /// Gets the list of entries found by the search

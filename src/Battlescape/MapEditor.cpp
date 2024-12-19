@@ -909,14 +909,14 @@ void MapEditor::updateMapFileInfo(std::string mapName, std::string baseDirectory
     _mapSave->getCurrentMapFile()->baseDirectory = baseDirectory;
     _mapSave->getCurrentMapFile()->terrain = terrainName;
     _mapSave->getCurrentMapFile()->mods.clear();
-    for (auto i : Options::getActiveMods())
+    for (const auto* modInfo : Options::getActiveMods())
     {
-        _mapSave->getCurrentMapFile()->mods.push_back(i->getName());
+        _mapSave->getCurrentMapFile()->mods.push_back(modInfo->getId() + " ver: " + modInfo->getVersion());
     }
     _mapSave->getCurrentMapFile()->mcds.clear();
-    for (auto i : *_save->getMapDataSets())
+    for (auto mcd : *_save->getMapDataSets())
     {
-        _mapSave->getCurrentMapFile()->mcds.push_back(i->getName());
+        _mapSave->getCurrentMapFile()->mcds.push_back(mcd->getName());
     }
 }
 

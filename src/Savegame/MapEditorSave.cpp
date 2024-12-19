@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "MapEditorSave.h"
+#include <algorithm>
 #include <sstream>
 #include <yaml-cpp/yaml.h>
 #include "../Engine/CrossPlatform.h"
@@ -147,38 +148,13 @@ MapFileInfo *MapEditorSave::getCurrentMapFile()
  */
 void MapEditorSave::addMap(MapFileInfo fileInfo)
 {
-    MapFileInfo existingMap = getMapFileInfo(fileInfo.baseDirectory, fileInfo.name);
-
     // Only add a new entry if one doesn't already exist
-    if(existingMap.name.size() == 0)
+    if(std::find_if(_savedMapFiles.begin(), _savedMapFiles.end(), [&](const MapFileInfo& file) { return file == fileInfo; }) == _savedMapFiles.end())
     {
         _savedMapFiles.push_back(fileInfo);
     }
 
     _currentMapFile = fileInfo;
-}
-
-/**
- * Search for a specific entry in the list of edited map files
- * @return copy of the data for the map file
- */
-MapFileInfo MapEditorSave::getMapFileInfo(std::string mapDirectory, std::string mapName)
-{
-    MapFileInfo fileInfo;
-    fileInfo.name = "";
-
-    // TODO: more efficient search?
-    for (size_t i = 0; i != _savedMapFiles.size(); ++i)
-    {
-        // TODO: break points in order: baseDirectory, name, terrain, mcds, mods
-        if (mapName == _savedMapFiles.at(i).name && mapDirectory == _savedMapFiles.at(i).baseDirectory)
-        {
-            fileInfo = _savedMapFiles.at(i);
-            break;
-        }
-    }
-
-    return fileInfo;
 }
 
 /**

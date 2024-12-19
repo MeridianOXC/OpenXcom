@@ -18,11 +18,36 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "../Engine/State.h"
-#include <vector>
+#include <map>
 #include <string>
+#include <vector>
 
 namespace OpenXcom
 {
+
+enum TerrainFilter {FILTER_NOTTERRAIN, FILTER_NORMAL, FILTER_CRAFT, FILTER_UFO};
+enum TerrainValidation {VALIDATION_PASSED, VALIDATION_WARNING, VALIDATION_FAILED};
+
+struct MapEditorEntry {
+    std::string name;
+    std::string craftOrUFOName;
+    std::string desc;
+    TerrainFilter filter = FILTER_NORMAL;
+    TerrainValidation validation = VALIDATION_PASSED;
+
+    // Define less than operator to sort lists of terrain entries
+    bool operator < (const MapEditorEntry& otherEntry) const
+    {
+        if (validation == otherEntry.validation)
+        {
+            return (filter < otherEntry.filter);
+        }
+        else 
+        {
+            return (validation < otherEntry.validation);
+        }
+    }
+};
 
 class TextButton;
 class TextEdit;
@@ -32,20 +57,22 @@ class Text;
 class Frame;
 class Position;
 class MapEditor;
+class MapFileInfo;
+class RuleTerrain;
 
 class MapEditorMenuState : public State
 {
 private :
 	Window *_window;
-	Text *_txtTitle, *_txtSearch, *_txtSelectedMap, *_txtSelectedMapTerrain, *_txtPickTerrainMode;
-    TextButton *_filterTerrain, *_filterCraft, *_filterUFOs, *_mapFilter;
+	Text *_txtTitle, *_txtSearch, *_txtSelectedEntry, *_txtPickTerrainMode;
+    TextButton *_filterTerrain, *_filterCraft, *_filterUFOs, *_currentFilter;
+    std::map<TextButton*, TerrainFilter> _buttonTerrainFilters;
     TextButton *_btnBrowser;
 	TextButton *_btnOk, *_btnCancel, *_btnNew;
     TextEdit *_edtQuickSearch;
     TextList *_lstMaps;
     Frame *_frameLeft, *_frameRight;
-    std::vector< std::pair<std::string, std::string> > _mapsList;
-    std::vector<std::string> _terrainsList;
+    std::vector<MapEditorEntry> _mapsList, _validatedTerrains;
     MapEditor *_editor;
     int _selectedMap;
     bool _pickTerrainMode;
@@ -85,6 +112,8 @@ public :
     void btnNewMapClick(Action *action);
     /// Sets the information necessary for a new map
     void setNewMapInformation(std::string newMapName, int newMapX, int newMapY, int newMapZ);
+    /// Helper to check whether a map entry we're trying to load matches the MCDs available
+    TerrainValidation checkSavedMapMCDs(MapFileInfo *entryToCheck, RuleTerrain *terrain);
 
 };
 

@@ -23,12 +23,14 @@
 #include "FileBrowserState.h"
 #include "../version.h"
 #include "../Engine/Game.h"
+#include "../Engine/ModInfo.h"
 #include "../Engine/Options.h"
 #include "../Engine/Screen.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleTerrain.h"
 #include "../Mod/MapBlock.h"
+#include "../Mod/MapDataSet.h"
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleUfo.h"
 #include "../Engine/Action.h"
@@ -71,7 +73,6 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _pickTerrainMode(fa
     }
 
 	// Create objects
-    // TODO: make right pane for info on selection, single Text*
     // TODO: interfaces ruleset for colors
 	_txtTitle = new Text(320, 17, 0, 9);
 
@@ -82,23 +83,22 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _pickTerrainMode(fa
     _filterTerrain = new TextButton(48, 16, 8, 28);
     _filterCraft = new TextButton(48, 16, 58, 28);
     _filterUFOs = new TextButton(48, 16, 108, 28);
-    _mapFilter = _filterTerrain;
+    _currentFilter = _filterTerrain;
 
     _btnBrowser = new TextButton(148, 16, 164, 28);
 
     _txtPickTerrainMode = new Text(148, 16, 164, 28);
 
-    _filterTerrain->setGroup(&_mapFilter);
-    _filterCraft->setGroup(&_mapFilter);
-    _filterUFOs->setGroup(&_mapFilter);
+    _filterTerrain->setGroup(&_currentFilter);
+    _filterCraft->setGroup(&_currentFilter);
+    _filterUFOs->setGroup(&_currentFilter);
 
     _txtSearch = new Text(48, 10, 8, 46);
     _edtQuickSearch = new TextEdit(this, 98, 10, 58, 46);
 
     _lstMaps = new TextList(119, 104, 14, 64);
-    
-    _txtSelectedMap = new Text(100, 8, 170, 52);
-    _txtSelectedMapTerrain = new Text(100, 8, 170, 62);
+
+    _txtSelectedEntry = new Text(135, 116, 170, 52);
 
     _frameLeft = new Frame(148, 116, 8, 58);
     _frameRight = new Frame(148, 128, 164, 46);
@@ -119,8 +119,7 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _pickTerrainMode(fa
     add(_txtSearch, "text", "mainMenu");
     add(_edtQuickSearch, "button", "mainMenu");
     add(_lstMaps, "list", "saveMenus");
-    add(_txtSelectedMap, "text", "mainMenu");
-    add(_txtSelectedMapTerrain, "text", "mainMenu");
+    add(_txtSelectedEntry, "text", "mainMenu");
     add(_frameLeft, "frames", "newBattleMenu");
     add(_frameRight, "frames", "newBattleMenu");
 
@@ -159,7 +158,7 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _pickTerrainMode(fa
 	_btnBrowser->onMouseClick((ActionHandler)&MapEditorMenuState::btnBrowserClick);
 	//_btnBrowser->onKeyboardPress((ActionHandler)&MapEditorMenuState::btnBrowserClick, SDLK_o); // change to options
 
-    _txtPickTerrainMode->setText(tr("STR_PICKING_TERRAIN"));
+    _txtPickTerrainMode->setText(tr("STR_PICKING_TERRAIN").arg(tr("STR_NEW_MAP")));
     _txtPickTerrainMode->setVisible(false);
 
 	_txtSearch->setText(tr("STR_MAP_EDITOR_MENU_SEARCH"));
@@ -175,6 +174,8 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _pickTerrainMode(fa
 	_lstMaps->setBackground(_window);
     _lstMaps->onMouseClick((ActionHandler)&MapEditorMenuState::lstMapsClick);
 
+    _txtSelectedEntry->setWordWrap(true);
+
     _editor = _game->getMapEditor();
     if (!_editor)
     {
@@ -185,7 +186,11 @@ MapEditorMenuState::MapEditorMenuState() : _selectedMap(-1), _pickTerrainMode(fa
     }
     _editor->getMapEditorSave()->clearMapFileToLoad();
 
-    _terrainsList.clear();
+    _buttonTerrainFilters[_filterTerrain] = FILTER_NORMAL;
+    _buttonTerrainFilters[_filterCraft] = FILTER_CRAFT;
+    _buttonTerrainFilters[_filterUFOs] = FILTER_UFO;
+
+    _validatedTerrains.clear();
 }
 
 MapEditorMenuState::~MapEditorMenuState()
@@ -211,67 +216,141 @@ void MapEditorMenuState::think()
     // FileBrowser passed a path to a file, try to load it or check if we need to pick a terrain for the map
     if (!_fileName.empty() && !_pickTerrainMode)
     {
-        // Check if we've save this map before and check if it's been saved with multiple different terrains
+        _validatedTerrains.clear();
+        bool validationWarning = false;
+
+        // Check if we've saved this map before
         size_t numTerrains = _editor->searchForMapFileInfo(_fileName);
+        size_t craftsFound = 0;
+        size_t ufosFound = 0;
 
-        _terrainsList.clear();
-        for (auto i : *_editor->getMapEditorSave()->getMatchedFiles())
+        // If we have saved before, list those terrains first to pick from
+        // Note also if the terrain isn't in the current mods
+        if (numTerrains > 0)
         {
-            _terrainsList.push_back(i.terrain);
+            for (auto i : *_editor->getMapEditorSave()->getMatchedFiles())
+            {
+                bool craftOrUFOFound = false;
+
+                MapEditorEntry normalTerrain;
+                normalTerrain.name = i.name;
+                normalTerrain.desc = i.terrain;
+
+                // are the mods for this saved map entry are loaded?
+                // if not, we should note that for validation purposes
+                std::vector<std::string> missingMods;
+                for (auto j : i.mods)
+                {
+                    std::string name = SavedGame::sanitizeModName(j);
+                    if (std::find(Options::mods.begin(), Options::mods.end(), std::make_pair(name, true)) == Options::mods.end())
+                    {
+                        missingMods.push_back(j);
+                    }
+                }
+
+                if (missingMods.size() > 0)
+                {
+                    validationWarning = true;
+                    normalTerrain.validation = VALIDATION_WARNING;
+
+                    std::string logInfo = "Attempting to load map " + i.name + ".MAP\n";
+                    logInfo += "  in directory " + i.baseDirectory + MapEditorSave::MAP_DIRECTORY + "\n";
+                    logInfo += "  with terrain " + i.terrain + "\n";
+                    logInfo += "But the following mods are not available:";
+                    for (auto j : missingMods)
+                    {
+                        logInfo += "\n  - " + j;
+                    }
+                    Log(LOG_WARNING) << logInfo;
+                }
+
+                // is the terrain for this saved entry loaded?
+                // remember to check for UFO and craft terrains too
+                RuleTerrain *terrain = 0;
+                if (_game->getMod()->getUfo(i.terrain))
+                {
+                    craftOrUFOFound = true;
+
+                    MapEditorEntry ufoTerrain;
+                    ufoTerrain.name = i.name;
+                    ufoTerrain.craftOrUFOName = i.terrain;
+                    ufoTerrain.desc = i.terrain;
+                    ufoTerrain.filter = FILTER_UFO;
+                    
+                    ufoTerrain.validation = normalTerrain.validation;
+                    terrain = _game->getMod()->getUfo(i.terrain)->getBattlescapeTerrainData();
+                    if (terrain)
+                    {
+                        ufoTerrain.desc = terrain->getName();
+                        ufoTerrain.validation = std::max(ufoTerrain.validation, checkSavedMapMCDs(&i, terrain));
+                        ++ufosFound;
+                    }
+                    else
+                    {
+                        ufoTerrain.validation = VALIDATION_FAILED;
+                    }
+
+                    validationWarning = validationWarning || ufoTerrain.validation > VALIDATION_PASSED;
+
+                    _validatedTerrains.push_back(ufoTerrain);
+                }
+
+                if (_game->getMod()->getCraft(i.terrain))
+                {
+                    craftOrUFOFound = true;
+
+                    MapEditorEntry craftTerrain;
+                    craftTerrain.name = i.name;
+                    craftTerrain.craftOrUFOName = i.terrain;
+                    craftTerrain.desc = i.terrain;
+                    craftTerrain.filter = FILTER_CRAFT;
+
+                    craftTerrain.validation = normalTerrain.validation;
+                    terrain = _game->getMod()->getCraft(i.terrain)->getBattlescapeTerrainData();
+                    if (terrain)
+                    {
+                        craftTerrain.desc = terrain->getName();
+                        craftTerrain.validation = std::max(craftTerrain.validation, checkSavedMapMCDs(&i, terrain));
+                        ++craftsFound;
+                    }
+                    else
+                    {
+                        craftTerrain.validation = VALIDATION_FAILED;
+                    }
+
+                    validationWarning = validationWarning || craftTerrain.validation > VALIDATION_PASSED;
+
+                    _validatedTerrains.push_back(craftTerrain);
+                }
+
+                terrain = _game->getMod()->getTerrain(i.terrain);
+                if (terrain)
+                {
+                    normalTerrain.validation = std::max(normalTerrain.validation, checkSavedMapMCDs(&i, terrain));
+                }
+                else
+                {
+                    normalTerrain.validation = VALIDATION_FAILED;
+                }
+
+                if (normalTerrain.validation != VALIDATION_FAILED || !craftOrUFOFound)
+                {
+                    _validatedTerrains.push_back(normalTerrain);
+                }
+
+                validationWarning = validationWarning || normalTerrain.validation > VALIDATION_PASSED;
+            }
+
+            std::sort(_validatedTerrains.begin(), _validatedTerrains.end());
         }
 
-        // validate whether the terrains found during the search currently exist within the loaded mods
-        std::vector<std::string> missingTerrains;
-        missingTerrains.clear();
-        for (std::vector<std::string>::iterator it = _terrainsList.begin(); it != _terrainsList.end(); )
+
+        if (validationWarning) // && !Options::suppressvalidationwarning TODO: make this user option
         {
-            RuleTerrain *terrain = 0;
-
-            if (_game->getMod()->getUfo(*it))
-            {
-                Log(LOG_INFO) << "Trying to find UFO " << *it;
-                terrain = _game->getMod()->getUfo(*it)->getBattlescapeTerrainData();
-            }
-            else if (_game->getMod()->getCraft(*it))
-            {
-                Log(LOG_INFO) << "Trying to find Craft " << *it;
-                terrain = _game->getMod()->getCraft(*it)->getBattlescapeTerrainData(); 
-            }
-            else
-            {
-                Log(LOG_INFO) << "Trying to find terrain " << *it;
-                terrain = _game->getMod()->getTerrain(*it);
-            }
-
-//            RuleTerrain *terrain = _game->getMod()->getTerrain(*it);
-//
-//            if (!terrain && _game->getMod()->getCraft(*it))
-//            {
-//                terrain = _game->getMod()->getCraft(*it)->getBattlescapeTerrainData();
-//            }
-//
-//            if (!terrain && _game->getMod()->getUfo(*it))
-//            {
-//                terrain = _game->getMod()->getUfo(*it)->getBattlescapeTerrainData();
-//            } 
-
-            if (!terrain)
-            {
-                missingTerrains.push_back(*it);
-                it = _terrainsList.erase(it);
-            }
-            else
-            {
-                ++it;
-            }        
+           _game->pushState(new ErrorMessageState(tr("STR_LOADING_MAP_VALIDATION_WARNING"), _palette, _game->getMod()->getInterface("mainMenu")->getElement("text")->color, "BACK01.SCR", _game->getMod()->getInterface("mainMenu")->getElement("palette")->color));
         }
 
-        if (missingTerrains.size() > 0)
-        {
-           _game->pushState(new ErrorMessageState(tr("STR_MISSING_TERRAINS"), _palette, _game->getMod()->getInterface("mainMenu")->getElement("text")->color, "BACK01.SCR", _game->getMod()->getInterface("mainMenu")->getElement("palette")->color));
-        }
-
-        if (numTerrains == 1 && missingTerrains.size() == 0)
+        if (numTerrains == 1 && !validationWarning) // && Options::quickloadsinglemaps TODO: make this user option
         {
             // start the editor with that single terrain!
             startEditor();
@@ -282,9 +361,21 @@ void MapEditorMenuState::think()
             _btnNew->setGroup(&_btnNew);
             _btnNew->setText(tr("STR_CANCEL_TERRAIN_PICKING"));
             _btnBrowser->setVisible(false);
+            _txtPickTerrainMode->setText(tr("STR_PICKING_TERRAIN").arg(_editor->getFileName(_fileName) + ".MAP"));
             _txtPickTerrainMode->setVisible(true);
 
-            populateMapsList();
+            SDL_Event ev;
+            //ev.type = SDL_MOUSEBUTTONDOWN;
+            //ev.button.button = SDL_BUTTON_LEFT;
+            Action action = Action(&ev, 0.0, 0.0, 0, 0);
+            action.setSender(_filterTerrain);
+            if (craftsFound || ufosFound) // TODO: option for how many found needed?
+            {
+                ufosFound > craftsFound ? action.setSender(_filterUFOs) : action.setSender(_filterCraft);
+            }
+            btnMapFilterClick(&action);
+
+            // populateMapsList();
         }
     }
 }
@@ -301,8 +392,7 @@ void MapEditorMenuState::populateMapsList()
     _lstMaps->clearList();
 
     _selectedMap = -1;
-    _txtSelectedMap->setText("");
-    _txtSelectedMapTerrain->setText("");
+    _txtSelectedEntry->setText("");
     _btnOk->setVisible(false);
 
     // If we're creating a new map, the list should have terrains instead of map names
@@ -312,83 +402,72 @@ void MapEditorMenuState::populateMapsList()
         return;
     }
 
-    if (_mapFilter == _filterTerrain)
+    std::vector<std::string> availableTerrains;
+    switch (_buttonTerrainFilters[_currentFilter])
     {
-        for (auto &i : _game->getMod()->getTerrainList())
-        {
-            for (auto j : *_game->getMod()->getTerrain(i)->getMapBlocks())
-            {
-                // Apply the search filter
-                if (!searchString.empty())
-                {
-                    std::string terrainName = i;
-                    Unicode::upperCase(terrainName);
-                    std::string mapName = j->getName();
-                    Unicode::upperCase(mapName);
-                    if (mapName.find(searchString) == std::string::npos && terrainName.find(searchString) == std::string::npos)
-                    {
-                        continue;
-                    }
-                }
+    case FILTER_CRAFT:
+        availableTerrains = _game->getMod()->getCraftsList();
+        break;
+    
+    case FILTER_UFO:
+        availableTerrains = _game->getMod()->getUfosList();
+        break;
 
-                _lstMaps->addRow(1, j->getName().c_str());
-                _mapsList.push_back(std::make_pair(j->getName(), i));
-            }
-        }
+    default: // FILTER_NORMAL
+        availableTerrains = _game->getMod()->getTerrainList();
+        break;
     }
-    else if (_mapFilter == _filterCraft)
+
+    for (auto &i : availableTerrains)
     {
-        for (auto &i : _game->getMod()->getCraftsList())
+        RuleTerrain *terrain;
+        MapEditorEntry entry;
+        
+        switch (_buttonTerrainFilters[_currentFilter])
         {
-            if (_game->getMod()->getCraft(i)->getBattlescapeTerrainData() == 0)
-                continue;
+        case FILTER_CRAFT:
+            terrain = _game->getMod()->getCraft(i)->getBattlescapeTerrainData();
+            entry.craftOrUFOName = i;
+            break;
+        
+        case FILTER_UFO:
+            terrain = _game->getMod()->getUfo(i)->getBattlescapeTerrainData();
+            entry.craftOrUFOName = i;
+            break;
 
-            for (auto j : *_game->getMod()->getCraft(i)->getBattlescapeTerrainData()->getMapBlocks())
-            {
-                // Apply the search filter
-                if (!searchString.empty())
-                {
-                    std::string terrainName = i;
-                    Unicode::upperCase(terrainName);
-                    std::string mapName = j->getName();
-                    Unicode::upperCase(mapName);
-                    if (mapName.find(searchString) == std::string::npos && terrainName.find(searchString) == std::string::npos)
-                    {
-                        continue;
-                    }
-                }
-
-                _lstMaps->addRow(1, j->getName().c_str());
-                _mapsList.push_back(std::make_pair(j->getName(), i));
-            }
+        default: // FILTER_NORMAL
+            terrain = _game->getMod()->getTerrain(i);
+            break;
         }
-    }
-    else if (_mapFilter == _filterUFOs)
-    {
-        for (auto &i : _game->getMod()->getUfosList())
+
+        if (!terrain)
         {
-            if (_game->getMod()->getUfo(i)->getBattlescapeTerrainData() == 0)
-                continue;
-
-            for (auto j : *_game->getMod()->getUfo(i)->getBattlescapeTerrainData()->getMapBlocks())
-            {
-                // Apply the search filter
-                if (!searchString.empty())
-                {
-                    std::string terrainName = i;
-                    Unicode::upperCase(terrainName);
-                    std::string mapName = j->getName();
-                    Unicode::upperCase(mapName);
-                    if (mapName.find(searchString) == std::string::npos && terrainName.find(searchString) == std::string::npos)
-                    {
-                        continue;
-                    }
-                }
-
-                _lstMaps->addRow(1, j->getName().c_str());
-                _mapsList.push_back(std::make_pair(j->getName(), i));
-            }
+            continue;
         }
+
+        entry.desc = terrain->getName();
+        entry.filter = _buttonTerrainFilters[_currentFilter];
+
+        for (auto j : *terrain->getMapBlocks())
+        {
+            // Apply the search filter
+            if (!searchString.empty())
+            {
+                std::string terrainName = i;
+                Unicode::upperCase(terrainName);
+                std::string mapName = j->getName();
+                Unicode::upperCase(mapName);
+                if (mapName.find(searchString) == std::string::npos && terrainName.find(searchString) == std::string::npos)
+                {
+                    continue;
+                }
+            }
+
+            entry.name = j->getName();
+            _lstMaps->addRow(1, entry.name.c_str());
+            _mapsList.push_back(entry);
+        }
+
     }
 
     if (_mapsList.size() == 1)
@@ -405,96 +484,146 @@ void MapEditorMenuState::populateTerrainsList()
 	std::string searchString = _edtQuickSearch->getText();
 	Unicode::upperCase(searchString);
 
-    if (_terrainsList.size() > 0)
+    std::vector<MapEditorEntry> availableTerrains;
+    availableTerrains.clear();
+
+    // This function lists both the terrains available in the current set of mods for new maps
+    // and any terrains used previously to save a map we're trying to load
+    // We'll interleave them, assuming if we're loading a saved map we want those terrains first
+    // but can skip it for the available terrains if we're not loading a saved map
+    // Terrains that completely failed validation can come last
+
+    std::vector<MapEditorEntry>::iterator it = _validatedTerrains.begin();
+    MapEditorEntry validationEntry;
+    validationEntry.filter = FILTER_NOTTERRAIN;
+    if (_validatedTerrains.size() > 0)
     {
-        for (auto i : _terrainsList)
+        // If we're loading a saved map, list those terrains that passed validation first
+        validationEntry.name = tr("STR_TERRAINS_PASSED_VALIDATION");
+        validationEntry.desc = tr("STR_TERRAINS_PASSED_VALIDATION_DESC");
+        availableTerrains.push_back(validationEntry);
+        for ( ; it != _validatedTerrains.end(); ++it)
         {
-            // Apply the search filter
-            if (!searchString.empty())
+            if (it->filter != _buttonTerrainFilters[_currentFilter])
+                continue;
+
+            if (it->validation == validationEntry.validation)
             {
-                std::string terrainName = i;
-                Unicode::upperCase(terrainName);
-                if (terrainName.find(searchString) == std::string::npos)
-                {
-                    continue;
-                }
+                availableTerrains.push_back(*it);
             }
-            
-            _lstMaps->addRow(1, i.c_str());
-            _mapsList.push_back(std::make_pair(i, i));
+            else
+            {
+                validationEntry.validation = VALIDATION_WARNING;
+                break;
+            }
         }
-    }
-    else if (_mapFilter == _filterTerrain)
-    {
-        for (auto &i : _game->getMod()->getTerrainList())
+
+        // Next, those that exist but have some potential warning
+        validationEntry.name = tr("STR_TERRAINS_WARNED_VALIDATION");
+        validationEntry.desc = tr("STR_TERRAINS_WARNED_VALIDATION_DESC");
+        availableTerrains.push_back(validationEntry);
+        for ( ; it != _validatedTerrains.end(); ++it)
         {
-            // Apply the search filter
-            if (!searchString.empty())
+            if (it->filter != _buttonTerrainFilters[_currentFilter])
+                continue;
+
+            if (it->validation == validationEntry.validation)
             {
-                std::string terrainName = i;
-                Unicode::upperCase(terrainName);
-                if (terrainName.find(searchString) == std::string::npos)
-                {
-                    continue;
-                }
+                availableTerrains.push_back(*it);
             }
-            
-            _lstMaps->addRow(1, i.c_str());
-            _mapsList.push_back(std::make_pair(i, i));
+            else
+            {
+                validationEntry.validation = VALIDATION_FAILED;
+                break;
+            }
         }
+
+        validationEntry.name = tr("STR_TERRAINS_AVAILABLE_IN_CURRENT_MODS");
+        validationEntry.desc = tr("STR_TERRAINS_AVAILABLE_IN_CURRENT_MODS_DESC");
+        availableTerrains.push_back(validationEntry);
     }
-    else if (_mapFilter == _filterCraft)
+
+    // Add all the terrains available in the currently-loaded mods
+    switch (_buttonTerrainFilters[_currentFilter])
     {
+    case FILTER_CRAFT:
         for (auto &i : _game->getMod()->getCraftsList())
         {
-            if (!_game->getMod()->getCraft(i)->getBattlescapeTerrainData())
-                continue;
-
-            std::string terrain = _game->getMod()->getCraft(i)->getBattlescapeTerrainData()->getName();
-            // Apply the search filter
-            if (!searchString.empty())
+            if (_game->getMod()->getCraft(i)->getBattlescapeTerrainData())
             {
-                std::string terrainName = terrain;
-                Unicode::upperCase(terrainName);
-                if (terrainName.find(searchString) == std::string::npos)
-                {
-                    continue;
-                }
+                MapEditorEntry entry;
+                entry.name = i;
+                entry.craftOrUFOName = i;
+                entry.desc = _game->getMod()->getCraft(i)->getBattlescapeTerrainData()->getName();
+                entry.filter = FILTER_CRAFT;
+                availableTerrains.push_back(entry);
             }
-
-			auto it = std::find_if(_mapsList.begin(), _mapsList.end(), [&](const std::pair<std::string, std::string>& str) { return str.first == terrain; });
-			if (it == _mapsList.end())
-			{
-                _lstMaps->addRow(1, terrain.c_str());
-                _mapsList.push_back(std::make_pair(terrain, i));
-			}
         }
-    }
-    else if (_mapFilter == _filterUFOs)
-    {
+        break;
+    
+    case FILTER_UFO:
         for (auto &i : _game->getMod()->getUfosList())
         {
-            if (!_game->getMod()->getUfo(i)->getBattlescapeTerrainData())
-                continue;
-            
-            std::string terrain = _game->getMod()->getUfo(i)->getBattlescapeTerrainData()->getName();
-            // Apply the search filter
-            if (!searchString.empty())
+            if (_game->getMod()->getUfo(i)->getBattlescapeTerrainData())
             {
-                std::string terrainName = terrain;
-                Unicode::upperCase(terrainName);
-                if (terrainName.find(searchString) == std::string::npos)
-                {
-                    continue;
-                }
+                MapEditorEntry entry;
+                entry.name = i;
+                entry.craftOrUFOName = i;
+                entry.desc = _game->getMod()->getUfo(i)->getBattlescapeTerrainData()->getName();
+                entry.filter = FILTER_UFO;
+                availableTerrains.push_back(entry);
             }
+        }
+        break;
 
-			auto it = std::find_if(_mapsList.begin(), _mapsList.end(), [&](const std::pair<std::string, std::string>& str) { return str.first == terrain; });
-			if (it == _mapsList.end())
-			{
-                _lstMaps->addRow(1, terrain.c_str());
-                _mapsList.push_back(std::make_pair(terrain, i));
-			}
+    default: // FILTER_NORMAL
+        for (auto &i : _game->getMod()->getTerrainList())
+        {
+            MapEditorEntry entry;
+            entry.name = i;
+            entry.desc = i;
+            availableTerrains.push_back(entry);
+        }
+        break;
+    }
+
+    if (_validatedTerrains.size() > 0)
+    {
+        // Finally, the terrains that the map was saved with, but aren't in the current mods
+        validationEntry.name = tr("STR_TERRAINS_FAILED_VALIDATION");
+        validationEntry.desc = tr("STR_TERRAINS_FAILED_VALIDATION_DESC");
+        availableTerrains.push_back(validationEntry);
+        for ( ; it != _validatedTerrains.end(); ++it)
+        {
+            if (it->filter != _buttonTerrainFilters[_currentFilter])
+                continue;
+
+            availableTerrains.push_back(*it);
+        }        
+    }
+
+    for (auto i : availableTerrains)
+    {
+        // Apply the search filter
+        if (!searchString.empty())
+        {
+            std::string terrainName = i.name;
+            Unicode::upperCase(terrainName);
+            if (i.filter != FILTER_NOTTERRAIN // make sure we don't leave out the categories of validation for loading an existing map
+                && terrainName.find(searchString) == std::string::npos)
+            {
+                continue;
+            }
+        }
+
+        // multiple craft and ufos can use the same terrain, so only add them once to the list
+        // also, makes sure we're not doubling up between available terrains in the mods and the one we're trying to load from a saved map
+        auto jt = std::find_if(_mapsList.begin(), _mapsList.end(), [&](const MapEditorEntry& entry) { return entry.desc == i.desc; });
+        if (jt == _mapsList.end())
+        {
+            std::string str = i.filter == FILTER_NOTTERRAIN ? i.name : i.desc;
+            _lstMaps->addRow(1, str.c_str());
+            _mapsList.push_back(i);
         }
     }
 
@@ -541,15 +670,15 @@ void MapEditorMenuState::btnMapFilterClick(Action *action)
 
     if (action->getSender() == _filterTerrain)
     {
-        _mapFilter = _filterTerrain;
+        _currentFilter = _filterTerrain;
     }
     else if (action->getSender() == _filterCraft)
     {
-        _mapFilter = _filterCraft;
+        _currentFilter = _filterCraft;
     }
     else if (action->getSender() == _filterUFOs)
     {
-        _mapFilter = _filterUFOs;
+        _currentFilter = _filterUFOs;
     }
 
     populateMapsList();
@@ -577,20 +706,69 @@ void MapEditorMenuState::lstMapsClick(Action *)
     _selectedMap = _mapsList.size() == 1 ? 0 : _lstMaps->getSelectedRow();
     if (_selectedMap > -1 && _selectedMap < (int)_mapsList.size() + 1)
     {
-        _txtSelectedMap->setText(_mapsList.at(_selectedMap).first);
-        _txtSelectedMapTerrain->setText(_mapsList.at(_selectedMap).second);
-        if (!_pickTerrainMode)
+        MapEditorEntry entry = _mapsList.at(_selectedMap);
+
+        if (entry.filter != FILTER_NOTTERRAIN)
         {
-            _editor->getMapEditorSave()->getMapFileToLoad()->name = _mapsList.at(_selectedMap).first;
+            std::string name;
+            if (!_pickTerrainMode)
+            {
+                name = entry.name;
+                _editor->setMapFileToLoadName(name);
+            }
+            else if (!_fileName.empty())
+            {
+                name = _editor->getFileName(_fileName) + ".MAP";
+            }
+            else
+            {
+                name = tr("STR_NEW_MAP");
+            }
+
+            std::string terrainName = entry.desc;
+            RuleTerrain *terrain = _game->getMod()->getTerrain(terrainName);
+
+            switch (entry.filter)
+            {
+            case FILTER_CRAFT:
+                _editor->setMapFileToLoadTerrain(entry.craftOrUFOName);
+                terrainName = terrainName + "\n" + (std::string)tr("STR_CRAFT") + ": " + entry.craftOrUFOName;
+                terrain = _game->getMod()->getCraft(entry.craftOrUFOName)->getBattlescapeTerrainData();
+                break;
+
+            case FILTER_UFO:
+                _editor->setMapFileToLoadTerrain(entry.craftOrUFOName);
+                terrainName = terrainName + "\n" + (std::string)tr("STR_UFO") + ": " + entry.craftOrUFOName;
+                terrain = _game->getMod()->getUfo(entry.craftOrUFOName)->getBattlescapeTerrainData();
+                break;
+
+            default: // FILTER_NORMAL
+                _editor->setMapFileToLoadTerrain(entry.desc);
+                break;
+            }
+
+            std::string mcds = "";
+            if (terrain)
+            {
+                for (auto mcd : *terrain->getMapDataSets())
+                {
+                    mcds = mcds + "\n  - " + mcd->getName();
+                }
+            }
+
+            _txtSelectedEntry->setText(tr("STR_SELECTED_MAP_EDITOR_ENTRY").arg(name).arg(terrainName).arg(mcds));
+            _btnOk->setVisible(true);
         }
-        _editor->getMapEditorSave()->getMapFileToLoad()->terrain = _mapsList.at(_selectedMap).second;
-        _btnOk->setVisible(true);
+        else
+        {
+            _txtSelectedEntry->setText(entry.desc);
+            _btnOk->setVisible(false);
+        }
     }
     else
     {
         _selectedMap = -1;
-        _txtSelectedMap->setText("");
-        _txtSelectedMapTerrain->setText("");
+        _txtSelectedEntry->setText("");
         _btnOk->setVisible(false);
     }
 }
@@ -632,60 +810,19 @@ void MapEditorMenuState::startEditor()
     std::string terrainName = _editor->getMapFileToLoadTerrain();
     RuleTerrain *terrain = 0;
 
-    // default map loading: map already loaded as part of the current mods or a new map
-    if (_terrainsList.size() == 0)
+    switch (_buttonTerrainFilters[_currentFilter])
     {
-        if (_mapFilter == _filterTerrain)
-        {
-            terrain = _game->getMod()->getTerrain(terrainName);
-        }
-        else if (_mapFilter == _filterCraft)
-        {
-            terrain = _game->getMod()->getCraft(terrainName)->getBattlescapeTerrainData();
-        }
-        else if (_mapFilter == _filterUFOs)
-        {
-            terrain = _game->getMod()->getUfo(terrainName)->getBattlescapeTerrainData();
-        }
-    }
-    else // loading directly from a file
-    {
-        // does this copying need to happen?
-        //for (auto i : *_editor->getMapEditorSave()->getMatchedFiles())
-        //{
-        //    if (i.terrain == terrainName)
-        //    {
-        //        for (auto j : i->mods)
-        //        {
-        //            _editor->getMapEditorSave()->getMapFileToLoad()->mods.push_back(j);
-        //        }
-        //        for (auto j : i->mcds)
-        //        {
-        //            _editor->getMapEditorSave()->getMapFileToLoad()->mcds.push_back(j);
-        //        }
-        //    }
-        //}
+    case FILTER_CRAFT:
+        terrain = _game->getMod()->getCraft(terrainName)->getBattlescapeTerrainData();
+        break;
+    
+    case FILTER_UFO:
+        terrain = _game->getMod()->getUfo(terrainName)->getBattlescapeTerrainData();
+        break;
 
-        if (_game->getMod()->getUfo(terrainName))
-        {
-            terrain = _game->getMod()->getUfo(terrainName)->getBattlescapeTerrainData();
-        }
-        else if (_game->getMod()->getCraft(terrainName))
-        {
-            terrain = _game->getMod()->getCraft(terrainName)->getBattlescapeTerrainData(); 
-        }
-        else
-        {
-            terrain = _game->getMod()->getTerrain(terrainName);
-        }
-
-//        terrain = _game->getMod()->getTerrain(terrainName);
-//
-//        if (!terrain && _game->getMod()->getCraft(terrainName))
-//            terrain = _game->getMod()->getCraft(terrainName)->getBattlescapeTerrainData();
-//
-//        if (!terrain && _game->getMod()->getUfo(terrainName))
-//            terrain = _game->getMod()->getUfo(terrainName)->getBattlescapeTerrainData();
+    default: // FILTER_NORMAL
+        terrain = _game->getMod()->getTerrain(terrainName);
+        break;
     }
 
 	battlescapeGenerator.setTerrain(terrain);
@@ -702,7 +839,7 @@ void MapEditorMenuState::startEditor()
     {
         if (mapName.empty())
         {
-            _editor->setMapFileToLoadName(_mapsList.at(_selectedMap).first);
+            _editor->setMapFileToLoadName(_mapsList.at(_selectedMap).name);
         }
 
         battlescapeGenerator.loadMapForEditing();      
@@ -742,6 +879,7 @@ void MapEditorMenuState::btnNewMapClick(Action *action)
         // Press the button down
         _btnNew->setGroup(&_btnNew);
         _btnNew->setText(tr("STR_CANCEL_TERRAIN_PICKING"));
+        _txtPickTerrainMode->setText(tr("STR_PICKING_TERRAIN").arg(tr("STR_NEW_MAP")));
 
         // Consume the action to keep the button held down
         action->getDetails()->type = SDL_NOEVENT;
@@ -757,7 +895,7 @@ void MapEditorMenuState::btnNewMapClick(Action *action)
 
         // unclicking this button also cancels picking a terrain for a map saved under multiple terrains
         _fileName = "";
-        _terrainsList.clear();
+        _validatedTerrains.clear();
     }
 
     _btnBrowser->setVisible(!_pickTerrainMode);
@@ -783,6 +921,49 @@ void MapEditorMenuState::setNewMapInformation(std::string newMapName, int newMap
     _newMapX = newMapX;
     _newMapY = newMapY;
     _newMapZ = newMapZ;
+}
+
+/**
+ * Helper to check whether a map entry we're trying to load matches the MCDs available
+ * @param entryToCheck information on the map we're trying to load
+ * @param terrain the terrain we're proposing to use to load it
+ */
+TerrainValidation MapEditorMenuState::checkSavedMapMCDs(MapFileInfo *entryToCheck, RuleTerrain *terrain)
+{
+    TerrainValidation validation = VALIDATION_PASSED;
+
+    // MCD names need to both match and be in the correct order for a map to load correctly
+    // So we'll iterate through both MCD lists in order
+    for (size_t i = 0; i < entryToCheck->mcds.size(); ++i)
+    {
+        if (i == terrain->getMapDataSets()->size()
+            || entryToCheck->mcds.at(i) != terrain->getMapDataSets()->at(i)->getName())
+        {
+            validation = VALIDATION_WARNING;
+            break;
+        }
+    }
+
+    if (validation == VALIDATION_WARNING)
+    {
+        std::string logInfo = "Attempting to load map " + entryToCheck->name + ".MAP\n";
+        logInfo += "  in directory " + entryToCheck->baseDirectory + MapEditorSave::MAP_DIRECTORY + "\n";
+        logInfo += "  with terrain " + entryToCheck->terrain + "\n";
+        logInfo += "But the MCDS do not match.\n";
+        logInfo += " From mapeditorsave, mcds:";
+        for (auto mcd : entryToCheck->mcds)
+        {
+            logInfo += "\n  - " + mcd;
+        }
+        logInfo += "\n In currently loaded mods, mcds:";
+        for (auto mcd : *terrain->getMapDataSets())
+        {
+            logInfo += "\n  - " + mcd->getName();
+        }
+        Log(LOG_WARNING) << logInfo;
+    }
+
+    return validation;
 }
 
 }
