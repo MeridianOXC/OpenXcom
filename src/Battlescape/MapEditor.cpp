@@ -1116,6 +1116,11 @@ void MapEditor::saveMapFile()
 		throw Exception("Failed to save " + fullpath);
 	}
 
+    if (nodesToSave.size() == 0)
+    {
+        Log(LOG_INFO) << "Route file had no nodes; SDL sometimes throws an error for saving an empty file but may still write it anyways.";
+    }
+
     _mapSave->addMap(*_mapSave->getCurrentMapFile());
     _mapSave->save();
 
