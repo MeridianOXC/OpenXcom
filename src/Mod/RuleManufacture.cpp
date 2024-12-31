@@ -31,8 +31,8 @@ namespace OpenXcom
  * Creates a new Manufacture.
  * @param name The unique manufacture name.
  */
-RuleManufacture::RuleManufacture(const std::string &name, int listOrder) :
-	_name(name), _space(0), _time(0), _cost(0), _points(0), _refund(false), _producedCraft(0), _listOrder(listOrder)
+RuleManufacture::RuleManufacture(const std::string& name, int listOrder)
+	: _name(name), _space(0), _time(0), _cost(0), _points(0), _refund(false), _producedCraft(0), _listOrder(listOrder)
 {
 	_producedItemsNames[name] = 1;
 }
@@ -42,32 +42,33 @@ RuleManufacture::RuleManufacture(const std::string &name, int listOrder) :
  * @param node YAML node.
  * @param listOrder The list weight for this manufacture.
  */
-void RuleManufacture::load(const YAML::Node &node, Mod* mod)
+void RuleManufacture::load(const YAML::YamlNodeReader& node, Mod* mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	_category = node["category"].as<std::string>(_category);
-	mod->loadUnorderedNames(_name, _requiresName, node["requires"]);
-	mod->loadBaseFunction(_name, _requiresBaseFunc, node["requiresBaseFunc"]);
-	_space = node["space"].as<int>(_space);
-	_time = node["time"].as<int>(_time);
-	_cost = node["cost"].as<int>(_cost);
-	_points = node["points"].as<int>(_points);
-	_refund = node["refund"].as<bool>(_refund);
-	mod->loadUnorderedNamesToInt(_name, _requiredItemsNames, node["requiredItems"]);
-	mod->loadUnorderedNamesToInt(_name, _producedItemsNames, node["producedItems"]);
-	_randomProducedItemsNames = node["randomProducedItems"].as< std::vector<std::pair<int, std::map<std::string, int> > > >(_randomProducedItemsNames);
-	_spawnedPersonType = node["spawnedPersonType"].as<std::string>(_spawnedPersonType);
-	_spawnedPersonName = node["spawnedPersonName"].as<std::string>(_spawnedPersonName);
-	if (node["spawnedSoldier"])
+	reader.tryRead("category", _category);
+	mod->loadUnorderedNames(_name, _requiresName, reader["requires"]);
+	mod->loadBaseFunction(_name, _requiresBaseFunc, reader["requiresBaseFunc"]);
+	reader.tryRead("space", _space);
+	reader.tryRead("time", _time);
+	reader.tryRead("cost", _cost);
+	reader.tryRead("points", _points);
+	reader.tryRead("refund", _refund);
+	mod->loadUnorderedNamesToInt(_name, _requiredItemsNames, reader["requiredItems"]);
+	mod->loadUnorderedNamesToInt(_name, _producedItemsNames, reader["producedItems"]);
+	reader.tryRead("randomProducedItems", _randomProducedItemsNames);
+	reader.tryRead("spawnedPersonType", _spawnedPersonType);
+	reader.tryRead("spawnedPersonName", _spawnedPersonName);
+	if (reader["spawnedSoldier"])
 	{
-		_spawnedSoldier = node["spawnedSoldier"];
+		_spawnedSoldier = reader["spawnedSoldier"].emitDescendants(YAML::YamlRootNodeReader(_spawnedSoldier, "(spawned soldier template)"));
 	}
-	_transferTimes = node["transferTimes"].as< std::vector<int> >(_transferTimes);
-	_listOrder = node["listOrder"].as<int>(_listOrder);
+	reader.tryRead("transferTimes", _transferTimes);
+	reader.tryRead("listOrder", _listOrder);
 }
 
 /**

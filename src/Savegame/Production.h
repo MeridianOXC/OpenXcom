@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -49,8 +49,8 @@ public:
 	const RuleManufacture * getRules() const;
 	void startItem(Base * b, SavedGame * g, const Mod *m) const;
 	void refundItem(Base * b, SavedGame * g, const Mod *m) const;
-	YAML::Node save() const;
-	void load(const YAML::Node &node);
+	void save(YAML::YamlNodeWriter writer) const;
+	void load(const YAML::YamlNodeReader& reader);
 	const std::map<std::string, int> &getRandomProductionInfo() const { return _randomProductionInfo; }
 private:
 	const RuleManufacture * _rules;

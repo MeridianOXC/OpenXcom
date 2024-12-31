@@ -19,7 +19,7 @@
  */
 #include <string>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "RuleBaseFacilityFunctions.h"
 #include "ModScript.h"
 
@@ -73,7 +73,7 @@ public:
 	RuleResearch(const std::string &name, int listOrder);
 
 	/// Loads the research from YAML.
-	void load(const YAML::Node& node, Mod* mod, const ModScript& parsers);
+	void load(const YAML::YamlNodeReader& reader, Mod* mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 

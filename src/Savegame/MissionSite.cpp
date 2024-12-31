@@ -45,16 +45,16 @@ MissionSite::~MissionSite()
  * Loads the mission site from a YAML file.
  * @param node YAML node.
  */
-void MissionSite::load(const YAML::Node &node)
+void MissionSite::load(const YAML::YamlNodeReader& reader)
 {
-	Target::load(node);
-	_texture = node["texture"].as<int>(_texture);
-	_secondsRemaining = node["secondsRemaining"].as<size_t>(_secondsRemaining);
-	_race = node["race"].as<std::string>(_race);
-	_inBattlescape = node["inBattlescape"].as<bool>(_inBattlescape);
-	_detected = node["detected"].as<bool>(_detected);
+	Target::load(reader);
+	reader.tryRead("texture", _texture);
+	reader.tryRead("secondsRemaining", _secondsRemaining);
+	reader.tryRead("race", _race);
+	reader.tryRead("inBattlescape", _inBattlescape);
+	reader.tryRead("detected", _detected);
 	//_missionCustomDeploy loaded outside
-	_ufoUniqueId = node["ufoUniqueId"].as<int>(_ufoUniqueId);
+	reader.tryRead("ufoUniqueId", _ufoUniqueId);
 	// _ufo loaded outside
 }
 
@@ -62,25 +62,24 @@ void MissionSite::load(const YAML::Node &node)
  * Saves the mission site to a YAML file.
  * @return YAML node.
  */
-YAML::Node MissionSite::save() const
+void MissionSite::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node = Target::save();
-	node["type"] = _rules->getType();
-	node["deployment"] = _deployment->getType();
+	writer.setAsMap();
+	Target::save(writer);
+
+	writer.write("type", _rules->getType());
+	writer.write("deployment", _deployment->getType());
 	if (_missionCustomDeploy)
-		node["missionCustomDeploy"] = _missionCustomDeploy->getType();
-	node["texture"] = _texture;
+		writer.write("missionCustomDeploy", _missionCustomDeploy->getType());
+	writer.write("texture", _texture);
 	if (_secondsRemaining)
-		node["secondsRemaining"] = _secondsRemaining;
-	node["race"] = _race;
+		writer.write("secondsRemaining", _secondsRemaining);
+	writer.write("race", _race);
 	if (_inBattlescape)
-		node["inBattlescape"] = _inBattlescape;
-	node["detected"] = _detected;
+		writer.write("inBattlescape", _inBattlescape);
+	writer.write("detected", _detected);
 	if (_ufo)
-	{
-		node["ufoUniqueId"] = _ufo->getUniqueId();
-	}
-	return node;
+		writer.write("ufoUniqueId", _ufo->getUniqueId());
 }
 
 /**

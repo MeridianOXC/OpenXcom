@@ -105,19 +105,18 @@ Base::~Base()
  * @param newGame Is this the first base of a new game?
  * @param newBattleGame Is this the base of a skirmish game?
  */
-void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newBattleGame)
+void Base::load(const YAML::YamlNodeReader& reader, SavedGame *save, bool newGame, bool newBattleGame)
 {
-	Target::load(node);
-
+	Target::load(reader);
 	if (!newGame || !Options::customInitialBase || newBattleGame)
 	{
-		for (YAML::const_iterator i = node["facilities"].begin(); i != node["facilities"].end(); ++i)
+		for (const auto& facilityReader : reader["facilities"].children())
 		{
-			std::string type = (*i)["type"].as<std::string>();
+			std::string type = facilityReader["type"].readVal<std::string>();
 			if (_mod->getBaseFacility(type))
 			{
-				BaseFacility *f = new BaseFacility(_mod->getBaseFacility(type), this);
-				f->load(*i);
+				BaseFacility* f = new BaseFacility(_mod->getBaseFacility(type), this);
+				f->load(facilityReader);
 				_facilities.push_back(f);
 			}
 			else
@@ -126,14 +125,13 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 			}
 		}
 	}
-
-	for (YAML::const_iterator i = node["crafts"].begin(); i != node["crafts"].end(); ++i)
+	for (const auto& craftReader : reader["crafts"].children())
 	{
-		std::string type = (*i)["type"].as<std::string>();
+		std::string type = craftReader["type"].readVal<std::string>();
 		if (_mod->getCraft(type))
 		{
-			Craft *c = new Craft(_mod->getCraft(type), this);
-			c->load(*i, _mod->getScriptGlobal(), _mod, save);
+			Craft* c = new Craft(_mod->getCraft(type), this);
+			c->load(craftReader, _mod->getScriptGlobal(), _mod, save);
 			_crafts.push_back(c);
 		}
 		else
@@ -141,18 +139,17 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 			Log(LOG_ERROR) << "Failed to load craft " << type;
 		}
 	}
-
-	for (YAML::const_iterator i = node["soldiers"].begin(); i != node["soldiers"].end(); ++i)
+	for (const auto& soldierReader : reader["soldiers"].children())
 	{
-		std::string type = (*i)["type"].as<std::string>(_mod->getSoldiersList().front());
+		std::string type = soldierReader["type"].readVal(_mod->getSoldiersList().front());
 		if (_mod->getSoldier(type))
 		{
-			Soldier *s = new Soldier(_mod->getSoldier(type), nullptr, 0 /*nationality*/);
-			s->load(*i, _mod, save, _mod->getScriptGlobal());
+			Soldier* s = new Soldier(_mod->getSoldier(type), nullptr, 0 /*nationality*/);
+			s->load(soldierReader, _mod, save, _mod->getScriptGlobal());
 			s->setCraft(0);
-			if (const YAML::Node &craft = (*i)["craft"])
+			if (const auto& craftIdReader = soldierReader["craft"])
 			{
-				CraftId craftId = Craft::loadId(craft);
+				CraftId craftId = Craft::loadId(craftIdReader);
 				for (auto* xcraft : _crafts)
 				{
 					if (xcraft->getUniqueId() == craftId)
@@ -170,58 +167,56 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 		}
 	}
 
-	_items->load(node["items"], _mod);
+	_items->load(reader["items"], _mod);
 
-	_scientists = node["scientists"].as<int>(_scientists);
-	_engineers = node["engineers"].as<int>(_engineers);
-	_inBattlescape = node["inBattlescape"].as<bool>(_inBattlescape);
+	reader.tryRead("scientists", _scientists);
+	reader.tryRead("engineers", _engineers);
+	reader.tryRead("inBattlescape", _inBattlescape);
 
-	for (YAML::const_iterator i = node["transfers"].begin(); i != node["transfers"].end(); ++i)
+	for (const auto& transfersReader : reader["transfers"].children())
 	{
-		int hours = (*i)["hours"].as<int>();
+		int hours = transfersReader["hours"].readVal<int>();
 		Transfer *t = new Transfer(hours);
-		if (t->load(*i, this, _mod, save))
+		if (t->load(transfersReader, this, _mod, save))
 		{
 			_transfers.push_back(t);
 		}
 	}
-
-	for (YAML::const_iterator i = node["research"].begin(); i != node["research"].end(); ++i)
+	for (const auto& researchReader : reader["research"].children())
 	{
-		std::string research = (*i)["project"].as<std::string>();
+		std::string research = researchReader["project"].readVal<std::string>();
 		if (_mod->getResearch(research))
 		{
 			ResearchProject *r = new ResearchProject(_mod->getResearch(research));
-			r->load(*i);
+			r->load(researchReader);
 			_research.push_back(r);
 		}
 		else
 		{
-			_scientists += (*i)["assigned"].as<int>(0);
+			_scientists += researchReader["assigned"].readVal(0);
 			Log(LOG_ERROR) << "Failed to load research " << research;
 		}
 	}
-
-	for (YAML::const_iterator i = node["productions"].begin(); i != node["productions"].end(); ++i)
+	for (const auto& productionReader : reader["productions"].children())
 	{
-		std::string item = (*i)["item"].as<std::string>();
+		std::string item = productionReader["item"].readVal<std::string>();
 		if (_mod->getManufacture(item))
 		{
 			Production *p = new Production(_mod->getManufacture(item), 0);
-			p->load(*i);
+			p->load(productionReader);
 			_productions.push_back(p);
 		}
 		else
 		{
-			_engineers += (*i)["assigned"].as<int>(0);
+			_engineers += productionReader["assigned"].readVal(0);
 			Log(LOG_ERROR) << "Failed to load manufacture " << item;
 		}
 	}
 
-	_retaliationTarget = node["retaliationTarget"].as<bool>(_retaliationTarget);
-	if (const YAML::Node& mission = node["retaliationMissionUniqueId"])
+	reader.tryRead("retaliationTarget", _retaliationTarget);
+	if (const auto& missionIdReader = reader["retaliationMissionUniqueId"])
 	{
-		int missionId = mission.as<int>();
+		int missionId = missionIdReader.readVal<int>();
 		for (auto* am : save->getAlienMissions())
 		{
 			if (am->getId() == missionId)
@@ -231,7 +226,7 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
 			}
 		}
 	}
-	_fakeUnderwater = node["fakeUnderwater"].as<bool>(_fakeUnderwater);
+	reader.tryRead("fakeUnderwater", _fakeUnderwater);
 
 	isOverlappingOrOverflowing(); // don't crash, just report in the log file...
 }
@@ -241,12 +236,12 @@ void Base::load(const YAML::Node &node, SavedGame *save, bool newGame, bool newB
  * @param node YAML node.
  * @param save Pointer to saved game.
  */
-void Base::finishLoading(const YAML::Node &node, SavedGame *save)
+void Base::finishLoading(const YAML::YamlNodeReader& reader, SavedGame *save)
 {
-	for (YAML::const_iterator i = node["crafts"].begin(); i != node["crafts"].end(); ++i)
+	for (const auto& craftsReader : reader["crafts"].children())
 	{
-		int id = (*i)["id"].as<int>();
-		std::string type = (*i)["type"].as<std::string>();
+		int id = craftsReader["id"].readVal<int>();
+		std::string type = craftsReader["type"].readVal<std::string>();
 		if (_mod->getCraft(type))
 		{
 			Craft *craft = 0;
@@ -260,7 +255,7 @@ void Base::finishLoading(const YAML::Node &node, SavedGame *save)
 			}
 			if (craft)
 			{
-				craft->finishLoading(*i, save);
+				craft->finishLoading(craftsReader, save);
 			}
 		}
 		else
@@ -359,45 +354,39 @@ bool Base::isOverlappingOrOverflowing()
  * Saves the base to a YAML file.
  * @return YAML node.
  */
-YAML::Node Base::save() const
+void Base::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node = Target::save();
-	for (const auto* fac : _facilities)
-	{
-		node["facilities"].push_back(fac->save());
-	}
-	for (const auto* soldier : _soldiers)
-	{
-		node["soldiers"].push_back(soldier->save(_mod->getScriptGlobal()));
-	}
-	for (const auto* xcraft : _crafts)
-	{
-		node["crafts"].push_back(xcraft->save(_mod->getScriptGlobal()));
-	}
-	node["items"] = _items->save();
-	node["scientists"] = _scientists;
-	node["engineers"] = _engineers;
+	writer.setAsMap();
+	Target::save(writer);
+	writer.write("facilities", _facilities,
+		[](YAML::YamlNodeWriter& vectorWriter, BaseFacility* f)
+		{ f->save(vectorWriter.write()); });
+	writer.write("soldiers", _soldiers,
+		[&](YAML::YamlNodeWriter& vectorWriter, Soldier* s)
+		{ s->save(vectorWriter.write(), _mod->getScriptGlobal()); });
+	writer.write("crafts", _crafts,
+		[&](YAML::YamlNodeWriter& vectorWriter, Craft* c)
+		{ c->save(vectorWriter.write(), _mod->getScriptGlobal()); });
+	_items->save(writer["items"]);
+	writer.write("scientists", _scientists);
+	writer.write("engineers", _engineers);
 	if (_inBattlescape)
-		node["inBattlescape"] = _inBattlescape;
-	for (const auto* transfer : _transfers)
-	{
-		node["transfers"].push_back(transfer->save(this, _mod));
-	}
-	for (const auto* proj : _research)
-	{
-		node["research"].push_back(proj->save());
-	}
-	for (const auto* prod : _productions)
-	{
-		node["productions"].push_back(prod->save());
-	}
+		writer.write("inBattlescape", _inBattlescape);
+	writer.write("transfers", _transfers,
+		[&](YAML::YamlNodeWriter& vectorWriter, Transfer* t)
+		{ t->save(vectorWriter.write(), this, _mod); });
+	writer.write("research", _research,
+		[](YAML::YamlNodeWriter& vectorWriter, ResearchProject* r)
+		{ r->save(vectorWriter.write()); });
+	writer.write("productions", _productions,
+		[](YAML::YamlNodeWriter& vectorWriter, Production* p)
+		{ p->save(vectorWriter.write()); });
 	if (_retaliationTarget)
-		node["retaliationTarget"] = _retaliationTarget;
+		writer.write("retaliationTarget", _retaliationTarget);
 	if (_retaliationMission)
-		node["retaliationMissionUniqueId"] = _retaliationMission->getId();
+		writer.write("retaliationMissionUniqueId", _retaliationMission->getId());
 	if (_fakeUnderwater)
-		node["fakeUnderwater"] = _fakeUnderwater;
-	return node;
+		writer.write("fakeUnderwater", _fakeUnderwater);
 }
 
 /**

@@ -78,33 +78,31 @@ void WeightedOptions::set(const std::string &id, size_t weight)
 }
 
 /**
- * Add the weighted options from a YAML::Node to a WeightedOptions.
+ * Read all the weighted options from a node reader and add them to the WeightedOptions.
  * The weight option list is not replaced, only values in @a nd will be added /
  * changed.
  * @param nd The YAML node (containing a map) with the new values.
  */
-void WeightedOptions::load(const YAML::Node &nd)
+void WeightedOptions::load(const YAML::YamlNodeReader& reader)
 {
-	for (YAML::const_iterator val = nd.begin(); val != nd.end(); ++val)
-	{
-		std::string id = val->first.as<std::string>();
-		size_t w = val->second.as<size_t>();
-		set(id, w);
-	}
+	for (const auto& option : reader.children())
+		set(option.readKey<std::string>(), option.readVal<size_t>());
 }
 
 /**
  * Send the WeightedOption contents to a YAML::Emitter.
  * @return YAML node.
  */
-YAML::Node WeightedOptions::save() const
+void WeightedOptions::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	for (const auto& pair : _choices)
+	if (_choices.empty()) // for compatibility reasons, we output null instead of empty map
 	{
-		node[pair.first] = pair.second;
+		writer.setValueNull();
+		return;
 	}
-	return node;
+	writer.setAsMap();
+	for (const auto& pair : _choices)
+		writer.write(writer.saveString(pair.first), pair.second);
 }
 
 /**

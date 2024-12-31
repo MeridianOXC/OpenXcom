@@ -19,51 +19,6 @@
 #include "RuleAlienMission.h"
 #include "../Savegame/WeightedOptions.h"
 
-namespace YAML
-{
-	template<>
-	struct convert<OpenXcom::MissionWave>
-	{
-		static Node encode(const OpenXcom::MissionWave& rhs)
-		{
-			Node node;
-			node["ufo"] = rhs.ufoType;
-			node["count"] = rhs.ufoCount;
-			node["trajectory"] = rhs.trajectory;
-			node["timer"] = rhs.spawnTimer;
-			node["objective"] = rhs.objective;
-			node["objectiveOnTheLandingSite"] = rhs.objectiveOnTheLandingSite;
-			node["objectiveOnXcomBase"] = rhs.objectiveOnXcomBase;
-			node["hunterKillerPercentage"] = rhs.hunterKillerPercentage;
-			node["huntMode"] = rhs.huntMode;
-			node["huntBehavior"] = rhs.huntBehavior;
-			node["escort"] = rhs.escort;
-			node["interruptPercentage"] = rhs.interruptPercentage;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::MissionWave& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-
-			rhs.ufoType = node["ufo"].as<std::string>();
-			rhs.ufoCount = node["count"].as<size_t>();
-			rhs.trajectory = node["trajectory"].as<std::string>();
-			rhs.spawnTimer = node["timer"].as<size_t>();
-			rhs.objective = node["objective"].as<bool>(false);
-			rhs.objectiveOnTheLandingSite = node["objectiveOnTheLandingSite"].as<bool>(false);
-			rhs.objectiveOnXcomBase = node["objectiveOnXcomBase"].as<bool>(false);
-			rhs.hunterKillerPercentage = node["hunterKillerPercentage"].as<int>(-1);
-			rhs.huntMode = node["huntMode"].as<int>(-1);
-			rhs.huntBehavior = node["huntBehavior"].as<int>(-1);
-			rhs.escort = node["escort"].as<bool>(false);
-			rhs.interruptPercentage = node["interruptPercentage"].as<int>(0);
-			return true;
-		}
-	};
-}
-
 namespace OpenXcom
 {
 
@@ -95,53 +50,51 @@ RuleAlienMission::~RuleAlienMission()
  * Loads the mission data from a YAML node.
  * @param node YAML node.
  */
-void RuleAlienMission::load(const YAML::Node &node)
+void RuleAlienMission::load(const YAML::YamlNodeReader& node)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);
 	}
 
-	_points = node["points"].as<int>(_points);
-	_waves = node["waves"].as< std::vector<MissionWave> >(_waves);
-	_objective = (MissionObjective)node["objective"].as<int>(_objective);
-	_spawnUfo = node["spawnUfo"].as<std::string>(_spawnUfo);
-	_skipScoutingPhase = node["skipScoutingPhase"].as<bool>(_skipScoutingPhase);
-	_spawnZone = node["spawnZone"].as<int>(_spawnZone);
-	_weights = node["missionWeights"].as< std::map<size_t, int> >(_weights);
-	_retaliationOdds = node["retaliationOdds"].as<int>(_retaliationOdds);
-	_endlessInfiltration = node["endlessInfiltration"].as<bool>(_endlessInfiltration);
-	_multiUfoRetaliation = node["multiUfoRetaliation"].as<bool>(_multiUfoRetaliation);
-	_multiUfoRetaliationExtra = node["multiUfoRetaliationExtra"].as<bool>(_multiUfoRetaliationExtra);
+	reader.tryRead("points", _points);
+	reader.tryRead("waves", _waves);
+	reader.tryRead("objective", _objective);
+	reader.tryRead("spawnUfo", _spawnUfo);
+	reader.tryRead("skipScoutingPhase", _skipScoutingPhase);
+	reader.tryRead("spawnZone", _spawnZone);
+	reader.tryRead("missionWeights", _weights);
+	reader.tryRead("retaliationOdds", _retaliationOdds);
+	reader.tryRead("endlessInfiltration", _endlessInfiltration);
+	reader.tryRead("multiUfoRetaliation", _multiUfoRetaliation);
+	reader.tryRead("multiUfoRetaliationExtra", _multiUfoRetaliationExtra);
 	if (_multiUfoRetaliationExtra)
 	{
 		// yes, I should have changed _multiUfoRetaliation to int instead, but I'm lazy
 		// I also don't want to break existing mods or handle it in a complicated way
 		_multiUfoRetaliation = true;
 	}
-	_ignoreBaseDefenses = node["ignoreBaseDefenses"].as<bool>(_ignoreBaseDefenses);
-	_despawnEvenIfTargeted = node["despawnEvenIfTargeted"].as<bool>(_despawnEvenIfTargeted);
-	_respawnUfoAfterSiteDespawn = node["respawnUfoAfterSiteDespawn"].as<bool>(_respawnUfoAfterSiteDespawn);
-	_showAlienBase = node["showAlienBase"].as<bool>(_showAlienBase);
-	_interruptResearch = node["interruptResearch"].as<std::string>(_interruptResearch);
-	_siteType = node["siteType"].as<std::string>(_siteType);
-	_operationType = (AlienMissionOperationType)node["operationType"].as<int>(_operationType);
-	_operationSpawnZone = node["operationSpawnZone"].as<int>(_operationSpawnZone);
-	_operationBaseType = node["operationBaseType"].as<std::string>(_operationBaseType);
-	_targetBaseOdds = node["targetBaseOdds"].as<int>(_targetBaseOdds);
+	reader.tryRead("ignoreBaseDefenses", _ignoreBaseDefenses);
+	reader.tryRead("despawnEvenIfTargeted", _despawnEvenIfTargeted);
+	reader.tryRead("respawnUfoAfterSiteDespawn", _respawnUfoAfterSiteDespawn);
+	reader.tryRead("showAlienBase", _showAlienBase);
+	reader.tryRead("interruptResearch", _interruptResearch);
+	reader.tryRead("siteType", _siteType);
+	reader.tryRead("operationType", _operationType);
+	reader.tryRead("operationSpawnZone", _operationSpawnZone);
+	reader.tryRead("operationBaseType", _operationBaseType);
+	reader.tryRead("targetBaseOdds", _targetBaseOdds);
 
-	if (const YAML::Node &regWeights = node["regionWeights"])
+	for (const auto& weights : reader["regionWeights"].children())
 	{
-		for (YAML::const_iterator nn = regWeights.begin(); nn != regWeights.end(); ++nn)
-		{
-			WeightedOptions *nw = new WeightedOptions();
-			nw->load(nn->second);
-			_regionWeights.push_back(std::make_pair(nn->first.as<size_t>(0), nw));
-		}
+		WeightedOptions* nw = new WeightedOptions();
+		nw->load(weights);
+		_regionWeights.push_back(std::make_pair(weights.readKey<size_t>(0), nw));
 	}
 
 	//Only allow full replacement of mission racial distribution.
-	if (const YAML::Node &weights = node["raceWeights"])
+	if (const auto& weights = reader["raceWeights"])
 	{
 		typedef std::map<size_t, WeightedOptions*> Associative;
 		typedef std::vector< std::pair<size_t, WeightedOptions*> > Linear;
@@ -154,21 +107,21 @@ void RuleAlienMission::load(const YAML::Node &node)
 		}
 
 		// Now go through the node contents and merge with existing data.
-		for (YAML::const_iterator nn = weights.begin(); nn != weights.end(); ++nn)
+		for (const auto& nn : weights.children())
 		{
-			size_t month = nn->first.as<size_t>();
+			size_t month = nn.readKey<size_t>();
 			Associative::iterator existing = assoc.find(month);
 			if (assoc.end() == existing)
 			{
 				// New entry, load and add it.
 				WeightedOptions *nw = new WeightedOptions();
-				nw->load(nn->second);
+				nw->load(nn);
 				assoc.insert(std::make_pair(month, nw));
 			}
 			else
 			{
 				// Existing entry, update it.
-				existing->second->load(nn->second);
+				existing->second->load(nn);
 			}
 		}
 
@@ -285,6 +238,26 @@ std::string RuleAlienMission::generateRegion(const size_t monthsPassed) const
 	while (monthsPassed < rc->first)
 		++rc;
 	return rc->second->choose();
+}
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, MissionWave* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryRead("ufo", val->ufoType);
+	reader.tryRead("count", val->ufoCount);
+	reader.tryRead("trajectory", val->trajectory);
+	reader.tryRead("timer", val->spawnTimer);
+	reader.readNode("objective", val->objective, false);
+	reader.readNode("objectiveOnTheLandingSite", val->objectiveOnTheLandingSite, false);
+	reader.readNode("objectiveOnXcomBase", val->objectiveOnXcomBase, false);
+	reader.readNode("hunterKillerPercentage", val->hunterKillerPercentage, -1);
+	reader.readNode("huntMode", val->huntMode, -1);
+	reader.readNode("huntBehavior", val->huntBehavior, -1);
+	reader.readNode("escort", val->escort, false);
+	reader.readNode("interruptPercentage", val->interruptPercentage, 0);
+
+	return true;
 }
 
 }

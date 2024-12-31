@@ -19,7 +19,7 @@
  */
 #include <string>
 #include <map>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "RuleCraft.h"
 #include "ModScript.h"
 
@@ -42,11 +42,11 @@ struct RuleUfoStats : RuleCraftStats
 		return *this;
 	}
 	/// Loads stats from YAML.
-	void load(const YAML::Node &node)
+	void load(const YAML::YamlNodeReader& reader)
 	{
-		(*(RuleCraftStats*)this).load(node);
-		craftCustomDeploy = node["craftCustomDeploy"].as<std::string>(craftCustomDeploy);
-		missionCustomDeploy = node["missionCustomDeploy"].as<std::string>(missionCustomDeploy);
+		(*(RuleCraftStats*)this).load(reader);
+		reader.tryRead("craftCustomDeploy", craftCustomDeploy);
+		reader.tryRead("missionCustomDeploy", missionCustomDeploy);
 	}
 
 	template<auto Stat, typename TBind>
@@ -101,7 +101,7 @@ public:
 	/// Cleans up the UFO ruleset.
 	~RuleUfo();
 	/// Loads UFO data from YAML.
-	void load(const YAML::Node& node, Mod *mod, const ModScript &parsers);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod, const ModScript &parsers);
 	/// Gets the UFO's type.
 	const std::string &getType() const;
 	/// Gets the UFO's size.

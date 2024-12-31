@@ -265,25 +265,32 @@ SDL_RWops *FileRecord::getRWopsReadAll() const
 std::unique_ptr<std::istream> FileRecord::getIStream() const
 {
 	if (zip != NULL) {
-		size_t size;
-		void *data = mz_zip_reader_extract_to_heap((mz_zip_archive *)zip, findex, &size, 0);
-		if (data == NULL) {
-			auto err = "FileRecord::getIStream(): failed to decompress " + fullpath + ": ";
-			err += mz_zip_get_error_string(mz_zip_get_last_error((mz_zip_archive *)zip));
-			Log(LOG_FATAL) << err;
-			throw Exception(err);
-		}
-		return std::unique_ptr<std::istream>(new StreamData(RawData{data, size, mz_free}));
+		return std::unique_ptr<std::istream>(new StreamData(getUnzippedData()));
 	} else {
 		return CrossPlatform::readFile(fullpath);
 	}
 }
 
-YAML::Node FileRecord::getYAML() const
+RawData FileRecord::getUnzippedData() const
+{
+	size_t size;
+	void* data = mz_zip_reader_extract_to_heap((mz_zip_archive*)zip, findex, &size, 0);
+	if (data == NULL)
+	{
+		auto err = "FileRecord::getIStream(): failed to decompress " + fullpath + ": ";
+		err += mz_zip_get_error_string(mz_zip_get_last_error((mz_zip_archive*)zip));
+		Log(LOG_FATAL) << err;
+		throw Exception(err);
+	}
+	return RawData(data, size, mz_free);
+}
+
+YAML::YamlRootNodeReader FileRecord::getYAML() const
 {
 	try
 	{
-		return YAML::Load(*getIStream());
+		RawData data = zip != NULL ? getUnzippedData() : CrossPlatform::readFileRaw(fullpath);
+		return YAML::YamlRootNodeReader(data, fullpath);
 	}
 	catch(...)
 	{
@@ -292,17 +299,14 @@ YAML::Node FileRecord::getYAML() const
 	}
 }
 
-std::vector<YAML::Node> FileRecord::getAllYAML() const
+std::vector<YAML::YamlNodeReader> FileRecord::getAllYAML() const
 {
-	try
-	{
-		return YAML::LoadAll(*getIStream());
-	}
-	catch(...)
-	{
-		Log(LOG_FATAL) << "Error loading file '" << fullpath << "'";
-		throw;
-	}
+	Log(LOG_FATAL) << "Error loading file '" << fullpath << "'";
+	throw Exception("getAllYAML(): Not implemented");
+	/*
+	The function would have to load a file, parse it, then emit each document child separately, and parse each child again.
+	This obviously doesn't make sense. Just use a normal getYAML() and handle multiple yaml documents accordingly
+	*/
 }
 
 
@@ -679,7 +683,7 @@ struct VFS {
 
 static std::unordered_map<std::string, ModRecord *> ModsAvailable;
 static std::unordered_set<VFSLayer *> MappedVFSLayers; // owned here so we can have some sense of their lifetime
-												       // only the layers that get dropped on FileMap::clear()
+													   // only the layers that get dropped on FileMap::clear()
 static std::vector<mz_zip_archive *> ZipContexts;	   // zip decompression contexts shared between layers that came from
 													   // the same .zip. this makes the whole thing very thread-unsafe
 static VFS TheVFS;
@@ -886,13 +890,13 @@ static void mapZippedMod(mz_zip_archive *zip, const std::string& zipfname, const
 		return;
 	}
 	auto modpath = concatOptionalPaths(zipfname, prefix);
-	auto doc = frec->getYAML();
-	if (!doc.IsMap()) {
+	const auto& reader = frec->getYAML();
+	if (!reader.isMap()) {
 		Log(LOG_WARNING) << log_ctx << "Bad metadata.yml found, skipping.";
 		return;
 	}
 	auto mrec = std::make_unique<ModRecord>(modpath);
-	mrec->modInfo.load(doc);
+	mrec->modInfo.load(reader);
 	auto mri = ModsAvailable.find(mrec->modInfo.getId());
 	if (mri != ModsAvailable.end()) {
 		Log(LOG_ERROR) << log_ctx << "modId " << mrec->modInfo.getId() << " already mapped in, skipping " << modpath;
@@ -1081,7 +1085,7 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 	};
 
 	std::string log_ctx = "scanModDir('" + dirname + "', '" + basename + "'): ";
- 	// first check for a .zip
+	// first check for a .zip
 	std::string fullname = dirname + basename + ".zip";
 	if (CrossPlatform::fileExists(fullname)) {
 		Log(LOG_VERBOSE) << log_ctx << "scanning zip " << fullname;
@@ -1137,13 +1141,13 @@ void scanModDir(const std::string& dirname, const std::string& basename, bool pr
 			Log(LOG_WARNING) << log_ctx << "No metadata.yml in " << mp_basename << ", skipping.";
 			continue;
 		}
-		auto doc = frec->getYAML();
-		if (!doc.IsMap()) {
+		const auto& reader = frec->getYAML();
+		if (!reader.isMap()) {
 			Log(LOG_WARNING) << log_ctx << "Bad metadata.yml " << mp_basename << ", skipping.";
 			return;
 		}
 		auto mrec = std::make_unique<ModRecord>(modpath);
-		mrec->modInfo.load(doc);
+		mrec->modInfo.load(reader);
 		auto mri = ModsAvailable.find(mrec->modInfo.getId());
 		if (mri != ModsAvailable.end()) {
 			Log(LOG_ERROR) << log_ctx << "modId " << mrec->modInfo.getId() << " already mapped in, skipping " << mp_basename;
@@ -1291,10 +1295,11 @@ SDL_RWops *getRWopsReadAll(const std::string &relativeFilePath)
 std::unique_ptr<std::istream> getIStream(const std::string &relativeFilePath) {
 	return at(relativeFilePath)->getIStream();
 }
-YAML::Node getYAML(const std::string &relativeFilePath) {
+YAML::YamlRootNodeReader getYAML(const std::string &relativeFilePath) {
 	return at(relativeFilePath)->getYAML();
 }
-std::vector<YAML::Node> getAllYAML(const std::string &relativeFilePath) {
+std::vector<YAML::YamlNodeReader> getAllYAML(const std::string& relativeFilePath)
+{
 	return at(relativeFilePath)->getAllYAML();
 }
 const std::vector<const FileRecord *> getSlice(const std::string &relativeFilePath) {

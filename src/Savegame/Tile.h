@@ -142,11 +142,11 @@ public:
 	/// Cleans up a tile.
 	~Tile();
 	/// Load the tile from yaml
-	void load(const YAML::Node &node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Load the tile from binary buffer in memory
 	void loadBinary(Uint8 *buffer, Tile::SerializationKey& serializationKey);
 	/// Saves the tile to yaml
-	YAML::Node save() const;
+	void save(YAML::YamlNodeWriter writer) const;
 	/// Saves the tile to binary
 	void saveBinary(Uint8** buffer) const;
 

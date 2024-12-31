@@ -46,4 +46,5 @@ ko:
   GLOBE_TEXTURE_10: "가라앉은 여객선 2"
   GLOBE_TEXTURE_11: "연구시설 2"
   GLOBE_TEXTURE_12: "마야 사원 2"
+  STR_LANDED: "착저"
   STR_SHOT_TYPE_AUTO: "자동사격 (x{0})"

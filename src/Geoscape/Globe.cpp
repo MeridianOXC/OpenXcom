@@ -1688,7 +1688,7 @@ void Globe::drawFlights()
 	// Draw the hunting UFO flight paths
 	for (auto* ufo : *_game->getSavedGame()->getUfos())
 	{
-		if ((ufo->isHunting() || _game->getSavedGame()->getDebugMode()) && ufo->getDetected() && ufo->getStatus() != Ufo::IGNORE_ME)
+		if (ufo->getDestination() && (ufo->isHunting() || _game->getSavedGame()->getDebugMode()) && ufo->getDetected() && ufo->getStatus() != Ufo::IGNORE_ME)
 		{
 			double lon1 = ufo->getLongitude();
 			double lon2 = ufo->getDestination()->getLongitude();

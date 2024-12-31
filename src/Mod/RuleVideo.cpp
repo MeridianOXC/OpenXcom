@@ -36,54 +36,47 @@ RuleVideo::~RuleVideo()
 {
 }
 
-static void _loadSlide(SlideshowSlide &slide, const YAML::Node &node)
+static void _loadSlide(SlideshowSlide &slide, const YAML::YamlNodeReader& reader)
 {
-	slide.imagePath = node["imagePath"].as<std::string>("");
-	slide.caption = node["caption"].as<std::string>("");
+	slide.imagePath = reader["imagePath"].readVal<std::string>("");
+	slide.caption = reader["caption"].readVal<std::string>("");
 
-	std::pair<int, int> size = node["captionSize"].as<std::pair<int, int> >(
+	std::pair<int, int> size = reader["captionSize"].readVal<std::pair<int, int> >(
 		std::pair<int, int>(Screen::ORIGINAL_WIDTH, Screen::ORIGINAL_HEIGHT));
 	slide.w = size.first;
 	slide.h = size.second;
 
-	std::pair<int, int> pos = node["captionPos"].as<std::pair<int, int> >(std::pair<int, int>(0, 0));
+	std::pair<int, int> pos = reader["captionPos"].readVal<std::pair<int, int> >(std::pair<int, int>(0, 0));
 	slide.x = pos.first;
 	slide.y = pos.second;
 
-	slide.color = node["captionColor"].as<int>(INT_MAX);
-	slide.transitionSeconds = node["transitionSeconds"].as<int>(0);
-	slide.align = (TextHAlign)node["captionAlign"].as<int>(ALIGN_LEFT);
-	slide.valign = (TextVAlign)node["captionVerticalAlign"].as<int>(ALIGN_TOP);
+	slide.color = reader["captionColor"].readVal<int>(INT_MAX);
+	slide.transitionSeconds = reader["transitionSeconds"].readVal<int>(0);
+	slide.align = reader["captionAlign"].readVal(ALIGN_LEFT);
+	slide.valign = reader["captionVerticalAlign"].readVal(ALIGN_TOP);
 }
 
-void RuleVideo::load(const YAML::Node &node)
+void RuleVideo::load(const YAML::YamlNodeReader& reader)
 {
-	_useUfoAudioSequence = node["useUfoAudioSequence"].as<bool>(false);
-	_winGame = node["winGame"].as<bool>(_winGame);
-	_loseGame = node["loseGame"].as<bool>(_loseGame);
+	_useUfoAudioSequence = reader["useUfoAudioSequence"].readVal(false);
+	reader.tryRead("winGame", _winGame);
+	reader.tryRead("loseGame", _loseGame);
 
-	if (const YAML::Node &videos = node["videos"])
+	for (const auto& video : reader["videos"].children())
+		_videos.push_back(video.readVal<std::string>());
+
+	for (const auto& track : reader["audioTracks"].children())
+		_audioTracks.push_back(track.readVal<std::string>());
+
+	if (const auto& slideshow = reader["slideshow"])
 	{
-		for (YAML::const_iterator i = videos.begin(); i != videos.end(); ++i)
-			_videos.push_back((*i).as<std::string>());
-	}
+		_slideshowHeader.musicId = slideshow["musicId"].readVal<std::string>("");
+		_slideshowHeader.transitionSeconds = slideshow["transitionSeconds"].readVal<int>(30);
 
-	if (const YAML::Node &tracks = node["audioTracks"])
-	{
-		for (YAML::const_iterator i = tracks.begin(); i != tracks.end(); ++i)
-			_audioTracks.push_back((*i).as<std::string>());
-	}
-
-	if (const YAML::Node &slideshow = node["slideshow"])
-	{
-		_slideshowHeader.musicId = slideshow["musicId"].as<std::string>("");
-		_slideshowHeader.transitionSeconds = slideshow["transitionSeconds"].as<int>(30);
-
-		const YAML::Node &slides = slideshow["slides"];
-		for (YAML::const_iterator i = slides.begin(); i != slides.end(); ++i)
+		for (const auto& slideReader : slideshow["slides"].children())
 		{
 			SlideshowSlide slide;
-			_loadSlide(slide, *i);
+			_loadSlide(slide, slideReader);
 			_slides.push_back(slide);
 		}
 	}

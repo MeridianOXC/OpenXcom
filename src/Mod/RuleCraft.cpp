@@ -73,19 +73,20 @@ RuleCraft::~RuleCraft()
  * @param modIndex A value that offsets the sounds and sprite values to avoid conflicts.
  * @param listOrder The list weight for this craft.
  */
-void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
+void RuleCraft::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &parsers)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);
 	}
 
 	//requires
-	mod->loadUnorderedNames(_type, _requires, node["requires"]);
-	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, node["requiresBuyBaseFunc"]);
-	_requiresBuyCountry = node["requiresBuyCountry"].as<std::string>(_requiresBuyCountry);
+	mod->loadUnorderedNames(_type, _requires, reader["requires"]);
+	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, reader["requiresBuyBaseFunc"]);
+	reader.tryRead("requiresBuyCountry", _requiresBuyCountry);
 
-	if (node["sprite"])
+	if (reader["sprite"])
 	{
 		// used in
 		// Surface set (baseOffset):
@@ -94,83 +95,81 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 		//   INTICON.PCK (0)
 		//
 		// Final index in surfaceset is `baseOffset + sprite + (sprite > 4 ? modOffset : 0)`
-		_sprite = mod->getOffset(node["sprite"].as<int>(_sprite), 4);
+		_sprite = mod->getOffset(reader["sprite"].readVal(_sprite), 4);
 	}
-	if (const YAML::Node &skinSprites = node["skinSprites"])
+	if (const auto& skinSprites = reader["skinSprites"])
 	{
 		_skinSprites.clear();
-		for (int i = 0; (size_t)i < skinSprites.size(); ++i)
+		for (const auto& skinSprite : skinSprites.children())
 		{
-			int tmp = mod->getOffset(skinSprites[i].as<int>(), 4);
+			int tmp = mod->getOffset(skinSprite.readVal<int>(), 4);
 			_skinSprites.push_back(tmp);
 		}
 	}
-	_stats.load(node);
-	if (node["marker"])
+	_stats.load(reader);
+	if (reader["marker"])
 	{
-		_marker = mod->getOffset(node["marker"].as<int>(_marker), 8);
+		_marker = mod->getOffset(reader["marker"].readVal(_marker), 8);
 	}
-	_weapons = node["weapons"].as<int>(_weapons);
-	_maxUnitsLimit = node["maxUnitsLimit"].as<int>(_maxUnitsLimit);
-	_pilots = node["pilots"].as<int>(_pilots);
-	_maxVehiclesAndLargeSoldiersLimit = node["maxHWPUnitsLimit"].as<int>(_maxVehiclesAndLargeSoldiersLimit);
-	_maxSmallSoldiers = node["maxSmallSoldiers"].as<int>(_maxSmallSoldiers);
-	_maxLargeSoldiers = node["maxLargeSoldiers"].as<int>(_maxLargeSoldiers);
-	_maxSmallVehicles = node["maxSmallVehicles"].as<int>(_maxSmallVehicles);
-	_maxLargeVehicles = node["maxLargeVehicles"].as<int>(_maxLargeVehicles);
-	_maxSmallUnits = node["maxSmallUnits"].as<int>(_maxSmallUnits);
-	_maxLargeUnits = node["maxLargeUnits"].as<int>(_maxLargeUnits);
-	_maxSoldiers = node["maxSoldiers"].as<int>(_maxSoldiers);
-	_maxVehicles = node["maxVehicles"].as<int>(_maxVehicles);
-	_monthlyBuyLimit = node["monthlyBuyLimit"].as<int>(_monthlyBuyLimit);
-	_costBuy = node["costBuy"].as<int>(_costBuy);
-	_costRent = node["costRent"].as<int>(_costRent);
-	_costSell = node["costSell"].as<int>(_costSell);
-	mod->loadName(_type, _refuelItemName, node["refuelItem"]);
-	_repairRate = node["repairRate"].as<int>(_repairRate);
-	_refuelRate = node["refuelRate"].as<int>(_refuelRate);
-	_transferTime = node["transferTime"].as<int>(_transferTime);
-	_score = node["score"].as<int>(_score);
-	if (const YAML::Node &terrain = node["battlescapeTerrainData"])
+	reader.tryRead("weapons", _weapons);
+	reader.tryRead("maxUnitsLimit", _maxUnitsLimit);
+	reader.tryRead("pilots", _pilots);
+	reader.tryRead("maxHWPUnitsLimit", _maxVehiclesAndLargeSoldiersLimit);
+	reader.tryRead("maxSmallSoldiers", _maxSmallSoldiers);
+	reader.tryRead("maxLargeSoldiers", _maxLargeSoldiers);
+	reader.tryRead("maxSmallVehicles", _maxSmallVehicles);
+	reader.tryRead("maxLargeVehicles", _maxLargeVehicles);
+	reader.tryRead("maxSmallUnits", _maxSmallUnits);
+	reader.tryRead("maxLargeUnits", _maxLargeUnits);
+	reader.tryRead("maxSoldiers", _maxSoldiers);
+	reader.tryRead("maxVehicles", _maxVehicles);
+	reader.tryRead("monthlyBuyLimit", _monthlyBuyLimit);
+	reader.tryRead("costBuy", _costBuy);
+	reader.tryRead("costRent", _costRent);
+	reader.tryRead("costSell", _costSell);
+	mod->loadName(_type, _refuelItemName, reader["refuelItem"]);
+	reader.tryRead("repairRate", _repairRate);
+	reader.tryRead("refuelRate", _refuelRate);
+	reader.tryRead("transferTime", _transferTime);
+	reader.tryRead("score", _score);
+	if (const auto& terrain = reader["battlescapeTerrainData"])
 	{
-		RuleTerrain *rule = new RuleTerrain(terrain["name"].as<std::string>());
+		RuleTerrain *rule = new RuleTerrain(terrain["name"].readVal<std::string>());
 		rule->load(terrain, mod);
 		_battlescapeTerrainData = rule;
 	}
-	if (const YAML::Node& craftInventoryTile = node["craftInventoryTile"])
-	{
-		_craftInventoryTile = craftInventoryTile.as<std::vector<int> >(_craftInventoryTile);
-	}
-	mod->loadUnorderedInts(_type, _groups, node["groups"]);
-	mod->loadUnorderedInts(_type, _allowedSoldierGroups, node["allowedSoldierGroups"]);
-	_onlyOneSoldierGroupAllowed = node["onlyOneSoldierGroupAllowed"].as<bool>(_onlyOneSoldierGroupAllowed);
-	_maxSkinIndex = node["maxSkinIndex"].as<int>(_maxSkinIndex);
-	_deployment = node["deployment"].as< RuleCraftDeployment >(_deployment);
-	_keepCraftAfterFailedMission = node["keepCraftAfterFailedMission"].as<bool>(_keepCraftAfterFailedMission);
-	_allowLanding = node["allowLanding"].as<bool>(_allowLanding);
-	_spacecraft = node["spacecraft"].as<bool>(_spacecraft);
-	_notifyWhenRefueled = node["notifyWhenRefueled"].as<bool>(_notifyWhenRefueled);
-	_autoPatrol = node["autoPatrol"].as<bool>(_autoPatrol);
-	_undetectable = node["undetectable"].as<bool>(_undetectable);
-	_listOrder = node["listOrder"].as<int>(_listOrder);
-	_maxAltitude = node["maxAltitude"].as<int>(_maxAltitude);
-	_defaultAltitude = node["defaultAltitude"].as<std::string>(_defaultAltitude);
+	reader.tryRead("craftInventoryTile", _craftInventoryTile);
+	mod->loadUnorderedInts(_type, _groups, reader["groups"]);
+	mod->loadUnorderedInts(_type, _allowedSoldierGroups, reader["allowedSoldierGroups"]);
+	reader.tryRead("onlyOneSoldierGroupAllowed", _onlyOneSoldierGroupAllowed);
+	reader.tryRead("maxSkinIndex", _maxSkinIndex);
+	reader.tryRead("deployment", _deployment);
+	reader.tryRead("keepCraftAfterFailedMission", _keepCraftAfterFailedMission);
+	reader.tryRead("allowLanding", _allowLanding);
+	reader.tryRead("spacecraft", _spacecraft);
+	reader.tryRead("notifyWhenRefueled", _notifyWhenRefueled);
+	reader.tryRead("autoPatrol", _autoPatrol);
+	reader.tryRead("undetectable", _undetectable);
+	reader.tryRead("listOrder", _listOrder);
+	reader.tryRead("maxAltitude", _maxAltitude);
+	reader.tryRead("defaultAltitude", _defaultAltitude);
 
-	if (const YAML::Node &types = node["weaponTypes"])
+	if (const auto& types = reader["weaponTypes"])
 	{
-		for (int i = 0; (size_t)i < types.size() &&  i < WeaponMax; ++i)
+		size_t max = std::min(types.childrenCount(), (size_t)WeaponMax);
+		for (size_t i = 0; i < max; ++i)
 		{
-			const YAML::Node t = types[i];
-			if (t.IsScalar())
+			const auto& type = types[i];
+			if (type.hasVal())
 			{
 				for (int j = 0; j < WeaponTypeMax; ++j)
-					_weaponTypes[i][j] = t.as<int>();
+					_weaponTypes[i][j] = type.readVal<int>();
 			}
-			else if (t.IsSequence() && t.size() > 0)
+			else if (type.isSeq())
 			{
-				for (int j = 0; (size_t)j < t.size() && j < WeaponTypeMax; ++j)
-					_weaponTypes[i][j] = t[j].as<int>();
-				for (int j = t.size(); j < WeaponTypeMax; ++j)
+				for (int j = 0; (size_t)j < type.childrenCount() && j < WeaponTypeMax; ++j)
+					_weaponTypes[i][j] = type[j].readVal<int>();
+				for (int j = type.childrenCount(); j < WeaponTypeMax; ++j)
 					_weaponTypes[i][j] = _weaponTypes[i][0];
 			}
 			else
@@ -179,27 +178,27 @@ void RuleCraft::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
 			}
 		}
 	}
-	if (const YAML::Node &str = node["weaponStrings"])
+	if (const auto& str = reader["weaponStrings"])
 	{
-		for (int i = 0; (size_t)i < str.size() &&  i < WeaponMax; ++i)
-			_weaponStrings[i] = str[i].as<std::string>();
+		for (int i = 0; (size_t)i < str.childrenCount() &&  i < WeaponMax; ++i)
+			_weaponStrings[i] = str[i].readVal<std::string>();
 	}
-	if (const YAML::Node &str = node["fixedWeapons"])
+	if (const auto& str = reader["fixedWeapons"])
 	{
-		for (int i = 0; (size_t)i < str.size() && i < WeaponMax; ++i)
-			_fixedWeaponNames[i] = str[i].as<std::string>();
+		for (int i = 0; (size_t)i < str.childrenCount() && i < WeaponMax; ++i)
+			_fixedWeaponNames[i] = str[i].readVal<std::string>();
 	}
-	_shieldRechargeAtBase = node["shieldRechargedAtBase"].as<int>(_shieldRechargeAtBase);
-	_mapVisible = node["mapVisible"].as<bool>(_mapVisible);
-	_forceShowInMonthlyCosts = node["forceShowInMonthlyCosts"].as<bool>(_forceShowInMonthlyCosts);
-	_useAllStartTiles = node["useAllStartTiles"].as<bool>(_useAllStartTiles);
-	_customPreview = node["customPreview"].as<std::string>(_customPreview);
+	reader.tryRead("shieldRechargedAtBase", _shieldRechargeAtBase);
+	reader.tryRead("mapVisible", _mapVisible);
+	reader.tryRead("forceShowInMonthlyCosts", _forceShowInMonthlyCosts);
+	reader.tryRead("useAllStartTiles", _useAllStartTiles);
+	reader.tryRead("customPreview", _customPreview);
 
-	mod->loadSoundOffset(_type, _selectSound, node["selectSound"], "GEO.CAT");
-	mod->loadSoundOffset(_type, _takeoffSound, node["takeoffSound"], "GEO.CAT");
+	mod->loadSoundOffset(_type, _selectSound, reader["selectSound"], "GEO.CAT");
+	mod->loadSoundOffset(_type, _takeoffSound, reader["takeoffSound"], "GEO.CAT");
 
-	_craftScripts.load(_type, node, parsers.craftScripts);
-	_scriptValues.load(node, parsers.getShared());
+	_craftScripts.load(_type, reader, parsers.craftScripts);
+	_scriptValues.load(reader, parsers.getShared());
 }
 
 /**

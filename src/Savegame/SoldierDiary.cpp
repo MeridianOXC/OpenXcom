@@ -59,121 +59,114 @@ SoldierDiary::~SoldierDiary()
  * Loads the diary from a YAML file.
  * @param node YAML node.
  */
-void SoldierDiary::load(const YAML::Node& node, const Mod *mod)
+void SoldierDiary::load(const YAML::YamlNodeReader& node, const Mod *mod)
 {
-	if (const YAML::Node &commendations = node["commendations"])
+	const auto& reader = node.useIndex();
+	for (const auto& commendation : reader["commendations"].children())
 	{
-		for (YAML::const_iterator i = commendations.begin(); i != commendations.end(); ++i)
+		SoldierCommendations* sc = new SoldierCommendations(commendation, mod);
+		if (sc->getRule())
 		{
-			SoldierCommendations *sc = new SoldierCommendations(*i, mod);
-			if (sc->getRule())
-			{
-				_commendations.push_back(sc);
-			}
-			else
-			{
-				// obsolete commendation, ignore it... otherwise it would cause a crash later
-				delete sc;
-			}
+			_commendations.push_back(sc);
+		}
+		else
+		{
+			// obsolete commendation, ignore it... otherwise it would cause a crash later
+			delete sc;
 		}
 	}
-	if (const YAML::Node &killList = node["killList"])
-	{
-		for (YAML::const_iterator i = killList.begin(); i != killList.end(); ++i)
-			_killList.push_back(new BattleUnitKills(*i));
-	}
-	_missionIdList = node["missionIdList"].as<std::vector<int> >(_missionIdList);
-	_daysWoundedTotal = node["daysWoundedTotal"].as<int>(_daysWoundedTotal);
-	_totalShotByFriendlyCounter = node["totalShotByFriendlyCounter"].as<int>(_totalShotByFriendlyCounter);
-	_totalShotFriendlyCounter = node["totalShotFriendlyCounter"].as<int>(_totalShotFriendlyCounter);
-	_loneSurvivorTotal = node["loneSurvivorTotal"].as<int>(_loneSurvivorTotal);
-	_monthsService = node["monthsService"].as<int>(_monthsService);
-	_unconciousTotal = node["unconciousTotal"].as<int>(_unconciousTotal);
-	_shotAtCounterTotal = node["shotAtCounterTotal"].as<int>(_shotAtCounterTotal);
-	_hitCounterTotal = node["hitCounterTotal"].as<int>(_hitCounterTotal);
-	_ironManTotal = node["ironManTotal"].as<int>(_ironManTotal);
-	_longDistanceHitCounterTotal = node["longDistanceHitCounterTotal"].as<int>(_longDistanceHitCounterTotal);
-	_lowAccuracyHitCounterTotal = node["lowAccuracyHitCounterTotal"].as<int>(_lowAccuracyHitCounterTotal);
-	_shotsFiredCounterTotal = node["shotsFiredCounterTotal"].as<int>(_shotsFiredCounterTotal);
-	_shotsLandedCounterTotal = node["shotsLandedCounterTotal"].as<int>(_shotsLandedCounterTotal);
-	_shotAtCounter10in1Mission = node["shotAtCounter10in1Mission"].as<int>(_shotAtCounter10in1Mission);
-	_hitCounter5in1Mission = node["hitCounter5in1Mission"].as<int>(_hitCounter5in1Mission);
-	_timesWoundedTotal = node["timesWoundedTotal"].as<int>(_timesWoundedTotal);
-	_KIA = node["killedInAction"].as<int>(_KIA);
-	_allAliensKilledTotal = node["allAliensKilledTotal"].as<int>(_allAliensKilledTotal);
-	_allAliensStunnedTotal = node["allAliensStunnedTotal"].as<int>(_allAliensStunnedTotal);
-	_woundsHealedTotal = node["woundsHealedTotal"].as<int>(_woundsHealedTotal);
-	_allUFOs = node["allUFOs"].as<int>(_allUFOs);
-	_allMissionTypes = node["allMissionTypes"].as<int>(_allMissionTypes);
-	_statGainTotal = node["statGainTotal"].as<int>(_statGainTotal);
-	_revivedUnitTotal = node["revivedUnitTotal"].as<int>(_revivedUnitTotal);
-	_revivedSoldierTotal = node["revivedSoldierTotal"].as<int>(_revivedSoldierTotal);
-	_revivedHostileTotal = node["revivedHostileTotal"].as<int>(_revivedHostileTotal);
-	_revivedNeutralTotal = node["revivedNeutralTotal"].as<int>(_revivedNeutralTotal);
-	_wholeMedikitTotal = node["wholeMedikitTotal"].as<int>(_wholeMedikitTotal);
-	_braveryGainTotal = node["braveryGainTotal"].as<int>(_braveryGainTotal);
-	_bestOfRank = node["bestOfRank"].as<int>(_bestOfRank);
-	_MIA = node["missingInAction"].as<int>(_MIA);
-	_bestSoldier = node["bestSoldier"].as<bool>(_bestSoldier);
-	_martyrKillsTotal = node["martyrKillsTotal"].as<int>(_martyrKillsTotal);
-	_postMortemKills = node["postMortemKills"].as<int>(_postMortemKills);
-	_globeTrotter = node["globeTrotter"].as<bool>(_globeTrotter);
-	_slaveKillsTotal = node["slaveKillsTotal"].as<int>(_slaveKillsTotal);
+	for (const auto& battleUnitKillReader : reader["killList"].children())
+		_killList.push_back(new BattleUnitKills(battleUnitKillReader));
+	reader.tryRead("missionIdList", _missionIdList);
+	reader.tryRead("daysWoundedTotal", _daysWoundedTotal);
+	reader.tryRead("totalShotByFriendlyCounter", _totalShotByFriendlyCounter);
+	reader.tryRead("totalShotFriendlyCounter", _totalShotFriendlyCounter);
+	reader.tryRead("loneSurvivorTotal", _loneSurvivorTotal);
+	reader.tryRead("monthsService", _monthsService);
+	reader.tryRead("unconciousTotal", _unconciousTotal);
+	reader.tryRead("shotAtCounterTotal", _shotAtCounterTotal);
+	reader.tryRead("hitCounterTotal", _hitCounterTotal);
+	reader.tryRead("ironManTotal", _ironManTotal);
+	reader.tryRead("longDistanceHitCounterTotal", _longDistanceHitCounterTotal);
+	reader.tryRead("lowAccuracyHitCounterTotal", _lowAccuracyHitCounterTotal);
+	reader.tryRead("shotsFiredCounterTotal", _shotsFiredCounterTotal);
+	reader.tryRead("shotsLandedCounterTotal", _shotsLandedCounterTotal);
+	reader.tryRead("shotAtCounter10in1Mission", _shotAtCounter10in1Mission);
+	reader.tryRead("hitCounter5in1Mission", _hitCounter5in1Mission);
+	reader.tryRead("timesWoundedTotal", _timesWoundedTotal);
+	reader.tryRead("killedInAction", _KIA);
+	reader.tryRead("allAliensKilledTotal", _allAliensKilledTotal);
+	reader.tryRead("allAliensStunnedTotal", _allAliensStunnedTotal);
+	reader.tryRead("woundsHealedTotal", _woundsHealedTotal);
+	reader.tryRead("allUFOs", _allUFOs);
+	reader.tryRead("allMissionTypes", _allMissionTypes);
+	reader.tryRead("statGainTotal", _statGainTotal);
+	reader.tryRead("revivedUnitTotal", _revivedUnitTotal);
+	reader.tryRead("revivedSoldierTotal", _revivedSoldierTotal);
+	reader.tryRead("revivedHostileTotal", _revivedHostileTotal);
+	reader.tryRead("revivedNeutralTotal", _revivedNeutralTotal);
+	reader.tryRead("wholeMedikitTotal", _wholeMedikitTotal);
+	reader.tryRead("braveryGainTotal", _braveryGainTotal);
+	reader.tryRead("bestOfRank", _bestOfRank);
+	reader.tryRead("missingInAction", _MIA);
+	reader.tryRead("bestSoldier", _bestSoldier);
+	reader.tryRead("martyrKillsTotal", _martyrKillsTotal);
+	reader.tryRead("postMortemKills", _postMortemKills);
+	reader.tryRead("globeTrotter", _globeTrotter);
+	reader.tryRead("slaveKillsTotal", _slaveKillsTotal);
 }
 
 /**
  * Saves the diary to a YAML file.
  * @return YAML node.
  */
-YAML::Node SoldierDiary::save() const
+void SoldierDiary::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	for (const auto* comm : _commendations)
-	{
-		node["commendations"].push_back(comm->save());
-	}
-	for (const auto* buk : _killList)
-	{
-		node["killList"].push_back(buk->save());
-	}
-	if (!_missionIdList.empty()) { YAML::Node t; t = _missionIdList; t.SetStyle(YAML::EmitterStyle::Flow); node["missionIdList"] = t; }
-	if (_daysWoundedTotal) node["daysWoundedTotal"] = _daysWoundedTotal;
-	if (_totalShotByFriendlyCounter) node["totalShotByFriendlyCounter"] = _totalShotByFriendlyCounter;
-	if (_totalShotFriendlyCounter) node["totalShotFriendlyCounter"] = _totalShotFriendlyCounter;
-	if (_loneSurvivorTotal) node["loneSurvivorTotal"] = _loneSurvivorTotal;
-	if (_monthsService) node["monthsService"] = _monthsService;
-	if (_unconciousTotal) node["unconciousTotal"] = _unconciousTotal;
-	if (_shotAtCounterTotal) node["shotAtCounterTotal"] = _shotAtCounterTotal;
-	if (_hitCounterTotal) node["hitCounterTotal"] = _hitCounterTotal;
-	if (_ironManTotal) node["ironManTotal"] = _ironManTotal;
-	if (_longDistanceHitCounterTotal) node["longDistanceHitCounterTotal"] = _longDistanceHitCounterTotal;
-	if (_lowAccuracyHitCounterTotal) node["lowAccuracyHitCounterTotal"] = _lowAccuracyHitCounterTotal;
-	if (_shotsFiredCounterTotal) node["shotsFiredCounterTotal"] = _shotsFiredCounterTotal;
-	if (_shotsLandedCounterTotal) node["shotsLandedCounterTotal"] = _shotsLandedCounterTotal;
-	if (_shotAtCounter10in1Mission) node["shotAtCounter10in1Mission"] = _shotAtCounter10in1Mission;
-	if (_hitCounter5in1Mission) node["hitCounter5in1Mission"] = _hitCounter5in1Mission;
-	if (_timesWoundedTotal) node["timesWoundedTotal"] = _timesWoundedTotal;
-	if (_KIA) node["killedInAction"] = _KIA;
-	if (_allAliensKilledTotal) node["allAliensKilledTotal"] = _allAliensKilledTotal;
-	if (_allAliensStunnedTotal) node["allAliensStunnedTotal"] = _allAliensStunnedTotal;
-	if (_woundsHealedTotal) node["woundsHealedTotal"] = _woundsHealedTotal;
-	if (_allUFOs) node["allUFOs"] = _allUFOs;
-	if (_allMissionTypes) node["allMissionTypes"] = _allMissionTypes;
-	if (_statGainTotal) node["statGainTotal"] =_statGainTotal;
-	if (_revivedUnitTotal) node["revivedUnitTotal"] = _revivedUnitTotal;
-	if (_revivedSoldierTotal) node["revivedSoldierTotal"] = _revivedSoldierTotal;
-	if (_revivedHostileTotal) node["revivedHostileTotal"] = _revivedHostileTotal;
-	if (_revivedNeutralTotal) node["revivedNeutralTotal"] = _revivedNeutralTotal;
-	if (_wholeMedikitTotal) node["wholeMedikitTotal"] = _wholeMedikitTotal;
-	if (_braveryGainTotal) node["braveryGainTotal"] = _braveryGainTotal;
-	if (_bestOfRank) node["bestOfRank"] = _bestOfRank;
-	if (_MIA) node["missingInAction"] = _MIA;
-	if (_bestSoldier) node["bestSoldier"] = _bestSoldier;
-	if (_martyrKillsTotal) node["martyrKillsTotal"] = _martyrKillsTotal;
-	if (_postMortemKills) node["postMortemKills"] = _postMortemKills;
-	if (_globeTrotter) node["globeTrotter"] = _globeTrotter;
-	if (_slaveKillsTotal) node["slaveKillsTotal"] = _slaveKillsTotal;
-	return node;
+	writer.setAsMap();
+	writer.write("commendations", _commendations,
+		[](YAML::YamlNodeWriter& w, SoldierCommendations* c)
+		{ c->save(w.write()); });
+	writer.write("killList", _killList,
+		[](YAML::YamlNodeWriter& w, BattleUnitKills* b)
+		{ b->save(w.write()); });
+	if (!_missionIdList.empty())
+		writer.write("missionIdList", _missionIdList).setFlowStyle();
+	if (_daysWoundedTotal) writer.write("daysWoundedTotal", _daysWoundedTotal);
+	if (_totalShotByFriendlyCounter) writer.write("totalShotByFriendlyCounter", _totalShotByFriendlyCounter);
+	if (_totalShotFriendlyCounter) writer.write("totalShotFriendlyCounter", _totalShotFriendlyCounter);
+	if (_loneSurvivorTotal) writer.write("loneSurvivorTotal", _loneSurvivorTotal);
+	if (_monthsService) writer.write("monthsService", _monthsService);
+	if (_unconciousTotal) writer.write("unconciousTotal", _unconciousTotal);
+	if (_shotAtCounterTotal) writer.write("shotAtCounterTotal", _shotAtCounterTotal);
+	if (_hitCounterTotal) writer.write("hitCounterTotal", _hitCounterTotal);
+	if (_ironManTotal) writer.write("ironManTotal", _ironManTotal);
+	if (_longDistanceHitCounterTotal) writer.write("longDistanceHitCounterTotal", _longDistanceHitCounterTotal);
+	if (_lowAccuracyHitCounterTotal) writer.write("lowAccuracyHitCounterTotal", _lowAccuracyHitCounterTotal);
+	if (_shotsFiredCounterTotal) writer.write("shotsFiredCounterTotal", _shotsFiredCounterTotal);
+	if (_shotsLandedCounterTotal) writer.write("shotsLandedCounterTotal", _shotsLandedCounterTotal);
+	if (_shotAtCounter10in1Mission) writer.write("shotAtCounter10in1Mission", _shotAtCounter10in1Mission);
+	if (_hitCounter5in1Mission) writer.write("hitCounter5in1Mission", _hitCounter5in1Mission);
+	if (_timesWoundedTotal) writer.write("timesWoundedTotal", _timesWoundedTotal);
+	if (_KIA) writer.write("killedInAction", _KIA);
+	if (_allAliensKilledTotal) writer.write("allAliensKilledTotal", _allAliensKilledTotal);
+	if (_allAliensStunnedTotal) writer.write("allAliensStunnedTotal", _allAliensStunnedTotal);
+	if (_woundsHealedTotal) writer.write("woundsHealedTotal", _woundsHealedTotal);
+	if (_allUFOs) writer.write("allUFOs", _allUFOs);
+	if (_allMissionTypes) writer.write("allMissionTypes", _allMissionTypes);
+	if (_statGainTotal) writer.write("statGainTotal", _statGainTotal);
+	if (_revivedUnitTotal) writer.write("revivedUnitTotal", _revivedUnitTotal);
+	if (_revivedSoldierTotal) writer.write("revivedSoldierTotal", _revivedSoldierTotal);
+	if (_revivedHostileTotal) writer.write("revivedHostileTotal", _revivedHostileTotal);
+	if (_revivedNeutralTotal) writer.write("revivedNeutralTotal", _revivedNeutralTotal);
+	if (_wholeMedikitTotal) writer.write("wholeMedikitTotal", _wholeMedikitTotal);
+	if (_braveryGainTotal) writer.write("braveryGainTotal", _braveryGainTotal);
+	if (_bestOfRank) writer.write("bestOfRank", _bestOfRank);
+	if (_MIA) writer.write("missingInAction", _MIA);
+	if (_bestSoldier) writer.write("bestSoldier", _bestSoldier);
+	if (_martyrKillsTotal) writer.write("martyrKillsTotal", _martyrKillsTotal);
+	if (_postMortemKills) writer.write("postMortemKills", _postMortemKills);
+	if (_globeTrotter) writer.write("globeTrotter", _globeTrotter);
+	if (_slaveKillsTotal) writer.write("slaveKillsTotal", _slaveKillsTotal);
 }
 
 /**
@@ -1289,9 +1282,9 @@ int SoldierDiary::getLootValueTotal(std::vector<MissionStatistics*> *missionStat
  * Initializes a new commendation entry from YAML.
  * @param node YAML node.
  */
-SoldierCommendations::SoldierCommendations(const YAML::Node &node, const Mod* mod)
+SoldierCommendations::SoldierCommendations(const YAML::YamlNodeReader& reader, const Mod* mod)
 {
-	load(node);
+	load(reader);
 	_rule = mod->getCommendation(_type, false); //TODO: during load we can load obsolete value, some else need cleanup
 }
 
@@ -1315,26 +1308,26 @@ SoldierCommendations::~SoldierCommendations()
  * Loads the commendation from a YAML file.
  * @param node YAML node.
  */
-void SoldierCommendations::load(const YAML::Node &node)
+void SoldierCommendations::load(const YAML::YamlNodeReader& reader)
 {
-	_type = node["commendationName"].as<std::string>(_type);
-	_noun = node["noun"].as<std::string>("noNoun");
-	_decorationLevel = node["decorationLevel"].as<int>(_decorationLevel);
-	_isNew = node["isNew"].as<bool>(false);
+	reader.tryRead("commendationName", _type);
+	reader.readNode<std::string>("noun", _noun, "noNoun");
+	reader.tryRead("decorationLevel", _decorationLevel);
+	reader.readNode("isNew", _isNew, false);
 }
 
 /**
  * Saves the commendation to a YAML file.
  * @return YAML node.
  */
-YAML::Node SoldierCommendations::save() const
+void SoldierCommendations::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
-	node["commendationName"] = _type;
-	if (_noun != "noNoun") node["noun"] = _noun;
-	node["decorationLevel"] = _decorationLevel;
-	return node;
+	writer.setAsMap();
+	writer.setFlowStyle();
+	writer.write("commendationName", _type);
+	if (_noun != "noNoun")
+		writer.write("noun", _noun);
+	writer.write("decorationLevel", _decorationLevel);
 }
 
 /**

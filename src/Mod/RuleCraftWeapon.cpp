@@ -48,18 +48,19 @@ RuleCraftWeapon::~RuleCraftWeapon()
  * @param node YAML node.
  * @param mod Mod for the craft weapon.
  */
-void RuleCraftWeapon::load(const YAML::Node &node, Mod *mod)
+void RuleCraftWeapon::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	if (node["stats"])
+	if (reader["stats"])
 	{
-		_stats.load(node["stats"]);
+		_stats.load(reader["stats"]);
 	}
-	if (node["sprite"])
+	if (reader["sprite"])
 	{
 		// used in
 		// Surface set (baseOffset):
@@ -67,27 +68,27 @@ void RuleCraftWeapon::load(const YAML::Node &node, Mod *mod)
 		//   INTICON.PCK (5)
 		//
 		// Final index in surfaceset is `baseOffset + sprite + (sprite > 5 ? modOffset : 0)`
-		_sprite = mod->getOffset(node["sprite"].as<int>(_sprite), 5);
+		_sprite = mod->getOffset(reader["sprite"].readVal(_sprite), 5);
 	}
-	mod->loadSoundOffset(_type, _sound, node["sound"], "GEO.CAT");
-	_damage = node["damage"].as<int>(_damage);
-	_shieldDamageModifier = node["shieldDamageModifier"].as<int>(_shieldDamageModifier);
-	_range = node["range"].as<int>(_range);
-	_accuracy = node["accuracy"].as<int>(_accuracy);
-	_reloadCautious = node["reloadCautious"].as<int>(_reloadCautious);
-	_reloadStandard = node["reloadStandard"].as<int>(_reloadStandard);
-	_reloadAggressive = node["reloadAggressive"].as<int>(_reloadAggressive);
-	_ammoMax = node["ammoMax"].as<int>(_ammoMax);
-	_rearmRate = node["rearmRate"].as<int>(_rearmRate);
-	_projectileType = (CraftWeaponProjectileType)node["projectileType"].as<int>(_projectileType);
-	_projectileSpeed = node["projectileSpeed"].as<int>(_projectileSpeed);
-	_launcherName = node["launcher"].as<std::string>(_launcherName);
-	_clipName = node["clip"].as<std::string>(_clipName);
-	_weaponType = node["weaponType"].as<int>(_weaponType);
-	_underwaterOnly = node["underwaterOnly"].as<bool>(_underwaterOnly);
-	_tractorBeamPower = node["tractorBeamPower"].as<int>(_tractorBeamPower);
-	_hidePediaInfo = node["hidePediaInfo"].as<bool>(_hidePediaInfo);
-	_statisticalBulletSaving = node["bulletSaving"].as<bool>(_statisticalBulletSaving);
+	mod->loadSoundOffset(_type, _sound, reader["sound"], "GEO.CAT");
+	reader.tryRead("damage", _damage);
+	reader.tryRead("shieldDamageModifier", _shieldDamageModifier);
+	reader.tryRead("range", _range);
+	reader.tryRead("accuracy", _accuracy);
+	reader.tryRead("reloadCautious", _reloadCautious);
+	reader.tryRead("reloadStandard", _reloadStandard);
+	reader.tryRead("reloadAggressive", _reloadAggressive);
+	reader.tryRead("ammoMax", _ammoMax);
+	reader.tryRead("rearmRate", _rearmRate);
+	reader.tryRead("projectileType", _projectileType);
+	reader.tryRead("projectileSpeed", _projectileSpeed);
+	reader.tryRead("launcher", _launcherName);
+	reader.tryRead("clip", _clipName);
+	reader.tryRead("weaponType", _weaponType);
+	reader.tryRead("underwaterOnly", _underwaterOnly);
+	reader.tryRead("tractorBeamPower", _tractorBeamPower);
+	reader.tryRead("hidePediaInfo", _hidePediaInfo);
+	reader.tryRead("bulletSaving", _statisticalBulletSaving);
 }
 
 

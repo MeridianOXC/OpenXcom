@@ -19,33 +19,6 @@
 #include "UfoTrajectory.h"
 #include "../Savegame/Ufo.h"
 
-namespace YAML
-{
-	template<>
-	struct convert<OpenXcom::TrajectoryWaypoint>
-	{
-		static Node encode(const OpenXcom::TrajectoryWaypoint& rhs)
-		{
-			Node node;
-			node.push_back(rhs.zone);
-			node.push_back(rhs.altitude);
-			node.push_back(rhs.speed);
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::TrajectoryWaypoint& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 3)
-				return false;
-
-			rhs.zone = node[0].as<int>();
-			rhs.altitude = node[1].as<int>();
-			rhs.speed = node[2].as<int>();
-			return true;
-		}
-	};
-}
-
 namespace OpenXcom
 {
 
@@ -60,15 +33,15 @@ UfoTrajectory::UfoTrajectory(const std::string &id) : _id(id), _groundTimer(5)
  * Only the fields contained in the node will be overwritten.
  * @param node The node containing the new values.
  */
-void UfoTrajectory::load(const YAML::Node &node)
+void UfoTrajectory::load(const YAML::YamlNodeReader& reader)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);
 	}
 
-	_groundTimer = node["groundTimer"].as<size_t>(_groundTimer);
-	_waypoints = node["waypoints"].as< std::vector<TrajectoryWaypoint> >(_waypoints);
+	reader.tryRead("groundTimer", _groundTimer);
+	reader.tryRead("waypoints", _waypoints);
 }
 
 /**
@@ -79,6 +52,16 @@ void UfoTrajectory::load(const YAML::Node &node)
 std::string UfoTrajectory::getAltitude(size_t wp) const
 {
 	return Ufo::ALTITUDE_STRING[_waypoints[wp].altitude];
+}
+
+// helper overloads for (de)serialization
+bool read(ryml::ConstNodeRef const& n, TrajectoryWaypoint* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	val->zone = reader[0].readVal<int>();
+	val->altitude = reader[1].readVal<int>();
+	val->speed = reader[2].readVal<int>();
+	return true;
 }
 
 }

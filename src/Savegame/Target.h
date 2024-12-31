@@ -19,7 +19,7 @@
  */
 #include <string>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -46,11 +46,11 @@ public:
 	/// Cleans up the target.
 	virtual ~Target();
 	/// Loads the target from YAML.
-	virtual void load(const YAML::Node& node);
+	virtual void load(const YAML::YamlNodeReader& reader);
 	/// Saves the target to YAML.
-	virtual YAML::Node save() const;
+	virtual void save(YAML::YamlNodeWriter writer) const;
 	/// Saves the target's ID to YAML.
-	virtual YAML::Node saveId() const;
+	virtual void saveId(YAML::YamlNodeWriter writer) const;
 	/// Gets the target's type.
 	virtual std::string getType() const = 0;
 	/// Gets the target's longitude.

@@ -19,7 +19,7 @@
  */
 #include <vector>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "RuleBaseFacilityFunctions.h"
 #include "ModScript.h"
 
@@ -114,27 +114,28 @@ struct RuleCraftStats
 		return s;
 	}
 	/// Loads stats from YAML.
-	void load(const YAML::Node &node)
+	void load(const YAML::YamlNodeReader& reader)
 	{
-		fuelMax = node["fuelMax"].as<int>(fuelMax);
-		damageMax = node["damageMax"].as<int>(damageMax);
-		speedMax = node["speedMax"].as<int>(speedMax);
-		accel = node["accel"].as<int>(accel);
-		radarRange = node["radarRange"].as<int>(radarRange);
-		radarChance = node["radarChance"].as<int>(radarChance);
-		sightRange = node["sightRange"].as<int>(sightRange);
-		hitBonus = node["hitBonus"].as<int>(hitBonus);
-		avoidBonus = node["avoidBonus"].as<int>(avoidBonus);
-		powerBonus = node["powerBonus"].as<int>(powerBonus);
-		armor = node["armor"].as<int>(armor);
-		shieldCapacity = node["shieldCapacity"].as<int>(shieldCapacity);
-		shieldRecharge = node["shieldRecharge"].as<int>(shieldRecharge);
-		shieldRechargeInGeoscape = node["shieldRechargeInGeoscape"].as<int>(shieldRechargeInGeoscape);
-		shieldBleedThrough = node["shieldBleedThrough"].as<int>(shieldBleedThrough);
-		soldiers = node["soldiers"].as<int>(soldiers);
-		vehicles = node["vehicles"].as<int>(vehicles);
-		maxItems = node["maxItems"].as<int>(maxItems);
-		maxStorageSpace = node["maxStorageSpace"].as<double>(maxStorageSpace);
+		//const auto& reader = r.useIndex();
+		reader.tryRead("fuelMax", fuelMax);
+		reader.tryRead("damageMax", damageMax);
+		reader.tryRead("speedMax", speedMax);
+		reader.tryRead("accel", accel);
+		reader.tryRead("radarRange", radarRange);
+		reader.tryRead("radarChance", radarChance);
+		reader.tryRead("sightRange", sightRange);
+		reader.tryRead("hitBonus", hitBonus);
+		reader.tryRead("avoidBonus", avoidBonus);
+		reader.tryRead("powerBonus", powerBonus);
+		reader.tryRead("armor", armor);
+		reader.tryRead("shieldCapacity", shieldCapacity);
+		reader.tryRead("shieldRecharge", shieldRecharge);
+		reader.tryRead("shieldRechargeInGeoscape", shieldRechargeInGeoscape);
+		reader.tryRead("shieldBleedThrough", shieldBleedThrough);
+		reader.tryRead("soldiers", soldiers);
+		reader.tryRead("vehicles", vehicles);
+		reader.tryRead("maxItems", maxItems);
+		reader.tryRead("maxStorageSpace", maxStorageSpace);
 	}
 
 	template<auto Stat, typename TBind>
@@ -233,7 +234,7 @@ public:
 	/// Cleans up the craft ruleset.
 	~RuleCraft();
 	/// Loads craft data from YAML.
-	void load(const YAML::Node& node, Mod *mod, const ModScript &parsers);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod, const ModScript &parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets the craft's type.

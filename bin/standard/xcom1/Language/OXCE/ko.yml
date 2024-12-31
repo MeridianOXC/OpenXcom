@@ -38,4 +38,5 @@ ko:
   GLOBE_TEXTURE_10: "숲/정글 3"
   GLOBE_TEXTURE_11: "숲/정글 4"
   GLOBE_TEXTURE_12: "극지 2"
+  STR_LANDED: "착륙"
   STR_SHOT_TYPE_AUTO: "자동사격 (x{0})"

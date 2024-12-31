@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "StatStringCondition.h"
 
 namespace OpenXcom
@@ -108,14 +108,14 @@ class StatString
 private:
 	std::string _stringToBeAddedIfAllConditionsAreMet;
 	std::vector<StatStringCondition*> _conditions;
-	static StatStringCondition *getCondition(const std::string &conditionName, const YAML::Node &node);
+	static StatStringCondition *getCondition(const std::string &conditionName, const YAML::YamlNodeReader& reader);
 public:
 	/// Creates a blank StatString ruleset.
 	StatString();
 	/// Cleans up the StatString ruleset.
 	virtual ~StatString();
 	/// Loads the StatString from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Get the conditions for this StatString.
 	const std::vector<StatStringCondition*> &getConditions() const;
 	/// Get the StatString string.

@@ -20,7 +20,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -61,7 +61,7 @@ public:
 	/// Creates default metadata for a mod at the specified path.
 	ModInfo(const std::string &path);
 	/// Loads the metadata from YAML.
-	void load(const YAML::Node &doc);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the path where this mod resides on disk.
 	const std::string &getPath() const;
 	/// Gets the name of this mod.

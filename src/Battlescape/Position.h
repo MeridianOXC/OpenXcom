@@ -17,9 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include <SDL_types.h>
 #include <cmath>
+#include <ostream>
 
 namespace OpenXcom
 {
@@ -154,32 +155,8 @@ struct LastPositions
 	Position before;
 };
 
-}
+// helper overloads for (de)serialization
+bool read(ryml::ConstNodeRef const& n, Position* val);
+void write(ryml::NodeRef* n, Position const& val);
 
-namespace YAML
-{
-	template<>
-	struct convert<OpenXcom::Position>
-	{
-		static Node encode(const OpenXcom::Position& rhs)
-		{
-			Node node;
-			node.SetStyle(EmitterStyle::Flow);
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::Position& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 3)
-				return false;
-
-			rhs.x = node[0].as<int>();
-			rhs.y = node[1].as<int>();
-			rhs.z = node[2].as<int>();
-			return true;
-		}
-	};
 }

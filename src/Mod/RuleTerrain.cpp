@@ -54,54 +54,55 @@ RuleTerrain::~RuleTerrain()
  * @param node YAML node.
  * @param mod Mod for the terrain.
  */
-void RuleTerrain::load(const YAML::Node &node, Mod *mod)
+void RuleTerrain::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	bool adding = node["addOnly"].as<bool>(false);
-	if (const YAML::Node &map = node["mapDataSets"])
+	bool adding = reader["addOnly"].readVal(false);
+	if (const auto& map = reader["mapDataSets"])
 	{
 		_mapDataSets.clear();
-		for (YAML::const_iterator i = map.begin(); i != map.end(); ++i)
+		for (const auto& mapDataSet : map.children())
 		{
-			_mapDataSets.push_back(mod->getMapDataSet(i->as<std::string>()));
+			_mapDataSets.push_back(mod->getMapDataSet(mapDataSet.readVal<std::string>()));
 		}
 	}
-	if (const YAML::Node &map = node["mapBlocks"])
+	if (const auto& map = reader["mapBlocks"])
 	{
 		if (!adding)
 		{
 			Collections::deleteAll(_mapBlocks);
 		}
-		for (YAML::const_iterator i = map.begin(); i != map.end(); ++i)
+		for (const auto& mapBlockReader : map.children())
 		{
-			MapBlock *mapBlock = new MapBlock((*i)["name"].as<std::string>());
-			mapBlock->load(*i);
+			MapBlock *mapBlock = new MapBlock(mapBlockReader["name"].readVal<std::string>());
+			mapBlock->load(mapBlockReader);
 			_mapBlocks.push_back(mapBlock);
 		}
 	}
 
-	_enviroEffects = node["enviroEffects"].as<std::string>(_enviroEffects);
-	mod->loadUnorderedNames(_name, _civilianTypes, node["civilianTypes"]);
-	mod->loadUnorderedNames(_name, _music, node["music"]);
-	if (node["depth"])
+	reader.tryRead("enviroEffects", _enviroEffects);
+	mod->loadUnorderedNames(_name, _civilianTypes, reader["civilianTypes"]);
+	mod->loadUnorderedNames(_name, _music, reader["music"]);
+	if (reader["depth"])
 	{
-		_minDepth = node["depth"][0].as<int>(_minDepth);
-		_maxDepth = node["depth"][1].as<int>(_maxDepth);
+		reader["depth"][0].tryReadVal(_minDepth);
+		reader["depth"][1].tryReadVal(_maxDepth);
 	}
-	mod->loadSoundOffset(_name, _ambience, node["ambience"], "BATTLE.CAT");
-	_ambientVolume = node["ambientVolume"].as<double>(_ambientVolume);
-	mod->loadSoundOffset(_name, _ambienceRandom, node["ambienceRandom"], "BATTLE.CAT");
-	if (node["ambienceRandomDelay"])
+	mod->loadSoundOffset(_name, _ambience, reader["ambience"], "BATTLE.CAT");
+	reader.tryRead("ambientVolume", _ambientVolume);
+	mod->loadSoundOffset(_name, _ambienceRandom, reader["ambienceRandom"], "BATTLE.CAT");
+	if (reader["ambienceRandomDelay"])
 	{
-		_minAmbienceRandomDelay = node["ambienceRandomDelay"][0].as<int>(_minAmbienceRandomDelay);
-		_maxAmbienceRandomDelay = node["ambienceRandomDelay"][1].as<int>(_maxAmbienceRandomDelay);
+		reader["ambienceRandomDelay"][0].tryReadVal(_minAmbienceRandomDelay);
+		reader["ambienceRandomDelay"][1].tryReadVal(_maxAmbienceRandomDelay);
 	}
-	_mapScript = node["script"].as<std::string>(_mapScript);
-	_mapScripts = node["mapScripts"].as<std::vector<std::string> >(_mapScripts);
+	reader.tryRead("script", _mapScript);
+	reader.tryRead("mapScripts", _mapScripts);
 }
 
 /**

@@ -526,7 +526,9 @@ void CraftArmorState::lstSoldiersClick(Action *action)
 			{
 				if (save->getMonthsPassed() != -1)
 				{
-					if (a->getStoreItem() == nullptr || _base->getStorageItems()->getItem(a->getStoreItem()) > 0)
+					if (a->getStoreItem() == nullptr ||
+						a->getStoreItem() == s->getArmor()->getStoreItem() ||
+						_base->getStorageItems()->getItem(a->getStoreItem()) > 0)
 					{
 						if (s->getArmor()->getStoreItem())
 						{

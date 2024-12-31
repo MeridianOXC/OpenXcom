@@ -20,7 +20,7 @@ ru:
   STR_EVASIVE_MANEUVERS: "УКЛОНЕНИЕ"
   STR_UFO_DESTROYED_BY_SPLASHDOWN: "НПО УНИЧТОЖЕН!"
   STR_UFO_SURVIVED_SPLASHDOWN: "НПО ПОТОПЛЕН!"
-  STR_UFO_HAS_LANDED: "НПО лег на дно. Место - {NEWLINE}{0}"
+  STR_UFO_HAS_LANDED: "НПО лег на дно.{NEWLINE}Место: {NEWLINE}{0}"
   GMGEO1: "Трек #1 в страт. режиме"
   GMGEO2: "Трек #2 в страт. режиме"
   GMGEO3: "Трек #3 в страт. режиме"

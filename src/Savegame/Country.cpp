@@ -52,46 +52,40 @@ Country::~Country()
  * Loads the country from a YAML file.
  * @param node YAML node.
  */
-void Country::load(const YAML::Node &node, const ScriptGlobal* shared)
+void Country::load(const YAML::YamlNodeReader& reader, const ScriptGlobal* shared)
 {
-	_funding = node["funding"].as< std::vector<int> >(_funding);
-	_activityXcom = node["activityXcom"].as< std::vector<int> >(_activityXcom);
-	_activityAlien = node["activityAlien"].as< std::vector<int> >(_activityAlien);
-	_pact = node["pact"].as<bool>(_pact);
-	_newPact = node["newPact"].as<bool>(_newPact);
-	_cancelPact = node["cancelPact"].as<bool>(_cancelPact);
+	reader.tryRead("funding", _funding);
+	reader.tryRead("activityXcom", _activityXcom);
+	reader.tryRead("activityAlien", _activityAlien);
+	reader.tryRead("pact", _pact);
+	reader.tryRead("newPact", _newPact);
+	reader.tryRead("cancelPact", _cancelPact);
 
-	_scriptValues.load(node, shared);
+	_scriptValues.load(reader, shared);
 }
 
 /**
  * Saves the country to a YAML file.
  * @return YAML node.
  */
-YAML::Node Country::save(const ScriptGlobal* shared) const
+void Country::save(YAML::YamlNodeWriter writer, const ScriptGlobal* shared) const
 {
-	YAML::Node node;
-	node["type"] = _rules->getType();
-	node["funding"] = _funding;
-	node["activityXcom"] = _activityXcom;
-	node["activityAlien"] = _activityAlien;
+	writer.setAsMap();
+	writer.write("type", _rules->getType());
+	writer.write("funding", _funding);
+	writer.write("activityXcom", _activityXcom);
+	writer.write("activityAlien", _activityAlien);
 	if (_pact)
 	{
-		node["pact"] = _pact;
+		writer.write("pact", _pact);
 		if (_cancelPact)
-		{
-			node["cancelPact"] = _cancelPact;
-		}
+			writer.write("cancelPact", _cancelPact);
 	}
 	// Note: can have a _newPact flag, even if already has a _pact from earlier (when xcom liberates and aliens retake a country during the same month)
 	if (_newPact)
-	{
-		node["newPact"] = _newPact;
-	}
+		writer.write("newPact", _newPact);
 
-	_scriptValues.save(node, shared);
-
-	return node;
+	_scriptValues.save(writer, shared);
 }
 
 /**

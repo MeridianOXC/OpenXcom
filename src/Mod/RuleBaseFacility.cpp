@@ -62,87 +62,88 @@ RuleBaseFacility::~RuleBaseFacility()
  * @param mod Mod for the facility.
  * @param listOrder The list weight for this facility.
  */
-void RuleBaseFacility::load(const YAML::Node &node, Mod *mod)
+void RuleBaseFacility::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	mod->loadUnorderedNames(_type, _requires, node["requires"]);
+	mod->loadUnorderedNames(_type, _requires, reader["requires"]);
 
-	mod->loadBaseFunction(_type, _requiresBaseFunc, node["requiresBaseFunc"]);
-	mod->loadBaseFunction(_type, _provideBaseFunc, node["provideBaseFunc"]);
-	mod->loadBaseFunction(_type, _forbiddenBaseFunc, node["forbiddenBaseFunc"]);
+	mod->loadBaseFunction(_type, _requiresBaseFunc, reader["requiresBaseFunc"]);
+	mod->loadBaseFunction(_type, _provideBaseFunc, reader["provideBaseFunc"]);
+	mod->loadBaseFunction(_type, _forbiddenBaseFunc, reader["forbiddenBaseFunc"]);
 
-	mod->loadSpriteOffset(_type, _spriteShape, node["spriteShape"], "BASEBITS.PCK");
-	mod->loadSpriteOffset(_type, _spriteFacility, node["spriteFacility"], "BASEBITS.PCK");
+	mod->loadSpriteOffset(_type, _spriteShape, reader["spriteShape"], "BASEBITS.PCK");
+	mod->loadSpriteOffset(_type, _spriteFacility, reader["spriteFacility"], "BASEBITS.PCK");
 
-	_connectorsDisabled = node["connectorsDisabled"].as<bool>(_connectorsDisabled);
-	_fakeUnderwater = node["fakeUnderwater"].as<int>(_fakeUnderwater);
-	_missileAttraction = node["missileAttraction"].as<int>(_missileAttraction);
-	_lift = node["lift"].as<bool>(_lift);
-	_hyper = node["hyper"].as<bool>(_hyper);
-	_mind = node["mind"].as<bool>(_mind);
-	_grav = node["grav"].as<bool>(_grav);
-	_mindPower = node["mindPower"].as<int>(_mindPower);
-	if (node["size"])
+	reader.tryRead("connectorsDisabled", _connectorsDisabled);
+	reader.tryRead("fakeUnderwater", _fakeUnderwater);
+	reader.tryRead("missileAttraction", _missileAttraction);
+	reader.tryRead("lift", _lift);
+	reader.tryRead("hyper", _hyper);
+	reader.tryRead("mind", _mind);
+	reader.tryRead("grav", _grav);
+	reader.tryRead("mindPower", _mindPower);
+	if (reader["size"])
 	{
 		// backwards-compatibility
-		_sizeX = node["size"].as<int>(_sizeX);
-		_sizeY = node["size"].as<int>(_sizeY);
+		reader.tryRead("size", _sizeX);
+		reader.tryRead("size", _sizeY);
 	}
-	_sizeX = node["sizeX"].as<int>(_sizeX);
-	_sizeY = node["sizeY"].as<int>(_sizeY);
-	_buildCost = node["buildCost"].as<int>(_buildCost);
-	_refundValue = node["refundValue"].as<int>(_refundValue);
-	_buildTime = node["buildTime"].as<int>(_buildTime);
-	_monthlyCost = node["monthlyCost"].as<int>(_monthlyCost);
-	_storage = node["storage"].as<int>(_storage);
-	_personnel = node["personnel"].as<int>(_personnel);
-	_aliens = node["aliens"].as<int>(_aliens);
-	_crafts = node["crafts"].as<int>(_crafts);
-	_labs = node["labs"].as<int>(_labs);
-	_workshops = node["workshops"].as<int>(_workshops);
-	_psiLabs = node["psiLabs"].as<int>(_psiLabs);
+	reader.tryRead("sizeX", _sizeX);
+	reader.tryRead("sizeY", _sizeY);
+	reader.tryRead("buildCost", _buildCost);
+	reader.tryRead("refundValue", _refundValue);
+	reader.tryRead("buildTime", _buildTime);
+	reader.tryRead("monthlyCost", _monthlyCost);
+	reader.tryRead("storage", _storage);
+	reader.tryRead("personnel", _personnel);
+	reader.tryRead("aliens", _aliens);
+	reader.tryRead("crafts", _crafts);
+	reader.tryRead("labs", _labs);
+	reader.tryRead("workshops", _workshops);
+	reader.tryRead("psiLabs", _psiLabs);
 
-	_spriteEnabled = node["spriteEnabled"].as<bool>(_spriteEnabled);
+	reader.tryRead("spriteEnabled", _spriteEnabled);
 
-	_sightRange = node["sightRange"].as<int>(_sightRange);
-	_sightChance = node["sightChance"].as<int>(_sightChance);
-	_radarRange = node["radarRange"].as<int>(_radarRange);
-	_radarChance = node["radarChance"].as<int>(_radarChance);
-	_defense = node["defense"].as<int>(_defense);
-	_hitRatio = node["hitRatio"].as<int>(_hitRatio);
+	reader.tryRead("sightRange", _sightRange);
+	reader.tryRead("sightChance", _sightChance);
+	reader.tryRead("radarRange", _radarRange);
+	reader.tryRead("radarChance", _radarChance);
+	reader.tryRead("defense", _defense);
+	reader.tryRead("hitRatio", _hitRatio);
 
-	mod->loadSoundOffset(_type, _fireSound, node["fireSound"], "GEO.CAT");
-	mod->loadSoundOffset(_type, _hitSound, node["hitSound"], "GEO.CAT");
-	mod->loadSoundOffset(_type, _placeSound, node["placeSound"], "GEO.CAT");
+	mod->loadSoundOffset(_type, _fireSound, reader["fireSound"], "GEO.CAT");
+	mod->loadSoundOffset(_type, _hitSound, reader["hitSound"], "GEO.CAT");
+	mod->loadSoundOffset(_type, _placeSound, reader["placeSound"], "GEO.CAT");
 
-	_ammoMax = node["ammoMax"].as<int>(_ammoMax);
-	_rearmRate = node["rearmRate"].as<int>(_rearmRate);
-	_ammoNeeded = node["ammoNeeded"].as<int>(_ammoNeeded);
-	_ammoItemName = node["ammoItem"].as<std::string>(_ammoItemName);
-	_mapName = node["mapName"].as<std::string>(_mapName);
-	_listOrder = node["listOrder"].as<int>(_listOrder);
-	_trainingRooms = node["trainingRooms"].as<int>(_trainingRooms);
-	_maxAllowedPerBase = node["maxAllowedPerBase"].as<int>(_maxAllowedPerBase);
-	_manaRecoveryPerDay = node["manaRecoveryPerDay"].as<int>(_manaRecoveryPerDay);
-	_healthRecoveryPerDay = node["healthRecoveryPerDay"].as<int>(_healthRecoveryPerDay);
-	_sickBayAbsoluteBonus = node["sickBayAbsoluteBonus"].as<float>(_sickBayAbsoluteBonus);
-	_sickBayRelativeBonus = node["sickBayRelativeBonus"].as<float>(_sickBayRelativeBonus);
-	_prisonType = node["prisonType"].as<int>(_prisonType);
-	_rightClickActionType = node["rightClickActionType"].as<int>(_rightClickActionType);
+	reader.tryRead("ammoMax", _ammoMax);
+	reader.tryRead("rearmRate", _rearmRate);
+	reader.tryRead("ammoNeeded", _ammoNeeded);
+	reader.tryRead("ammoItem", _ammoItemName);
+	reader.tryRead("mapName", _mapName);
+	reader.tryRead("listOrder", _listOrder);
+	reader.tryRead("trainingRooms", _trainingRooms);
+	reader.tryRead("maxAllowedPerBase", _maxAllowedPerBase);
+	reader.tryRead("manaRecoveryPerDay", _manaRecoveryPerDay);
+	reader.tryRead("healthRecoveryPerDay", _healthRecoveryPerDay);
+	reader.tryRead("sickBayAbsoluteBonus", _sickBayAbsoluteBonus);
+	reader.tryRead("sickBayRelativeBonus", _sickBayRelativeBonus);
+	reader.tryRead("prisonType", _prisonType);
+	reader.tryRead("rightClickActionType", _rightClickActionType);
 
-	if (const YAML::Node &items = node["buildCostItems"])
+	if (const auto& items = reader["buildCostItems"])
 	{
-		for (YAML::const_iterator i = items.begin(); i != items.end(); ++i)
+		for (const auto& buildCostReader : items.children())
 		{
-			std::string id = i->first.as<std::string>();
+			std::string id = buildCostReader.readKey<std::string>();
 			std::pair<int, int> &cost = _buildCostItems[id];
 
-			cost.first = i->second["build"].as<int>(cost.first);
-			cost.second = i->second["refund"].as<int>(cost.second);
+			buildCostReader.tryRead("build", cost.first);
+			buildCostReader.tryRead("refund", cost.second);
 
 			if (cost.first <= 0 && cost.second <= 0)
 			{
@@ -152,28 +153,28 @@ void RuleBaseFacility::load(const YAML::Node &node, Mod *mod)
 	}
 
 	// Load any VerticalLevels into a map if we have them
-	if (node["verticalLevels"])
+	if (reader["verticalLevels"])
 	{
 		_verticalLevels.clear();
-		for (YAML::const_iterator i = node["verticalLevels"].begin(); i != node["verticalLevels"].end(); ++i)
+		for (const auto& levelReader : reader["verticalLevels"].children())
 		{
-			if ((*i)["type"])
+			if (levelReader["type"])
 			{
 				VerticalLevel level;
-				level.load(*i);
+				level.load(levelReader);
 				_verticalLevels.push_back(level);
 			}
 		}
 	}
 
-	mod->loadNames(_type, _leavesBehindOnSellNames, node["leavesBehindOnSell"]);
-	_removalTime = node["removalTime"].as<int>(_removalTime);
-	_canBeBuiltOver = node["canBeBuiltOver"].as<bool>(_canBeBuiltOver);
-	mod->loadUnorderedNames(_type, _buildOverFacilitiesNames, node["buildOverFacilities"]);
+	mod->loadNames(_type, _leavesBehindOnSellNames, reader["leavesBehindOnSell"]);
+	reader.tryRead("removalTime", _removalTime);
+	reader.tryRead("canBeBuiltOver", _canBeBuiltOver);
+	mod->loadUnorderedNames(_type, _buildOverFacilitiesNames, reader["buildOverFacilities"]);
 	std::sort(_buildOverFacilities.begin(), _buildOverFacilities.end());
 
-	_storageTiles = node["storageTiles"].as<std::vector<Position> >(_storageTiles);
-	_destroyedFacilityName = node["destroyedFacility"].as<std::string>(_destroyedFacilityName);
+	reader.tryRead("storageTiles", _storageTiles);
+	reader.tryRead("destroyedFacility", _destroyedFacilityName);
 }
 
 /**

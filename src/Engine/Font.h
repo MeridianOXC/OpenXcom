@@ -21,7 +21,7 @@
 #include <vector>
 #include <utility>
 #include <SDL.h>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "Unicode.h"
 
 #include "Surface.h"
@@ -62,7 +62,7 @@ public:
 	/// Cleans up the font.
 	~Font();
 	/// Loads the font from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Generate the terminal font.
 	void loadTerminal();
 	/// Gets a particular character from the font, with its real size.

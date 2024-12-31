@@ -9,11 +9,10 @@ The dependencies you require are following:
 - SDL_mixer (libsdl-mixer1.2)
 - SDL_gfx (libsdl-gfx1.2), version 2.0.22 or later
 - SDL_image (libsdl-image1.2)
-- yaml-cpp, version 0.5 or later
 
 We recommend using [Homebrew](https://brew.sh) to facilitate this.  With a working brew utility installed, run the following:
 ```
-$ brew install cmake yaml-cpp --with-static-lib sdl sdl_gfx sdl_image sdl_mixer --with-flac --with-libmikmod --with-libvorbis --with-static-lib
+$ brew install cmake sdl sdl_gfx sdl_image sdl_mixer --with-flac --with-libmikmod --with-libvorbis --with-static-lib
 ```
 This should install all of these necessary dependencies to their appropriate place under /usr/local.
 

@@ -45,25 +45,25 @@ RuleCountry::~RuleCountry()
  * Loads the country type from a YAML file.
  * @param node YAML node.
  */
-void RuleCountry::load(const YAML::Node &node, const ModScript& parsers, Mod* mod)
+void RuleCountry::load(const YAML::YamlNodeReader& reader, const ModScript& parsers, Mod* mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, parsers, mod);
 	}
 
-	_signedPactEventName = node["signedPactEvent"].as<std::string>(_signedPactEventName);
-	_rejoinedXcomEventName = node["rejoinedXcomEvent"].as<std::string>(_rejoinedXcomEventName);
-	_fundingBase = node["fundingBase"].as<int>(_fundingBase);
-	_fundingCap = node["fundingCap"].as<int>(_fundingCap);
-	if (node["labelLon"])
-		_labelLon = Deg2Rad(node["labelLon"].as<double>());
-	if (node["labelLat"])
-		_labelLat = Deg2Rad(node["labelLat"].as<double>());
-	_labelColor = node["labelColor"].as<int>(_labelColor);
-	_zoomLevel = node["zoomLevel"].as<int>(_zoomLevel);
+	reader.tryRead("signedPactEvent", _signedPactEventName);
+	reader.tryRead("rejoinedXcomEvent", _rejoinedXcomEventName);
+	reader.tryRead("fundingBase", _fundingBase);
+	reader.tryRead("fundingCap", _fundingCap);
+	if (reader["labelLon"])
+		_labelLon = Deg2Rad(reader["labelLon"].readVal<double>());
+	if (reader["labelLat"])
+		_labelLat = Deg2Rad(reader["labelLat"].readVal<double>());
+	reader.tryRead("labelColor", _labelColor);
+	reader.tryRead("zoomLevel", _zoomLevel);
 	std::vector< std::vector<double> > areas;
-	areas = node["areas"].as< std::vector< std::vector<double> > >(areas);
+	reader.tryRead("areas", areas);
 	for (size_t i = 0; i != areas.size(); ++i)
 	{
 		_lonMin.push_back(Deg2Rad(areas[i][0]));
@@ -75,11 +75,11 @@ void RuleCountry::load(const YAML::Node &node, const ModScript& parsers, Mod* mo
 			std::swap(_latMin.back(), _latMax.back());
 	}
 
-	mod->loadBaseFunction(_type, _provideBaseFunc, node["provideBaseFunc"]);
-	mod->loadBaseFunction(_type, _forbiddenBaseFunc, node["forbiddenBaseFunc"]);
+	mod->loadBaseFunction(_type, _provideBaseFunc, reader["provideBaseFunc"]);
+	mod->loadBaseFunction(_type, _forbiddenBaseFunc, reader["forbiddenBaseFunc"]);
 
-	_countryScripts.load(_type, node, parsers.countryScripts);
-	_scriptValues.load(node, parsers.getShared());
+	_countryScripts.load(_type, reader, parsers.countryScripts);
+	_scriptValues.load(reader, parsers.getShared());
 }
 
 /**

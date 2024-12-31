@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "GameTime.h"
 
 namespace OpenXcom
@@ -40,9 +40,9 @@ public:
 	/// Cleans up the death.
 	~SoldierDeath();
 	/// Loads the death from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Saves the death to YAML.
-	YAML::Node save() const;
+	void save(YAML::YamlNodeWriter writer) const;
 	/// Gets the death time.
 	const GameTime *getTime() const;
 	/// Gets the death cause.
