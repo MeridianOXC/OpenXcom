@@ -19,7 +19,7 @@
 #include "NewBattleState.h"
 #include <cmath>
 #include <algorithm>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "../Engine/Game.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleItem.h"
@@ -395,28 +395,28 @@ void NewBattleState::load(const std::string &filename)
 	{
 		try
 		{
-			YAML::Node doc = YAML::Load(*CrossPlatform::readFile(s));
-			_cbxMission->setSelected(std::min(doc["mission"].as<size_t>(0), _missionTypes.size() - 1));
+			YAML::YamlRootNodeReader cfgReader(s);
+			_cbxMission->setSelected(std::min(cfgReader["mission"].readVal<size_t>(0), _missionTypes.size() - 1));
 			cbxMissionChange(0);
-			_cbxCraft->setSelected(std::min(doc["craft"].as<size_t>(0), _crafts.size() - 1));
-			_slrDarkness->setValue(doc["darkness"].as<size_t>(0));
-			_cbxTerrain->setSelected(std::min(doc["terrain"].as<size_t>(0), _terrainTypes.size() - 1));
+			_cbxCraft->setSelected(std::min(cfgReader["craft"].readVal<size_t>(0), _crafts.size() - 1));
+			_slrDarkness->setValue(cfgReader["darkness"].readVal<size_t>(0));
+			_cbxTerrain->setSelected(std::min(cfgReader["terrain"].readVal<size_t>(0), _terrainTypes.size() - 1));
 			cbxTerrainChange(0);
 			{
-				_selectedGlobeTexture = std::min(doc["globeTexture"].as<size_t>(0), _globeTextures.size() - 1);
+				_selectedGlobeTexture = std::min(cfgReader["globeTexture"].readVal<size_t>(0), _globeTextures.size() - 1);
 				_btnGlobeTexture->setText(tr(_globeTextures[_selectedGlobeTexture]));
 			}
-			_cbxAlienRace->setSelected(std::min(doc["alienRace"].as<size_t>(0), _alienRaces.size() - 1));
-			_cbxDifficulty->setSelected(doc["difficulty"].as<size_t>(0));
-			_slrAlienTech->setValue(doc["alienTech"].as<size_t>(0));
+			_cbxAlienRace->setSelected(std::min(cfgReader["alienRace"].readVal<size_t>(0), _alienRaces.size() - 1));
+			_cbxDifficulty->setSelected(cfgReader["difficulty"].readVal<size_t>(0));
+			_slrAlienTech->setValue(cfgReader["alienTech"].readVal<size_t>(0));
 
-			if (doc["base"])
+			if (cfgReader["base"])
 			{
 				const Mod *mod = _game->getMod();
 				SavedGame *save = new SavedGame();
 
 				Base *base = new Base(mod);
-				base->load(doc["base"], save, false);
+				base->load(cfgReader["base"], save, false);
 				save->getBases()->push_back(base);
 
 				// Add research
@@ -462,12 +462,12 @@ void NewBattleState::load(const std::string &filename)
 		}
 	}
 
-	const YAML::Node& starter = _game->getMod()->getDefaultStartingBase();
-	if (const YAML::Node& globalTemplates = starter["globalTemplates"])
+	YAML::YamlRootNodeReader starterBaseReader(_game->getMod()->getDefaultStartingBase(), "(starting base template)");
+	if (const auto& globalTemplates = starterBaseReader["globalTemplates"])
 	{
 		_game->getSavedGame()->loadTemplates(globalTemplates, _game->getMod());
 	}
-	if (const YAML::Node& ufopediaRuleStatus = starter["ufopediaRuleStatus"])
+	if (const auto& ufopediaRuleStatus = starterBaseReader["ufopediaRuleStatus"])
 	{
 		_game->getSavedGame()->loadUfopediaRuleStatus(ufopediaRuleStatus);
 	}
@@ -480,21 +480,20 @@ void NewBattleState::load(const std::string &filename)
  */
 void NewBattleState::save(const std::string &filename)
 {
-	YAML::Emitter out;
-	YAML::Node node;
-	node["mission"] = _cbxMission->getSelected();
-	node["craft"] = _cbxCraft->getSelected();
-	node["darkness"] = _slrDarkness->getValue();
-	node["terrain"] = _cbxTerrain->getSelected();
-	node["globeTexture"] = _selectedGlobeTexture;
-	node["alienRace"] = _cbxAlienRace->getSelected();
-	node["difficulty"] = _cbxDifficulty->getSelected();
-	node["alienTech"] = _slrAlienTech->getValue();
-	node["base"] = _game->getSavedGame()->getBases()->front()->save();
-	out << node;
+	YAML::YamlRootNodeWriter writer;
+	writer.setAsMap();
+	writer.write("mission", _cbxMission->getSelected());
+	writer.write("craft", _cbxCraft->getSelected());
+	writer.write("darkness", _slrDarkness->getValue());
+	writer.write("terrain", _cbxTerrain->getSelected());
+	writer.write("globeTexture", _selectedGlobeTexture);
+	writer.write("alienRace", _cbxAlienRace->getSelected());
+	writer.write("difficulty", _cbxDifficulty->getSelected());
+	writer.write("alienTech", _slrAlienTech->getValue());
+	_game->getSavedGame()->getBases()->front()->save(writer["base"]);
 
 	std::string filepath = Options::getMasterUserFolder() + filename + ".cfg";
-	if (!CrossPlatform::writeFile(filepath, out.c_str()))
+	if (!CrossPlatform::writeFile(filepath, writer.emit().yaml))
 	{
 		Log(LOG_WARNING) << "Failed to save " << filepath;
 		return;
@@ -510,8 +509,8 @@ void NewBattleState::initSave()
 	const Mod *mod = _game->getMod();
 	SavedGame *save = new SavedGame();
 	Base *base = new Base(mod);
-	const YAML::Node &starter = _game->getMod()->getDefaultStartingBase();
-	base->load(starter, save, true, true);
+	YAML::YamlRootNodeReader startingBaseReader(_game->getMod()->getDefaultStartingBase(), "(starting base template)");
+	base->load(startingBaseReader, save, true, true);
 	save->getBases()->push_back(base);
 
 	// Kill everything we don't want in this base

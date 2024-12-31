@@ -69,75 +69,76 @@ RuleSoldier::~RuleSoldier()
  * @param node YAML node.
  * @param mod Mod for the unit.
  */
-void RuleSoldier::load(const YAML::Node &node, Mod *mod, const ModScript &parsers)
+void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &parsers)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod, parsers);
 	}
 
 	//requires
-	mod->loadUnorderedNames(_type, _requires, node["requires"]);
-	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, node["requiresBuyBaseFunc"]);
-	_requiresBuyCountry = node["requiresBuyCountry"].as<std::string>(_requiresBuyCountry);
+	mod->loadUnorderedNames(_type, _requires, reader["requires"]);
+	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, reader["requiresBuyBaseFunc"]);
+	reader.tryRead("requiresBuyCountry", _requiresBuyCountry);
 
 
-	_minStats.merge(node["minStats"].as<UnitStats>(_minStats));
-	_maxStats.merge(node["maxStats"].as<UnitStats>(_maxStats));
-	_statCaps.merge(node["statCaps"].as<UnitStats>(_statCaps));
-	if (node["trainingStatCaps"])
+	_minStats.merge(reader["minStats"].readVal(_minStats));
+	_maxStats.merge(reader["maxStats"].readVal(_maxStats));
+	_statCaps.merge(reader["statCaps"].readVal(_statCaps));
+	if (reader["trainingStatCaps"])
 	{
-		_trainingStatCaps.merge(node["trainingStatCaps"].as<UnitStats>(_trainingStatCaps));
+		_trainingStatCaps.merge(reader["trainingStatCaps"].readVal(_trainingStatCaps));
 	}
 	else
 	{
-		_trainingStatCaps.merge(node["statCaps"].as<UnitStats>(_trainingStatCaps));
+		_trainingStatCaps.merge(reader["statCaps"].readVal(_trainingStatCaps));
 	}
-	_dogfightExperience.merge(node["dogfightExperience"].as<UnitStats>(_dogfightExperience));
-	mod->loadName(_type, _armorName, node["armor"]);
-	_specWeaponName = node["specialWeapon"].as<std::string>(_specWeaponName);
-	_armorForAvatar = node["armorForAvatar"].as<std::string>(_armorForAvatar);
-	_avatarOffsetX = node["avatarOffsetX"].as<int>(_avatarOffsetX);
-	_avatarOffsetY = node["avatarOffsetY"].as<int>(_avatarOffsetY);
-	_flagOffset = node["flagOffset"].as<int>(_flagOffset);
-	_allowPromotion = node["allowPromotion"].as<bool>(_allowPromotion);
-	_allowPiloting = node["allowPiloting"].as<bool>(_allowPiloting);
-	_monthlyBuyLimit = node["monthlyBuyLimit"].as<int>(_monthlyBuyLimit);
-	_costBuy = node["costBuy"].as<int>(_costBuy);
-	_costSalary = node["costSalary"].as<int>(_costSalary);
-	_costSalarySquaddie = node["costSalarySquaddie"].as<int>(_costSalarySquaddie);
-	_costSalarySergeant = node["costSalarySergeant"].as<int>(_costSalarySergeant);
-	_costSalaryCaptain = node["costSalaryCaptain"].as<int>(_costSalaryCaptain);
-	_costSalaryColonel = node["costSalaryColonel"].as<int>(_costSalaryColonel);
-	_costSalaryCommander = node["costSalaryCommander"].as<int>(_costSalaryCommander);
-	_standHeight = node["standHeight"].as<int>(_standHeight);
-	_kneelHeight = node["kneelHeight"].as<int>(_kneelHeight);
-	_floatHeight = node["floatHeight"].as<int>(_floatHeight);
-	_femaleFrequency = node["femaleFrequency"].as<int>(_femaleFrequency);
-	_value = node["value"].as<int>(_value);
-	_transferTime = node["transferTime"].as<int>(_transferTime);
-	_moraleLossWhenKilled = node["moraleLossWhenKilled"].as<int>(_moraleLossWhenKilled);
-	_showTypeInInventory = node["showTypeInInventory"].as<bool>(_showTypeInInventory);
+	_dogfightExperience.merge(reader["dogfightExperience"].readVal(_dogfightExperience));
+	mod->loadName(_type, _armorName, reader["armor"]);
+	reader.tryRead("specialWeapon", _specWeaponName);
+	reader.tryRead("armorForAvatar", _armorForAvatar);
+	reader.tryRead("avatarOffsetX", _avatarOffsetX);
+	reader.tryRead("avatarOffsetY", _avatarOffsetY);
+	reader.tryRead("flagOffset", _flagOffset);
+	reader.tryRead("allowPromotion", _allowPromotion);
+	reader.tryRead("allowPiloting", _allowPiloting);
+	reader.tryRead("monthlyBuyLimit", _monthlyBuyLimit);
+	reader.tryRead("costBuy", _costBuy);
+	reader.tryRead("costSalary", _costSalary);
+	reader.tryRead("costSalarySquaddie", _costSalarySquaddie);
+	reader.tryRead("costSalarySergeant", _costSalarySergeant);
+	reader.tryRead("costSalaryCaptain", _costSalaryCaptain);
+	reader.tryRead("costSalaryColonel", _costSalaryColonel);
+	reader.tryRead("costSalaryCommander", _costSalaryCommander);
+	reader.tryRead("standHeight", _standHeight);
+	reader.tryRead("kneelHeight", _kneelHeight);
+	reader.tryRead("floatHeight", _floatHeight);
+	reader.tryRead("femaleFrequency", _femaleFrequency);
+	reader.tryRead("value", _value);
+	reader.tryRead("transferTime", _transferTime);
+	reader.tryRead("moraleLossWhenKilled", _moraleLossWhenKilled);
+	reader.tryRead("showTypeInInventory", _showTypeInInventory);
 
-	mod->loadSoundOffset(_type, _deathSoundMale, node["deathMale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _deathSoundFemale, node["deathFemale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _panicSoundMale, node["panicMale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _panicSoundFemale, node["panicFemale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _berserkSoundMale, node["berserkMale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _berserkSoundFemale, node["berserkFemale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _deathSoundMale, reader["deathMale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _deathSoundFemale, reader["deathFemale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _panicSoundMale, reader["panicMale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _panicSoundFemale, reader["panicFemale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _berserkSoundMale, reader["berserkMale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _berserkSoundFemale, reader["berserkFemale"], "BATTLE.CAT");
 
-	mod->loadSoundOffset(_type, _selectUnitSoundMale, node["selectUnitMale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _selectUnitSoundFemale, node["selectUnitFemale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _startMovingSoundMale, node["startMovingMale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _startMovingSoundFemale, node["startMovingFemale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _selectWeaponSoundMale, node["selectWeaponMale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _selectWeaponSoundFemale, node["selectWeaponFemale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _annoyedSoundMale, node["annoyedMale"], "BATTLE.CAT");
-	mod->loadSoundOffset(_type, _annoyedSoundFemale, node["annoyedFemale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _selectUnitSoundMale, reader["selectUnitMale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _selectUnitSoundFemale, reader["selectUnitFemale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _startMovingSoundMale, reader["startMovingMale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _startMovingSoundFemale, reader["startMovingFemale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _selectWeaponSoundMale, reader["selectWeaponMale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _selectWeaponSoundFemale, reader["selectWeaponFemale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _annoyedSoundMale, reader["annoyedMale"], "BATTLE.CAT");
+	mod->loadSoundOffset(_type, _annoyedSoundFemale, reader["annoyedFemale"], "BATTLE.CAT");
 
-	for (YAML::const_iterator i = node["soldierNames"].begin(); i != node["soldierNames"].end(); ++i)
+	for (const auto& fileNameOrCommand : reader["soldierNames"].children())
 	{
-		std::string fileName = (*i).as<std::string>();
+		std::string fileName = fileNameOrCommand.readVal<std::string>();
 		if (fileName == "delete")
 		{
 			for (auto* namepool : _names)
@@ -167,25 +168,25 @@ void RuleSoldier::load(const YAML::Node &node, Mod *mod, const ModScript &parser
 		}
 	}
 
-	for (YAML::const_iterator i = node["statStrings"].begin(); i != node["statStrings"].end(); ++i)
+	for (const auto& statStringReader : reader["statStrings"].children())
 	{
 		StatString *statString = new StatString();
-		statString->load(*i);
+		statString->load(statStringReader);
 		_statStrings.push_back(statString);
 	}
 
-	mod->loadNames(_type, _rankStrings, node["rankStrings"]);
-	mod->loadSpriteOffset(_type, _rankSprite, node["rankSprite"], "BASEBITS.PCK");
-	mod->loadSpriteOffset(_type, _rankSpriteBattlescape, node["rankBattleSprite"], "SMOKE.PCK");
-	mod->loadSpriteOffset(_type, _rankSpriteTiny, node["rankTinySprite"], "TinyRanks");
-	mod->loadSpriteOffset(_type, _skillIconSprite, node["skillIconSprite"], "SPICONS.DAT");
+	mod->loadNames(_type, _rankStrings, reader["rankStrings"]);
+	mod->loadSpriteOffset(_type, _rankSprite, reader["rankSprite"], "BASEBITS.PCK");
+	mod->loadSpriteOffset(_type, _rankSpriteBattlescape, reader["rankBattleSprite"], "SMOKE.PCK");
+	mod->loadSpriteOffset(_type, _rankSpriteTiny, reader["rankTinySprite"], "TinyRanks");
+	mod->loadSpriteOffset(_type, _skillIconSprite, reader["skillIconSprite"], "SPICONS.DAT");
 
-	mod->loadNames(_type, _skillNames, node["skills"]);
+	mod->loadNames(_type, _skillNames, reader["skills"]);
 
-	_group = node["group"].as<int>(_group);
-	_listOrder = node["listOrder"].as<int>(_listOrder);
+	reader.tryRead("group", _group);
+	reader.tryRead("listOrder", _listOrder);
 
-	_scriptValues.load(node, parsers.getShared());
+	_scriptValues.load(reader, parsers.getShared());
 }
 
 /**

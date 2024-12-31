@@ -44,7 +44,7 @@ Thumbs.db
 *.log
 *.tlog
 *.zip
-[Dd]ebug*/
+[Dd]ebug/
 *.lib
 *.sbr
 [Rr]elease*/

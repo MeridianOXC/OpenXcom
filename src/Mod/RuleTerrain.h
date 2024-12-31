@@ -19,7 +19,7 @@
  */
 #include <vector>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "MapBlock.h"
 
 namespace OpenXcom
@@ -54,7 +54,7 @@ public:
 	RuleTerrain(const std::string &name);
 	~RuleTerrain();
 	/// Loads the terrain from YAML.
-	void load(const YAML::Node& node, Mod *mod);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod);
 	/// Gets the terrain's name (used for MAP generation).
 	std::string getName() const;
 	/// Gets the terrain's enviro effects.

@@ -19,7 +19,7 @@
  */
 #include <string>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "MapData.h"
 #include "Unit.h"
 #include "RuleStatBonus.h"
@@ -62,16 +62,19 @@ struct ArmorMoveCost
 		return !(*this == c);
 	}
 
-	void load(const YAML::Node& node)
+	void load(const YAML::YamlNodeReader& reader)
 	{
-		if (node)
-		{
-			std::tie(TimePercent, EnergyPercent) = node.as<std::pair<int, int>>();
-		}
+		if (!reader)
+			return;
+		TimePercent = reader[0].readVal<int>();
+		EnergyPercent = reader[1].readVal<int>();
 	}
-	void save(YAML::Node& node, const char* name) const
+	void save(YAML::YamlNodeWriter writer, const char* name) const
 	{
-		node[name] = std::make_pair(TimePercent, EnergyPercent);
+		auto pairWriter = writer[writer.saveString(name)];
+		pairWriter.setAsSeq();
+		pairWriter.write(TimePercent);
+		pairWriter.write(EnergyPercent);
 	}
 };
 
@@ -183,7 +186,7 @@ public:
 	~Armor();
 
 	/// Loads the armor data from YAML.
-	void load(const YAML::Node& node, Mod *mod, const ModScript& parsers);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod, const ModScript& parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets whether or not there is an infinite supply of this armor.

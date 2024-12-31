@@ -1367,8 +1367,8 @@ struct BindListLoopImpl<bool (*)(T*, V* v, Args...), Func, X...>
 		if (t)
 		{
 			auto& obj = BindMemberInvoke<X...>::f(t);
-			size_t limit = std::size(obj);
-			if ((size_t)curr < limit)
+			size_t l = std::size(obj);
+			if ((size_t)curr < l)
 			{
 				r = obj[curr];
 			}
@@ -1377,7 +1377,7 @@ struct BindListLoopImpl<bool (*)(T*, V* v, Args...), Func, X...>
 				r = nullptr;
 			}
 			++curr;
-			for (;(size_t)curr < limit; ++curr)
+			for (;(size_t)curr < l; ++curr)
 			{
 				if (Func(t, obj[curr], std::forward<Args>(args)...))
 				{
@@ -1580,21 +1580,21 @@ struct Bind : BindBase
 
 
 	template<auto MemPtr0, auto... MemPtrR>
-	void addField(const std::string& get)
+	void addField(const std::string& getFuncName)
 	{
-		addCustomFunc<helper::BindPropGet<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(get), "Get field of " + prefix);
+		addCustomFunc<helper::BindPropGet<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(getFuncName), "Get field of " + prefix);
 	}
 	template<auto MemPtr0, auto... MemPtrR>
-	void addField(const std::string& get, const std::string& set)
+	void addField(const std::string& getFuncName, const std::string& setFuncName)
 	{
-		addField<MemPtr0, MemPtrR...>(get);
-		addCustomFunc<helper::BindPropSet<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(set), "Set field of " + prefix);
+		addField<MemPtr0, MemPtrR...>(getFuncName);
+		addCustomFunc<helper::BindPropSet<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(setFuncName), "Set field of " + prefix);
 	}
 	template<auto MemPtr0, auto... MemPtrR>
-	void addField(const std::string& get, const std::string& set, const std::string& add)
+	void addField(const std::string& getFuncName, const std::string& setFuncName, const std::string& addFuncName)
 	{
-		addField<MemPtr0, MemPtrR...>(get, set);
-		addCustomFunc<helper::BindPropAdd<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(add), "Add to field of " + prefix);
+		addField<MemPtr0, MemPtrR...>(getFuncName, setFuncName);
+		addCustomFunc<helper::BindPropAdd<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(addFuncName), "Add to field of " + prefix);
 	}
 
 
@@ -1750,21 +1750,21 @@ struct BindValue : BindBase
 
 
 	template<auto MemPtr0, auto... MemPtrR>
-	void addField(const std::string& get)
+	void addField(const std::string& getFuncName)
 	{
-		addCustomFunc<helper::BindValuePropGet<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(get), "Get field of " + prefix);
+		addCustomFunc<helper::BindValuePropGet<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(getFuncName), "Get field of " + prefix);
 	}
 	template<auto MemPtr0, auto... MemPtrR>
-	void addField(const std::string& get, const std::string& set)
+	void addField(const std::string& getFuncName, const std::string& setFuncName)
 	{
-		addField<MemPtr0, MemPtrR...>(get);
-		addCustomFunc<helper::BindValuePropSet<T, MACRO_CLANG_AUTO_HACK(MemPtr0),  MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(set), "Set field of " + prefix);
+		addField<MemPtr0, MemPtrR...>(getFuncName);
+		addCustomFunc<helper::BindValuePropSet<T, MACRO_CLANG_AUTO_HACK(MemPtr0),  MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(setFuncName), "Set field of " + prefix);
 	}
 	template<auto MemPtr0, auto... MemPtrR>
-	void addField(const std::string& get, const std::string& set, const std::string& add)
+	void addField(const std::string& getFuncName, const std::string& setFuncName, const std::string& addFuncName)
 	{
-		addField<MemPtr0, MemPtrR...>(get, set);
-		addCustomFunc<helper::BindValuePropAdd<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(add), "Add to field of " + prefix);
+		addField<MemPtr0, MemPtrR...>(getFuncName, setFuncName);
+		addCustomFunc<helper::BindValuePropAdd<T, MACRO_CLANG_AUTO_HACK(MemPtr0), MACRO_CLANG_AUTO_HACK(MemPtrR)...>>(getName(addFuncName), "Add to field of " + prefix);
 	}
 
 

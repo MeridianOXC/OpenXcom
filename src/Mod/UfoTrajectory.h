@@ -19,7 +19,7 @@
  */
 #include <vector>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -36,9 +36,6 @@ struct TrajectoryWaypoint
 	/// The speed percentage ([0..100])
 	size_t speed;
 };
-
-YAML::Emitter &operator<<(YAML::Emitter &emitter, const TrajectoryWaypoint &wp);
-bool operator>>(const YAML::Node &node, TrajectoryWaypoint &wp);
 
 /**
  * Holds information about a specific trajectory.
@@ -57,7 +54,7 @@ public:
 	const std::string &getID() const { return _id; }
 
 	/// Loads trajectory data from YAML.
-	void load(const YAML::Node &node);
+	void load(const YAML::YamlNodeReader& reader);
 
 	/**
 	 * Gets the number of waypoints in this trajectory.
@@ -92,5 +89,8 @@ private:
 	size_t _groundTimer;
 	std::vector<TrajectoryWaypoint> _waypoints;
 };
+
+// helper overloads for (de)serialization
+bool read(ryml::ConstNodeRef const& n, TrajectoryWaypoint* val);
 
 }

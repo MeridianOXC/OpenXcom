@@ -18,7 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "Unit.h"
 #include "RuleBaseFacilityFunctions.h"
 #include "../Engine/Script.h"
@@ -105,7 +105,7 @@ public:
 	/// Cleans up the soldier ruleset.
 	~RuleSoldier();
 	/// Loads the soldier data from YAML.
-	void load(const YAML::Node& node, Mod *mod, const ModScript &parsers);
+	void load(const YAML::YamlNodeReader& reader, Mod *mod, const ModScript &parsers);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets the soldier's type.

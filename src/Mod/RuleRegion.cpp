@@ -49,37 +49,34 @@ RuleRegion::~RuleRegion()
  * Loads the region type from a YAML file.
  * @param node YAML node.
  */
-void RuleRegion::load(const YAML::Node &node, Mod* mod)
+void RuleRegion::load(const YAML::YamlNodeReader& reader, Mod* mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	_cost = node["cost"].as<int>(_cost);
+	reader.tryRead("cost", _cost);
 
-	if (node["deleteOldAreas"].as<bool>(false))
+	if (reader["deleteOldAreas"].readVal(false))
 	{
 		_lonMin.clear();
 		_lonMax.clear();
 		_latMin.clear();
 		_latMax.clear();
 	}
-	if (auto& areaNode = node["areas"])
+	for (const auto& area : reader["areas"].children())
 	{
-		for (const auto& area : areaNode.as<std::vector<std::array<double, 4>>>())
-		{
-			_lonMin.push_back(Deg2Rad(area[0]));
-			_lonMax.push_back(Deg2Rad(area[1]));
-			_latMin.push_back(Deg2Rad(area[2]));
-			_latMax.push_back(Deg2Rad(area[3]));
+		_lonMin.push_back(Deg2Rad(area[0].readVal<double>()));
+		_lonMax.push_back(Deg2Rad(area[1].readVal<double>()));
+		_latMin.push_back(Deg2Rad(area[2].readVal<double>()));
+		_latMax.push_back(Deg2Rad(area[3].readVal<double>()));
 
-			if (_latMin.back() > _latMax.back())
-				std::swap(_latMin.back(), _latMax.back());
-		}
+		if (_latMin.back() > _latMax.back())
+			std::swap(_latMin.back(), _latMax.back());
 	}
 
-	_missionZones = node["missionZones"].as< std::vector<MissionZone> >(_missionZones);
+	reader.tryRead("missionZones", _missionZones);
 	{
 		int zn = 0;
 		for (auto& z : _missionZones)
@@ -108,15 +105,15 @@ void RuleRegion::load(const YAML::Node &node, Mod* mod)
 			++zn;
 		}
 	}
-	if (const YAML::Node &weights = node["missionWeights"])
+	if (const auto& weights = reader["missionWeights"])
 	{
 		_missionWeights.load(weights);
 	}
-	_regionWeight = node["regionWeight"].as<size_t>(_regionWeight);
-	_missionRegion = node["missionRegion"].as<std::string>(_missionRegion);
+	reader.tryRead("regionWeight", _regionWeight);
+	reader.tryRead("missionRegion", _missionRegion);
 
-	mod->loadBaseFunction(_type, _provideBaseFunc, node["provideBaseFunc"]);
-	mod->loadBaseFunction(_type, _forbiddenBaseFunc, node["forbiddenBaseFunc"]);
+	mod->loadBaseFunction(_type, _provideBaseFunc, reader["provideBaseFunc"]);
+	mod->loadBaseFunction(_type, _forbiddenBaseFunc, reader["forbiddenBaseFunc"]);
 }
 
 /**
@@ -244,6 +241,31 @@ std::pair<double, double> RuleRegion::getRandomPoint(size_t zone, int area) cons
 	}
 	assert(0 && "Invalid zone number");
 	return std::make_pair(0.0, 0.0);
+}
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, MissionArea* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	val->lonMin = Deg2Rad(reader[0].readVal<double>());
+	val->lonMax = Deg2Rad(reader[1].readVal<double>());
+	val->latMin = Deg2Rad(reader[2].readVal<double>());
+	val->latMax = Deg2Rad(reader[3].readVal<double>());
+	if (val->latMin > val->latMax)
+		std::swap(val->latMin, val->latMax);
+	size_t count = reader.childrenCount();
+	if (count >= 5)
+		val->texture = reader[4].readVal<int>();
+	if (count >= 6)
+		val->name = reader[5].readVal<std::string>();
+	return true;
+}
+
+bool read(ryml::ConstNodeRef const& n, MissionZone* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryReadVal(val->areas);
+	return true;
 }
 
 }

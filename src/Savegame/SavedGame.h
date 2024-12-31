@@ -189,8 +189,8 @@ public:
 	static std::vector<SaveInfo> getList(Language *lang, bool autoquick);
 	/// Loads a saved game from YAML.
 	void load(const std::string &filename, Mod *mod, Language *lang);
-	void loadTemplates(const YAML::Node& doc, const Mod* mod);
-	void loadUfopediaRuleStatus(const YAML::Node& node);
+	void loadTemplates(const YAML::YamlNodeReader& reader, const Mod* mod);
+	void loadUfopediaRuleStatus(const YAML::YamlNodeReader& reader);
 	/// Saves a saved game to YAML.
 	void save(const std::string &filename, Mod *mod) const;
 	/// Gets the game name.

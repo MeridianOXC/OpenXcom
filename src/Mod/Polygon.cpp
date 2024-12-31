@@ -77,14 +77,14 @@ Polygon::~Polygon()
  * Loads the polygon from a YAML file.
  * @param node YAML node.
  */
-void Polygon::load(const YAML::Node &node)
+void Polygon::load(const YAML::YamlNodeReader& reader)
 {
 	delete[] _lat;
 	delete[] _lon;
 	delete[] _x;
 	delete[] _y;
 
-	std::vector<double> coords = node.as< std::vector<double> >();
+	std::vector<double> coords = reader.readVal<std::vector<double> >();
 	_points = (coords.size() - 1) / 2;
 	_lat = new double[_points];
 	_lon = new double[_points];

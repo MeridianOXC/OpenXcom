@@ -34,17 +34,17 @@ RuleManufactureShortcut::RuleManufactureShortcut(const std::string &name) : _nam
  * Loads the RuleManufactureShortcut from a YAML file.
  * @param node YAML node.
  */
-void RuleManufactureShortcut::load(const YAML::Node &node)
+void RuleManufactureShortcut::load(const YAML::YamlNodeReader& reader)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);
 	}
 
-	_startFrom = node["startFrom"].as<std::string>(_startFrom);
-	_breakDownItems = node["breakDownItems"].as< std::vector<std::string> >(_breakDownItems);
-	_breakDownRequires = node["breakDownRequires"].as<bool>(_breakDownRequires);
-	_breakDownRequiresBaseFunc = node["breakDownRequiresBaseFunc"].as<bool>(_breakDownRequiresBaseFunc);
+	reader.tryRead("startFrom", _startFrom);
+	reader.tryRead("breakDownItems", _breakDownItems);
+	reader.tryRead("breakDownRequires", _breakDownRequires);
+	reader.tryRead("breakDownRequiresBaseFunc", _breakDownRequiresBaseFunc);
 }
 
 }

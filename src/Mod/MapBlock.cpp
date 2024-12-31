@@ -22,62 +22,6 @@
 #include "../Battlescape/Position.h"
 #include "../Engine/Exception.h"
 
-namespace YAML
-{
-	template<>
-	struct convert<OpenXcom::RandomizedItems>
-	{
-		static Node encode(const OpenXcom::RandomizedItems& rhs)
-		{
-			Node node;
-			node["position"] = rhs.position;
-			node["amount"] = rhs.amount;
-			node["mixed"] = rhs.mixed;
-			node["itemList"] = rhs.itemList;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::RandomizedItems& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-
-			rhs.position = node["position"].as<OpenXcom::Position>(rhs.position);
-			rhs.amount = node["amount"].as<int>(rhs.amount);
-			rhs.mixed = node["mixed"].as<bool>(rhs.mixed);
-			rhs.itemList = node["itemList"].as< std::vector<std::string> >(rhs.itemList);
-			return true;
-		}
-	};
-	template<>
-	struct convert<OpenXcom::ExtendedItems>
-	{
-		static Node encode(const OpenXcom::ExtendedItems& rhs)
-		{
-			Node node;
-			node["type"] = rhs.type;
-			node["pos"] = rhs.pos;
-			node["fuseTimerMin"] = rhs.fuseTimerMin;
-			node["fuseTimerMax"] = rhs.fuseTimerMax;
-			node["ammoDef"] = rhs.ammoDef;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::ExtendedItems& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-
-			rhs.type = node["type"].as<std::string>(rhs.type);
-			rhs.pos = node["pos"].as< std::vector<OpenXcom::Position> >(rhs.pos);
-			rhs.fuseTimerMin = node["fuseTimerMin"].as<int>(rhs.fuseTimerMin);
-			rhs.fuseTimerMax = node["fuseTimerMax"].as<int>(rhs.fuseTimerMax);
-			rhs.ammoDef = node["ammoDef"].as< std::vector<std::pair<std::string, int> > >(rhs.ammoDef);
-			return true;
-		}
-	};
-}
-
 namespace OpenXcom
 {
 
@@ -100,46 +44,46 @@ MapBlock::~MapBlock()
  * Loads the map block from a YAML file.
  * @param node YAML node.
  */
-void MapBlock::load(const YAML::Node &node)
+void MapBlock::load(const YAML::YamlNodeReader& reader)
 {
-	_name = node["name"].as<std::string>(_name);
-	_size_x = node["width"].as<int>(_size_x);
-	_size_y = node["length"].as<int>(_size_y);
-	_size_z = node["height"].as<int>(_size_z);
+	reader.tryRead("name", _name);
+	reader.tryRead("width", _size_x);
+	reader.tryRead("length", _size_y);
+	reader.tryRead("height", _size_z);
 	if ((_size_x % 10) != 0 || (_size_y % 10) != 0)
 	{
 		std::ostringstream ss;
 		ss << "Error: MapBlock " << _name << ": Size must be divisible by ten";
 		throw Exception(ss.str());
 	}
-	if (const YAML::Node &map = node["groups"])
+	if (const auto& map = reader["groups"])
 	{
 		_groups.clear();
-		if (map.Type() == YAML::NodeType::Sequence)
+		if (map.isSeq())
 		{
-			_groups = map.as<std::vector<int> >(_groups);
+			map.tryReadVal(_groups);
 		}
 		else
 		{
-			_groups.push_back(map.as<int>(0));
+			_groups.push_back(map.readVal(0));
 		}
 	}
-	if (const YAML::Node &map = node["revealedFloors"])
+	if (const auto& map = reader["revealedFloors"])
 	{
 		_revealedFloors.clear();
-		if (map.Type() == YAML::NodeType::Sequence)
+		if (map.isSeq())
 		{
-			_revealedFloors = map.as<std::vector<int> >(_revealedFloors);
+			map.tryReadVal(_revealedFloors);
 		}
 		else
 		{
-			_revealedFloors.push_back(map.as<int>(0));
+			_revealedFloors.push_back(map.readVal(0));
 		}
 	}
-	_items = node["items"].as<std::map<std::string, std::vector<Position> > >(_items);
-	_itemsFuseTimer = node["fuseTimers"].as<std::map<std::string, std::pair<int, int> > >(_itemsFuseTimer);
-	_randomizedItems = node["randomizedItems"].as< std::vector<RandomizedItems> >(_randomizedItems);
-	_extendedItems = node["extendedItems"].as< std::vector<ExtendedItems> >(_extendedItems);
+	reader.tryRead("items", _items);
+	reader.tryRead("fuseTimers", _itemsFuseTimer);
+	reader.tryRead("randomizedItems", _randomizedItems);
+	reader.tryRead("extendedItems", _extendedItems);
 }
 
 /**
@@ -202,6 +146,28 @@ bool MapBlock::isInGroup(int group)
 bool MapBlock::isFloorRevealed(int floor)
 {
 	return std::find(_revealedFloors.begin(), _revealedFloors.end(), floor) != _revealedFloors.end();
+}
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, RandomizedItems* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryRead("position", val->position);
+	reader.tryRead("amount", val->amount);
+	reader.tryRead("mixed", val->mixed);
+	reader.tryRead("itemList", val->itemList);
+	return true;
+}
+
+bool read(ryml::ConstNodeRef const& n, ExtendedItems* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryRead("type", val->type);
+	reader.tryRead("pos", val->pos);
+	reader.tryRead("fuseTimerMin", val->fuseTimerMin);
+	reader.tryRead("fuseTimerMax", val->fuseTimerMax);
+	reader.tryRead("ammoDef", val->ammoDef);
+	return true;
 }
 
 }

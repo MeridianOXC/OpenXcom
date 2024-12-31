@@ -48,33 +48,32 @@ GameTime::~GameTime()
  * Loads the time from a YAML file.
  * @param node YAML node.
  */
-void GameTime::load(const YAML::Node &node)
+void GameTime::load(const YAML::YamlNodeReader& reader)
 {
-	_second = node["second"].as<int>(_second);
-	_minute = node["minute"].as<int>(_minute);
-	_hour = node["hour"].as<int>(_hour);
-	_weekday = node["weekday"].as<int>(_weekday);
-	_day = node["day"].as<int>(_day);
-	_month = node["month"].as<int>(_month);
-	_year = node["year"].as<int>(_year);
+	reader.tryRead("second", _second);
+	reader.tryRead("minute", _minute);
+	reader.tryRead("hour", _hour);
+	reader.tryRead("weekday", _weekday);
+	reader.tryRead("day", _day);
+	reader.tryRead("month", _month);
+	reader.tryRead("year", _year);
 }
 
 /**
  * Saves the time to a YAML file.
  * @return YAML node.
  */
-YAML::Node GameTime::save() const
+void GameTime::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
-	node["second"] = _second;
-	node["minute"] = _minute;
-	node["hour"] = _hour;
-	node["weekday"] = _weekday;
-	node["day"] = _day;
-	node["month"] = _month;
-	node["year"] = _year;
-	return node;
+	writer.setAsMap();
+	writer.setFlowStyle();
+	writer.write("second", _second);
+	writer.write("minute", _minute);
+	writer.write("hour", _hour);
+	writer.write("weekday", _weekday);
+	writer.write("day", _day);
+	writer.write("month", _month);
+	writer.write("year", _year);
 }
 
 bool GameTime::isLastDayOfMonth()

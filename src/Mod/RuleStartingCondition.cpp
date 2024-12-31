@@ -47,34 +47,35 @@ RuleStartingCondition::~RuleStartingCondition()
  * Loads the Starting Conditions from a YAML file.
  * @param node YAML node.
  */
-void RuleStartingCondition::load(const YAML::Node& node, Mod *mod)
+void RuleStartingCondition::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	if (const YAML::Node& parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	mod->loadUnorderedNamesToNamesToInt(_type, _defaultArmor, node["defaultArmor"]);
-	mod->loadUnorderedNames(_type, _allowedArmors, node["allowedArmors"]);
-	mod->loadUnorderedNames(_type, _forbiddenArmors, node["forbiddenArmors"]);
-	mod->loadUnorderedNames(_type, _forbiddenArmorsInNextStageName, node["forbiddenArmorsInNextStage"]);
-	mod->loadUnorderedNames(_type, _allowedVehicles, node["allowedVehicles"]);
-	mod->loadUnorderedNames(_type, _forbiddenVehicles, node["forbiddenVehicles"]);
-	mod->loadUnorderedNames(_type, _allowedItems, node["allowedItems"]);
-	mod->loadUnorderedNames(_type, _forbiddenItems, node["forbiddenItems"]);
-	mod->loadUnorderedNames(_type, _allowedItemCategories, node["allowedItemCategories"]);
-	mod->loadUnorderedNames(_type, _forbiddenItemCategories, node["forbiddenItemCategories"]);
-	mod->loadUnorderedNames(_type, _allowedCraft, node["allowedCraft"]);
-	mod->loadUnorderedNames(_type, _forbiddenCraft, node["forbiddenCraft"]);
-	mod->loadUnorderedNames(_type, _allowedSoldierTypes, node["allowedSoldierTypes"]);
-	mod->loadUnorderedNames(_type, _forbiddenSoldierTypes, node["forbiddenSoldierTypes"]);
-	mod->loadUnorderedNamesToInt(_type, _requiredItems, node["requiredItems"]);
-	mod->loadUnorderedNamesToNames(_type, _craftTransformationsName, node["craftTransformations"]);
-	_destroyRequiredItems = node["destroyRequiredItems"].as<bool>(_destroyRequiredItems);
-	_requireCommanderOnboard = node["requireCommanderOnboard"].as<bool>(_requireCommanderOnboard);
+	mod->loadUnorderedNamesToNamesToInt(_type, _defaultArmor, reader["defaultArmor"]);
+	mod->loadUnorderedNames(_type, _allowedArmors, reader["allowedArmors"]);
+	mod->loadUnorderedNames(_type, _forbiddenArmors, reader["forbiddenArmors"]);
+	mod->loadUnorderedNames(_type, _forbiddenArmorsInNextStageName, reader["forbiddenArmorsInNextStage"]);
+	mod->loadUnorderedNames(_type, _allowedVehicles, reader["allowedVehicles"]);
+	mod->loadUnorderedNames(_type, _forbiddenVehicles, reader["forbiddenVehicles"]);
+	mod->loadUnorderedNames(_type, _allowedItems, reader["allowedItems"]);
+	mod->loadUnorderedNames(_type, _forbiddenItems, reader["forbiddenItems"]);
+	mod->loadUnorderedNames(_type, _allowedItemCategories, reader["allowedItemCategories"]);
+	mod->loadUnorderedNames(_type, _forbiddenItemCategories, reader["forbiddenItemCategories"]);
+	mod->loadUnorderedNames(_type, _allowedCraft, reader["allowedCraft"]);
+	mod->loadUnorderedNames(_type, _forbiddenCraft, reader["forbiddenCraft"]);
+	mod->loadUnorderedNames(_type, _allowedSoldierTypes, reader["allowedSoldierTypes"]);
+	mod->loadUnorderedNames(_type, _forbiddenSoldierTypes, reader["forbiddenSoldierTypes"]);
+	mod->loadUnorderedNamesToInt(_type, _requiredItems, reader["requiredItems"]);
+	mod->loadUnorderedNamesToNames(_type, _craftTransformationsName, reader["craftTransformations"]);
+	reader.tryRead("destroyRequiredItems", _destroyRequiredItems);
+	reader.tryRead("requireCommanderOnboard", _requireCommanderOnboard);
 
-	if (node["environmentalConditions"] || node["paletteTransformations"] || node["armorTransformations"]
-		|| node["mapBackgroundColor"] || node["inventoryShockIndicator"] || node["mapShockIndicator"])
+	if (reader["environmentalConditions"] || reader["paletteTransformations"] || reader["armorTransformations"]
+		|| reader["mapBackgroundColor"] || reader["inventoryShockIndicator"] || reader["mapShockIndicator"])
 	{
 		Log(LOG_ERROR) << "There are invalid/obsolete attributes in starting condition " << _type << ". Please review the ruleset.";
 	}

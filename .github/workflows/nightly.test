@@ -106,7 +106,7 @@ jobs:
       - name: Install packages
         run: |
           sudo apt-get update
-          sudo apt-get -yq --no-install-suggests --no-install-recommends install appstream libfuse2 libsdl1.2-dev libsdl-mixer1.2-dev libsdl-image1.2-dev libsdl-gfx1.2-dev libyaml-cpp-dev
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install appstream libfuse2 libsdl1.2-dev libsdl-mixer1.2-dev libsdl-image1.2-dev libsdl-gfx1.2-dev
 
       - name: Install LinuxDeploy
         uses: miurahr/install-linuxdeploy-action@v1

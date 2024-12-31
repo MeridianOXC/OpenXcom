@@ -148,7 +148,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 
 	// Set up objects
 	_game->getMod()->getSurface("TAC01.SCR")->blitNShade(_bg, 0, 0);
-	add(_btnArmor, "buttonOK", "inventory", _bg);
+	add(_btnArmor, "buttonArmor", "inventory", _bg);
 
 	add(_soldier);
 	add(_btnQuickSearch, "textItem", "inventory");

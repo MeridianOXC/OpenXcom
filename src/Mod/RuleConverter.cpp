@@ -39,25 +39,26 @@ RuleConverter::~RuleConverter()
  * Loads the converter data from a YAML file.
  * @param node YAML node.
  */
-void RuleConverter::load(const YAML::Node &node)
+void RuleConverter::load(const YAML::YamlNodeReader& node)
 {
-	_offsets = node["offsets"].as< std::map<std::string, int> >(_offsets);
-	_markers = node["markers"].as< std::vector<std::string> >(_markers);
-	_countries = node["countries"].as< std::vector<std::string> >(_countries);
-	_regions = node["regions"].as< std::vector<std::string> >(_regions);
-	_facilities = node["facilities"].as< std::vector<std::string> >(_facilities);
-	_items = node["items"].as< std::vector<std::string> >(_items);
-	_crews = node["crews"].as< std::vector<std::string> >(_crews);
-	_crafts = node["crafts"].as< std::vector<std::string> >(_crafts);
-	_ufos = node["ufos"].as< std::vector<std::string> >(_ufos);
-	_craftWeapons = node["craftWeapons"].as< std::vector<std::string> >(_craftWeapons);
-	_missions = node["missions"].as< std::vector<std::string> >(_missions);
-	_armor = node["armor"].as< std::vector<std::string> >(_armor);
-	_alienRaces = node["alienRaces"].as< std::vector<std::string> >(_alienRaces);
-	_alienRanks = node["alienRanks"].as< std::vector<std::string> >(_alienRanks);
-	_research = node["research"].as< std::vector<std::string> >(_research);
-	_manufacture = node["manufacture"].as< std::vector<std::string> >(_manufacture);
-	_ufopaedia = node["ufopaedia"].as< std::vector<std::string> >(_ufopaedia);
+	const auto reader = node.useIndex();
+	reader.tryRead("offsets", _offsets);
+	reader.tryRead("markers", _markers);
+	reader.tryRead("countries", _countries);
+	reader.tryRead("regions", _regions);
+	reader.tryRead("facilities", _facilities);
+	reader.tryRead("items", _items);
+	reader.tryRead("crews", _crews);
+	reader.tryRead("crafts", _crafts);
+	reader.tryRead("ufos", _ufos);
+	reader.tryRead("craftWeapons", _craftWeapons);
+	reader.tryRead("missions", _missions);
+	reader.tryRead("armor", _armor);
+	reader.tryRead("alienRaces", _alienRaces);
+	reader.tryRead("alienRanks", _alienRanks);
+	reader.tryRead("research", _research);
+	reader.tryRead("manufacture", _manufacture);
+	reader.tryRead("ufopaedia", _ufopaedia);
 }
 
 }

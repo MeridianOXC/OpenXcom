@@ -56,13 +56,14 @@ Transfer::~Transfer()
  * @param save Pointer to savegame.
  * @return Was the transfer content valid?
  */
-bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGame *save)
+bool Transfer::load(const YAML::YamlNodeReader& reader, Base *base, const Mod *mod, SavedGame *save)
 {
-	_hours = node["hours"].as<int>(_hours);
-	if (const YAML::Node &soldier = node["soldier"])
+	reader.tryRead("hours", _hours);
+
+	if (const auto& soldier = reader["soldier"])
 	{
-		std::string type = soldier["type"].as<std::string>(mod->getSoldiersList().front());
-		if (mod->getSoldier(type) != 0)
+		std::string type = soldier["type"].readVal(mod->getSoldiersList().front());
+		if (mod->getSoldier(type))
 		{
 			_soldier = new Soldier(mod->getSoldier(type), nullptr, 0 /*nationality*/);
 			_soldier->load(soldier, mod, save, mod->getScriptGlobal());
@@ -74,10 +75,10 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
 			return false;
 		}
 	}
-	if (const YAML::Node &craft = node["craft"])
+	if (const auto& craft = reader["craft"])
 	{
-		std::string type = craft["type"].as<std::string>();
-		if (mod->getCraft(type) != 0)
+		std::string type = craft["type"].readVal<std::string>();
+		if (mod->getCraft(type))
 		{
 			_craft = new Craft(mod->getCraft(type), base);
 			_craft->load(craft, mod->getScriptGlobal(), mod, 0);
@@ -90,21 +91,21 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
 		}
 
 	}
-	if (const YAML::Node &item = node["itemId"])
+	if (const auto& item = reader["itemId"])
 	{
-		auto name = item.as<std::string>();
+		std::string name = item.readVal<std::string>();
 		_itemId = mod->getItem(name);
-		if (_itemId == 0)
+		if (!_itemId)
 		{
 			Log(LOG_ERROR) << "Failed to load item " << name;
 			delete this;
 			return false;
 		}
 	}
-	_itemQty = node["itemQty"].as<int>(_itemQty);
-	_scientists = node["scientists"].as<int>(_scientists);
-	_engineers = node["engineers"].as<int>(_engineers);
-	_delivered = node["delivered"].as<bool>(_delivered);
+	reader.tryRead("itemQty", _itemQty);
+	reader.tryRead("scientists", _scientists);
+	reader.tryRead("engineers", _engineers);
+	reader.tryRead("delivered", _delivered);
 	return true;
 }
 
@@ -112,36 +113,33 @@ bool Transfer::load(const YAML::Node& node, Base *base, const Mod *mod, SavedGam
  * Saves the transfer to a YAML file.
  * @return YAML node.
  */
-YAML::Node Transfer::save(const Base *b, const Mod *mod) const
+void Transfer::save(YAML::YamlNodeWriter writer, const Base* b, const Mod* mod) const
 {
-	YAML::Node node;
-	node["hours"] = _hours;
+	writer.setAsMap();
+	writer.write("hours", _hours);
 	if (_soldier != 0)
 	{
-		node["soldier"] = _soldier->save(mod->getScriptGlobal());
+		_soldier->save(writer["soldier"], mod->getScriptGlobal());
 	}
 	else if (_craft != 0)
 	{
-		node["craft"] = _craft->save(mod->getScriptGlobal());
+		_craft->save(writer["craft"], mod->getScriptGlobal());
 	}
 	else if (_itemQty != 0)
 	{
-		node["itemId"] = _itemId->getType();
-		node["itemQty"] = _itemQty;
+		writer.write("itemId", _itemId->getType());
+		writer.write("itemQty", _itemQty);
 	}
 	else if (_scientists != 0)
 	{
-		node["scientists"] = _scientists;
+		writer.write("scientists", _scientists);
 	}
 	else if (_engineers != 0)
 	{
-		node["engineers"] = _engineers;
+		writer.write("engineers", _engineers);
 	}
 	if (_delivered)
-	{
-		node["delivered"] = _delivered;
-	}
-	return node;
+		writer.write("delivered", _delivered);
 }
 
 /**

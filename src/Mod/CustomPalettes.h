@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "../Battlescape/Position.h"
 
 namespace OpenXcom
@@ -37,7 +37,7 @@ public:
 	/// Clean up.
 	virtual ~CustomPalettes();
 	/// Loads the data from YAML.
-	void load(const YAML::Node &node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the palette.
 	std::map<int, Position> *getPalette();
 	/// Gets the type.

@@ -42,36 +42,37 @@ AlienBase::~AlienBase()
  * Loads the alien base from a YAML file.
  * @param node YAML node.
  */
-void AlienBase::load(const YAML::Node &node)
+void AlienBase::load(const YAML::YamlNodeReader& reader)
 {
-	Target::load(node);
-	_pactCountry = node["pactCountry"].as<std::string>(_pactCountry);
-	_race = node["race"].as<std::string>(_race);
-	_inBattlescape = node["inBattlescape"].as<bool>(_inBattlescape);
-	_discovered = node["discovered"].as<bool>(_discovered);
-	_startMonth = node["startMonth"].as<int>(_startMonth);
-	_minutesSinceLastHuntMissionGeneration = node["minutesSinceLastHuntMissionGeneration"].as<int>(_minutesSinceLastHuntMissionGeneration);
-	_genMissionCount = node["genMissionCount"].as<int>(_genMissionCount);
+	Target::load(reader);
+	reader.tryRead("pactCountry", _pactCountry);
+	reader.tryRead("race", _race);
+	reader.tryRead("inBattlescape", _inBattlescape);
+	reader.tryRead("discovered", _discovered);
+	reader.tryRead("startMonth", _startMonth);
+	reader.tryRead("minutesSinceLastHuntMissionGeneration", _minutesSinceLastHuntMissionGeneration);
+	reader.tryRead("genMissionCount", _genMissionCount);
 }
 
 /**
  * Saves the alien base to a YAML file.
  * @return YAML node.
  */
-YAML::Node AlienBase::save() const
+void AlienBase::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node = Target::save();
-	node["pactCountry"] = _pactCountry;
-	node["race"] = _race;
+	writer.setAsMap();
+	Target::save(writer);
+
+	writer.write("pactCountry", _pactCountry);
+	writer.write("race", _race);
 	if (_inBattlescape)
-		node["inBattlescape"] = _inBattlescape;
+		writer.write("inBattlescape", _inBattlescape);
 	if (_discovered)
-		node["discovered"] = _discovered;
-	node["deployment"] = _deployment->getType();
-	node["startMonth"] = _startMonth;
-	node["minutesSinceLastHuntMissionGeneration"] = _minutesSinceLastHuntMissionGeneration;
-	node["genMissionCount"] = _genMissionCount;
-	return node;
+		writer.write("discovered", _discovered);
+	writer.write("deployment", _deployment->getType());
+	writer.write("startMonth", _startMonth);
+	writer.write("minutesSinceLastHuntMissionGeneration", _minutesSinceLastHuntMissionGeneration);
+	writer.write("genMissionCount", _genMissionCount);
 }
 
 /**

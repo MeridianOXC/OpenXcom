@@ -272,7 +272,8 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 						Transfer *t = new Transfer(transferTimePersonnel);
 						int nationality = g->selectSoldierNationalityByLocation(m, rule, b);
 						Soldier *s = m->genSoldier(g, rule, nationality);
-						s->load(_rules->getSpawnedSoldierTemplate(), m, g, m->getScriptGlobal(), true); // load from soldier template
+						YAML::YamlRootNodeReader reader(_rules->getSpawnedSoldierTemplate(), "(spawned soldier template)");
+						s->load(reader, m, g, m->getScriptGlobal(), true); // load from soldier template
 						if (_rules->getSpawnedPersonName() != "")
 						{
 							s->setName(lang->getString(_rules->getSpawnedPersonName()));
@@ -363,33 +364,30 @@ void Production::refundItem(Base * b, SavedGame * g, const Mod *m) const
 	//}
 }
 
-YAML::Node Production::save() const
+void Production::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node["item"] = getRules()->getName();
-	node["assigned"] = getAssignedEngineers();
-	node["spent"] = getTimeSpent();
-	node["amount"] = getAmountTotal();
-	node["infinite"] = getInfiniteAmount();
+	writer.setAsMap();
+	writer.write("item", getRules()->getName());
+	writer.write("assigned", getAssignedEngineers());
+	writer.write("spent", getTimeSpent());
+	writer.write("amount", getAmountTotal());
+	writer.write("infinite", getInfiniteAmount());
 	if (getSellItems())
-		node["sell"] = getSellItems();
+		writer.write("sell", getSellItems());
 	if (!_rules->getRandomProducedItems().empty())
-	{
-		node["randomProductionInfo"] = _randomProductionInfo;
-	}
-	return node;
+		writer.write("randomProductionInfo", _randomProductionInfo);
 }
 
-void Production::load(const YAML::Node &node)
+void Production::load(const YAML::YamlNodeReader& reader)
 {
-	setAssignedEngineers(node["assigned"].as<int>(getAssignedEngineers()));
-	setTimeSpent(node["spent"].as<int>(getTimeSpent()));
-	setAmountTotal(node["amount"].as<int>(getAmountTotal()));
-	setInfiniteAmount(node["infinite"].as<bool>(getInfiniteAmount()));
-	setSellItems(node["sell"].as<bool>(getSellItems()));
+	setAssignedEngineers(reader["assigned"].readVal(getAssignedEngineers()));
+	setTimeSpent(reader["spent"].readVal(getTimeSpent()));
+	setAmountTotal(reader["amount"].readVal(getAmountTotal()));
+	setInfiniteAmount(reader["infinite"].readVal(getInfiniteAmount()));
+	setSellItems(reader["sell"].readVal(getSellItems()));
 	if (!_rules->getRandomProducedItems().empty())
 	{
-		_randomProductionInfo = node["randomProductionInfo"].as< std::map<std::string, int> >(_randomProductionInfo);
+		_randomProductionInfo = reader["randomProductionInfo"].readVal(_randomProductionInfo);
 	}
 	// backwards compatibility
 	if (getAmountTotal() == INT_MAX)

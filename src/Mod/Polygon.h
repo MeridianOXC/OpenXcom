@@ -18,7 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <SDL_types.h>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -42,7 +42,7 @@ public:
 	/// Cleans up the polygon.
 	~Polygon();
 	/// Loads the polygon from YAML.
-	void load(const YAML::Node& node);
+	void load(const YAML::YamlNodeReader& reader);
 	/// Gets the latitude of a point.
 	double getLatitude(int i) const;
 	/// Sets the latitude of a point.

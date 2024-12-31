@@ -111,25 +111,24 @@ void ResearchProject::setCost(int f)
  * Loads the research project from a YAML file.
  * @param node YAML node.
  */
-void ResearchProject::load(const YAML::Node& node)
+void ResearchProject::load(const YAML::YamlNodeReader& reader)
 {
-	setAssigned(node["assigned"].as<int>(getAssigned()));
-	setSpent(node["spent"].as<int>(getSpent()));
-	setCost(node["cost"].as<int>(getCost()));
+	setAssigned(reader["assigned"].readVal(getAssigned()));
+	setSpent(reader["spent"].readVal(getSpent()));
+	setCost(reader["cost"].readVal(getCost()));
 }
 
 /**
  * Saves the research project to a YAML file.
  * @return YAML node.
  */
-YAML::Node ResearchProject::save() const
+void ResearchProject::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node["project"] = getRules()->getName();
-	node["assigned"] = getAssigned();
-	node["spent"] = getSpent();
-	node["cost"] = getCost();
-	return node;
+	writer.setAsMap();
+	writer.write("project", getRules()->getName());
+	writer.write("assigned", getAssigned());
+	writer.write("spent", getSpent());
+	writer.write("cost", getCost());
 }
 
 /**

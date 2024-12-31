@@ -1,7 +1,7 @@
 !insertmacro LANGFILE_EXT "Russian"
 ${LangFileString} SETUP_XCOM_FOLDER_TITLE "Укажите директорию X-COM"
 ${LangFileString} SETUP_XCOM_FOLDER_SUBTITLE "Укажите каталог, в который установлена копия X-COM."
-${LangFileString} SETUP_XCOM_FOLDER "Для ${GAME_NAME} ${GAME_VERSION} необходима копия одной из следующих игр. Если вы обновляете существующую установку, этот шаг можно пропустить.$\n$\nВо время установки необходимые файлы будут скопированы в следующий каталог. Если вы хотите скопировать их в другой каталог, нажмите кнопку «...» и укажите его. Нажмите «Далее» для продолжения."
+${LangFileString} SETUP_XCOM_FOLDER "Для ${GAME_NAME} ${GAME_VERSION} необходима копия одной из следующих игр. Если вы обновляете установленную игру, этот шаг можно пропустить.$\n$\nВо время установки необходимые файлы будут скопированы в следующий каталог. Если вы хотите скопировать их в другой каталог, нажмите кнопку «...» и укажите его. Нажмите «Далее» для продолжения."
 ${LangFileString} SETUP_UFO_FOLDER "UFO: Enemy Unknown / X-COM: UFO Defense"
 ${LangFileString} SETUP_TFTD_FOLDER "X-COM: Terror From The Deep"
 ${LangFileString} SETUP_GAME "Файлы игры"

@@ -40,7 +40,7 @@ fr:
   STR_COWARDLY: "Lâcheté (-50%)"
   STR_NORMAL: "Normal"
   STR_BOLD: "Audacieux (+50%)"
-  STR_VERY_BOLD: "Très audacieux (+50%)"
+  STR_VERY_BOLD: "Très audacieux (+100%)"
   STR_SOLDIER_GROUP_NOT_ALLOWED: "Ce type de combattant n'est pas autorisé à bord."
   STR_SOLDIER_GROUP_NOT_SAME: "Ce type de combattant n'est pas compatible avec les autres combattant à bord."
   STR_CRAFT_DEPLOYMENT_PREVIEW: "Aperçu"

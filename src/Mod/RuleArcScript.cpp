@@ -44,37 +44,38 @@ RuleArcScript::~RuleArcScript()
  * Loads an arcScript from a YML file.
  * @param node the node within the file we're reading.
  */
-void RuleArcScript::load(const YAML::Node& node)
+void RuleArcScript::load(const YAML::YamlNodeReader& node)
 {
-	if (const YAML::Node & parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);
 	}
 
-	_sequentialArcs = node["sequentialArcs"].as<std::vector<std::string> >(_sequentialArcs);
-	if (node["randomArcs"])
+	reader.tryRead("sequentialArcs", _sequentialArcs);
+	if (reader["randomArcs"])
 	{
-		_randomArcs.load(node["randomArcs"]);
+		_randomArcs.load(reader["randomArcs"]);
 	}
-	_firstMonth = node["firstMonth"].as<int>(_firstMonth);
-	_lastMonth = node["lastMonth"].as<int>(_lastMonth);
-	_executionOdds = node["executionOdds"].as<int>(_executionOdds);
-	_maxArcs = node["maxArcs"].as<int>(_maxArcs);
-	_minDifficulty = node["minDifficulty"].as<int>(_minDifficulty);
-	_maxDifficulty = node["maxDifficulty"].as<int>(_maxDifficulty);
-	_minScore = node["minScore"].as<int>(_minScore);
-	_maxScore = node["maxScore"].as<int>(_maxScore);
-	_minFunds = node["minFunds"].as<int64_t>(_minFunds);
-	_maxFunds = node["maxFunds"].as<int64_t>(_maxFunds);
-	_missionVarName = node["missionVarName"].as<std::string>(_missionVarName);
-	_missionMarkerName = node["missionMarkerName"].as<std::string>(_missionMarkerName);
-	_counterMin = node["counterMin"].as<int>(_counterMin);
-	_counterMax = node["counterMax"].as<int>(_counterMax);
-	_researchTriggers = node["researchTriggers"].as<std::map<std::string, bool> >(_researchTriggers);
-	_itemTriggers = node["itemTriggers"].as<std::map<std::string, bool> >(_itemTriggers);
-	_facilityTriggers = node["facilityTriggers"].as<std::map<std::string, bool> >(_facilityTriggers);
-	_xcomBaseInRegionTriggers = node["xcomBaseInRegionTriggers"].as<std::map<std::string, bool> >(_xcomBaseInRegionTriggers);
-	_xcomBaseInCountryTriggers = node["xcomBaseInCountryTriggers"].as<std::map<std::string, bool> >(_xcomBaseInCountryTriggers);
+	reader.tryRead("firstMonth", _firstMonth);
+	reader.tryRead("lastMonth", _lastMonth);
+	reader.tryRead("executionOdds", _executionOdds);
+	reader.tryRead("maxArcs", _maxArcs);
+	reader.tryRead("minDifficulty", _minDifficulty);
+	reader.tryRead("maxDifficulty", _maxDifficulty);
+	reader.tryRead("minScore", _minScore);
+	reader.tryRead("maxScore", _maxScore);
+	reader.tryRead("minFunds", _minFunds);
+	reader.tryRead("maxFunds", _maxFunds);
+	reader.tryRead("missionVarName", _missionVarName);
+	reader.tryRead("missionMarkerName", _missionMarkerName);
+	reader.tryRead("counterMin", _counterMin);
+	reader.tryRead("counterMax", _counterMax);
+	reader.tryRead("researchTriggers", _researchTriggers);
+	reader.tryRead("itemTriggers", _itemTriggers);
+	reader.tryRead("facilityTriggers", _facilityTriggers);
+	reader.tryRead("xcomBaseInRegionTriggers", _xcomBaseInRegionTriggers);
+	reader.tryRead("xcomBaseInCountryTriggers", _xcomBaseInCountryTriggers);
 }
 
 }

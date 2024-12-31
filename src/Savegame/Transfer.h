@@ -18,7 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -75,9 +75,9 @@ public:
 	/// Cleans up the transfer.
 	~Transfer();
 	/// Loads the transfer from YAML.
-	bool load(const YAML::Node& node, Base *base, const Mod *mod, SavedGame *save);
+	bool load(const YAML::YamlNodeReader& reader, Base *base, const Mod *mod, SavedGame *save);
 	/// Saves the transfer to YAML.
-	YAML::Node save(const Base *b, const Mod *mod) const;
+	void save(YAML::YamlNodeWriter writer, const Base *b, const Mod *mod) const;
 	/// Sets the soldier of the transfer.
 	void setSoldier(Soldier *soldier);
 	/// Sets the craft of the transfer.

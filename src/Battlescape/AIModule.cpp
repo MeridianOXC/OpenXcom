@@ -96,18 +96,14 @@ void AIModule::reset()
  * Loads the AI state from a YAML file.
  * @param node YAML node.
  */
-void AIModule::load(const YAML::Node &node)
+void AIModule::load(const YAML::YamlNodeReader& reader)
 {
-	int fromNodeID, toNodeID;
-	fromNodeID = node["fromNode"].as<int>(-1);
-	toNodeID = node["toNode"].as<int>(-1);
-	_AIMode = node["AIMode"].as<int>(AI_PATROL);
-	_wasHitBy = node["wasHitBy"].as<std::vector<int> >(_wasHitBy);
-	_weaponPickedUp = node["weaponPickedUp"].as<bool>(_weaponPickedUp);
-	if (node["targetFaction"])
-	{
-		_targetFaction = (UnitFaction)node["targetFaction"].as<int>(_targetFaction);
-	}
+	int fromNodeID = reader["fromNode"].readVal(-1);
+	int toNodeID = reader["toNode"].readVal(-1);
+	_AIMode = reader["AIMode"].readVal(AI_PATROL);
+	reader.tryRead("wasHitBy", _wasHitBy);
+	reader.tryRead("weaponPickedUp", _weaponPickedUp);
+	reader.tryRead("targetFaction", _targetFaction);
 
 	// TODO: Figure out why AI are sometimes left with junk nodes
 	if (fromNodeID >= 0 && (size_t)fromNodeID < _save->getNodes()->size())
@@ -124,27 +120,20 @@ void AIModule::load(const YAML::Node &node)
  * Saves the AI state to a YAML file.
  * @return YAML node.
  */
-YAML::Node AIModule::save() const
+void AIModule::save(YAML::YamlNodeWriter writer) const
 {
-	int fromNodeID = -1, toNodeID = -1;
-	if (_fromNode)
-		fromNodeID = _fromNode->getID();
-	if (_toNode)
-		toNodeID = _toNode->getID();
-
-	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
-	node["fromNode"] = fromNodeID;
-	node["toNode"] = toNodeID;
-	node["AIMode"] = _AIMode;
-	node["wasHitBy"] = _wasHitBy;
+	writer.setAsMap();
+	writer.setFlowStyle();
+	writer.write("fromNode", _fromNode ? _fromNode->getID() : -1);
+	writer.write("toNode", _toNode ? _toNode->getID() : -1);
+	writer.write("AIMode", _AIMode);
+	writer.write("wasHitBy", _wasHitBy);
 	if (_weaponPickedUp)
-		node["weaponPickedUp"] = _weaponPickedUp;
+		writer.write("weaponPickedUp", _weaponPickedUp);
 	if (_unit->getOriginalFaction() == FACTION_HOSTILE && _unit->getFaction() == FACTION_NEUTRAL && _targetFaction == FACTION_HOSTILE)
 	{
-		node["targetFaction"] = (int)_targetFaction;
+		writer.write("targetFaction", _targetFaction);
 	}
-	return node;
 }
 
 /**

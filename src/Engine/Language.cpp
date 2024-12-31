@@ -186,38 +186,30 @@ void Language::getList(std::vector<std::string> &ids, std::vector<std::string> &
  */
 void Language::loadFile(const FileMap::FileRecord *frec)
 {
-	YAML::Node doc = frec->getYAML();
-	YAML::Node lang;
-	if (doc.begin()->second.IsMap())
-	{
-		lang = doc.begin()->second;
-	}
-	// Fallback when file is missing language specifier
-	else
-	{
-		lang = doc;
-	}
-	for (YAML::const_iterator i = lang.begin(); i != lang.end(); ++i)
+	const YAML::YamlRootNodeReader& reader = frec->getYAML();
+	YAML::YamlNodeReader langMap = reader[0].isMap() ? reader[0] : reader.toBase();
+
+	for (const auto& langReader : langMap.children())
 	{
 		// Regular strings
-		if (i->second.IsScalar())
+		if (langReader.hasVal())
 		{
-			std::string value = i->second.as<std::string>();
+			std::string value = langReader.readVal<std::string>();
 			if (!value.empty())
 			{
-				std::string key = i->first.as<std::string>();
+				std::string key = langReader.readKey<std::string>();
 				_strings[key] = loadString(value);
 			}
 		}
 		// Strings with plurality
-		else if (i->second.IsMap())
+		else if (langReader.isMap())
 		{
-			for (YAML::const_iterator j = i->second.begin(); j != i->second.end(); ++j)
+			for (const auto& pluralityReader : langReader.children())
 			{
-				std::string value = j->second.as<std::string>();
+				std::string value = pluralityReader.readVal<std::string>("");
 				if (!value.empty())
 				{
-					std::string key = i->first.as<std::string>() + "_" + j->first.as<std::string>();
+					std::string key = langReader.readKey<std::string>() + "_" + pluralityReader.readKey<std::string>();
 					_strings[key] = loadString(value);
 				}
 			}

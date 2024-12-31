@@ -64,43 +64,29 @@ AlienMission::~AlienMission()
  * @param node The YAML node containing the data.
  * @param game The game data, required to locate the alien base.
  */
-void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
+void AlienMission::load(const YAML::YamlNodeReader& reader, SavedGame &game, const Mod* mod)
 {
-	_region = node["region"].as<std::string>(_region);
-	_race = node["race"].as<std::string>(_race);
-	_nextWave = node["nextWave"].as<size_t>(_nextWave);
-	_nextUfoCounter = node["nextUfoCounter"].as<size_t>(_nextUfoCounter);
-	_spawnCountdown = node["spawnCountdown"].as<size_t>(_spawnCountdown);
-	_liveUfos = node["liveUfos"].as<size_t>(_liveUfos);
-	_interrupted = node["interrupted"].as<bool>(_interrupted);
-	_multiUfoRetaliationInProgress = node["multiUfoRetaliationInProgress"].as<bool>(_multiUfoRetaliationInProgress);
-	_uniqueID = node["uniqueID"].as<int>(_uniqueID);
-	if (const YAML::Node &base = node["alienBase"])
+	reader.tryRead("region", _region);
+	reader.tryRead("race", _race);
+	reader.tryRead("nextWave", _nextWave);
+	reader.tryRead("nextUfoCounter", _nextUfoCounter);
+	reader.tryRead("spawnCountdown", _spawnCountdown);
+	reader.tryRead("liveUfos", _liveUfos);
+	reader.tryRead("interrupted", _interrupted);
+	reader.tryRead("multiUfoRetaliationInProgress", _multiUfoRetaliationInProgress);
+	reader.tryRead("uniqueID", _uniqueID);
+	if (const auto& base = reader["alienBase"])
 	{
-		int id = base.as<int>(-1);
-		std::string type = "STR_ALIEN_BASE";
-		// New format
-		if (id == -1)
-		{
-			id = base["id"].as<int>();
-			type = base["type"].as<std::string>();
-		}
-		AlienBase* found = nullptr;
-		for (auto* ab : *game.getAlienBases())
-		{
-			if (ab->getId() == id && ab->getDeployment()->getMarkerName() == type)
-			{
-				found = ab;
-				break;
-			}
-		}
-		if (!found)
-		{
+		int id = base.isMap() ? base["id"].readVal<int>() : base.readVal<int>();
+		std::string type = base.isMap() ? base["type"].readVal<std::string>() : "STR_ALIEN_BASE";
+		auto found = std::find_if(game.getAlienBases()->begin(), game.getAlienBases()->end(),
+								   [&](AlienBase* ab)
+								   { return ab->getId() == id && ab->getDeployment()->getMarkerName() == type; });
+		if (found == game.getAlienBases()->end())
 			throw Exception("Corrupted save: Invalid base for mission.");
-		}
-		_base = found;
+		_base = *found;
 	}
-	_missionSiteZoneArea = node["missionSiteZone"].as<int>(_missionSiteZoneArea);
+	reader.tryRead("missionSiteZone", _missionSiteZoneArea);
 
 	// fix invalid saves
 	RuleRegion* region = mod->getRegion(_region, false);
@@ -137,31 +123,24 @@ void AlienMission::load(const YAML::Node& node, SavedGame &game, const Mod* mod)
  * Saves the alien mission to a YAML file.
  * @return YAML node.
  */
-YAML::Node AlienMission::save() const
+void AlienMission::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node["type"] = _rule.getType();
-	node["region"] = _region;
-	node["race"] = _race;
-	node["nextWave"] = _nextWave;
-	node["nextUfoCounter"] = _nextUfoCounter;
-	node["spawnCountdown"] = _spawnCountdown;
-	node["liveUfos"] = _liveUfos;
+	writer.setAsMap();
+	writer.write("type", _rule.getType());
+	writer.write("region", _region);
+	writer.write("race", _race);
+	writer.write("nextWave", _nextWave);
+	writer.write("nextUfoCounter", _nextUfoCounter);
+	writer.write("spawnCountdown", _spawnCountdown);
+	writer.write("liveUfos", _liveUfos);
 	if (_interrupted)
-	{
-		node["interrupted"] = _interrupted;
-	}
+		writer.write("interrupted", _interrupted);
 	if (_multiUfoRetaliationInProgress)
-	{
-		node["multiUfoRetaliationInProgress"] = _multiUfoRetaliationInProgress;
-	}
-	node["uniqueID"] = _uniqueID;
+		writer.write("multiUfoRetaliationInProgress", _multiUfoRetaliationInProgress);
+	writer.write("uniqueID", _uniqueID);
 	if (_base)
-	{
-		node["alienBase"] = _base->saveId();
-	}
-	node["missionSiteZone"] = _missionSiteZoneArea;
-	return node;
+		_base->saveId(writer["alienBase"]);
+	writer.write("missionSiteZone", _missionSiteZoneArea);
 }
 
 /**

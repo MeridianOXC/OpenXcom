@@ -21,6 +21,7 @@
 #include "../Mod/Mod.h"
 #include "../Engine/Collections.h"
 #include "BattleItem.h"
+#include <optional>
 
 namespace OpenXcom
 {
@@ -34,13 +35,13 @@ const std::string EmptyPlaceHolder = "NONE";
  * Initializes a new soldier-equipment layout item from YAML.
  * @param node YAML node.
  */
-EquipmentLayoutItem::EquipmentLayoutItem(const YAML::Node &node, const Mod* mod)
+EquipmentLayoutItem::EquipmentLayoutItem(const YAML::YamlNodeReader& reader, const Mod* mod)
 {
 	for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
 	{
 		_ammoItem[slot] = nullptr;
 	}
-	load(node, mod);
+	load(reader, mod);
 }
 
 /**
@@ -146,54 +147,46 @@ bool EquipmentLayoutItem::isFixed() const
  * Loads the soldier-equipment layout item from a YAML file.
  * @param node YAML node.
  */
-void EquipmentLayoutItem::load(const YAML::Node &node, const Mod* mod)
+void EquipmentLayoutItem::load(const YAML::YamlNodeReader& reader, const Mod* mod)
 {
-	_itemType = mod->getItem(node["itemType"].as<std::string>(), true);
-	_slot = mod->getInventory(node["slot"].as<std::string>(), true);
-	_slotX = node["slotX"].as<int>(0);
-	_slotY = node["slotY"].as<int>(0);
-	if (const YAML::Node &ammo = node["ammoItem"])
+	_itemType = mod->getItem(reader["itemType"].readVal<std::string>(), true);
+	_slot = mod->getInventory(reader["slot"].readVal<std::string>(), true);
+	_slotX = reader["slotX"].readVal(0);
+	_slotY = reader["slotY"].readVal(0);
+	if (const auto& ammoSlots = reader["ammoItemSlots"])
 	{
-		_ammoItem[0] = mod->getItem(ammo.as<std::string>(), true);
-	}
-	if (const YAML::Node &ammoSlots = node["ammoItemSlots"])
-	{
-		for (int slot = 0; slot < RuleItem::AmmoSlotMax; ++slot)
+		for (int slot = 0; slot < RuleItem::AmmoSlotMax && ammoSlots[slot]; ++slot)
 		{
-			if (ammoSlots[slot])
-			{
-				auto s = ammoSlots[slot].as<std::string>();
-				_ammoItem[slot] = s != EmptyPlaceHolder ? mod->getItem(s, true) : nullptr;
-			}
+			auto s = ammoSlots[slot].readVal<std::string>();
+			_ammoItem[slot] = s != EmptyPlaceHolder ? mod->getItem(s, true) : nullptr;
 		}
 	}
-	_fuseTimer = node["fuseTimer"].as<int>(-1);
-	_fixed = node["fixed"].as<bool>(false);
+	else if (const auto& ammo = reader["ammoItem"])
+	{
+		_ammoItem[0] = mod->getItem(ammo.readVal<std::string>(), true);
+	}
+	_fuseTimer = reader["fuseTimer"].readVal(-1);
+	_fixed = reader["fixed"].readVal(false);
 }
 
 /**
  * Saves the soldier-equipment layout item to a YAML file.
  * @return YAML node.
  */
-YAML::Node EquipmentLayoutItem::save() const
+void EquipmentLayoutItem::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node.SetStyle(YAML::EmitterStyle::Flow);
-	node["itemType"] = _itemType->getType();
-	node["slot"] = _slot->getId();
+	writer.setAsMap();
+	writer.setFlowStyle();
+	writer.write("itemType", _itemType->getType());
+	writer.write("slot", _slot->getId());
 	// only save this info if it's needed, reduce clutter in saves
 	if (_slotX != 0)
-	{
-		node["slotX"] = _slotX;
-	}
+		writer.write("slotX", _slotX);
 	if (_slotY != 0)
-	{
-		node["slotY"] = _slotY;
-	}
+		writer.write("slotY", _slotY);
 	if (_ammoItem[0] != nullptr)
-	{
-		node["ammoItem"] = _ammoItem[0]->getType();
-	}
+		writer.write("ammoItem", _ammoItem[0]->getType());
+	std::optional<YAML::YamlNodeWriter> ammoSlotWriter;
 	Collections::untilLastIf(
 		_ammoItem,
 		[](const RuleItem* s)
@@ -202,18 +195,17 @@ YAML::Node EquipmentLayoutItem::save() const
 		},
 		[&](const RuleItem* s)
 		{
-			node["ammoItemSlots"].push_back(s ? s->getType() : EmptyPlaceHolder);
-		}
-	);
+			if (!ammoSlotWriter.has_value())
+			{
+				ammoSlotWriter.emplace(writer["ammoItemSlots"]);
+				ammoSlotWriter->setAsSeq();
+			}
+			ammoSlotWriter->write(s ? s->getType() : EmptyPlaceHolder);
+		});
 	if (_fuseTimer >= 0)
-	{
-		node["fuseTimer"] = _fuseTimer;
-	}
+		writer.write("fuseTimer", _fuseTimer);
 	if (_fixed)
-	{
-		node["fixed"] = _fixed;
-	}
-	return node;
+		writer.write("fixed", _fixed);
 }
 
 }

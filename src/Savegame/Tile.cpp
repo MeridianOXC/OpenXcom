@@ -87,29 +87,30 @@ Tile::~Tile()
  * Load the tile from a YAML node.
  * @param node YAML node.
  */
-void Tile::load(const YAML::Node &node)
+void Tile::load(const YAML::YamlNodeReader& reader)
 {
-	//_position = node["position"].as<Position>(_position);
+	//reader.tryRead("position", _position);
 	for (int i = 0; i < 4; i++)
 	{
-		_mapData->ID[i] = node["mapDataID"][i].as<int>(_mapData->ID[i]);
-		_mapData->SetID[i] = node["mapDataSetID"][i].as<int>(_mapData->SetID[i]);
+		reader["mapDataID"][i].tryReadVal(_mapData->ID[i]);
+		reader["mapDataSetID"][i].tryReadVal(_mapData->SetID[i]);
 	}
-	_fire = node["fire"].as<int>(_fire);
-	_smoke = node["smoke"].as<int>(_smoke);
-	if (node["discovered"])
+
+	reader.tryRead("fire", _fire);
+	reader.tryRead("smoke", _smoke);
+	if (const auto& discovered = reader["discovered"])
 	{
 		for (int i = 0; i < 3; i++)
 		{
 			int realTilePart = (i == 2 ? 0 : i - 1); //convert old convention to new one
-			_objectsCache[realTilePart].discovered = (Uint8)node["discovered"][i].as<bool>();
+			_objectsCache[realTilePart].discovered = (Uint8)discovered[i].readVal<bool>();
 		}
 	}
-	if (node["openDoorWest"])
+	if (reader["openDoorWest"])
 	{
 		_objectsCache[1].currentFrame = 7;
 	}
-	if (node["openDoorNorth"])
+	if (reader["openDoorNorth"])
 	{
 		_objectsCache[2].currentFrame = 7;
 	}
@@ -155,19 +156,18 @@ void Tile::loadBinary(Uint8 *buffer, Tile::SerializationKey& serKey)
  * Saves the tile to a YAML node.
  * @return YAML node.
  */
-YAML::Node Tile::save() const
+void Tile::save(YAML::YamlNodeWriter writer) const
 {
-	YAML::Node node;
-	node["position"] = _pos;
-	for (int i = 0; i < 4; i++)
-	{
-		node["mapDataID"].push_back(_mapData->ID[i]);
-		node["mapDataSetID"].push_back(_mapData->SetID[i]);
-	}
+	writer.setAsMap();
+	writer.write("position", _pos);
+	std::vector<int> ids(std::begin(_mapData->ID), std::end(_mapData->ID));
+	std::vector<int> setIds(std::begin(_mapData->SetID), std::end(_mapData->SetID));
+	writer.write("mapDataID", ids);
+	writer.write("mapDataSetID", setIds);
 	if (_smoke)
-		node["smoke"] = _smoke;
+		writer.write("smoke", _smoke);
 	if (_fire)
-		node["fire"] = _fire;
+		writer.write("fire", _fire);
 	if (_objectsCache[O_FLOOR].discovered || _objectsCache[O_WESTWALL].discovered || _objectsCache[O_NORTHWALL].discovered)
 	{
 		throw Exception("Obsolete code");
@@ -178,13 +178,12 @@ YAML::Node Tile::save() const
 	}
 	if (isUfoDoorOpen(O_WESTWALL))
 	{
-		node["openDoorWest"] = true;
+		writer.write("openDoorWest", true);
 	}
 	if (isUfoDoorOpen(O_NORTHWALL))
 	{
-		node["openDoorNorth"] = true;
+		writer.write("openDoorNorth", true);
 	}
-	return node;
 }
 
 /**

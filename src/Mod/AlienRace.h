@@ -19,7 +19,7 @@
  */
 #include <string>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "../Savegame/WeightedOptions.h"
 
 enum AlienRank{AR_HUMAN = -1, AR_COMMANDER, AR_LEADER, AR_ENGINEER, AR_MEDIC, AR_NAVIGATOR, AR_SOLDIER, AR_TERRORIST, AR_TERRORIST2};
@@ -50,7 +50,7 @@ public:
 	/// Cleans up the alien race ruleset.
 	~AlienRace();
 	/// Loads alien race data from YAML.
-	void load(const YAML::Node& node, const Mod* mod);
+	void load(const YAML::YamlNodeReader& reader, const Mod* mod);
 	/// Gets the alien race's id.
 	const std::string &getId() const;
 	/// Gets the alien base weapon deploy.

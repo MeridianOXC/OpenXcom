@@ -19,7 +19,7 @@
  */
 #include <map>
 #include <string>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 
 namespace OpenXcom
 {
@@ -60,7 +60,7 @@ public:
 	/// Cleans up the EnviroEffects ruleset.
 	~RuleEnviroEffects();
 	/// Loads EnviroEffects data from YAML.
-	void load(const YAML::Node& node, const Mod* mod);
+	void load(const YAML::YamlNodeReader& reader, const Mod* mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
 	/// Gets the EnviroEffects's type.
@@ -80,5 +80,8 @@ public:
 	/// Gets the map shock indicator sprite name.
 	const std::string& getMapShockIndicator() const { return _mapShockIndicator; }
 };
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, EnvironmentalCondition* val);
 
 }

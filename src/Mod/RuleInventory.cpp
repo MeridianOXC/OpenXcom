@@ -22,31 +22,6 @@
 #include "../Engine/Screen.h"
 #include "../Engine/ScriptBind.h"
 
-namespace YAML
-{
-	template<>
-	struct convert<OpenXcom::RuleSlot>
-	{
-		static Node encode(const OpenXcom::RuleSlot& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::RuleSlot& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 2)
-				return false;
-
-			rhs.x = node[0].as<int>();
-			rhs.y = node[1].as<int>();
-			return true;
-		}
-	};
-}
-
 namespace OpenXcom
 {
 
@@ -68,19 +43,19 @@ RuleInventory::~RuleInventory()
  * @param node YAML node.
  * @param listOrder The list weight for this inventory.
  */
-void RuleInventory::load(const YAML::Node &node)
+void RuleInventory::load(const YAML::YamlNodeReader& reader)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent);
 	}
 
-	_x = node["x"].as<int>(_x);
-	_y = node["y"].as<int>(_y);
-	_type = (InventoryType)node["type"].as<int>(_type);
-	_slots = node["slots"].as< std::vector<RuleSlot> >(_slots);
-	_costs = node["costs"].as< std::map<std::string, int> >(_costs);
-	_listOrder = node["listOrder"].as<int>(_listOrder);
+	reader.tryRead("x", _x);
+	reader.tryRead("y", _y);
+	reader.tryRead("type", _type);
+	reader.tryRead("slots", _slots);
+	reader.tryRead("costs", _costs);
+	reader.tryRead("listOrder", _listOrder);
 	if (_id == "STR_RIGHT_HAND")
 	{
 		_hand = 2;
@@ -353,6 +328,15 @@ void RuleInventory::ScriptRegister(ScriptParserBase* parser)
 	bu.addCustomConst("INV_GROUND", INV_GROUND);
 	bu.addCustomConst("INV_SLOT", INV_SLOT);
 	bu.addCustomConst("INV_HAND", INV_HAND);
+}
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, RuleSlot* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	val->x = reader[0].readVal<int>();
+	val->y = reader[1].readVal<int>();
+	return true;
 }
 
 }

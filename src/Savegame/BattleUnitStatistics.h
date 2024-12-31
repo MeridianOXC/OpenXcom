@@ -19,7 +19,7 @@
 */
 #include <string>
 #include <sstream>
-#include <yaml-cpp/yaml.h>
+#include "../Engine/Yaml.h"
 #include "BattleUnit.h"
 #include "../Engine/Language.h"
 
@@ -61,47 +61,44 @@ struct BattleUnitKills
 	}
 
 	/// Load
-	void load(const YAML::Node &node)
+	void load(const YAML::YamlNodeReader& reader)
 	{
-		if (const YAML::Node n = node["name"])
-		{
-			name = n.as<std::string>();
-		}
-		type = node["type"].as<std::string>(type);
-		rank = node["rank"].as<std::string>(rank);
-		race = node["race"].as<std::string>(race);
-		weapon = node["weapon"].as<std::string>(weapon);
-		weaponAmmo = node["weaponAmmo"].as<std::string>(weaponAmmo);
-		status = (UnitStatus)node["status"].as<int>();
-		faction = (UnitFaction)node["faction"].as<int>();
-		mission = node["mission"].as<int>(mission);
-		turn = node["turn"].as<int>(turn);
-		side = (UnitSide)node["side"].as<int>();
-		bodypart = (UnitBodyPart)node["bodypart"].as<int>();
-		id = node["id"].as<int>(id);
+		reader.tryRead("type", type); // The ones killed are usually hostiles, so read this first
+		if (type.empty())
+			reader.tryRead("name", name); // Can't have both type and name at the same time
+		reader.tryRead("rank", rank);
+		reader.tryRead("race", race);
+		reader.tryRead("weapon", weapon);
+		reader.tryRead("weaponAmmo", weaponAmmo);
+		reader.tryRead("status", status);
+		reader.tryRead("faction", faction);
+		reader.tryRead("mission", mission);
+		reader.tryRead("turn", turn);
+		reader.tryRead("side", side);
+		reader.tryRead("bodypart", bodypart);
+		reader.tryRead("id", id);
 	}
 
 	/// Save
-	YAML::Node save() const
+	void save(YAML::YamlNodeWriter writer) const
 	{
-		YAML::Node node;
-		node.SetStyle(YAML::EmitterStyle::Flow);
+		writer.setAsMap();
+		writer.setFlowStyle();
 		if (!name.empty())
-			node["name"] = name;
+			writer.write("name", name);
 		if (!type.empty())
-			node["type"] = type;
-		node["rank"] = rank;
-		node["race"] = race;
-		node["weapon"] = weapon;
-		node["weaponAmmo"] = weaponAmmo;
-		node["status"] = (int)status;
-		node["faction"] = (int)faction;
-		node["mission"] = mission;
-		node["turn"] = turn;
-		node["side"] = (int)side;
-		node["bodypart"] = (int)bodypart;
-		node["id"] = id;
-		return node;
+			writer.write("type", type);
+		writer.write("rank", rank);
+		writer.write("race", race);
+		writer.write("weapon", weapon);
+		writer.write("weaponAmmo", weaponAmmo);
+		writer.write("status", status);
+		writer.write("faction", faction);
+		writer.write("mission", mission);
+		writer.write("turn", turn);
+		writer.write("side", side);
+		writer.write("bodypart", bodypart);
+		writer.write("id", id);
 	}
 
 	/// Convert kill Status to string.
@@ -295,7 +292,7 @@ struct BattleUnitKills
 		}
 	}
 
-	BattleUnitKills(const YAML::Node& node) { load(node); }
+	BattleUnitKills(const YAML::YamlNodeReader& reader) { load(reader); }
 	BattleUnitKills(): faction(FACTION_HOSTILE), status(STATUS_IGNORE_ME), mission(0), turn(0), id(0), side(SIDE_FRONT), bodypart(BODYPART_HEAD) { }
 	~BattleUnitKills() { }
 };
@@ -359,72 +356,71 @@ struct BattleUnitStatistics
 	}
 
 	/// Load function
-	void load(const YAML::Node& node)
+	void load(const YAML::YamlNodeReader& node)
 	{
-		wasUnconcious = node["wasUnconcious"].as<bool>(wasUnconcious);
-		if (const YAML::Node &YAMLkills = node["kills"])
-		{
-			for (YAML::const_iterator i = YAMLkills.begin(); i != YAMLkills.end(); ++i)
-				kills.push_back(new BattleUnitKills(*i));
-		}
-		shotAtCounter = node["shotAtCounter"].as<int>(shotAtCounter);
-		hitCounter = node["hitCounter"].as<int>(hitCounter);
-		shotByFriendlyCounter = node["shotByFriendlyCounter"].as<int>(shotByFriendlyCounter);
-		shotFriendlyCounter = node["shotFriendlyCounter"].as<int>(shotFriendlyCounter);
-		loneSurvivor = node["loneSurvivor"].as<bool>(loneSurvivor);
-		ironMan = node["ironMan"].as<bool>(ironMan);
-		longDistanceHitCounter = node["longDistanceHitCounter"].as<int>(longDistanceHitCounter);
-		lowAccuracyHitCounter = node["lowAccuracyHitCounter"].as<int>(lowAccuracyHitCounter);
-		shotsFiredCounter = node["shotsFiredCounter"].as<int>(shotsFiredCounter);
-		shotsLandedCounter = node["shotsLandedCounter"].as<int>(shotsLandedCounter);
-		nikeCross = node["nikeCross"].as<bool>(nikeCross);
-		mercyCross = node["mercyCross"].as<bool>(mercyCross);
-		woundsHealed = node["woundsHealed"].as<int>(woundsHealed);
-		appliedStimulant = node["appliedStimulant"].as<int>(appliedStimulant);
-		appliedPainKill = node["appliedPainKill"].as<int>(appliedPainKill);
-		revivedSoldier = node["revivedSoldier"].as<int>(revivedSoldier);
-		revivedHostile = node["revivedHostile"].as<int>(revivedHostile);
-		revivedNeutral = node["revivedNeutral"].as<int>(revivedNeutral);
-		martyr = node["martyr"].as<int>(martyr);
-		slaveKills = node["slaveKills"].as<int>(slaveKills);
+		const auto& reader = node.useIndex();
+		reader.tryRead("wasUnconcious", wasUnconcious);
+		for (const auto& kill : reader["kills"].children())
+			kills.push_back(new BattleUnitKills(kill));
+		reader.tryRead("shotAtCounter", shotAtCounter);
+		reader.tryRead("hitCounter", hitCounter);
+		reader.tryRead("shotByFriendlyCounter", shotByFriendlyCounter);
+		reader.tryRead("shotFriendlyCounter", shotFriendlyCounter);
+		reader.tryRead("loneSurvivor", loneSurvivor);
+		reader.tryRead("ironMan", ironMan);
+		reader.tryRead("longDistanceHitCounter", longDistanceHitCounter);
+		reader.tryRead("lowAccuracyHitCounter", lowAccuracyHitCounter);
+		reader.tryRead("shotsFiredCounter", shotsFiredCounter);
+		reader.tryRead("shotsLandedCounter", shotsLandedCounter);
+		reader.tryRead("nikeCross", nikeCross);
+		reader.tryRead("mercyCross", mercyCross);
+		reader.tryRead("woundsHealed", woundsHealed);
+		reader.tryRead("appliedStimulant", appliedStimulant);
+		reader.tryRead("appliedPainKill", appliedPainKill);
+		reader.tryRead("revivedSoldier", revivedSoldier);
+		reader.tryRead("revivedHostile", revivedHostile);
+		reader.tryRead("revivedNeutral", revivedNeutral);
+		reader.tryRead("martyr", martyr);
+		reader.tryRead("slaveKills", slaveKills);
 	}
 
 	/// Save function
-	YAML::Node save() const
+	void save(YAML::YamlNodeWriter writer) const
 	{
-		YAML::Node node;
-		if (wasUnconcious) node["wasUnconcious"] = wasUnconcious;
-		if (!kills.empty())
+		writer.setAsMap();
+		if (wasUnconcious) writer.write("wasUnconcious", wasUnconcious);
+		writer.write("kills", kills,
+			[](YAML::YamlNodeWriter& w, BattleUnitKills* k)
+			{ k->save(w.write()); });
+		if (shotAtCounter) writer.write("shotAtCounter", shotAtCounter);
+		if (hitCounter) writer.write("hitCounter", hitCounter);
+		if (shotByFriendlyCounter) writer.write("shotByFriendlyCounter", shotByFriendlyCounter);
+		if (shotFriendlyCounter) writer.write("shotFriendlyCounter", shotFriendlyCounter);
+		if (loneSurvivor) writer.write("loneSurvivor", loneSurvivor);
+		if (ironMan) writer.write("ironMan", ironMan);
+		if (longDistanceHitCounter) writer.write("longDistanceHitCounter", longDistanceHitCounter);
+		if (lowAccuracyHitCounter) writer.write("lowAccuracyHitCounter", lowAccuracyHitCounter);
+		if (shotsFiredCounter) writer.write("shotsFiredCounter", shotsFiredCounter);
+		if (shotsLandedCounter) writer.write("shotsLandedCounter", shotsLandedCounter);
+		if (nikeCross) writer.write("nikeCross", nikeCross);
+		if (mercyCross) writer.write("mercyCross", mercyCross);
+		if (woundsHealed) writer.write("woundsHealed", woundsHealed);
+		if (appliedStimulant) writer.write("appliedStimulant", appliedStimulant);
+		if (appliedPainKill) writer.write("appliedPainKill", appliedPainKill);
+		if (revivedSoldier) writer.write("revivedSoldier", revivedSoldier);
+		if (revivedHostile) writer.write("revivedHostile", revivedHostile);
+		if (revivedNeutral) writer.write("revivedNeutral", revivedNeutral);
+		if (martyr) writer.write("martyr", martyr);
+		if (slaveKills) writer.write("slaveKills", slaveKills);
+		// for backwards compatibility, we output empty map as null
+		if (!writer.toReader()[0])
 		{
-			for (const auto* buk : kills)
-			{
-				node["kills"].push_back(buk->save());
-			}
+			writer.unsetAsMap();
+			writer.setValueNull();
 		}
-		if (shotAtCounter) node["shotAtCounter"] = shotAtCounter;
-		if (hitCounter) node["hitCounter"] = hitCounter;
-		if (shotByFriendlyCounter) node["shotByFriendlyCounter"] = shotByFriendlyCounter;
-		if (shotFriendlyCounter) node["shotFriendlyCounter"] = shotFriendlyCounter;
-		if (loneSurvivor) node["loneSurvivor"] = loneSurvivor;
-		if (ironMan) node["ironMan"] = ironMan;
-		if (longDistanceHitCounter) node["longDistanceHitCounter"] = longDistanceHitCounter;
-		if (lowAccuracyHitCounter) node["lowAccuracyHitCounter"] = lowAccuracyHitCounter;
-		if (shotsFiredCounter) node["shotsFiredCounter"] = shotsFiredCounter;
-		if (shotsLandedCounter) node["shotsLandedCounter"] = shotsLandedCounter;
-		if (nikeCross) node["nikeCross"] = nikeCross;
-		if (mercyCross) node["mercyCross"] = mercyCross;
-		if (woundsHealed) node["woundsHealed"] = woundsHealed;
-		if (appliedStimulant) node["appliedStimulant"] = appliedStimulant;
-		if (appliedPainKill) node["appliedPainKill"] = appliedPainKill;
-		if (revivedSoldier) node["revivedSoldier"] = revivedSoldier;
-		if (revivedHostile) node["revivedHostile"] = revivedHostile;
-		if (revivedNeutral) node["revivedNeutral"] = revivedNeutral;
-		if (martyr) node["martyr"] = martyr;
-		if (slaveKills) node["slaveKills"] = slaveKills;
-		return node;
 	}
 
-	BattleUnitStatistics(const YAML::Node& node) { load(node); }
+	BattleUnitStatistics(const YAML::YamlNodeReader& reader) { load(reader); }
 	BattleUnitStatistics() : wasUnconcious(false), shotAtCounter(0), hitCounter(0), shotByFriendlyCounter(0), shotFriendlyCounter(0), loneSurvivor(false), ironMan(false), longDistanceHitCounter(0), lowAccuracyHitCounter(0), shotsFiredCounter(0), shotsLandedCounter(0), kills(), daysWounded(0), KIA(false), nikeCross(false), mercyCross(false), woundsHealed(0), appliedStimulant(0), appliedPainKill(0), revivedSoldier(0), revivedHostile(0), revivedNeutral(0), MIA(false), martyr(0), slaveKills(0) { }
 	~BattleUnitStatistics() { }
 };

@@ -22,158 +22,6 @@
 #include "../Mod/Mod.h"
 #include "../fmath.h"
 
-namespace YAML
-{
-	template<>
-	struct convert<OpenXcom::ItemSet>
-	{
-		static Node encode(const OpenXcom::ItemSet& rhs)
-		{
-			Node node;
-			node = rhs.items;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::ItemSet& rhs)
-		{
-			if (!node.IsSequence())
-				return false;
-
-			rhs.items = node.as< std::vector<std::string> >(rhs.items);
-			return true;
-		}
-	};
-	template<>
-	struct convert<OpenXcom::DeploymentData>
-	{
-		static Node encode(const OpenXcom::DeploymentData& rhs)
-		{
-			Node node;
-			node["alienRank"] = rhs.alienRank;
-			node["customUnitType"] = rhs.customUnitType;
-			node["lowQty"] = rhs.lowQty;
-			node["medQty"] = rhs.medQty;
-			node["highQty"] = rhs.highQty;
-			node["dQty"] = rhs.dQty;
-			node["extraQty"] = rhs.extraQty;
-			node["percentageOutsideUfo"] = rhs.percentageOutsideUfo;
-			node["itemSets"] = rhs.itemSets;
-			node["extraRandomItems"] = rhs.extraRandomItems;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::DeploymentData& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-
-			rhs.alienRank = node["alienRank"].as<int>(rhs.alienRank);
-			rhs.customUnitType = node["customUnitType"].as<std::string>(rhs.customUnitType);
-			rhs.lowQty = node["lowQty"].as<int>(rhs.lowQty);
-			rhs.medQty = node["medQty"].as<int>(rhs.medQty);
-			rhs.highQty = node["highQty"].as<int>(rhs.highQty);
-			rhs.dQty = node["dQty"].as<int>(rhs.dQty);
-			rhs.extraQty = node["extraQty"].as<int>(0); // give this a default, as it's not 100% needed, unlike the others.
-			rhs.percentageOutsideUfo = node["percentageOutsideUfo"].as<int>(rhs.percentageOutsideUfo);
-			rhs.itemSets = node["itemSets"].as< std::vector<OpenXcom::ItemSet> >(rhs.itemSets);
-			rhs.extraRandomItems = node["extraRandomItems"].as< std::vector<OpenXcom::ItemSet> >(rhs.extraRandomItems);
-			return true;
-		}
-	};
-	template<>
-	struct convert<OpenXcom::BriefingData>
-	{
-		static Node encode(const OpenXcom::BriefingData& rhs)
-		{
-			Node node;
-			node["palette"] = rhs.palette;
-			node["textOffset"] = rhs.textOffset;
-			node["title"] = rhs.title;
-			node["desc"] = rhs.desc;
-			node["music"] = rhs.music;
-			node["cutscene"] = rhs.cutscene;
-			node["background"] = rhs.background;
-			node["showCraft"] = rhs.showCraft;
-			node["showTarget"] = rhs.showTarget;
-			return node;
-		}
-		static bool decode(const Node& node, OpenXcom::BriefingData& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-			rhs.palette = node["palette"].as<int>(rhs.palette);
-			rhs.textOffset = node["textOffset"].as<int>(rhs.textOffset);
-			rhs.title = node["title"].as<std::string>(rhs.title);
-			rhs.desc = node["desc"].as<std::string>(rhs.desc);
-			rhs.music = node["music"].as<std::string>(rhs.music);
-			rhs.cutscene = node["cutscene"].as<std::string>(rhs.cutscene);
-			rhs.background = node["background"].as<std::string>(rhs.background);
-			rhs.showCraft = node["showCraft"].as<bool>(rhs.showCraft);
-			rhs.showTarget = node["showTarget"].as<bool>(rhs.showTarget);
-			return true;
-		}
-	};
-	template<>
-	struct convert<OpenXcom::ReinforcementsData>
-	{
-		static Node encode(const OpenXcom::ReinforcementsData& rhs)
-		{
-			Node node;
-			node["type"] = rhs.type;
-			node["briefing"] = rhs.briefing;
-			node["minDifficulty"] = rhs.minDifficulty;
-			node["maxDifficulty"] = rhs.maxDifficulty;
-			node["objectiveDestroyed"] = rhs.objectiveDestroyed;
-			node["turns"] = rhs.turns;
-			node["minTurn"] = rhs.minTurn;
-			node["maxTurn"] = rhs.maxTurn;
-			node["executionOdds"] = rhs.executionOdds;
-			node["maxRuns"] = rhs.maxRuns;
-			node["useSpawnNodes"] = rhs.useSpawnNodes;
-			node["mapBlockFilterType"] = (int)(rhs.mapBlockFilterType);
-			node["spawnBlocks"] = rhs.spawnBlocks;
-			node["spawnBlockGroups"] = rhs.spawnBlockGroups;
-			node["spawnNodeRanks"] = rhs.spawnNodeRanks;
-			node["spawnZLevels"] = rhs.spawnZLevels;
-			node["randomizeZLevels"] = rhs.randomizeZLevels;
-			node["minDistanceFromXcomUnits"] = rhs.minDistanceFromXcomUnits;
-			node["maxDistanceFromBorders"] = rhs.maxDistanceFromBorders;
-			node["forceSpawnNearFriend"] = rhs.forceSpawnNearFriend;
-			node["data"] = rhs.data;
-			return node;
-		}
-
-		static bool decode(const Node& node, OpenXcom::ReinforcementsData& rhs)
-		{
-			if (!node.IsMap())
-				return false;
-
-			rhs.type = node["type"].as<std::string>(rhs.type);
-			rhs.briefing = node["briefing"].as< OpenXcom::BriefingData >(rhs.briefing);
-			rhs.minDifficulty = node["minDifficulty"].as<int>(rhs.minDifficulty);
-			rhs.maxDifficulty = node["maxDifficulty"].as<int>(rhs.maxDifficulty);
-			rhs.objectiveDestroyed = node["objectiveDestroyed"].as<bool>(rhs.objectiveDestroyed);
-			rhs.turns = node["turns"].as< std::vector<int> >(rhs.turns);
-			rhs.minTurn = node["minTurn"].as<int>(rhs.minTurn);
-			rhs.maxTurn = node["maxTurn"].as<int>(rhs.maxTurn);
-			rhs.executionOdds = node["executionOdds"].as<int>(rhs.executionOdds);
-			rhs.maxRuns = node["maxRuns"].as<int>(rhs.maxRuns);
-			rhs.useSpawnNodes = node["useSpawnNodes"].as<bool>(rhs.useSpawnNodes);
-			rhs.mapBlockFilterType = (OpenXcom::MapBlockFilterType)(node["mapBlockFilterType"].as<int>(rhs.mapBlockFilterType));
-			rhs.spawnBlocks = node["spawnBlocks"].as< std::vector<std::string> >(rhs.spawnBlocks);
-			rhs.spawnBlockGroups = node["spawnBlockGroups"].as< std::vector<int> >(rhs.spawnBlockGroups);
-			rhs.spawnNodeRanks = node["spawnNodeRanks"].as< std::vector<int> >(rhs.spawnNodeRanks);
-			rhs.spawnZLevels = node["spawnZLevels"].as< std::vector<int> >(rhs.spawnZLevels);
-			rhs.randomizeZLevels = node["randomizeZLevels"].as<bool>(rhs.randomizeZLevels);
-			rhs.minDistanceFromXcomUnits = node["minDistanceFromXcomUnits"].as<int>(rhs.minDistanceFromXcomUnits);
-			rhs.maxDistanceFromBorders = node["maxDistanceFromBorders"].as<int>(rhs.maxDistanceFromBorders);
-			rhs.forceSpawnNearFriend = node["forceSpawnNearFriend"].as<bool>(rhs.forceSpawnNearFriend);
-			rhs.data = node["data"].as< std::vector<OpenXcom::DeploymentData> >(rhs.data);
-			return true;
-		}
-	};
-}
-
 namespace OpenXcom
 {
 
@@ -216,150 +64,145 @@ AlienDeployment::~AlienDeployment()
  * @param node YAML node.
  * @param mod Mod for the deployment.
  */
-void AlienDeployment::load(const YAML::Node &node, Mod *mod)
+void AlienDeployment::load(const YAML::YamlNodeReader& node, Mod *mod)
 {
-	if (const YAML::Node &parent = node["refNode"])
+	const auto& reader = node.useIndex();
+	if (const auto& parent = reader["refNode"])
 	{
 		load(parent, mod);
 	}
 
-	_customUfo = node["customUfo"].as<std::string>(_customUfo);
-	_enviroEffects = node["enviroEffects"].as<std::string>(_enviroEffects);
-	_startingCondition = node["startingCondition"].as<std::string>(_startingCondition);
-	_unlockedResearchOnSuccess = node["unlockedResearch"].as<std::string>(_unlockedResearchOnSuccess);
-	_unlockedResearchOnFailure = node["unlockedResearchOnFailure"].as<std::string>(_unlockedResearchOnFailure);
-	_unlockedResearchOnDespawn = node["unlockedResearchOnDespawn"].as<std::string>(_unlockedResearchOnDespawn);
-	_counterSuccess = node["counterSuccess"].as<std::string>(_counterSuccess);
-	_counterFailure = node["counterFailure"].as<std::string>(_counterFailure);
-	_counterDespawn = node["counterDespawn"].as<std::string>(_counterDespawn);
-	_counterAll = node["counterAll"].as<std::string>(_counterAll);
-	_decreaseCounterSuccess = node["decreaseCounterSuccess"].as<std::string>(_decreaseCounterSuccess);
-	_decreaseCounterFailure = node["decreaseCounterFailure"].as<std::string>(_decreaseCounterFailure);
-	_decreaseCounterDespawn = node["decreaseCounterDespawn"].as<std::string>(_decreaseCounterDespawn);
-	_decreaseCounterAll = node["decreaseCounterAll"].as<std::string>(_decreaseCounterAll);
-	_missionBountyItem = node["missionBountyItem"].as<std::string>(_missionBountyItem);
-	_missionBountyItemCount = node["missionBountyItemCount"].as<int>(_missionBountyItemCount);
-	_bughuntMinTurn = node["bughuntMinTurn"].as<int>(_bughuntMinTurn);
-	_forcePercentageOutsideUfo = node["forcePercentageOutsideUfo"].as<bool>(_forcePercentageOutsideUfo);
-	_data = node["data"].as< std::vector<DeploymentData> >(_data);
-	_reinforcements = node["reinforcements"].as< std::vector<ReinforcementsData> >(_reinforcements);
-	_width = node["width"].as<int>(_width);
-	_length = node["length"].as<int>(_length);
-	_height = node["height"].as<int>(_height);
-	_civilians = node["civilians"].as<int>(_civilians);
-	_markCiviliansAsVIP = node["markCiviliansAsVIP"].as<bool>(_markCiviliansAsVIP);
-	_civilianSpawnNodeRank = node["civilianSpawnNodeRank"].as<int>(_civilianSpawnNodeRank);
-	mod->loadUnorderedNamesToInt(_type, _civiliansByType, node["civiliansByType"]);
-	_terrains = node["terrains"].as<std::vector<std::string> >(_terrains);
-	_shade = node["shade"].as<int>(_shade);
-	_minShade = node["minShade"].as<int>(_minShade);
-	_maxShade = node["maxShade"].as<int>(_maxShade);
-	_nextStage = node["nextStage"].as<std::string>(_nextStage);
-	_race = node["race"].as<std::string>(_race);
-	_randomRaces = node["randomRace"].as<std::vector<std::string> >(_randomRaces);
-	_finalDestination = node["finalDestination"].as<bool>(_finalDestination);
-	_winCutscene = node["winCutscene"].as<std::string>(_winCutscene);
-	_loseCutscene = node["loseCutscene"].as<std::string>(_loseCutscene);
-	_abortCutscene = node["abortCutscene"].as<std::string>(_abortCutscene);
-	_mapScript = node["script"].as<std::string>(_mapScript);
-	_mapScripts = node["mapScripts"].as<std::vector<std::string> >(_mapScripts);
-	_alert = node["alert"].as<std::string>(_alert);
-	_alertBackground = node["alertBackground"].as<std::string>(_alertBackground);
-	_alertDescription = node["alertDescription"].as<std::string>(_alertDescription);
-	mod->loadSoundOffset(_type, _alertSound, node["alertSound"], "GEO.CAT");
-	_briefingData = node["briefing"].as<BriefingData>(_briefingData);
-	_markerName = node["markerName"].as<std::string>(_markerName);
-	if (node["markerIcon"])
+	reader.tryRead("customUfo", _customUfo);
+	reader.tryRead("enviroEffects", _enviroEffects);
+	reader.tryRead("startingCondition", _startingCondition);
+	reader.tryRead("unlockedResearch", _unlockedResearchOnSuccess);
+	reader.tryRead("unlockedResearchOnFailure", _unlockedResearchOnFailure);
+	reader.tryRead("unlockedResearchOnDespawn", _unlockedResearchOnDespawn);
+	reader.tryRead("counterSuccess", _counterSuccess);
+	reader.tryRead("counterFailure", _counterFailure);
+	reader.tryRead("counterDespawn", _counterDespawn);
+	reader.tryRead("counterAll", _counterAll);
+	reader.tryRead("decreaseCounterSuccess", _decreaseCounterSuccess);
+	reader.tryRead("decreaseCounterFailure", _decreaseCounterFailure);
+	reader.tryRead("decreaseCounterDespawn", _decreaseCounterDespawn);
+	reader.tryRead("decreaseCounterAll", _decreaseCounterAll);
+	reader.tryRead("missionBountyItem", _missionBountyItem);
+	reader.tryRead("missionBountyItemCount", _missionBountyItemCount);
+	reader.tryRead("bughuntMinTurn", _bughuntMinTurn);
+	reader.tryRead("forcePercentageOutsideUfo", _forcePercentageOutsideUfo);
+	reader.tryRead("data", _data);
+	reader.tryRead("reinforcements", _reinforcements);
+	reader.tryRead("width", _width);
+	reader.tryRead("length", _length);
+	reader.tryRead("height", _height);
+	reader.tryRead("civilians", _civilians);
+	reader.tryRead("markCiviliansAsVIP", _markCiviliansAsVIP);
+	reader.tryRead("civilianSpawnNodeRank", _civilianSpawnNodeRank);
+	mod->loadUnorderedNamesToInt(_type, _civiliansByType, reader["civiliansByType"]);
+	reader.tryRead("terrains", _terrains);
+	reader.tryRead("shade", _shade);
+	reader.tryRead("minShade", _minShade);
+	reader.tryRead("maxShade", _maxShade);
+	reader.tryRead("nextStage", _nextStage);
+	reader.tryRead("race", _race);
+	reader.tryRead("randomRace", _randomRaces);
+	reader.tryRead("finalDestination", _finalDestination);
+	reader.tryRead("winCutscene", _winCutscene);
+	reader.tryRead("loseCutscene", _loseCutscene);
+	reader.tryRead("abortCutscene", _abortCutscene);
+	reader.tryRead("script", _mapScript);
+	reader.tryRead("mapScripts", _mapScripts);
+	reader.tryRead("alert", _alert);
+	reader.tryRead("alertBackground", _alertBackground);
+	reader.tryRead("alertDescription", _alertDescription);
+	mod->loadSoundOffset(_type, _alertSound, reader["alertSound"], "GEO.CAT");
+	reader.tryRead("briefing", _briefingData);
+	reader.tryRead("markerName", _markerName);
+	if (reader["markerIcon"])
 	{
-		_markerIcon = mod->getOffset(node["markerIcon"].as<int>(_markerIcon), 8);
+		_markerIcon = mod->getOffset(reader["markerIcon"].readVal<int>(), 8);
 	}
-	if (node["depth"])
+	if (reader["depth"])
 	{
-		_minDepth = node["depth"][0].as<int>(_minDepth);
-		_maxDepth = node["depth"][1].as<int>(_maxDepth);
+		_minDepth = reader["depth"][0].readVal(_minDepth);
+		_maxDepth = reader["depth"][1].readVal(_maxDepth);
 	}
-	if (node["duration"])
+	if (reader["duration"])
 	{
-		_durationMin = node["duration"][0].as<int>(_durationMin);
-		_durationMax = node["duration"][1].as<int>(_durationMax);
+		_durationMin = reader["duration"][0].readVal(_durationMin);
+		_durationMax = reader["duration"][1].readVal(_durationMax);
 	}
-	_music = node["music"].as< std::vector<std::string> >(_music);
-	_objectiveType = node["objectiveType"].as<int>(_objectiveType);
-	_objectivesRequired = node["objectivesRequired"].as<int>(_objectivesRequired);
-	_objectivePopup = node["objectivePopup"].as<std::string>(_objectivePopup);
+	reader.tryRead("music", _music);
+	reader.tryRead("objectiveType", _objectiveType);
+	reader.tryRead("objectivesRequired", _objectivesRequired);
+	reader.tryRead("objectivePopup", _objectivePopup);
 
-	if (node["objectiveComplete"])
+	if (reader["objectiveComplete"])
 	{
-		_objectiveCompleteText = node["objectiveComplete"][0].as<std::string>(_objectiveCompleteText);
-		_objectiveCompleteScore = node["objectiveComplete"][1].as<int>(_objectiveCompleteScore);
+		_objectiveCompleteText = reader["objectiveComplete"][0].readVal(_objectiveCompleteText);
+		_objectiveCompleteScore = reader["objectiveComplete"][1].readVal(_objectiveCompleteScore);
 	}
-	if (node["objectiveFailed"])
+	if (reader["objectiveFailed"])
 	{
-		_objectiveFailedText = node["objectiveFailed"][0].as<std::string>(_objectiveFailedText);
-		_objectiveFailedScore = node["objectiveFailed"][1].as<int>(_objectiveFailedScore);
+		_objectiveFailedText = reader["objectiveFailed"][0].readVal(_objectiveFailedText);
+		_objectiveFailedScore = reader["objectiveFailed"][1].readVal(_objectiveFailedScore);
 	}
-	_missionCompleteText = node["missionCompleteText"].as<std::string>(_missionCompleteText);
-	_missionFailedText = node["missionFailedText"].as<std::string>(_missionFailedText);
-	if (node["successEvents"])
+	reader.tryRead("missionCompleteText", _missionCompleteText);
+	reader.tryRead("missionFailedText", _missionFailedText);
+	if (reader["successEvents"])
 	{
-		_successEvents.load(node["successEvents"]);
+		_successEvents.load(reader["successEvents"]);
 	}
-	if (node["despawnEvents"])
+	if (reader["despawnEvents"])
 	{
-		_despawnEvents.load(node["despawnEvents"]);
+		_despawnEvents.load(reader["despawnEvents"]);
 	}
-	if (node["failureEvents"])
+	if (reader["failureEvents"])
 	{
-		_failureEvents.load(node["failureEvents"]);
+		_failureEvents.load(reader["failureEvents"]);
 	}
-	_despawnPenalty = node["despawnPenalty"].as<int>(_despawnPenalty);
-	_abortPenalty = node["abortPenalty"].as<int>(_abortPenalty);
-	_points = node["points"].as<int>(_points);
-	_cheatTurn = node["cheatTurn"].as<int>(_cheatTurn);
-	_turnLimit = node["turnLimit"].as<int>(_turnLimit);
-	_chronoTrigger = ChronoTrigger(node["chronoTrigger"].as<int>(_chronoTrigger));
-	_isAlienBase = node["alienBase"].as<bool>(_isAlienBase);
-	_isHidden = node["isHidden"].as<bool>(_isHidden);
-	_fakeUnderwaterSpawnChance = node["fakeUnderwaterSpawnChance"].as<int>(_fakeUnderwaterSpawnChance);
-	_keepCraftAfterFailedMission = node["keepCraftAfterFailedMission"].as<bool>(_keepCraftAfterFailedMission);
-	_allowObjectiveRecovery = node["allowObjectiveRecovery"].as<bool>(_allowObjectiveRecovery);
-	_escapeType = EscapeType(node["escapeType"].as<int>(_escapeType));
-	_vipSurvivalPercentage = node["vipSurvivalPercentage"].as<int>(_vipSurvivalPercentage);
-	if (node["genMission"])
+	reader.tryRead("despawnPenalty", _despawnPenalty);
+	reader.tryRead("abortPenalty", _abortPenalty);
+	reader.tryRead("points", _points);
+	reader.tryRead("cheatTurn", _cheatTurn);
+	reader.tryRead("turnLimit", _turnLimit);
+	reader.tryRead("chronoTrigger", _chronoTrigger);
+	reader.tryRead("alienBase", _isAlienBase);
+	reader.tryRead("isHidden", _isHidden);
+	reader.tryRead("fakeUnderwaterSpawnChance", _fakeUnderwaterSpawnChance);
+	reader.tryRead("keepCraftAfterFailedMission", _keepCraftAfterFailedMission);
+	reader.tryRead("allowObjectiveRecovery", _allowObjectiveRecovery);
+	reader.tryRead("escapeType", _escapeType);
+	reader.tryRead("vipSurvivalPercentage", _vipSurvivalPercentage);
+	if (reader["genMission"])
 	{
-		_genMission.load(node["genMission"]);
+		_genMission.load(reader["genMission"]);
 	}
-	_genMissionFrequency = node["genMissionFreq"].as<int>(_genMissionFrequency);
-	_genMissionLimit = node["genMissionLimit"].as<int>(_genMissionLimit);
-	_genMissionRaceFromAlienBase = node["genMissionRaceFromAlienBase"].as<bool>(_genMissionRaceFromAlienBase);
+	reader.tryRead("genMissionFreq", _genMissionFrequency);
+	reader.tryRead("genMissionLimit", _genMissionLimit);
+	reader.tryRead("genMissionRaceFromAlienBase", _genMissionRaceFromAlienBase);
 
-	_baseSelfDestructCode = node["baseSelfDestructCode"].as<std::string>(_baseSelfDestructCode);
-	_baseDetectionRange = node["baseDetectionRange"].as<int>(_baseDetectionRange);
-	_baseDetectionChance = node["baseDetectionChance"].as<int>(_baseDetectionChance);
-	_huntMissionMaxFrequency = node["huntMissionMaxFrequency"].as<int>(_huntMissionMaxFrequency);
-	_huntMissionRaceFromAlienBase = node["huntMissionRaceFromAlienBase"].as<bool>(_huntMissionRaceFromAlienBase);
-	if (const YAML::Node &weights = node["huntMissionWeights"])
+	reader.tryRead("baseSelfDestructCode", _baseSelfDestructCode);
+	reader.tryRead("baseDetectionRange", _baseDetectionRange);
+	reader.tryRead("baseDetectionChance", _baseDetectionChance);
+	reader.tryRead("huntMissionMaxFrequency", _huntMissionMaxFrequency);
+	reader.tryRead("huntMissionRaceFromAlienBase", _huntMissionRaceFromAlienBase);
+	for (const auto& weights : reader["huntMissionWeights"].children())
 	{
-		for (YAML::const_iterator nn = weights.begin(); nn != weights.end(); ++nn)
-		{
-			WeightedOptions *nw = new WeightedOptions();
-			nw->load(nn->second);
-			_huntMissionDistribution.push_back(std::make_pair(nn->first.as<size_t>(0), nw));
-		}
+		WeightedOptions *nw = new WeightedOptions();
+		nw->load(weights);
+		_huntMissionDistribution.push_back(std::make_pair(weights.readKey<size_t>(0), nw));
 	}
-	if (const YAML::Node &weights = node["alienBaseUpgrades"])
+	for (const auto& weights : reader["alienBaseUpgrades"].children())
 	{
-		for (YAML::const_iterator nn = weights.begin(); nn != weights.end(); ++nn)
-		{
-			WeightedOptions *nw = new WeightedOptions();
-			nw->load(nn->second);
-			_alienBaseUpgrades.push_back(std::make_pair(nn->first.as<size_t>(0), nw));
-		}
+		WeightedOptions *nw = new WeightedOptions();
+		nw->load(weights);
+		_alienBaseUpgrades.push_back(std::make_pair(weights.readKey<size_t>(0), nw));
 	}
-	_resetAlienBaseAgeAfterUpgrade = node["resetAlienBaseAgeAfterUpgrade"].as<bool>(_resetAlienBaseAgeAfterUpgrade);
-	_resetAlienBaseAge = node["resetAlienBaseAge"].as<bool>(_resetAlienBaseAge);
-	_upgradeRace = node["upgradeRace"].as<std::string>(_upgradeRace);
-	_noWeaponPile = node["noWeaponPile"].as<bool>(_noWeaponPile);
+	reader.tryRead("resetAlienBaseAgeAfterUpgrade", _resetAlienBaseAgeAfterUpgrade);
+	reader.tryRead("resetAlienBaseAge", _resetAlienBaseAge);
+	reader.tryRead("upgradeRace", _upgradeRace);
+	reader.tryRead("noWeaponPile", _noWeaponPile);
 }
 
 /**
@@ -973,6 +816,72 @@ std::string AlienDeployment::generateAlienBaseUpgrade(const size_t baseAgeInMont
 	while (baseAgeInMonths < rw->first)
 		++rw;
 	return rw->second->choose();
+}
+
+// helper overloads for deserialization-only
+bool read(ryml::ConstNodeRef const& n, ItemSet* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryReadVal(val->items);
+	return true;
+}
+
+bool read(ryml::ConstNodeRef const& n, DeploymentData* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryRead("alienRank", val->alienRank);
+	reader.tryRead("customUnitType", val->customUnitType);
+	reader.tryRead("lowQty", val->lowQty);
+	reader.tryRead("medQty", val->medQty);
+	reader.tryRead("highQty", val->highQty);
+	reader.tryRead("dQty", val->dQty);
+	reader.readNode("extraQty", val->extraQty, 0);
+	reader.tryRead("percentageOutsideUfo", val->percentageOutsideUfo);
+	reader.tryRead("itemSets", val->itemSets);
+	reader.tryRead("extraRandomItems", val->extraRandomItems);
+	return true;
+}
+
+bool read(ryml::ConstNodeRef const& n, BriefingData* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryRead("palette", val->palette);
+	reader.tryRead("textOffset", val->textOffset);
+	reader.tryRead("title", val->title);
+	reader.tryRead("desc", val->desc);
+	reader.tryRead("music", val->music);
+	reader.tryRead("cutscene", val->cutscene);
+	reader.tryRead("background", val->background);
+	reader.tryRead("showCraft", val->showCraft);
+	reader.tryRead("showTarget", val->showTarget);
+	return true;
+}
+
+bool read(ryml::ConstNodeRef const& n, ReinforcementsData* val)
+{
+	YAML::YamlNodeReader reader(nullptr, n);
+	reader.tryRead("type", val->type);
+	reader.tryRead("briefing", val->briefing);
+	reader.tryRead("minDifficulty", val->minDifficulty);
+	reader.tryRead("maxDifficulty", val->maxDifficulty);
+	reader.tryRead("objectiveDestroyed", val->objectiveDestroyed);
+	reader.tryRead("turns", val->turns);
+	reader.tryRead("minTurn", val->minTurn);
+	reader.tryRead("maxTurn", val->maxTurn);
+	reader.tryRead("executionOdds", val->executionOdds);
+	reader.tryRead("maxRuns", val->maxRuns);
+	reader.tryRead("useSpawnNodes", val->useSpawnNodes);
+	reader.tryRead("mapBlockFilterType", val->mapBlockFilterType);
+	reader.tryRead("spawnBlocks", val->spawnBlocks);
+	reader.tryRead("spawnBlockGroups", val->spawnBlockGroups);
+	reader.tryRead("spawnNodeRanks", val->spawnNodeRanks);
+	reader.tryRead("spawnZLevels", val->spawnZLevels);
+	reader.tryRead("randomizeZLevels", val->randomizeZLevels);
+	reader.tryRead("minDistanceFromXcomUnits", val->minDistanceFromXcomUnits);
+	reader.tryRead("maxDistanceFromBorders", val->maxDistanceFromBorders);
+	reader.tryRead("forceSpawnNearFriend", val->forceSpawnNearFriend);
+	reader.tryRead("data", val->data);
+	return true;
 }
 
 }
