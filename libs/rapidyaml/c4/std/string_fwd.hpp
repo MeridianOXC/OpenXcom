@@ -28,7 +28,7 @@ using string = basic_string<char, char_traits<char>, allocator<char>>;
 C4_SUPPRESS_WARNING_MSVC_POP
 } /* namespace std */
 #else
-#error "unknown standard library"
+#include <string>
 #endif
 
 namespace c4 {

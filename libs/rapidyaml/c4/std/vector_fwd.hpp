@@ -32,7 +32,7 @@ template<typename T, typename Alloc> class vector;
 } // namespace _LIBCPP_ABI_NAMESPACE
 } // namespace std
 #else
-#error "unknown standard library"
+#include <vector>
 #endif
 
 #ifndef C4CORE_SINGLE_HEADER
