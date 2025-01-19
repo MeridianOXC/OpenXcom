@@ -2135,7 +2135,7 @@ void startUpdateProcess()
 
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 static auto dummy = ([]
 {

@@ -70,6 +70,8 @@ private:
 	bool belongsToCategory(int sel, const std::string &cat) const;
 	/// Checks for hidden items
 	bool isHidden(int sel) const;
+	/// Checks for equipped items
+	bool isEquipped(int sel) const;
 	/// Checks for missing items
 	int getMissingQty(int sel) const;
 	/// Gets the row of the current selection.

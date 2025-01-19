@@ -57,6 +57,7 @@ class RuleResearch
 	std::string _neededItemName;
 	const RuleItem* _neededItem = nullptr;
 	bool _needItem, _destroyItem, _unlockFinalMission;
+	bool _repeatable;
 	int _listOrder;
 
 	ScriptValues<RuleResearch> _scriptValues;
@@ -93,6 +94,8 @@ public:
 	bool destroyItem() const;
 	/// Check if this ResearchProject is unlocking final mission, it can be only one!
 	bool unlockFinalMission() const { return _unlockFinalMission; }
+	/// Check if this ResearchProject is repeatable, i.e. is never marked as discovered.
+	bool isRepeatable() const { return _repeatable; }
 	/// Gets the list of ResearchProjects unlocked by this research.
 	const std::vector<const RuleResearch*> &getUnlocked() const;
 	/// Gets the list of ResearchProjects disabled by this research.

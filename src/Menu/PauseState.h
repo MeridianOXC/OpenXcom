@@ -38,7 +38,7 @@ private:
 	OptionsOrigin _origin;
 	TextButton *_btnLoad, *_btnSave, *_btnAbandon, *_btnOptions, *_btnCancel;
 	Window *_window;
-	Text *_txtTitle;
+	Text *_txtTitle, *_txtVersion;
 public:
 	/// Creates the Pause state.
 	PauseState(OptionsOrigin origin);

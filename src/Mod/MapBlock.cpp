@@ -154,6 +154,8 @@ bool read(ryml::ConstNodeRef const& n, RandomizedItems* val)
 	YAML::YamlNodeReader reader(nullptr, n);
 	reader.tryRead("position", val->position);
 	reader.tryRead("amount", val->amount);
+	reader.tryRead("fuseTimerMin", val->fuseTimerMin);
+	reader.tryRead("fuseTimerMax", val->fuseTimerMax);
 	reader.tryRead("mixed", val->mixed);
 	reader.tryRead("itemList", val->itemList);
 	return true;

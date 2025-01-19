@@ -115,6 +115,12 @@ public:
 	/// Returns a copy of the current mapping container with O(1) access to the children. O(n) is spent building the index.
 	YamlNodeReader useIndex() const;
 
+	/// Returns a string_view wrapping the key. No string construction or deserialization occurs.
+	std::string_view key() const;
+
+	/// Returns a string_view wrapping the value. No string construction or deserialization occurs.
+	std::string_view val() const;
+
 
 	/// Deserializes the value of the found child into the outputValue. Throws if the node is invalid or the key doesn't exist.
 	template <typename OutputType>
@@ -287,8 +293,8 @@ public:
 	void setFlowStyle();
 	/// Marks the current node to serialize as multi-line block-style
 	void setBlockStyle();
-	/// Marks the current node to serialize the scalar in double quotes
-	void setAsQuoted();
+	/// Marks the current node to serialize the scalar in double quotes. Escapes non-printable ASCII characters.
+	void setAsQuotedAndEscaped();
 
 	void unsetAsMap();
 	void unsetAsSeq();
@@ -537,6 +543,85 @@ void write(ryml::NodeRef* n, std::pair<T1, T2> const& pair)
 	*n |= ryml::SEQ;
 	n->append_child() << pair.first;
 	n->append_child() << pair.second;
+}
+
+
+// tuple should be serialized as sequences with n elements.
+template <class... T>
+bool read(ryml::ConstNodeRef const& n, std::tuple<T...>* tuple)
+{
+	if (!n.is_seq() || n.num_children() != sizeof...(T)) return false;
+
+	auto curr = n.first_child();
+
+	std::apply(
+		[&](auto&& first, auto&&... args)
+		{
+			curr >> first;
+
+			(
+				(curr = curr.next_sibling(), curr >> args), ...
+			);
+		},
+		*tuple
+	);
+
+	return true;
+}
+
+template <class... T>
+void write(ryml::NodeRef* n, std::tuple<T...> const& tuple)
+{
+	*n |= ryml::SEQ;
+
+	std::apply(
+		[&](auto&&... args)
+		{
+			(
+				(n->append_child() << args), ...
+			);
+		},
+		*tuple
+	);
+}
+
+// array.
+template <typename T, std::size_t I>
+bool read(ryml::ConstNodeRef const& n, std::array<T, I>* array)
+{
+	if (!n.is_seq() || n.num_children() != I) return false;
+
+	auto curr = n.first_child();
+
+	std::apply(
+		[&](auto&& first, auto&&... args)
+		{
+			curr >> first;
+
+			(
+				(curr = curr.next_sibling(), curr >> args), ...
+			);
+		},
+		*array
+	);
+
+	return true;
+}
+
+template <typename T, std::size_t I>
+void write(ryml::NodeRef* n, std::array<T, I>const& array)
+{
+	*n |= ryml::SEQ;
+
+	std::apply(
+		[&](auto&&... args)
+		{
+			(
+				(n->append_child() << args), ...
+			);
+		},
+		array
+	);
 }
 
 

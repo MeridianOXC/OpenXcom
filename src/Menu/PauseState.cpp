@@ -32,6 +32,7 @@
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/SavedBattleGame.h"
 #include "../Battlescape/BattlescapeGame.h"
+#include "../version.h"
 
 namespace OpenXcom
 {
@@ -63,6 +64,7 @@ PauseState::PauseState(OptionsOrigin origin) : _origin(origin)
 	_btnOptions = new TextButton(180, 18, x+18, 122);
 	_btnCancel = new TextButton(180, 18, x+18, 150);
 	_txtTitle = new Text(206, 17, x+5, 32);
+	_txtVersion = new Text(216, 9, x, 11);
 
 	// Set palette
 	setInterface("pauseMenu", false, _game->getSavedGame() ? _game->getSavedGame()->getSavedBattle() : 0);
@@ -74,6 +76,7 @@ PauseState::PauseState(OptionsOrigin origin) : _origin(origin)
 	add(_btnOptions, "button", "pauseMenu");
 	add(_btnCancel, "button", "pauseMenu");
 	add(_txtTitle, "text", "pauseMenu");
+	add(_txtVersion, "text", "pauseMenu");
 
 	centerAllSurfaces();
 
@@ -111,6 +114,11 @@ PauseState::PauseState(OptionsOrigin origin) : _origin(origin)
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setBig();
 	_txtTitle->setText(tr("STR_OPTIONS_UC"));
+
+	std::ostringstream title;
+	title << "OpenXcom " << OPENXCOM_VERSION_SHORT;
+	_txtVersion->setText(title.str());
+	_txtVersion->setAlign(ALIGN_CENTER);
 
 	if (_origin == OPT_BATTLESCAPE)
 	{

@@ -106,6 +106,17 @@ void SoldierNamePool::load(const std::string &filename)
 
 	reader.tryRead("country", _country);
 	reader.tryRead("region", _region);
+
+	// Note: each name pool *instance* is only ever loaded once,
+	// there are no overrides, so we can do checks here instead of needing afterLoad()
+	if (_maleFirst.empty())
+	{
+		throw Exception("A name pool cannot have an empty 'maleFirst:' list. File name: " + filename);
+	}
+	if (_femaleFirst.empty())
+	{
+		throw Exception("A name pool cannot have an empty 'femaleFirst:' list. File name: " + filename);
+	}
 }
 
 /**

@@ -107,6 +107,7 @@ en-GB:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Default (no supplies)"
   STR_FILTER_FACILITY_REQUIRED: "Facility Missing"
   STR_FILTER_HIDDEN: "Hidden"
+  STR_FILTER_EQUIPPED: "Equipped"
   STR_FILTER_MISSING: "Missing"
 #NewResearchListState.cpp
   STR_SORT_DEFAULT: "Default"
@@ -289,6 +290,7 @@ en-GB:
   STR_SAVE_PERSONAL_EQUIPMENT: "Save Personal Equipment"
   STR_LOAD_PERSONAL_EQUIPMENT: "Load Personal Equipment"
   STR_PERSONAL_EQUIPMENT_SAVED: "Personal equipment saved."
+  STR_PERSONAL_EQUIPMENT_NOT_DEFINED: "Personal equipment is not defined yet."
   STR_SLOT: "Slot>{ALT}{0}"
 #Map.cpp
   STR_THINKING: "Thinking..."
@@ -410,6 +412,7 @@ en-GB:
   STR_ACTION_ITEM_3: "Item Action 3 (Auto)"
   STR_ACTION_ITEM_4: "Item Action 4 (Melee)"
   STR_ACTION_ITEM_5: "Item Action 5 (Throw)"
+  STR_INSTA_SAVE: "Insta-save"
   STR_TOGGLE_QUICK_SEARCH: "Toggle Quick Search Field"
   STR_TOGGLE_NIGHT_VISION: "Toggle Night Vision"
   STR_HOLD_NIGHT_VISION: "Short Night Vision"
@@ -460,6 +463,8 @@ en-GB:
   STR_TRACTOR_BEAM_DISENGAGED: "DISENGAGING TRACTOR BEAM"
   STR_SELF_DESTRUCT_ACTIVATED: "SELF-DESTRUCT ACTIVATED!"
   STR_SELF_DESTRUCT_CANCELLED: "SELF-DESTRUCT CANCELLED"
+  STR_MISSILE_DAMAGED: ">>> MISSILE DAMAGED <<<"
+  STR_MISSILE_DESTROYED: ">>> MISSILE DESTROYED <<<"
 #ExtendedGeoscapeLinksState.cpp
   STR_EXTENDED_LINKS: "Links"
 #GeoscapeCraftState.cpp

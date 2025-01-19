@@ -208,6 +208,7 @@ private:
 	RuleTerrain *_battlescapeTerrainData;
 	int _maxSkinIndex;
 	bool _keepCraftAfterFailedMission, _allowLanding, _spacecraft, _notifyWhenRefueled, _autoPatrol, _undetectable;
+	int _missilePower;
 	int _listOrder, _maxAltitude;
 	std::string _defaultAltitude;
 	RuleCraftDeployment _deployment;
@@ -330,6 +331,10 @@ public:
 	bool canAutoPatrol() const;
 	/// Is this craft immune to detection by HKs and alien bases?
 	bool isUndetectable() const { return _undetectable; }
+	/// Is this craft a self-destruct missile?
+	bool isMissile() const { return (_missilePower > 0); }
+	/// Gets the missile power.
+	int missilePower() const { return _missilePower; }
 	/// Gets the list weight for this craft.
 	int getListOrder() const;
 	/// Gets the deployment priority for the craft.

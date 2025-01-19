@@ -32,9 +32,11 @@ struct RandomizedItems
 {
 	Position position;
 	int amount;
+	int fuseTimerMin;
+	int fuseTimerMax;
 	bool mixed;
 	std::vector<std::string> itemList;
-	RandomizedItems() : amount(1), mixed(false) { /*Empty by Design*/ };
+	RandomizedItems() : amount(1), fuseTimerMin(-1), fuseTimerMax(-1), mixed(false) { /*Empty by Design*/ };
 };
 
 struct ExtendedItems

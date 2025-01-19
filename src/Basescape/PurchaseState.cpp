@@ -171,6 +171,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 
 	_cats.push_back("STR_ALL_ITEMS");
 	_cats.push_back("STR_FILTER_HIDDEN");
+	_cats.push_back("STR_FILTER_EQUIPPED");
 	if (!_missingItemsMap.empty())
 	{
 		_cats.push_back("STR_FILTER_MISSING");
@@ -309,6 +310,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 			_cats.clear();
 			_cats.push_back("STR_ALL_ITEMS");
 			_cats.push_back("STR_FILTER_HIDDEN");
+			_cats.push_back("STR_FILTER_EQUIPPED");
 			if (!_missingItemsMap.empty())
 			{
 				_cats.push_back("STR_FILTER_MISSING");
@@ -331,7 +333,7 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	_cbxCategory->setOptions(_cats, true);
 	if (!_missingItemsMap.empty())
 	{
-		_cbxCategory->setSelected(2); // STR_FILTER_MISSING
+		_cbxCategory->setSelected(3); // STR_FILTER_MISSING
 	}
 	_cbxCategory->onChange((ActionHandler)&PurchaseState::cbxCategoryChange);
 
@@ -503,6 +505,36 @@ bool PurchaseState::isHidden(int sel) const
 }
 
 /**
+ * Determines if a row item corresponds to equipped items
+ * @param sel Selected row.
+ * @returns True if row item is considered equipped
+ */
+bool PurchaseState::isEquipped(int sel) const
+{
+	switch (_items[sel].type)
+	{
+	case TRANSFER_SOLDIER:
+	case TRANSFER_SCIENTIST:
+	case TRANSFER_ENGINEER:
+	case TRANSFER_CRAFT:
+		return false;
+	case TRANSFER_ITEM:
+		RuleItem* rule = (RuleItem*)_items[sel].rule;
+		if (rule)
+		{
+			// iterate all craft, also craft which are currently not at the base
+			for (auto* xcraft : *_base->getCrafts())
+			{
+				if (xcraft->getItems()->getItem(rule) > 0)
+					return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
  * Determines if a row item is in the map of missing items.
  * @param sel Selected row.
  * @returns Number of missing items.
@@ -580,6 +612,7 @@ void PurchaseState::updateList()
 	bool categoryFilterEnabled = (selectedCategory != "STR_ALL_ITEMS");
 	bool categoryUnassigned = (selectedCategory == "STR_UNASSIGNED");
 	bool categoryHidden = (selectedCategory == "STR_FILTER_HIDDEN");
+	bool categoryEquipped = (selectedCategory == "STR_FILTER_EQUIPPED");
 	bool categoryMissing = (selectedCategory == "STR_FILTER_MISSING");
 
 	for (size_t i = 0; i < _items.size(); ++i)
@@ -607,6 +640,14 @@ void PurchaseState::updateList()
 				}
 			}
 			else
+			{
+				continue;
+			}
+		}
+		else if (categoryEquipped)
+		{
+			// Note: showing also hidden items (if they are equipped)
+			if (!isEquipped(i))
 			{
 				continue;
 			}

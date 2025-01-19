@@ -674,6 +674,10 @@ void GeoscapeState::handle(Action *action)
 			{
 				popup(new SaveGameState(OPT_GEOSCAPE, SAVE_QUICK, _palette));
 			}
+			else if (action->getDetails()->key.keysym.sym == Options::keyInstaSave)
+			{
+				popup(new SaveGameState(OPT_GEOSCAPE, SAVE_INSTA, _palette));
+			}
 			else if (action->getDetails()->key.keysym.sym == Options::keyQuickLoad)
 			{
 				popup(new LoadGameState(OPT_GEOSCAPE, SAVE_QUICK, _palette));
@@ -1245,6 +1249,7 @@ void GeoscapeState::time5Seconds()
 
 			if (!ufoIsAttacking && xcraft->reachedDestination())
 			{
+				bool suppressLanding = Options::oxceGeoSuppressLandingWithoutEquipment && xcraft->getItems()->empty();
 				Ufo* u = dynamic_cast<Ufo*>(xcraft->getDestination());
 				Waypoint *w = dynamic_cast<Waypoint*>(xcraft->getDestination());
 				MissionSite* m = dynamic_cast<MissionSite*>(xcraft->getDestination());
@@ -1347,7 +1352,7 @@ void GeoscapeState::time5Seconds()
 					case Ufo::LANDED:
 					case Ufo::CRASHED:
 					case Ufo::DESTROYED: // Just before expiration
-						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding())
+						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding() && !suppressLanding)
 						{
 							if (!xcraft->isInDogfight())
 							{
@@ -1378,7 +1383,7 @@ void GeoscapeState::time5Seconds()
 				}
 				else if (m != 0)
 				{
-					if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding())
+					if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding() && !suppressLanding)
 					{
 						// look up polygons texture
 						int texture, shade;
@@ -1401,7 +1406,7 @@ void GeoscapeState::time5Seconds()
 				{
 					if (b->isDiscovered())
 					{
-						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding())
+						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding() && !suppressLanding)
 						{
 							int texture, shade;
 							_globe->getPolygonTextureAndShade(b->getLongitude(), b->getLatitude(), &texture, &shade);
@@ -1654,10 +1659,18 @@ void GeoscapeState::ufoHuntingAndEscorting()
 					{
 						_game->getMod()->getSound("GEO.CAT", ufo->getRules()->getHuntAlertSound())->play();
 					}
-					std::string msg = tr("STR_UFO_STARTED_HUNTING")
-						.arg(ufo->getName(_game->getLanguage()))
-						.arg(newTarget->getName(_game->getLanguage()));
-					popup(new CraftErrorState(this, msg));
+					if (Options::oxceGeoSuppressRedundantHKAlert && newTarget->getDestination() == ufo)
+					{
+						// Empty by design
+						// If the player sent an interceptor after the HK, the alert is redundant
+					}
+					else
+					{
+						std::string msg = tr("STR_UFO_STARTED_HUNTING")
+							.arg(ufo->getName(_game->getLanguage()))
+							.arg(newTarget->getName(_game->getLanguage()));
+						popup(new CraftErrorState(this, msg));
+					}
 				}
 			}
 			else if (originalTarget)
@@ -2409,6 +2422,14 @@ void GeoscapeState::time1Day()
 		if (!finished.empty())
 		{
 			saveGame->getAvailableResearchProjects(before, mod, xbase);
+			for (auto* fp : finished)
+			{
+				if (fp->getRules()->isRepeatable())
+				{
+					RuleResearch* nonconst = mod->getResearch(fp->getRules()->getName());
+					before.push_back(nonconst);
+				}
+			}
 		}
 		// 3. add finished research, including lookups and getonefrees (up to 4x)
 		std::vector<const RuleResearch*> topicsToCheck;

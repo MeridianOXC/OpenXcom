@@ -25,7 +25,10 @@
 namespace OpenXcom
 {
 
-RuleResearch::RuleResearch(const std::string &name, int listOrder) : _name(name), _spawnedItemCount(1), _cost(0), _points(0), _sequentialGetOneFree(false), _needItem(false), _destroyItem(false), _unlockFinalMission(false), _listOrder(listOrder)
+RuleResearch::RuleResearch(const std::string &name, int listOrder) :
+	_name(name), _spawnedItemCount(1), _cost(0), _points(0),
+	_sequentialGetOneFree(false), _needItem(false), _destroyItem(false), _unlockFinalMission(false), _repeatable(false),
+	_listOrder(listOrder)
 {
 }
 
@@ -65,12 +68,9 @@ void RuleResearch::load(const YAML::YamlNodeReader& node, Mod* mod, const ModScr
 	reader.tryRead("needItem", _needItem);
 	reader.tryRead("destroyItem", _destroyItem);
 	reader.tryRead("unlockFinalMission", _unlockFinalMission);
+	reader.tryRead("repeatable", _repeatable);
 	reader.tryRead("listOrder", _listOrder);
-	// This is necessary, research code assumes it!
-	if (!_requiresName.empty() && _cost != 0)
-	{
-		throw Exception("Research topic " + _name + " has requirements, but the cost is not zero. Sorry, this is not allowed!");
-	}
+
 	_scriptValues.load(reader, parsers.getShared());
 }
 
@@ -79,6 +79,12 @@ void RuleResearch::load(const YAML::YamlNodeReader& node, Mod* mod, const ModScr
  */
 void RuleResearch::afterLoad(const Mod* mod)
 {
+	// This is necessary, research code assumes it!
+	if (!_requiresName.empty() && _cost != 0)
+	{
+		throw Exception("Research topic " + _name + " has requirements, but the cost is not zero. Sorry, this is not allowed!");
+	}
+
 	if (_lookup == _name)
 	{
 		_lookup = "";

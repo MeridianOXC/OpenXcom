@@ -779,7 +779,7 @@ std::string formatPercentage(int value)
 
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 #define assert_throw(A) try { A; assert(false && "No throw from " #A ); } catch (...){ /*nothing*/ }
 
 static auto dummy = ([]

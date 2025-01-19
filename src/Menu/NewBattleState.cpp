@@ -420,10 +420,7 @@ void NewBattleState::load(const std::string &filename)
 				save->getBases()->push_back(base);
 
 				// Add research
-				for (auto& pair : mod->getResearchMap())
-				{
-					save->addFinishedResearchSimple(pair.second);
-				}
+				save->makeAllResearchDiscovered(mod);
 
 				// Generate items
 				base->getStorageItems()->clear();
@@ -589,10 +586,7 @@ void NewBattleState::initSave()
 	}
 
 	// Add research
-	for (auto& pair : mod->getResearchMap())
-	{
-		save->addFinishedResearchSimple(pair.second);
-	}
+	save->makeAllResearchDiscovered(mod);
 
 	_game->setSavedGame(save);
 	cbxMissionChange(0);

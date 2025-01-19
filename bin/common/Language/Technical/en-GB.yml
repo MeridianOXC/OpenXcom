@@ -5,7 +5,7 @@ en-GB:
   STR_BAD_NODES_DESC: "Checks RMP files for nodes outside of map boundaries.{NEWLINE}These will NOT cause any crashes, but they will be ignored by the game, thus not work as intended."
 #
   STR_MCD_CHECK: "MCD checks"
-  STR_MCD_CHECK_DESC: "Checks MCD files for floor objects with zero movement cost; also checks for invalid DieMCD/AltMCD references."
+  STR_MCD_CHECK_DESC: "Checks MCD files for floor objects with zero movement cost; also checks for invalid DieMCD/AltMCD references; also checks invalid LOFTemps."
 #
   STR_PALETTE_CHECK: "Palette matching"
   STR_PALETTE_CHECK_DESC: "Tries to match palettes of modded images to official palettes and reports any images that don't have a 100% match."
