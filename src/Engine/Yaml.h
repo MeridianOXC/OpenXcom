@@ -103,6 +103,9 @@ protected:
 	/// Throws an error when failed to find node
 	void throwNodeError(const std::string& what) const;
 
+	void logNode() const;
+	void logNodeProperty(const ryml::csubstr& key, const ryml::cspan<char>& type) const;
+
 public:
 	YamlNodeReader(); // vector demands a default constructor despite it never being used
 	YamlNodeReader(const YamlNodeReader& other) = default;
@@ -401,6 +404,10 @@ bool YamlNodeReader::tryRead(ryml::csubstr key, OutputType& outputValue) const
 {
 	if (_node.invalid())
 		return false;
+	if (_node.has_val_tag() && _node.val_tag() == "!info")
+	{
+		logNodeProperty(key, ryml::type_name<OutputType>());
+	}
 	const auto& child = getChildNode(key);
 	if (child.invalid())
 		return false;

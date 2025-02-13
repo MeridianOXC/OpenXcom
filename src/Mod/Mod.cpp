@@ -2721,7 +2721,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		if (reader.hasValTag(InfoTag))
 		{
 			Logger info;
-			info.get() << "Available rule '" << nodeName << ":'";
+			info.get() << "Available root rule '" << nodeName << ":'";
 		}
 		return reader[nodeName];
 	};
