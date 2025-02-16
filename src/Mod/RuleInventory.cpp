@@ -333,7 +333,7 @@ void RuleInventory::ScriptRegister(ScriptParserBase* parser)
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, RuleSlot* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	val->x = reader[0].readVal<int>();
 	val->y = reader[1].readVal<int>();
 	return true;

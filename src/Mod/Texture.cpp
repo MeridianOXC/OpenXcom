@@ -27,7 +27,7 @@ namespace OpenXcom
  * Initializes a globe texture.
  * @param id Texture identifier.
  */
-Texture::Texture(int id) : _id(id), _fakeUnderwater(false)
+Texture::Texture(int id) : _id(id), _isOcean(false), _fakeUnderwater(false)
 {
 }
 
@@ -45,6 +45,7 @@ Texture::~Texture()
 void Texture::load(const YAML::YamlNodeReader& reader)
 {
 	reader.tryRead("id", _id);
+	reader.tryRead("isOcean", _isOcean);
 	reader.tryRead("fakeUnderwater", _fakeUnderwater);
 	reader.tryRead("startingCondition", _startingCondition);
 	reader.tryRead("deployments", _deployments);
@@ -191,7 +192,7 @@ std::string Texture::getRandomDeployment() const
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, TerrainCriteria* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("name", val->name);
 	reader.tryRead("weight", val->weight);
 	if (const auto& areaReader = reader["area"])

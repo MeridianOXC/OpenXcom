@@ -2637,8 +2637,14 @@ int SavedGame::selectSoldierNationalityByLocation(const Mod* mod, const RuleSold
 				++nationality;
 			}
 
+			// the modder wants to have regional name pools, but didn't provide any, sigh
+			if (totalFilteredNamePoolWeight < 1)
+			{
+				return -1; // let's just ignore the modder's unfulfillable wish
+			}
+
 			// select the nationality from the filtered pool, by weight
-			int tmp = RNG::generate(0, totalFilteredNamePoolWeight);
+			int tmp = RNG::generate(1, totalFilteredNamePoolWeight);
 			for (const auto& namepoolPair : filteredNames)
 			{
 				if (tmp <= namepoolPair.first->getGlobalWeight())

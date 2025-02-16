@@ -243,7 +243,7 @@ std::string RuleAlienMission::generateRegion(const size_t monthsPassed) const
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, MissionWave* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("ufo", val->ufoType);
 	reader.tryRead("count", val->ufoCount);
 	reader.tryRead("trajectory", val->trajectory);

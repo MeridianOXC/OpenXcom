@@ -2645,11 +2645,19 @@ void BattleUnit::prepareMorale(int morale)
 	{
 		moraleChange(morale);
 		int chance = 100 - (2 * getMorale());
-		if (RNG::generate(1,100) <= chance)
+		if (RNG::percent(chance))
 		{
-			int type = RNG::generate(0,100);
-			int berserkChance = _unitRules ? _unitRules->getBerserkChance() : 33;
-			_status = (type <= berserkChance ? STATUS_BERSERK : STATUS_PANICKING); // 33% chance of berserk, panic can mean freeze or flee, but that is determined later
+			int berserkChance = _unitRules ? _unitRules->getBerserkChance() : -1; // -1 represents true 1/3 (33.33333...%)
+			bool berserk = false;
+			if (berserkChance == -1)
+			{
+				berserk = (RNG::generate(0, 2) == 0); // vanilla OG
+			}
+			else
+			{
+				berserk = RNG::percent(berserkChance);
+			}
+			_status = (berserk ? STATUS_BERSERK : STATUS_PANICKING); // 33% chance of berserk, panic can mean freeze or flee, but that is determined later
 			_wantsToSurrender = true;
 		}
 		else

@@ -73,6 +73,7 @@ uk:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "За замовчуванням (немає витратних матеріалів)"
   STR_FILTER_FACILITY_REQUIRED: "Об’єкт відсутній"
   STR_FILTER_HIDDEN: "Приховано"
+  STR_FILTER_EQUIPPED: "Оснащений"
   STR_FILTER_MISSING: "Недостача"
   STR_SORT_DEFAULT: "За замовчуванням"
   STR_SORT_BY_COST: "За вартістю"

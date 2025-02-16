@@ -60,7 +60,7 @@ public:
 	/// Gets the total quantity of items in the container.
 	int getTotalQuantity() const;
 	/// Gets the total size of items in the container.
-	double getTotalSize(const Mod *mod) const;
+	double getTotalSize() const;
 	/// Check if have any item
 	bool empty() const { return _qty.empty(); }
 	/// Clear all content.

@@ -56,6 +56,7 @@
 #include "../Mod/RuleAlienMission.h"
 #include "../Mod/AlienRace.h"
 #include "../Mod/RuleGlobe.h"
+#include "../Mod/Texture.h"
 
 namespace OpenXcom
 {
@@ -251,7 +252,7 @@ NewBattleState::NewBattleState() :
 
 	for (auto& pair : _game->getMod()->getGlobe()->getTexturesRaw())
 	{
-		if (pair.first >= 0)
+		if (pair.first >= 0 && !pair.second->isCosmeticOcean())
 		{
 			_globeTextures.push_back("GLOBE_TEXTURE_" + std::to_string(pair.first));
 			_globeTextureIDs.push_back(pair.first);

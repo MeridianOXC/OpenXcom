@@ -489,44 +489,11 @@ public:
 
 	/// Check for obsolete error based on year.
 	bool checkForObsoleteErrorByYear(const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, int year) const;
-
 	/// Check for error that we can ignore by user request.
-	bool checkForSoftError(bool check, const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, SeverityLevel level = LOG_WARNING) const
-	{
-		if (check)
-		{
-			auto ex = LoadRuleException(parent, reader, error);
-			if (Options::oxceModValidationLevel < level)
-			{
-				Log(level) << "Supressed " << ex.what();
-				return true;
-			}
-			else
-			{
-				throw ex;
-			}
-		}
-		return false;
-	}
-
+	bool checkForSoftError(bool check, const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, SeverityLevel level = LOG_WARNING) const;
 	/// Check for error that we can ignore by user request.
-	bool checkForSoftError(bool check, const std::string &parent, const std::string &error, SeverityLevel level = LOG_WARNING) const
-	{
-		if (check)
-		{
-			auto ex = LoadRuleException(parent, error);
-			if (Options::oxceModValidationLevel < level)
-			{
-				Log(level) << "Supressed " << ex.what();
-				return true;
-			}
-			else
-			{
-				throw ex;
-			}
-		}
-		return false;
-	}
+	bool checkForSoftError(bool check, const std::string &parent, const std::string &error, SeverityLevel level = LOG_WARNING) const;
+
 
 	/// Verify if value have defined surface in given set.
 	void verifySpriteOffset(const std::string &parent, const int& sprite, const std::string &set) const;

@@ -56,6 +56,7 @@ void RuleCraftWeapon::load(const YAML::YamlNodeReader& node, Mod *mod)
 		load(parent, mod);
 	}
 
+	reader.tryRead("tooltip", _tooltip);
 	if (reader["stats"])
 	{
 		_stats.load(reader["stats"]);

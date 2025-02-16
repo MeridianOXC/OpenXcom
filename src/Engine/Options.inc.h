@@ -140,7 +140,7 @@ OPT bool oxceGeoSuppressRedundantHKAlert;
 OPT bool oxceGeoSuppressLandingWithoutEquipment;
 
 OPT int oxceBaseInfoDefenseScaleMultiplier;
-OPT int oxceBaseManufactureInfinityButton;
+OPT bool oxceBaseManufactureInfinityButton;
 
 OPT bool oxceDisableAlienInventory;
 OPT bool oxceDisableHitLog;

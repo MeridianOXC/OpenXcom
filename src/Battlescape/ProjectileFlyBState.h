@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <unordered_set>
 #include "BattleState.h"
 #include "Position.h"
 
@@ -42,6 +43,7 @@ private:
 	/// Tries to create a projectile sprite.
 	bool createNewProjectile();
 	bool _initialized, _targetFloor;
+	std::unordered_set<BattleUnit*> _victims;
 public:
 	/// Creates a new ProjectileFly class
 	ProjectileFlyBState(BattlescapeGame *parent, BattleAction action);
@@ -50,6 +52,8 @@ public:
 	~ProjectileFlyBState();
 	/// Initializes the state.
 	void init() override;
+	/// Deinitializes the state.
+	void deinit() override;
 	/// Handles a cancel request.
 	void cancel() override;
 	/// Runs state functionality every cycle.

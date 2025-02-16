@@ -1088,7 +1088,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		CharClasses decode;
 
 		/// Is valid symbol
-		operator bool() const { return c; }
+		explicit operator bool() const { return c; }
 
 		/// Check type of symbol
 		bool is(CharClasses t) const { return decode & t; }
@@ -1256,7 +1256,7 @@ SelectedToken ScriptRefTokens::getNextToken(TokenEnum excepted)
 		{
 			const auto prefix = peekCharacter();
 			const auto havePrefix = firstDigit.c == '0' && prefix.is(CC_digitPrefix);
-			const auto hex = havePrefix && (prefix == 'x' || prefix == 'X');
+			const auto hex = havePrefix && (prefix.c == 'x' || prefix.c == 'X');
 
 			if (havePrefix)
 			{
@@ -5091,7 +5091,7 @@ static auto dummyTestScriptRefTokens = ([]
 
 	{
 		TestEnv env;
-		ScriptRefTokens srt{"0x10 1234 0b100 0o10"};
+		ScriptRefTokens srt{"0x10 1234 0b100 0o10 0x0f 0xAb"};
 		{
 			SelectedToken next = srt.getNextToken();
 			assert(next == ScriptRef{"0x10"} && next.getType() == TokenNumber);
@@ -5123,6 +5123,22 @@ static auto dummyTestScriptRefTokens = ([]
 			auto r = next.parse(env.help);
 			assert(r.type == ArgInt);
 			assert(r.getValue<int>() == 8);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"0x0f"} && next.getType() == TokenNumber);
+
+			auto r = next.parse(env.help);
+			assert(r.type == ArgInt);
+			assert(r.getValue<int>() == 15);
+		}
+		{
+			SelectedToken next = srt.getNextToken();
+			assert(next == ScriptRef{"0xAb"} && next.getType() == TokenNumber);
+
+			auto r = next.parse(env.help);
+			assert(r.type == ArgInt);
+			assert(r.getValue<int>() == 0xAB);
 		}
 		{
 			SelectedToken next = srt.getNextToken();

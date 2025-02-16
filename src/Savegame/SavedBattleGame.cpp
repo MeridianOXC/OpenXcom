@@ -3369,7 +3369,7 @@ void SavedBattleGame::setRandomHiddenMovementBackground(const Mod *mod)
 {
 	if (mod && !mod->getHiddenMovementBackgrounds().empty())
 	{
-		int rng = RNG::generate(0, mod->getHiddenMovementBackgrounds().size() - 1);
+		int rng = RNG::seedless(0, mod->getHiddenMovementBackgrounds().size() - 1);
 		_hiddenMovementBackground = mod->getHiddenMovementBackgrounds().at(rng);
 	}
 	else

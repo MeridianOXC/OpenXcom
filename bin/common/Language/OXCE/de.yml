@@ -85,6 +85,7 @@ de:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Standard (Kein Material)"
   STR_FILTER_FACILITY_REQUIRED: "Fehlende Einrichtung"
   STR_FILTER_HIDDEN: "Versteckt"
+  STR_FILTER_EQUIPPED: "Ausgerüstet"
   STR_FILTER_MISSING: "Vermisst"
   STR_SORT_DEFAULT: "Standard"
   STR_SORT_BY_COST: "Nach Kosten"

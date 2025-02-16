@@ -40,6 +40,7 @@ class RuleCraftWeapon
 {
 private:
 	std::string _type;
+	std::string _tooltip;
 	int _sprite, _sound, _damage, _shieldDamageModifier, _range, _accuracy, _reloadCautious, _reloadStandard, _reloadAggressive, _ammoMax, _rearmRate, _projectileSpeed, _weaponType;
 	CraftWeaponProjectileType _projectileType;
 	std::string _launcherName, _clipName;
@@ -62,6 +63,8 @@ public:
 
 	/// Gets the craft weapon's type.
 	const std::string& getType() const;
+	/// Gets the craft weapon's tooltip.
+	const std::string& getTooltip() const { return _tooltip; }
 	/// Gets the craft weapon's sprite.
 	int getSprite() const;
 	/// Gets the craft weapon's sound.

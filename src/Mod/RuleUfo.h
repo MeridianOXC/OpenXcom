@@ -70,6 +70,7 @@ class RuleUfo
 {
 private:
 	std::string _type, _size;
+	int _radius, _visibility, _blobSize;
 	int _sprite, _marker, _markerLand, _markerCrash;
 	int _power, _range, _score, _reload, _breakOffTime, _missionScore;
 	int _hunterKillerPercentage, _huntMode, _huntSpeed, _huntBehavior, _softlockThreshold;
@@ -108,6 +109,10 @@ public:
 	const std::string &getSize() const;
 	/// Gets the UFO's radius.
 	int getRadius() const;
+	/// Gets the UFO's default visibility.
+	int getDefaultVisibility() const;
+	/// Gets the UFO's blob size.
+	int getBlobSize() const;
 	/// Gets the UFO's sprite.
 	int getSprite() const;
 	/// Gets the UFO's globe marker when flying.

@@ -245,7 +245,8 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	_craftIsDefenseless(false), _selfDestructPressed(false),
 	_timeout(50), _currentDist(640), _targetDist(560),
 	_end(false), _endUfoHandled(false), _endCraftHandled(false), _ufoBreakingOff(false), _destroyUfo(false), _destroyCraft(false),
-	_minimized(false), _endDogfight(false), _animatingHit(false), _waitForPoly(false), _waitForAltitude(false), _ufoSize(0), _craftHeight(0), _currentCraftDamageColor(0),
+	_minimized(false), _endDogfight(false), _animatingHit(false), _waitForPoly(false), _waitForAltitude(false), _ufoSize(0), _ufoBlobSize(0),
+	_craftHeight(0), _currentCraftDamageColor(0),
 	_interceptionNumber(0), _interceptionsCount(0), _x(0), _y(0), _minimizedIconX(0), _minimizedIconY(0), _firedAtLeastOnce(false), _experienceAwarded(false),
 	_delayedRecolorDone(false)
 {
@@ -693,27 +694,8 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	}
 
 	// Set UFO size - going to be moved to Ufo class to implement simultaneous dogfights.
-	std::string ufoSize = _ufo->getRules()->getSize();
-	if (ufoSize.compare("STR_VERY_SMALL") == 0)
-	{
-		_ufoSize = 0;
-	}
-	else if (ufoSize.compare("STR_SMALL") == 0)
-	{
-		_ufoSize = 1;
-	}
-	else if (ufoSize.compare("STR_MEDIUM_UC") == 0)
-	{
-		_ufoSize = 2;
-	}
-	else if (ufoSize.compare("STR_LARGE") == 0)
-	{
-		_ufoSize = 3;
-	}
-	else
-	{
-		_ufoSize = 4;
-	}
+	_ufoBlobSize = _ufo->getRules()->getBlobSize();
+	_ufoSize = std::min(_ufoBlobSize, 4); // yes, maximum supported is 4, not a typo
 
 	// Get crafts height. Used for damage indication.
 	for (int y = 0; y < _craftSprite->getHeight(); ++y)
@@ -963,7 +945,7 @@ void DogfightState::animate()
 	// Animate UFO crash landing.
 	if (_ufo->isCrashed() && _ufo->getHitFrame() == 0 && !lastHitAnimFrame)
 	{
-		--_ufoSize;
+		--_ufoBlobSize;
 	}
 }
 
@@ -2248,7 +2230,7 @@ void DogfightState::previewClick(Action *)
  */
 void DogfightState::drawUfo()
 {
-	if (_ufoSize < 0 || _ufo->isDestroyed())
+	if (_ufoBlobSize < 0 || _ufo->isDestroyed())
 	{
 		return;
 	}
@@ -2258,7 +2240,7 @@ void DogfightState::drawUfo()
 	{
 		for (int x = 0; x < 13; ++x)
 		{
-			Uint8 pixelOffset = _ufoBlobs[_ufoSize + _ufo->getHitFrame()][y][x];
+			Uint8 pixelOffset = _ufoBlobs[_ufoBlobSize + _ufo->getHitFrame()][y][x];
 			if (pixelOffset == 0)
 			{
 				continue;

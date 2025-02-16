@@ -442,6 +442,12 @@ void UnitWalkBState::think()
  */
 void UnitWalkBState::cancel()
 {
+	if (_beforeFirstStep)
+	{
+		// cancel here would allow turning without spending any TUs
+		return;
+	}
+
 	if (_parent->getSave()->getSide() == FACTION_PLAYER && _parent->getPanicHandled())
 	_pf->abortPath();
 }

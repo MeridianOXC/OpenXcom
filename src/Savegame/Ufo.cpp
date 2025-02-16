@@ -773,18 +773,7 @@ CraftId Ufo::getShotDownByCraftId() const
  */
 int Ufo::getVisibility() const
 {
-	int size = 0;
-	// size = 15*(3-ufosize);
-	if (_rules->getSize() == "STR_VERY_SMALL")
-		size = -30;
-	else if (_rules->getSize() == "STR_SMALL")
-		size = -15;
-	else if (_rules->getSize() == "STR_MEDIUM_UC")
-		size = 0;
-	else if (_rules->getSize() == "STR_LARGE")
-		size = 15;
-	else if (_rules->getSize() == "STR_VERY_LARGE")
-		size = 30;
+	int size = _rules->getDefaultVisibility();
 
 	int visibility = 0;
 	if (_altitude == "STR_GROUND")

@@ -966,6 +966,13 @@ void CraftEquipmentState::btnInventoryClick(Action *)
 
 			auto& extras = *craft->getExtraItems();
 			extras.clear();
+
+			// temporarily ignore craft limits
+			int maxItemsBackup = craft->getCraftStats().maxItems;
+			double maxStorageSpaceBackup = craft->getCraftStats().maxStorageSpace;
+			craft->setMaxItemsRaw(999999);
+			craft->setMaxStorageSpaceRaw(99999.0);
+
 			for (_sel = 0; _sel != _items.size(); ++_sel)
 			{
 				RuleItem* rule = _game->getMod()->getItem(_items[_sel], true);
@@ -978,6 +985,9 @@ void CraftEquipmentState::btnInventoryClick(Action *)
 					moveRightByValue(INT_MAX, true);
 				}
 			}
+			// restore limits
+			craft->setMaxItemsRaw(maxItemsBackup);
+			craft->setMaxStorageSpaceRaw(maxStorageSpaceBackup);
 		}
 
 		SavedBattleGame *bgame = new SavedBattleGame(_game->getMod(), _game->getLanguage());

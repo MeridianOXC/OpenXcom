@@ -49,6 +49,7 @@ ro:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Mod implicit (fără consumabile)"
   STR_FILTER_FACILITY_REQUIRED: "Facilitatea lipsește"
   STR_FILTER_HIDDEN: "Ascuns"
+  STR_FILTER_EQUIPPED: "Echipat"
   STR_SORT_DEFAULT: "Mod implicit"
   STR_NOT_ENOUGH_CRAFT_SPACE: "Nu este destul spațiu la bord!"
   STR_SELECT_AVATAR_FOR: "ALEGE AVATAR PENTRU{NEWLINE}{0}"

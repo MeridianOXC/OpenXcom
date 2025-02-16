@@ -34,7 +34,7 @@ std::string WeightedOptions::choose() const
 	{
 		return "";
 	}
-	size_t var = RNG::generate(0, _totalWeight);
+	size_t var = RNG::generate(1, _totalWeight);
 	auto ii = _choices.begin();
 	for (; ii != _choices.end(); ++ii)
 	{

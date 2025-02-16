@@ -70,6 +70,7 @@ public:
 	void btnWClick(Action *action);
 	/// Handler for clicking one of the weapon icons.
 	void btnWIconClick(Action *action);
+	void btnWIconMiddleClick(Action* action);
 	/// Handler for clicking one of the craft icon.
 	void btnCraftIconClick(Action *action);
 	/// Handler for clicking the Crew button.

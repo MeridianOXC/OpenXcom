@@ -85,6 +85,7 @@ fr:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Par défaut (pas de fournitures)"
   STR_FILTER_FACILITY_REQUIRED: "Installation manquante"
   STR_FILTER_HIDDEN: "Masqué"
+  STR_FILTER_EQUIPPED: "Équipé"
   STR_FILTER_MISSING: "Manquant"
   STR_SORT_DEFAULT: "Par défaut"
   STR_SORT_BY_COST: "Par prix"

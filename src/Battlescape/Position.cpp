@@ -24,7 +24,7 @@ namespace OpenXcom
 // helper overloads for (de)serialization
 bool read(ryml::ConstNodeRef const& n, Position* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	val->x = reader[0].readVal<Sint16>();
 	val->y = reader[1].readVal<Sint16>();
 	val->z = reader[2].readVal<Sint16>();
@@ -32,7 +32,7 @@ bool read(ryml::ConstNodeRef const& n, Position* val)
 }
 void write(ryml::NodeRef* n, Position const& val)
 {
-	YAML::YamlNodeWriter writer(nullptr, *n);
+	YAML::YamlNodeWriter writer(*n);
 	writer.setAsSeq();
 	writer.setFlowStyle();
 	writer.write(val.x);

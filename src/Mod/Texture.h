@@ -43,6 +43,7 @@ class Texture
 {
 private:
 	int _id;
+	bool _isOcean;
 	bool _fakeUnderwater;
 	std::string _startingCondition;
 	std::map<std::string, int> _deployments;
@@ -67,6 +68,8 @@ public:
 	const std::map<std::string, int> &getDeployments() const;
 	/// Gets a random deployment.
 	std::string getRandomDeployment() const;
+	/// Is the texture a cosmetic-only ocean texture?
+	bool isCosmeticOcean() const { return _isOcean; }
 	/// Is the texture a fake underwater texture?
 	bool isFakeUnderwater() const { return _fakeUnderwater; }
 	/// Gets the Texture's starting condition.

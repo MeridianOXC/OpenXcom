@@ -88,7 +88,7 @@ Soldier::Soldier(RuleSoldier *rules, Armor *armor, int nationality, int id) :
 			else
 			{
 				// nationality by name pool weights
-				int tmp = RNG::generate(0, rules->getTotalSoldierNamePoolWeight());
+				int tmp = RNG::generate(1, rules->getTotalSoldierNamePoolWeight());
 				int nat = 0;
 				for (auto* namepool : names)
 				{

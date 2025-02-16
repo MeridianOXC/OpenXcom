@@ -5,7 +5,7 @@ pl:
   STR_BAD_NODES_DESC: "Sprawdź pliki RMP pod kątem węzłów leżących poza granicami mapy.{NEWLINE}Takie węzły NIE spowodują zawieszenia gry, ale nie będą brane pod uwagę przez grę, a więc nie będą działały."
 #
   STR_MCD_CHECK: "Testy MCD"
-  STR_MCD_CHECK_DESC: "Przeszukuje pliki MCD pod kątem obiektów podłogowych o zerowym koszcie ruchu; wykrywa też nieprawidłowe odniesienia DieMCD/AltMCD."
+  STR_MCD_CHECK_DESC: "Przeszukuje pliki MCD pod kątem obiektów podłogowych o zerowym koszcie ruchu; wykrywa też nieprawidłowe odniesienia DieMCD/AltMCD; wykrywa też nieprawidłowe LOFTemps."
 #
   STR_PALETTE_CHECK: "Dopasowanie palet"
   STR_PALETTE_CHECK_DESC: "Sprawdza dopasowanie palet obrazów w modach do oficjalnych palet gry i zgłasza wszystkie obrazy, które nie są w 100% zgodne."

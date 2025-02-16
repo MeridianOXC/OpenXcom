@@ -5341,6 +5341,7 @@ bool TileEngine::validMeleeRange(Position pos, int direction, BattleUnit *attack
 	BattleUnit *chosenTarget = 0;
 	Position p;
 	int size = attacker->getArmor()->getSize() - 1;
+	int meleeOriginVoxelVerticalOffset = attacker->getArmor()->getMeleeOriginVoxelVerticalOffset(); // add some sanity checks or trust the modders?
 	Pathfinding::directionToVector(direction, &p);
 	for (int x = 0; x <= size; ++x)
 	{
@@ -5367,7 +5368,7 @@ bool TileEngine::validMeleeRange(Position pos, int direction, BattleUnit *attack
 					if (target == 0 || targetTile->getUnit() == target)
 					{
 						Position originVoxel = Position(origin->getPosition().toVoxel())
-							+ Position(8,8,attacker->getHeight() + attacker->getFloatHeight() - 4 -origin->getTerrainLevel());
+							+ Position(8,8,attacker->getHeight() + attacker->getFloatHeight() - 4 -origin->getTerrainLevel() + meleeOriginVoxelVerticalOffset);
 						Position targetVoxel;
 						if (canTargetUnit(&originVoxel, targetTile, &targetVoxel, attacker, false))
 						{

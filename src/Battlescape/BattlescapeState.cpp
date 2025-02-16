@@ -2658,7 +2658,11 @@ void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 	}
 	if (hasPsiWeapon)
 	{
-		show(_btnPsi, 1);
+		bool canUsePsiWeapon = (psiWeapon->getRules()->getCostPanic().Time > 0) || (psiWeapon->getRules()->getCostUse().Time > 0);
+		if (canUsePsiWeapon)
+		{
+			show(_btnPsi, 1);
+		}
 	}
 }
 
@@ -2988,7 +2992,21 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-b" - reopen briefing
 				if (key == SDLK_b && ctrlPressed)
 				{
-					_game->pushState(new BriefingState(0, 0, true));
+					Craft* ycraft = nullptr;
+					for (auto* xbase : *_game->getSavedGame()->getBases())
+					{
+						for (auto* xcraft : *xbase->getCrafts())
+						{
+							if (xcraft->isInBattlescape())
+							{
+								ycraft = xcraft;
+								break;
+							}
+						}
+						if (ycraft) break;
+					}
+
+					_game->pushState(new BriefingState(ycraft, 0, true));
 				}
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)

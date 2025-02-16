@@ -1307,7 +1307,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		// set all the items on this tile as belonging to the XCOM faction.
 		bi->setXCOMProperty(true);
 		// don't let the soldiers take extra ammo yet
-		if (bi->getRules()->getBattleType() == BT_AMMO)
+		if (bi->getRules()->getBattleType() == BT_AMMO && !Options::oxceAlternateCraftEquipmentManagement)
 			continue;
 		placeItemByLayout(bi, tempItemList);
 	}
@@ -1712,7 +1712,7 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 
 			std::string alienName = dd.customUnitType.empty() ? race->getMember(dd.alienRank) : dd.customUnitType;
 
-			bool outside = RNG::generate(0,99) < dd.percentageOutsideUfo;
+			bool outside = RNG::percent(dd.percentageOutsideUfo);
 			if (_ufo == 0 && !deployment->getForcePercentageOutsideUfo())
 			{
 				outside = false;

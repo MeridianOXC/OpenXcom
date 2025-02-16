@@ -85,6 +85,7 @@ it:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Predefinito (forniture NO)"
   STR_FILTER_FACILITY_REQUIRED: "Edificio Mancante"
   STR_FILTER_HIDDEN: "Nascosto"
+  STR_FILTER_EQUIPPED: "Equipaggiato"
   STR_FILTER_MISSING: "Mancante"
   STR_SORT_DEFAULT: "Predefinito"
   STR_SORT_BY_COST: "Per costo"

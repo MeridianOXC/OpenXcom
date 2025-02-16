@@ -1100,19 +1100,58 @@ bool Mod::checkForObsoleteErrorByYear(const std::string &parent, const YAML::Yam
 		{
 			level = LOG_INFO;
 		}
-		else if (currYear.year == year)
-		{
-			level = LOG_WARNING;
-		}
 		else // after obsolete year functionality is disabled
 		{
-			level = LOG_ERROR;
+			level = LOG_FATAL;
 			r = false;
 		}
 	}
 	checkForSoftError(true, parent, reader, "Obsolete (to removed after year " + std::to_string(year) + ") operation " + error, level);
 
 	return r;
+}
+
+
+/**
+ * Check for error that we can ignore by user request.
+ */
+bool Mod::checkForSoftError(bool check, const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, SeverityLevel level) const
+{
+	if (check)
+	{
+		auto ex = LoadRuleException(parent, reader, error);
+		if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
+		{
+			Log(level) << _scriptGlobal->getCurrentFile() << ": Supressed " << ex.what();
+			return true;
+		}
+		else
+		{
+			throw ex;
+		}
+	}
+	return false;
+}
+
+/**
+ * Check for error that we can ignore by user request.
+ */
+bool Mod::checkForSoftError(bool check, const std::string &parent, const std::string &error, SeverityLevel level) const
+{
+	if (check)
+	{
+		auto ex = LoadRuleException(parent, error);
+		if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
+		{
+			Log(level) << _scriptGlobal->getCurrentFile() << ": Supressed " << ex.what();
+			return true;
+		}
+		else
+		{
+			throw ex;
+		}
+	}
+	return false;
 }
 
 /**
@@ -1350,7 +1389,7 @@ void loadHelper(const std::string &parent, int& v, const YAML::YamlNodeReader& r
  */
 void loadHelper(const std::string &parent, std::string& v, const YAML::YamlNodeReader& reader)
 {
-	v = reader.readVal<std::string>();
+	reader.tryReadVal(v);
 	if (Mod::isEmptyRuleName(v))
 	{
 		throw LoadRuleException(parent, reader, "Invalid value for name");
@@ -3706,7 +3745,7 @@ T *Mod::loadRule(const YAML::YamlNodeReader& reader, std::map<std::string, T*> *
 	}
 	else
 	{
-		checkForObsoleteErrorByYear("Mod", reader, "Missing main node", 2025);
+		throw LoadRuleException("Mod", reader, "Missing main node");
 	}
 
 	return rule;

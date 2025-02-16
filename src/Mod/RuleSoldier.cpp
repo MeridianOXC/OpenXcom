@@ -183,6 +183,10 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 
 	mod->loadNames(_type, _skillNames, reader["skills"]);
 
+	if (reader["spawnedSoldier"])
+	{
+		_spawnedSoldier = reader["spawnedSoldier"].emitDescendants(YAML::YamlRootNodeReader(_spawnedSoldier, "(spawned soldier template)"));
+	}
 	reader.tryRead("group", _group);
 	reader.tryRead("listOrder", _listOrder);
 
@@ -198,6 +202,10 @@ void RuleSoldier::afterLoad(const Mod* mod)
 	for (auto* namepool : _names)
 	{
 		_totalSoldierNamePoolWeight += namepool->getGlobalWeight();
+	}
+	if (_totalSoldierNamePoolWeight < 1)
+	{
+		Log(LOG_ERROR) << _type << ": total soldier name pool weight is invalid. Forgotten 'soldierNames:' ?";
 	}
 
 	mod->linkRule(_armor, _armorName);

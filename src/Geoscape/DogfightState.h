@@ -65,7 +65,7 @@ private:
 	std::vector<CraftWeaponProjectile*> _projectiles;
 	static const int _ufoBlobs[8][13][13];
 	static const int _projectileBlobs[4][6][3];
-	int _ufoSize, _craftHeight, _currentCraftDamageColor, _interceptionNumber;
+	int _ufoSize, _ufoBlobSize, _craftHeight, _currentCraftDamageColor, _interceptionNumber;
 	size_t _interceptionsCount;
 	int _x, _y, _minimizedIconX, _minimizedIconY;
 	int _weaponNum;

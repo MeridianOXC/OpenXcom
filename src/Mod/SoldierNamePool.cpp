@@ -48,36 +48,12 @@ void SoldierNamePool::load(const std::string &filename)
 {
 	YAML::YamlRootNodeReader reader = FileMap::getYAML(filename);
 
-	for (const auto& nameReader : reader["maleFirst"].children())
-	{
-		std::string name = nameReader.readVal<std::string>();
-		_maleFirst.push_back(name);
-	}
-	for (const auto& nameReader : reader["femaleFirst"].children())
-	{
-		std::string name = nameReader.readVal<std::string>();
-		_femaleFirst.push_back(name);
-	}
-	for (const auto& nameReader : reader["maleLast"].children())
-	{
-		std::string name = nameReader.readVal<std::string>();
-		_maleLast.push_back(name);
-	}
-	for (const auto& nameReader : reader["femaleLast"].children())
-	{
-		std::string name = nameReader.readVal<std::string>();
-		_femaleLast.push_back(name);
-	}
-	for (const auto& nameReader : reader["maleCallsign"].children())
-	{
-		std::string name = nameReader.readVal<std::string>();
-		_maleCallsign.push_back(name);
-	}
-	for (const auto& nameReader : reader["femaleCallsign"].children())
-	{
-		std::string name = nameReader.readVal<std::string>();
-		_femaleCallsign.push_back(name);
-	}
+	reader.tryRead("maleFirst", _maleFirst);
+	reader.tryRead("femaleFirst", _femaleFirst);
+	reader.tryRead("maleLast", _maleLast);
+	reader.tryRead("femaleLast", _femaleLast);
+	reader.tryRead("maleCallsign", _maleCallsign);
+	reader.tryRead("femaleCallsign", _femaleCallsign);
 	if (_femaleCallsign.empty())
 	{
 		_femaleCallsign = _maleCallsign;
@@ -209,7 +185,12 @@ size_t SoldierNamePool::genLook(size_t numLooks)
 		_lookWeights.pop_back();
 	}
 
-	int random = RNG::generate(0, _totalWeight);
+	if (_totalWeight < 1)
+	{
+		return RNG::generate(0, numLooks - 1);
+	}
+
+	int random = RNG::generate(1, _totalWeight);
 	for (int lw : _lookWeights)
 	{
 		if (random <= lw)

@@ -822,14 +822,14 @@ std::string AlienDeployment::generateAlienBaseUpgrade(const size_t baseAgeInMont
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, ItemSet* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryReadVal(val->items);
 	return true;
 }
 
 bool read(ryml::ConstNodeRef const& n, DeploymentData* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("alienRank", val->alienRank);
 	reader.tryRead("customUnitType", val->customUnitType);
 	reader.tryRead("lowQty", val->lowQty);
@@ -845,7 +845,7 @@ bool read(ryml::ConstNodeRef const& n, DeploymentData* val)
 
 bool read(ryml::ConstNodeRef const& n, BriefingData* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("palette", val->palette);
 	reader.tryRead("textOffset", val->textOffset);
 	reader.tryRead("title", val->title);
@@ -860,7 +860,7 @@ bool read(ryml::ConstNodeRef const& n, BriefingData* val)
 
 bool read(ryml::ConstNodeRef const& n, ReinforcementsData* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("type", val->type);
 	reader.tryRead("briefing", val->briefing);
 	reader.tryRead("minDifficulty", val->minDifficulty);
