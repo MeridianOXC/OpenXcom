@@ -25,7 +25,6 @@
 #include <array>
 #include <numeric>
 #include <climits>
-#include <charconv>
 
 #include "Logger.h"
 #include "Options.h"
@@ -694,45 +693,12 @@ public:
 	{
 		if (getType() == TokenNumber)
 		{
-			auto s = begin();
-			auto e = end();
-			int value = 0;
-			int type = 10;
-			int sign = 1;
-
-			if (s[0] == '-')
-			{
-				sign = -1;
-				s += 1;
-			}
-			else if (s[0] == '+')
-			{
-				s += 1;
-			}
-
-			if (s != e && (s + 1) != e && s[0] == '0') // we have at least 2 characters and first is `0`
-			{
-				if (s[1] == 'x' || s[1] == 'X') // hex
-				{
-					type = 16;
-					s += 2;
-				}
-				else if (s[1] == 'b' || s[1] == 'B') // binary
-				{
-					type = 2;
-					s += 2;
-				}
-				else if (s[1] == 'o' || s[1] == 'O') // octal
-				{
-					type = 8;
-					s += 2;
-				}
-			}
-
-			auto result = std::from_chars(s, e, value, type);
-
-			if (result.ec == std::errc())
-				return ScriptRefData{ *this, ArgInt, value * sign };
+			c4::csubstr str(this->begin(), this->end());
+			if (str.begins_with('+'))
+				str = str.sub(1);
+			int val = 0;
+			if (c4::from_chars(str, &val))
+				return ScriptRefData{*this, ArgInt, val};
 		}
 		else if (getType() == TokenSymbol)
 		{
