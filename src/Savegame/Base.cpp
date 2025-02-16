@@ -827,10 +827,10 @@ int Base::getAvailableQuarters() const
  */
 double Base::getUsedStores(bool excludeNormalItems) const
 {
-	double total = excludeNormalItems ? 0.0 : _items->getTotalSize(_mod);
+	double total = excludeNormalItems ? 0.0 : _items->getTotalSize();
 	for (const auto* xcraft : _crafts)
 	{
-		total += xcraft->getTotalItemStorageSize(_mod);
+		total += xcraft->getTotalItemStorageSize();
 	}
 	for (auto* transfer : _transfers)
 	{
@@ -840,7 +840,7 @@ double Base::getUsedStores(bool excludeNormalItems) const
 		}
 		else if (transfer->getType() == TRANSFER_CRAFT)
 		{
-			total += transfer->getCraft()->getTotalItemStorageSize(_mod);
+			total += transfer->getCraft()->getTotalItemStorageSize();
 		}
 	}
 	return total;

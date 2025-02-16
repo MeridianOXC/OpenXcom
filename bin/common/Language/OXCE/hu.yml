@@ -61,6 +61,7 @@ hu:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Alapvető (nincs ellátmány)"
   STR_FILTER_FACILITY_REQUIRED: "Hiányzó Létesítmény"
   STR_FILTER_HIDDEN: "Rejtett"
+  STR_FILTER_EQUIPPED: "Felszerelt"
   STR_SORT_DEFAULT: "Alapvető"
   STR_RANDOM_PRODUCTION_SUMMARY: "Összegzés"
   STR_NOT_ENOUGH_PRISON_SPACE: "NINCS ELÉG IDEGEN TÁROLÓ!{SMALLLINE}Építs új idegen tárolót vagy csoportosíts át idegeneket a többi bázisodra."

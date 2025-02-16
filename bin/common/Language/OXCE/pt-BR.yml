@@ -85,6 +85,7 @@ pt-BR:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Padrão (sem suprimentos)"
   STR_FILTER_FACILITY_REQUIRED: "Instalação Faltando"
   STR_FILTER_HIDDEN: "Oculto"
+  STR_FILTER_EQUIPPED: "Equipado"
   STR_FILTER_MISSING: "Faltando"
   STR_SORT_DEFAULT: "Padrão"
   STR_SORT_BY_COST: "Por custo"

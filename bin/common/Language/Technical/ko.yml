@@ -5,7 +5,7 @@ ko:
   STR_BAD_NODES_DESC: "지도 경계 바깥 노드에 대해 RMP 파일을 확인한다.{NEWLINE}그건 충돌을 일으키지 않을 것이나, 그러한 노드는 게임에서 무시될 것이므로, 의도대로 동작하지 않을 것이다."
 #
   STR_MCD_CHECK: "MCD 확인"
-  STR_MCD_CHECK_DESC: "이동 비용 0인 바닥 개체에 대해 MCD 파일을 확인한다; 또한 부적절한 DieMCD/AltMCD 참조에 대해 확인한다."
+  STR_MCD_CHECK_DESC: "이동 비용 0인 바닥 개체에 대해 MCD 파일을 확인하라; 또한 부적절한 DieMCD/AltMCD 참조에 대해 확인하라; 또한 부적절한 LOFTemps를 확인하라."
 #
   STR_PALETTE_CHECK: "팔레트 통일"
   STR_PALETTE_CHECK_DESC: "고쳐진 이미지의 팔레트를 공식 팔레트로 통일하려 시도하고 100% 통일이 되지 않는 이미지를 보고한다."

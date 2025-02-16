@@ -305,7 +305,7 @@ const std::vector<std::string> &ModInfo::getExternalResourceDirs() const { retur
 
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 static auto dummy = ([]
 {

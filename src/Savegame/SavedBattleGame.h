@@ -76,7 +76,7 @@ private:
 	int _mapsize_x, _mapsize_y, _mapsize_z;
 	std::vector<MapDataSet*> _mapDataSets;
 	std::vector<Tile> _tiles;
-	BattleUnit *_selectedUnit, *_lastSelectedUnit;
+	BattleUnit *_selectedUnit, *_undoUnit, *_lastSelectedUnit;
 	std::vector<Node*> _nodes;
 	std::vector<BattleUnit*> _units;
 	std::vector<BattleItem*> _items, _deleted;
@@ -371,12 +371,17 @@ public:
 	BattleUnit *getSelectedUnit() const;
 	/// Sets the currently selected unit.
 	void setSelectedUnit(BattleUnit *unit);
+	/// Gets the "undo" unit.
+	BattleUnit* getUndoUnit() const { return _undoUnit; }
+	/// Sets the "undo" unit.
+	void setUndoUnit(BattleUnit* unit) { _undoUnit = unit; }
 	/// Clear state that given unit is selected.
 	void clearUnitSelection(BattleUnit *unit);
 	/// Selects the previous soldier.
 	BattleUnit *selectPreviousPlayerUnit(bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
 	/// Selects the next soldier.
 	BattleUnit *selectNextPlayerUnit(bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
+	BattleUnit *selectNextPlayerUnitByDistance(bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
 	/// Selects the unit with position on map.
 	BattleUnit *selectUnit(Position pos);
 	/// Gets the pathfinding object.

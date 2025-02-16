@@ -71,6 +71,11 @@ float currentRank(const BattleUnit *unit)
 	return unit->getRankInt();
 }
 
+float currentRankUnified(const BattleUnit *unit)
+{
+	return unit->getRankIntUnified();
+}
+
 float currentTimeUnits(const BattleUnit *unit)
 {
 	return unit->getTimeUnits();
@@ -267,6 +272,7 @@ BonusStatData statDataMap[] =
 	{ "firingReactionsScaled", create2<&UnitStats::firing, &UnitStats::reactions, 10000>() },
 
 	{ "rank", create<&currentRank>() },
+	{ "rankUnified", create<&currentRankUnified>() },
 	{ "fatalWounds", create<&currentFatalWounds>() },
 
 	{ "healthCurrent", create<&currentHealth>() },
@@ -308,33 +314,49 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeRead
 			_bonusOrig.clear();
 			if (stats.isMap())
 			{
-				for (const auto& dd : stats.children())
+				const auto& statsChildren = stats.children();
+				_bonusOrig.reserve(statsChildren.size());
+				for (const auto& child : statsChildren)
+					_bonusOrig.emplace_back().first.assign(child.key());
+				size_t bonusIndex = 0;
+				for (size_t statIndex = 0; statIndex < std::size(statDataMap) && bonusIndex < _bonusOrig.size(); ++statIndex)
 				{
-					std::string key = dd.readKey<std::string>();
-					for (size_t statIndex = 0; statIndex < std::size(statDataMap); statIndex++)
+					for (size_t bonusSearchIndex = bonusIndex; bonusSearchIndex < _bonusOrig.size(); ++bonusSearchIndex)
 					{
-						if (key != statDataMap[statIndex].name)
+						if (statDataMap[statIndex].name != _bonusOrig[bonusSearchIndex].first)
 							continue;
-						std::vector<float> vec;
-						if (dd.hasVal())
+						if (bonusSearchIndex != bonusIndex)
+							std::swap(_bonusOrig[bonusSearchIndex], _bonusOrig[bonusIndex]);
+						const auto& statReader = stats[ryml::to_csubstr(_bonusOrig[bonusIndex].first)];
+						std::vector<float>& vec = _bonusOrig[bonusIndex].second;
+						if (statReader.hasVal())
 						{
-							float val = dd.readVal<float>();
+							float val = statReader.readVal<float>();
 							vec.push_back(val);
 						}
 						else
 						{
 							for (size_t j = 0; j < statDataFuncSize; ++j)
 							{
-								if (j < dd.childrenCount())
+								if (j < statReader.childrenCount())
 								{
-									float val = dd[j].readVal<float>();
+									float val = statReader[j].readVal<float>();
 									vec.push_back(val);
 								}
 							}
 						}
-						_bonusOrig.push_back(std::make_pair(statDataMap[statIndex].name, std::move(vec)));
+						bonusIndex++;
 						break;
 					}
+				}
+				if (bonusIndex != _bonusOrig.size()) // one more stats were not processed
+				{
+					for (size_t errorIndex = bonusIndex; errorIndex < _bonusOrig.size(); ++errorIndex)
+					{
+						const auto& loc = stats[ryml::to_csubstr(_bonusOrig[errorIndex].first)].getLocationInFile();
+						Log(LOG_ERROR) << ryml::formatrs<std::string>("Unknown stat multiplier term '{}' at {}:{}", _bonusOrig[errorIndex].first, loc.name, loc.line);
+					}
+					_bonusOrig.erase(_bonusOrig.begin() + bonusIndex, _bonusOrig.end());
 				}
 				_refresh = true;
 			}

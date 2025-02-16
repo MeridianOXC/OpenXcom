@@ -57,7 +57,7 @@ std::string UfoTrajectory::getAltitude(size_t wp) const
 // helper overloads for (de)serialization
 bool read(ryml::ConstNodeRef const& n, TrajectoryWaypoint* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	val->zone = reader[0].readVal<int>();
 	val->altitude = reader[1].readVal<int>();
 	val->speed = reader[2].readVal<int>();

@@ -101,7 +101,7 @@ NewPossiblePurchaseState::NewPossiblePurchaseState(Base * base, const std::vecto
 	_lstPossibilities->setScrolling(true, 0);
 	for (const auto* ruleItem : possibilities)
 	{
-		_lstPossibilities->addRow (1, tr(ruleItem->getName()).c_str());
+		_lstPossibilities->addRow (1, tr(ruleItem->getType()).c_str());
 	}
 }
 

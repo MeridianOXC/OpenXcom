@@ -592,6 +592,26 @@ bool ProjectileFlyBState::createNewProjectile()
 }
 
 /**
+ * Deinitialize the state.
+ */
+void ProjectileFlyBState::deinit()
+{
+	_parent->getMap()->setFollowProjectile(true); // turn back on when done shooting
+
+	if (!_victims.empty())
+	{
+		for (auto* victim : _victims)
+		{
+			// is the spotter still standing after ALL shots?
+			if (!victim->isOut() && !victim->isOutThresholdExceed())
+			{
+				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
+			}
+		}
+	}
+}
+
+/**
  * Animates the projectile (moves to the next point in its trajectory).
  * If the animation is finished the projectile sprite is removed from the map,
  * and this state is finished.
@@ -613,20 +633,15 @@ void ProjectileFlyBState::think()
 			&& _ammo->getAmmoQuantity() != 0
 			&& (hasFloor || unitCanFly))
 		{
-			bool success = createNewProjectile();
+			createNewProjectile();
 			if (_action.cameraPosition.z != -1)
 			{
 				_parent->getMap()->getCamera()->setMapOffset(_action.cameraPosition);
 				_parent->getMap()->invalidate();
 			}
-			if (!success)
-			{
-				_parent->getMap()->setFollowProjectile(true); // turn back on when done shooting
-			}
 		}
 		else
 		{
-			_parent->getMap()->setFollowProjectile(true); // turn back on when done shooting
 			if (_action.cameraPosition.z != -1 && _action.waypoints.size() <= 1)
 			{
 				_parent->getMap()->getCamera()->setMapOffset(_action.cameraPosition);
@@ -1031,7 +1046,21 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 			{
 				ai->setWasHitBy(_unit);
 				_unit->setTurnsSinceSpotted(0);
-				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
+				if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
+				{
+					// 0 = don't spot
+					// 1 = spot only if the victim doesn't die or pass out
+					// 2 = always spot
+					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1)
+					{
+						_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
+					}
+					else
+					{
+						// decide later
+						_victims.insert(victim);
+					}
+				}
 			}
 		}
 	}

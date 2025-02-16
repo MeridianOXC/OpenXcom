@@ -736,6 +736,7 @@ void TestState::testCase1()
 
 int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set<int>> &uniqueResults)
 {
+	int MAX_LOFT_ID = (_game->getMod()->getVoxelData()->size() / 16) - 1;
 	int errors = 0;
 	for (auto* myMapDataSet : *terrainRule->getMapDataSets())
 	{
@@ -753,6 +754,20 @@ int TestState::checkMCD(RuleTerrain *terrainRule, std::map<std::string, std::set
 				Log(LOG_ERROR) << "Error in " << str << ". Found using OXCE test cases.";
 				errors++;
 				uniqueResults[myMapDataSet->getName()].insert(index);
+			}
+
+			// Check for invalid LOFTemps
+			for (int layer = 0; layer < 12; ++layer)
+			{
+				if (myMapData->getLoftID(layer) < 0 || myMapData->getLoftID(layer) > MAX_LOFT_ID)
+				{
+					std::ostringstream ss;
+					ss << "terrain: " << terrainRule->getName() << " dataset: " << myMapDataSet->getName() << " object " << index << " has LoftID: " << myMapData->getLoftID(layer);
+					std::string str = ss.str();
+					Log(LOG_ERROR) << "Error in " << str << ". MAX_LOFT_ID = " << MAX_LOFT_ID << ". Found using OXCE test cases.";
+					errors++;
+					uniqueResults[myMapDataSet->getName()].insert(index);
+				}
 			}
 
 			// Validate MCD references

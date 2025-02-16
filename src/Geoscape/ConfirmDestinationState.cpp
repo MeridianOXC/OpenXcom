@@ -325,6 +325,18 @@ void ConfirmDestinationState::btnOkClick(Action *)
 
 	for (auto* craft : _crafts)
 	{
+		if (craft->areTooManyItemsOnboard())
+		{
+			_game->popState();
+			_game->popState();
+			std::string message2 = tr("STR_TOO_MANY_ITEMS_ONBOARD");
+			_game->pushState(new CraftErrorState(0, message2));
+			return;
+		}
+	}
+
+	for (auto* craft : _crafts)
+	{
 		if (!craft->arePilotsOnboard())
 		{
 			_game->popState();
@@ -404,7 +416,7 @@ void ConfirmDestinationState::btnTransferClick(Action *)
 	{
 		errorMessage = tr("STR_NO_FREE_ACCOMODATION_CREW");
 	}
-	else if (Options::storageLimitsEnforced && targetBase->storesOverfull(_crafts.front()->getTotalItemStorageSize(_game->getMod())))
+	else if (Options::storageLimitsEnforced && targetBase->storesOverfull(_crafts.front()->getTotalItemStorageSize()))
 	{
 		errorMessage = tr("STR_NOT_ENOUGH_STORE_SPACE_FOR_CRAFT");
 	}

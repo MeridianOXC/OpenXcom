@@ -64,7 +64,7 @@ namespace OpenXcom
  */
 SavedBattleGame::SavedBattleGame(Mod *rule, Language *lang, bool isPreview) :
 	_isPreview(isPreview), _craftPos(), _craftZ(0), _craftForPreview(nullptr),
-	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0),
+	_battleState(0), _rule(rule), _mapsize_x(0), _mapsize_y(0), _mapsize_z(0), _selectedUnit(0), _undoUnit(nullptr),
 	_lastSelectedUnit(0), _pathfinding(0), _tileEngine(0),
 	_reinforcementsItemLevel(0), _startingCondition(nullptr), _enviroEffects(nullptr), _ecEnabledFriendly(false), _ecEnabledHostile(false), _ecEnabledNeutral(false),
 	_globalShade(0), _side(FACTION_PLAYER), _turn(0), _bughuntMinTurn(20), _animFrame(0), _nameDisplay(false),
@@ -176,6 +176,7 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& node, Mod *mod, SavedGame
 	reader.tryRead("depth", _depth);
 	reader.tryRead("animFrame", _animFrame);
 	int selectedUnitId = reader["selectedUnit"].readVal<int>();
+	int undoUnitId = reader["undoUnit"].readVal<int>(-1);
 
 	for (const auto& mdsReader : reader["mapdatasets"].children())
 	{
@@ -283,6 +284,8 @@ void SavedBattleGame::load(const YAML::YamlNodeReader& node, Mod *mod, SavedGame
 		{
 			if ((unit->getId() == selectedUnitId) || (_selectedUnit == 0 && !unit->isOut()))
 				_selectedUnit = unit;
+			if (unit->getId() == undoUnitId)
+				_undoUnit = unit;
 		}
 		else if (unit->getStatus() != STATUS_DEAD && !unit->isIgnored())
 		{
@@ -505,7 +508,7 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("height", _mapsize_z);
 	writer.write("missionType", _missionType);
 	writer.write("strTarget", _strTarget);
-	writer.write("strCraftOrBase", _strCraftOrBase).setAsQuoted();
+	writer.write("strCraftOrBase", _strCraftOrBase).setAsQuotedAndEscaped();
 	if (_startingCondition)
 	{
 		writer.write("startingConditionType", _startingCondition->getType());
@@ -535,6 +538,7 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	writer.write("animFrame", _animFrame);
 	writer.write("bughuntMode", _bughuntMode);
 	writer.write("selectedUnit", (_selectedUnit ? _selectedUnit->getId() : -1));
+	writer.write("undoUnit", (_undoUnit ? _undoUnit->getId() : -1));
 
 	writer.write("mapdatasets", _mapDataSets,
 		[](YAML::YamlNodeWriter& w, MapDataSet* mds)
@@ -549,13 +553,13 @@ void SavedBattleGame::save(YAML::YamlNodeWriter writer) const
 	}
 #else
 	// first, write out the field sizes we're going to use to write the tile data
-	writer.write("tileIndexSize", static_cast<char>(Tile::serializationKey.index)).setAsQuoted();
+	writer.write("tileIndexSize", static_cast<char>(Tile::serializationKey.index)).setAsQuotedAndEscaped();
 	writer.write("tileTotalBytesPer", Tile::serializationKey.totalBytes);
-	writer.write("tileFireSize", static_cast<char>(Tile::serializationKey._fire)).setAsQuoted();
-	writer.write("tileSmokeSize", static_cast<char>(Tile::serializationKey._smoke)).setAsQuoted();
-	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuoted();
-	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuoted();
-	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuoted();
+	writer.write("tileFireSize", static_cast<char>(Tile::serializationKey._fire)).setAsQuotedAndEscaped();
+	writer.write("tileSmokeSize", static_cast<char>(Tile::serializationKey._smoke)).setAsQuotedAndEscaped();
+	writer.write("tileIDSize", static_cast<char>(Tile::serializationKey._mapDataID)).setAsQuotedAndEscaped();
+	writer.write("tileSetIDSize", static_cast<char>(Tile::serializationKey._mapDataSetID)).setAsQuotedAndEscaped();
+	writer.write("tileBoolFieldsSize", static_cast<char>(Tile::serializationKey.boolFields)).setAsQuotedAndEscaped();
 
 	size_t tileDataSize = Tile::serializationKey.totalBytes * _mapsize_z * _mapsize_y * _mapsize_x;
 	Uint8* tileData = (Uint8*) calloc(tileDataSize, 1);
@@ -873,6 +877,10 @@ void SavedBattleGame::clearUnitSelection(BattleUnit *unit)
 	{
 		_selectedUnit = nullptr;
 	}
+	if (_undoUnit == unit)
+	{
+		_undoUnit = nullptr;
+	}
 	if (_lastSelectedUnit == unit)
 	{
 		_lastSelectedUnit = nullptr;
@@ -969,6 +977,43 @@ BattleUnit *SavedBattleGame::selectPlayerUnit(int dir, bool checkReselect, bool 
 	while (!(*i)->isSelectable(_side, checkReselect, checkInventory));
 
 	_selectedUnit = (*i);
+	return _selectedUnit;
+}
+
+/**
+ * Selects the next closest player unit.
+ * @param checkReselect Whether to check if we should reselect a unit.
+ * @param setReselect Don't reselect a unit.
+ * @param checkInventory Whether to check if the unit has an inventory.
+ * @return Pointer to new selected BattleUnit, NULL if none can be selected.
+ */
+BattleUnit* SavedBattleGame::selectNextPlayerUnitByDistance(bool checkReselect, bool setReselect, bool checkInventory)
+{
+	BattleUnit* backup = _selectedUnit;
+	if (_selectedUnit != 0 && setReselect)
+	{
+		_selectedUnit->dontReselect();
+		_selectedUnit = 0;
+	}
+
+	std::vector< std::pair<int, BattleUnit*> > candidates;
+	for (auto* unit : _units)
+	{
+		if (unit != _selectedUnit && unit->isSelectable(_side, checkReselect, checkInventory))
+		{
+			int distance = backup ? backup->distance3dToUnitSq(unit) : 0;
+			candidates.push_back(std::make_pair(distance, unit));
+		}
+	}
+
+	if (!candidates.empty())
+	{
+		std::sort(candidates.begin(), candidates.end(),
+			[](const std::pair<int, BattleUnit*>& a, const std::pair<int, BattleUnit*>& b)
+			{ return a.first < b.first; });
+
+		_selectedUnit = candidates.front().second;
+	}
 	return _selectedUnit;
 }
 
@@ -1441,11 +1486,13 @@ void SavedBattleGame::endTurn()
 		else
 			_lastSelectedUnit = nullptr;
 		_selectedUnit =  0;
+		_undoUnit = nullptr;
 		_side = FACTION_HOSTILE;
 	}
 	else if (_side == FACTION_HOSTILE)
 	{
 		_selectedUnit =  0;
+		_undoUnit = nullptr;
 		_side = FACTION_NEUTRAL;
 		// if there is no neutral team, we skip this and instantly prepare the new turn for the player
 //		if (selectNextPlayerUnit() == 0)
@@ -1473,6 +1520,7 @@ void SavedBattleGame::endTurn()
 		while (_selectedUnit && _selectedUnit->getFaction() != FACTION_PLAYER)
 			selectNextPlayerUnit();
 
+		_undoUnit = nullptr;
 		_lastSelectedUnit = nullptr;
 	}
 
@@ -3322,7 +3370,7 @@ void SavedBattleGame::setRandomHiddenMovementBackground(const Mod *mod)
 {
 	if (mod && !mod->getHiddenMovementBackgrounds().empty())
 	{
-		int rng = RNG::generate(0, mod->getHiddenMovementBackgrounds().size() - 1);
+		int rng = RNG::seedless(0, mod->getHiddenMovementBackgrounds().size() - 1);
 		_hiddenMovementBackground = mod->getHiddenMovementBackgrounds().at(rng);
 	}
 	else

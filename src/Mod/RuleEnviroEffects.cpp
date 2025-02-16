@@ -120,7 +120,7 @@ Armor* RuleEnviroEffects::getArmorTransformation(const Armor* sourceArmor) const
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, EnvironmentalCondition* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("globalChance", val->globalChance);
 	reader.tryRead("chancePerTurn", val->chancePerTurn);
 	reader.tryRead("firstTurn", val->firstTurn);

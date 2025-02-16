@@ -194,6 +194,7 @@ bool Mod::EXTENDED_INVENTORY_SLOT_SORTING;
 bool Mod::EXTENDED_RUNNING_COST;
 int Mod::EXTENDED_MOVEMENT_COST_ROUNDING;
 bool Mod::EXTENDED_HWP_LOAD_ORDER;
+int Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING;
 int Mod::EXTENDED_MELEE_REACTIONS;
 int Mod::EXTENDED_TERRAIN_MELEE;
 int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
@@ -307,6 +308,7 @@ void Mod::resetGlobalStatics()
 	EXTENDED_RUNNING_COST = false;
 	EXTENDED_MOVEMENT_COST_ROUNDING = 0;
 	EXTENDED_HWP_LOAD_ORDER = false;
+	EXTENDED_SPOT_ON_HIT_FOR_SNIPING = 0;
 	EXTENDED_MELEE_REACTIONS = 0;
 	EXTENDED_TERRAIN_MELEE = 0;
 	EXTENDED_UNDERWATER_THROW_FACTOR = 0;
@@ -1098,19 +1100,58 @@ bool Mod::checkForObsoleteErrorByYear(const std::string &parent, const YAML::Yam
 		{
 			level = LOG_INFO;
 		}
-		else if (currYear.year == year)
-		{
-			level = LOG_WARNING;
-		}
 		else // after obsolete year functionality is disabled
 		{
-			level = LOG_ERROR;
+			level = LOG_FATAL;
 			r = false;
 		}
 	}
 	checkForSoftError(true, parent, reader, "Obsolete (to removed after year " + std::to_string(year) + ") operation " + error, level);
 
 	return r;
+}
+
+
+/**
+ * Check for error that we can ignore by user request.
+ */
+bool Mod::checkForSoftError(bool check, const std::string& parent, const YAML::YamlNodeReader& reader, const std::string& error, SeverityLevel level) const
+{
+	if (check)
+	{
+		auto ex = LoadRuleException(parent, reader, error);
+		if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
+		{
+			Log(level) << _scriptGlobal->getCurrentFile() << ": Supressed " << ex.what();
+			return true;
+		}
+		else
+		{
+			throw ex;
+		}
+	}
+	return false;
+}
+
+/**
+ * Check for error that we can ignore by user request.
+ */
+bool Mod::checkForSoftError(bool check, const std::string &parent, const std::string &error, SeverityLevel level) const
+{
+	if (check)
+	{
+		auto ex = LoadRuleException(parent, error);
+		if (Options::oxceModValidationLevel < level && level != LOG_FATAL)
+		{
+			Log(level) << _scriptGlobal->getCurrentFile() << ": Supressed " << ex.what();
+			return true;
+		}
+		else
+		{
+			throw ex;
+		}
+	}
+	return false;
 }
 
 /**
@@ -1348,7 +1389,7 @@ void loadHelper(const std::string &parent, int& v, const YAML::YamlNodeReader& r
  */
 void loadHelper(const std::string &parent, std::string& v, const YAML::YamlNodeReader& reader)
 {
-	v = reader.readVal<std::string>();
+	reader.tryReadVal(v);
 	if (Mod::isEmptyRuleName(v))
 	{
 		throw LoadRuleException(parent, reader, "Invalid value for name");
@@ -2651,6 +2692,7 @@ void Mod::loadConstants(const YAML::YamlNodeReader &reader)
 	reader.tryRead("extendedRunningCost", EXTENDED_RUNNING_COST);
 	reader.tryRead("extendedMovementCostRounding", EXTENDED_MOVEMENT_COST_ROUNDING);
 	reader.tryRead("extendedHwpLoadOrder", EXTENDED_HWP_LOAD_ORDER);
+	reader.tryRead("extendedSpotOnHitForSniping", EXTENDED_SPOT_ON_HIT_FOR_SNIPING);
 	reader.tryRead("extendedMeleeReactions", EXTENDED_MELEE_REACTIONS);
 	reader.tryRead("extendedTerrainMelee", EXTENDED_TERRAIN_MELEE);
 	reader.tryRead("extendedUnderwaterThrowFactor", EXTENDED_UNDERWATER_THROW_FACTOR);
@@ -3703,7 +3745,7 @@ T *Mod::loadRule(const YAML::YamlNodeReader& reader, std::map<std::string, T*> *
 	}
 	else
 	{
-		checkForObsoleteErrorByYear("Mod", reader, "Missing main node", 2025);
+		throw LoadRuleException("Mod", reader, "Missing main node");
 	}
 
 	return rule;
@@ -4763,18 +4805,14 @@ template <typename T>
 struct compareRule
 {
 	Mod *_mod;
-	typedef T*(Mod::*RuleLookup)(const std::string &id, bool error) const;
-	RuleLookup _lookup;
 
-	compareRule(Mod *mod, RuleLookup lookup) : _mod(mod), _lookup(lookup)
+	compareRule(Mod *mod) : _mod(mod)
 	{
 	}
 
-	bool operator()(const std::string &r1, const std::string &r2) const
+	bool operator()(const std::pair<const std::string, T*>* r1, const std::pair<const std::string, T*>* r2) const
 	{
-		T *rule1 = (_mod->*_lookup)(r1, true);
-		T *rule2 = (_mod->*_lookup)(r2, true);
-		return (rule1->getListOrder() < rule2->getListOrder());
+		return (r1->second->getListOrder() < r2->second->getListOrder());
 	}
 };
 
@@ -4790,11 +4828,9 @@ struct compareRule<RuleCraftWeapon>
 	{
 	}
 
-	bool operator()(const std::string &r1, const std::string &r2) const
+	bool operator()(const std::pair<const std::string, RuleCraftWeapon*>* r1, const std::pair<const std::string, RuleCraftWeapon*>* r2) const
 	{
-		auto* rule1 = _mod->getCraftWeapon(r1)->getLauncherItem();
-		auto* rule2 = _mod->getCraftWeapon(r2)->getLauncherItem();
-		return (rule1->getListOrder() < rule2->getListOrder());
+		return (r1->second->getLauncherItem()->getListOrder() < r2->second->getLauncherItem()->getListOrder());
 	}
 };
 
@@ -4811,11 +4847,9 @@ struct compareRule<Armor>
 	{
 	}
 
-	bool operator()(const std::string &r1, const std::string &r2) const
+	bool operator()(const std::pair<const std::string, Armor*>* r1, const std::pair<const std::string, Armor*>* r2) const
 	{
-		Armor* armor1 = _mod->getArmor(r1);
-		Armor* armor2 = _mod->getArmor(r2);
-		return operator()(armor1, armor2);
+		return operator()(r1->second, r2->second);
 	}
 
 	bool operator()(const Armor* armor1, const Armor* armor2) const
@@ -4847,14 +4881,12 @@ struct compareRule<ArticleDefinition>
 	{
 	}
 
-	bool operator()(const std::string &r1, const std::string &r2) const
+	bool operator()(const std::pair<const std::string, ArticleDefinition*>* r1, const std::pair<const std::string, ArticleDefinition*>* r2) const
 	{
-		ArticleDefinition *rule1 = _mod->getUfopaediaArticle(r1);
-		ArticleDefinition *rule2 = _mod->getUfopaediaArticle(r2);
-		if (rule1->section == rule2->section)
-			return (rule1->getListOrder() < rule2->getListOrder());
+		if (r1->second->section == r2->second->section)
+			return (r1->second->getListOrder() < r2->second->getListOrder());
 		else
-			return (_sections.at(rule1->section) < _sections.at(rule2->section));
+			return (_sections.at(r1->second->section) < _sections.at(r2->second->section));
 	}
 };
 
@@ -4877,6 +4909,21 @@ struct compareSection
 };
 
 /**
+* Sort helper to avoid having to do loop-ups inside comparator function
+*/
+template <typename RuleType, typename ComparatorFunc>
+void sortIndex(std::vector<std::string>& index, std::map<std::string, RuleType*>& map, ComparatorFunc comparator)
+{
+	std::vector<const std::pair<const std::string, RuleType*>*> tempVector;
+	tempVector.reserve(index.size());
+	for (const auto& pair : map)
+		tempVector.push_back(&pair);
+	std::sort(tempVector.begin(), tempVector.end(), comparator);
+	for (size_t i = 0; i < index.size(); ++i)
+		index[i].assign(tempVector[i]->first);
+}
+
+/**
  * Sorts all our lists according to their weight.
  */
 void Mod::sortLists()
@@ -4897,24 +4944,23 @@ void Mod::sortLists()
 			}
 		}
 	}
-
-	std::sort(_itemCategoriesIndex.begin(), _itemCategoriesIndex.end(), compareRule<RuleItemCategory>(this, (compareRule<RuleItemCategory>::RuleLookup)&Mod::getItemCategory));
-	std::sort(_itemsIndex.begin(), _itemsIndex.end(), compareRule<RuleItem>(this, (compareRule<RuleItem>::RuleLookup)&Mod::getItem));
-	std::sort(_craftsIndex.begin(), _craftsIndex.end(), compareRule<RuleCraft>(this, (compareRule<RuleCraft>::RuleLookup)&Mod::getCraft));
-	std::sort(_facilitiesIndex.begin(), _facilitiesIndex.end(), compareRule<RuleBaseFacility>(this, (compareRule<RuleBaseFacility>::RuleLookup)&Mod::getBaseFacility));
-	std::sort(_researchIndex.begin(), _researchIndex.end(), compareRule<RuleResearch>(this, (compareRule<RuleResearch>::RuleLookup)&Mod::getResearch));
-	std::sort(_manufactureIndex.begin(), _manufactureIndex.end(), compareRule<RuleManufacture>(this, (compareRule<RuleManufacture>::RuleLookup)&Mod::getManufacture));
-	std::sort(_soldierTransformationIndex.begin(), _soldierTransformationIndex.end(), compareRule<RuleSoldierTransformation>(this,  (compareRule<RuleSoldierTransformation>::RuleLookup)&Mod::getSoldierTransformation));
-	std::sort(_invsIndex.begin(), _invsIndex.end(), compareRule<RuleInventory>(this, (compareRule<RuleInventory>::RuleLookup)&Mod::getInventory));
+	sortIndex(_itemCategoriesIndex, _itemCategories, compareRule<RuleItemCategory>(this));
+	sortIndex(_itemsIndex, _items, compareRule<RuleItem>(this));
+	sortIndex(_craftsIndex, _crafts, compareRule<RuleCraft>(this));
+	sortIndex(_facilitiesIndex, _facilities, compareRule<RuleBaseFacility>(this));
+	sortIndex(_researchIndex, _research, compareRule<RuleResearch>(this));
+	sortIndex(_manufactureIndex, _manufacture, compareRule<RuleManufacture>(this));
+	sortIndex(_soldierTransformationIndex, _soldierTransformation, compareRule<RuleSoldierTransformation>(this));
+	sortIndex(_invsIndex, _invs, compareRule<RuleInventory>(this));
 	// special cases
-	std::sort(_craftWeaponsIndex.begin(), _craftWeaponsIndex.end(), compareRule<RuleCraftWeapon>(this));
-	std::sort(_armorsIndex.begin(), _armorsIndex.end(), compareRule<Armor>(this));
+	sortIndex(_craftWeaponsIndex, _craftWeapons, compareRule<RuleCraftWeapon>(this));
+	sortIndex(_armorsIndex, _armors, compareRule<Armor>(this));
 	std::sort(_armorsForSoldiersCache.begin(), _armorsForSoldiersCache.end(), compareRule<Armor>(this));
 	_ufopaediaSections[UFOPAEDIA_NOT_AVAILABLE] = 0;
-	std::sort(_ufopaediaIndex.begin(), _ufopaediaIndex.end(), compareRule<ArticleDefinition>(this));
+	sortIndex(_ufopaediaIndex, _ufopaediaArticles, compareRule<ArticleDefinition>(this));
 	std::sort(_ufopaediaCatIndex.begin(), _ufopaediaCatIndex.end(), compareSection(this));
-	std::sort(_soldiersIndex.begin(), _soldiersIndex.end(), compareRule<RuleSoldier>(this, (compareRule<RuleSoldier>::RuleLookup) & Mod::getSoldier));
-	std::sort(_aliensIndex.begin(), _aliensIndex.end(), compareRule<AlienRace>(this, (compareRule<AlienRace>::RuleLookup) & Mod::getAlienRace));
+	sortIndex(_soldiersIndex, _soldiers, compareRule<RuleSoldier>(this));
+	sortIndex(_aliensIndex, _alienRaces, compareRule<AlienRace>(this));
 }
 
 /**
@@ -6533,7 +6579,7 @@ void Mod::ScriptRegister(ScriptParserBase *parser)
 }
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 static auto dummyParseDate = ([]
 {

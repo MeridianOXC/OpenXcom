@@ -318,7 +318,7 @@ namespace OpenXcom
 	// helper overloads for deserialization-only
 	bool read(ryml::ConstNodeRef const& n, ArticleDefinitionRect* val)
 	{
-		YAML::YamlNodeReader reader(nullptr, n);
+		YAML::YamlNodeReader reader(n);
 		reader.tryRead("x", val->x);
 		reader.tryRead("y", val->y);
 		reader.tryRead("width", val->width);

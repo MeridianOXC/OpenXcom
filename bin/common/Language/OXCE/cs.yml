@@ -80,6 +80,7 @@ cs:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Výchozí (bez zásob)"
   STR_FILTER_FACILITY_REQUIRED: "Zařízení chybí"
   STR_FILTER_HIDDEN: "Zkryté"
+  STR_FILTER_EQUIPPED: "Vybaveno"
   STR_FILTER_MISSING: "Chybí"
   STR_SORT_DEFAULT: "Výchozí"
   STR_SORT_BY_COST: "Dle ceny"

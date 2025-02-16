@@ -129,6 +129,7 @@
 #include "../Mod/AlienRace.h"
 #include "../Mod/RuleInterface.h"
 #include "../Mod/RuleVideo.h"
+#include "../Mod/Texture.h"
 #include "../fmath.h"
 #include "../fallthrough.h"
 
@@ -673,6 +674,10 @@ void GeoscapeState::handle(Action *action)
 			if (action->getDetails()->key.keysym.sym == Options::keyQuickSave)
 			{
 				popup(new SaveGameState(OPT_GEOSCAPE, SAVE_QUICK, _palette));
+			}
+			else if (action->getDetails()->key.keysym.sym == Options::keyInstaSave)
+			{
+				popup(new SaveGameState(OPT_GEOSCAPE, SAVE_INSTA, _palette));
 			}
 			else if (action->getDetails()->key.keysym.sym == Options::keyQuickLoad)
 			{
@@ -1245,6 +1250,7 @@ void GeoscapeState::time5Seconds()
 
 			if (!ufoIsAttacking && xcraft->reachedDestination())
 			{
+				bool suppressLanding = Options::oxceGeoSuppressLandingWithoutEquipment && xcraft->getItems()->empty();
 				Ufo* u = dynamic_cast<Ufo*>(xcraft->getDestination());
 				Waypoint *w = dynamic_cast<Waypoint*>(xcraft->getDestination());
 				MissionSite* m = dynamic_cast<MissionSite*>(xcraft->getDestination());
@@ -1347,7 +1353,7 @@ void GeoscapeState::time5Seconds()
 					case Ufo::LANDED:
 					case Ufo::CRASHED:
 					case Ufo::DESTROYED: // Just before expiration
-						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding())
+						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding() && !suppressLanding)
 						{
 							if (!xcraft->isInDogfight())
 							{
@@ -1378,13 +1384,20 @@ void GeoscapeState::time5Seconds()
 				}
 				else if (m != 0)
 				{
-					if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding())
+					if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding() && !suppressLanding)
 					{
 						// look up polygons texture
 						int texture, shade;
 						_globe->getPolygonTextureAndShade(m->getLongitude(), m->getLatitude(), &texture, &shade);
 						timerReset();
 						Texture* globeTexture = _game->getMod()->getGlobe()->getTexture(texture);
+						if (globeTexture->isCosmeticOcean())
+						{
+							// Unlike xcom bases, alien bases and ufo crash/land sites, mission sites can actually happen on ocean (=non-polygon part of the globe)
+							// e.g. TFTD surface attacks
+							// For backwards-compatibility, let's use texture = -1 instead of any cosmetic ocean texture
+							globeTexture = _game->getMod()->getGlobe()->getTexture(-1);
+						}
 						Texture* missionTexture = _game->getMod()->getGlobe()->getTexture(m->getTexture());
 						if (!missionTexture)
 						{
@@ -1401,7 +1414,7 @@ void GeoscapeState::time5Seconds()
 				{
 					if (b->isDiscovered())
 					{
-						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding())
+						if (xcraft->getNumTotalUnits() > 0 && xcraft->getRules()->getAllowLanding() && !suppressLanding)
 						{
 							int texture, shade;
 							_globe->getPolygonTextureAndShade(b->getLongitude(), b->getLatitude(), &texture, &shade);
@@ -1654,10 +1667,18 @@ void GeoscapeState::ufoHuntingAndEscorting()
 					{
 						_game->getMod()->getSound("GEO.CAT", ufo->getRules()->getHuntAlertSound())->play();
 					}
-					std::string msg = tr("STR_UFO_STARTED_HUNTING")
-						.arg(ufo->getName(_game->getLanguage()))
-						.arg(newTarget->getName(_game->getLanguage()));
-					popup(new CraftErrorState(this, msg));
+					if (Options::oxceGeoSuppressRedundantHKAlert && newTarget->getDestination() == ufo)
+					{
+						// Empty by design
+						// If the player sent an interceptor after the HK, the alert is redundant
+					}
+					else
+					{
+						std::string msg = tr("STR_UFO_STARTED_HUNTING")
+							.arg(ufo->getName(_game->getLanguage()))
+							.arg(newTarget->getName(_game->getLanguage()));
+						popup(new CraftErrorState(this, msg));
+					}
 				}
 			}
 			else if (originalTarget)
@@ -2409,6 +2430,14 @@ void GeoscapeState::time1Day()
 		if (!finished.empty())
 		{
 			saveGame->getAvailableResearchProjects(before, mod, xbase);
+			for (auto* fp : finished)
+			{
+				if (fp->getRules()->isRepeatable())
+				{
+					RuleResearch* nonconst = mod->getResearch(fp->getRules()->getName());
+					before.push_back(nonconst);
+				}
+			}
 		}
 		// 3. add finished research, including lookups and getonefrees (up to 4x)
 		std::vector<const RuleResearch*> topicsToCheck;

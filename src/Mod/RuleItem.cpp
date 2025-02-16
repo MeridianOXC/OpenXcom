@@ -2813,8 +2813,8 @@ std::string debugDisplayScript(const RuleItem* ri)
 	{
 		std::string s;
 		s += RuleItem::ScriptName;
-		s += "(name: \"";
-		s += ri->getName();
+		s += "(type: \"";
+		s += ri->getType();
 		s += "\")";
 		return s;
 	}

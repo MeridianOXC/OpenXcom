@@ -877,7 +877,7 @@ void TransferItemsState::increaseByValue(int change)
 		}
 		else if (Options::storageLimitsEnforced)
 		{
-			double used = craft->getTotalItemStorageSize(_game->getMod());
+			double used = craft->getTotalItemStorageSize();
 			if (used > 0.0 && _baseTo->storesOverfull(_iQty + used))
 			{
 				errorMessage = tr("STR_NOT_ENOUGH_STORE_SPACE_FOR_CRAFT");
@@ -916,7 +916,7 @@ void TransferItemsState::increaseByValue(int change)
 		case TRANSFER_CRAFT:
 			_cQty++;
 			_pQty += craft->getNumTotalSoldiers();
-			_iQty += craft->getTotalItemStorageSize(_game->getMod());
+			_iQty += craft->getTotalItemStorageSize();
 			getRow().amount++;
 			if (!Options::canTransferCraftsWhileAirborne || craft->getStatus() != "STR_OUT")
 				_total += getRow().cost;
@@ -989,7 +989,7 @@ void TransferItemsState::decreaseByValue(int change)
 		craft = (Craft*)getRow().rule;
 		_cQty--;
 		_pQty -= craft->getNumTotalSoldiers();
-		_iQty -= craft->getTotalItemStorageSize(_game->getMod());
+		_iQty -= craft->getTotalItemStorageSize();
 		break;
 	case TRANSFER_ITEM:
 		const RuleItem *selItem = (RuleItem*)getRow().rule;

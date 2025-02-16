@@ -103,6 +103,7 @@ private:
 	std::vector<DeploymentData> _data;
 	std::vector<ReinforcementsData> _reinforcements;
 	int _width, _length, _height, _civilians;
+	bool _ignoreLivingCivilians;
 	bool _markCiviliansAsVIP;
 	int _civilianSpawnNodeRank;
 	std::map<std::string, int> _civiliansByType;
@@ -190,6 +191,8 @@ public:
 	void getDimensions(int *width, int *length, int *height) const;
 	/// Gets civilians.
 	int getCivilians() const;
+	/// Should living civilians be ignored for scoring, commendations, etc.?
+	bool getIgnoreLivingCivilians() const { return _ignoreLivingCivilians; }
 	/// Gets the civilian spawn node rank.
 	bool getMarkCiviliansAsVIP() const { return _markCiviliansAsVIP; }
 	/// Gets the civilian spawn node rank.

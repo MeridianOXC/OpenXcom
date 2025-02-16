@@ -1307,7 +1307,7 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 		// set all the items on this tile as belonging to the XCOM faction.
 		bi->setXCOMProperty(true);
 		// don't let the soldiers take extra ammo yet
-		if (bi->getRules()->getBattleType() == BT_AMMO)
+		if (bi->getRules()->getBattleType() == BT_AMMO && !Options::oxceAlternateCraftEquipmentManagement)
 			continue;
 		placeItemByLayout(bi, tempItemList);
 	}
@@ -1712,7 +1712,7 @@ void BattlescapeGenerator::deployAliens(const AlienDeployment *deployment)
 
 			std::string alienName = dd.customUnitType.empty() ? race->getMember(dd.alienRank) : dd.customUnitType;
 
-			bool outside = RNG::generate(0,99) < dd.percentageOutsideUfo;
+			bool outside = RNG::percent(dd.percentageOutsideUfo);
 			if (_ufo == 0 && !deployment->getForcePercentageOutsideUfo())
 			{
 				outside = false;
@@ -2234,7 +2234,11 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 					ss << mapblock->getSizeX() << "," << mapblock->getSizeY() << "," << mapblock->getSizeZ() << "]";
 					throw Exception(ss.str());
 				}
-				_save->createItemForTile(rule, _save->getTile(rngItems.position + Position(xoff, yoff, zoff)));
+				BattleItem* newRandItem = _save->createItemForTile(rule, _save->getTile(rngItems.position + Position(xoff, yoff, zoff)));
+				if (rule->getFuseTimerType() != BFT_NONE && rngItems.fuseTimerMin > -1 && rngItems.fuseTimerMax > -1 && rngItems.fuseTimerMin <= rngItems.fuseTimerMax)
+				{
+					newRandItem->setFuseTimer(RNG::generate(rngItems.fuseTimerMin, rngItems.fuseTimerMax));
+				}
 			}
 		}
 	}

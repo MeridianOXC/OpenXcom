@@ -80,6 +80,7 @@ fi:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Oletus (ei tarvikkeita)"
   STR_FILTER_FACILITY_REQUIRED: "Laitos puuttuu"
   STR_FILTER_HIDDEN: "Piilotettu"
+  STR_FILTER_EQUIPPED: "Varustettu"
   STR_FILTER_MISSING: "Puuttuu"
   STR_SORT_DEFAULT: "Oletus"
   STR_SORT_BY_COST: "Hinnan mukaan"

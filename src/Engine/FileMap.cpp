@@ -348,11 +348,14 @@ static bool ls_r(const std::string &basePath, const std::string &relPath, dirlis
 	}
 	return true;
 }
-static bool isRuleset(const std::string& fname) {
+static bool isRuleset(const std::string& fname)
+{
 	if (fname.size() < 4) { return false; }
-	auto last4 = fname.substr(fname.size() - 4);
-	auto canext = canonicalize(last4);
-	return last4 == ".rul";
+	constexpr Uint32 dotRul =           '.' << 0 |  'r' << 8 |  'u' << 16 |  'l' << 24;
+	constexpr Uint32 toLowerCaseMask = 0x00 << 0 | 0x20 << 8 | 0x20 << 16 | 0x20 << 24;
+	Uint32 last4; // Pack last 4 chars into Uint32
+	std::memcpy(&last4, fname.data() + fname.size() - 4, 4); // Need memcpy because unaligned ptr
+	return (last4 | toLowerCaseMask) == dotRul;
 }
 
 typedef std::unordered_map<std::string, FileRecord> FileSet;

@@ -178,6 +178,7 @@ private:
 	bool _instantWoundRecovery;
 	bool _isAlwaysVisible = false;
 	int _standHeight, _kneelHeight, _floatHeight;
+	int _meleeOriginVoxelVerticalOffset;
 	int _listOrder;
 public:
 	/// Creates a blank armor ruleset.
@@ -456,6 +457,8 @@ public:
 	int getKneelHeight() const;
 	/// Gets a unit's float elevation while wearing this armor.
 	int getFloatHeight() const;
+	/// Gets a unit's offset for melee attacks.
+	int getMeleeOriginVoxelVerticalOffset() const { return _meleeOriginVoxelVerticalOffset; }
 
 	/// Get the list weight for this armor.
 	int getListOrder() const { return _listOrder; }

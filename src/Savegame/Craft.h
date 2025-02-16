@@ -178,7 +178,7 @@ public:
 	void calculateTotalSoldierEquipment();
 
 	/// Gets the total storage size of all items in the craft. Including vehicles+ammo and craft weapons+ammo.
-	double getTotalItemStorageSize(const Mod* mod) const;
+	double getTotalItemStorageSize() const;
 	/// Gets the total number of items of a given type in the craft. Including vehicles+ammo and craft weapons+ammo.
 	int getTotalItemCount(const RuleItem* item) const;
 
@@ -239,9 +239,11 @@ public:
 	/// Gets the item limit for this craft.
 	int getMaxItemsClamped() const { return std::max(0, _stats.maxItems); }
 	int getMaxItemsRaw() const { return _stats.maxItems; }
+	void setMaxItemsRaw(int p) { _stats.maxItems = p; }
 	/// Gets the item storage space limit for this craft.
 	double getMaxStorageSpaceClamped() const { return std::max(0.0, _stats.maxStorageSpace); }
 	double getMaxStorageSpaceRaw() const { return _stats.maxStorageSpace; }
+	void setMaxStorageSpaceRaw(double p) { _stats.maxStorageSpace = p; }
 
 	double getBaseRange() const;
 	/// Returns the craft to its base.
@@ -288,6 +290,8 @@ public:
 	bool areRequiredItemsOnboard(const std::map<std::string, int>& requiredItems) const;
 	/// Destroys given required items.
 	void destroyRequiredItems(const std::map<std::string, int>& requiredItems);
+	/// Checks item limits.
+	bool areTooManyItemsOnboard();
 	/// Checks if there are enough pilots onboard.
 	bool arePilotsOnboard();
 	/// Checks if a pilot is already on the list.

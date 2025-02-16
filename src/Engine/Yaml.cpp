@@ -65,25 +65,60 @@ void setGlobalErrorHandler()
 }
 
 
+C4_NORETURN static void RootReader_error(const char* msg, size_t len, ryml::Location loc, void* this_)
+{
+	const auto& globalCallback = ryml::get_callbacks();
+	globalCallback.m_error(msg, len, loc, globalCallback.m_user_data);
+	C4_UNREACHABLE();
+}
+
+static ryml::Callbacks callbacksForRootReader(const YamlRootNodeReader* root)
+{
+	return ryml::Callbacks(const_cast<YamlRootNodeReader*>(root), s_allocate, s_free, RootReader_error);
+}
+
+static const YamlRootNodeReader* getRootReaderData(const ryml::Callbacks& callbacks)
+{
+	return callbacks.m_error == RootReader_error ? static_cast<const YamlRootNodeReader*>(callbacks.m_user_data) : nullptr;
+}
+
+
+C4_NORETURN static void RootWriter_error(const char* msg, size_t len, ryml::Location loc, void* this_)
+{
+	const auto& globalCallback = ryml::get_callbacks();
+	globalCallback.m_error(msg, len, loc, globalCallback.m_user_data);
+	C4_UNREACHABLE();
+}
+
+static ryml::Callbacks callbacksForRootWriter(const YamlRootNodeWriter* root)
+{
+	return ryml::Callbacks(const_cast<YamlRootNodeWriter*>(root), s_allocate, s_free, RootWriter_error);
+}
+
+static const YamlRootNodeWriter* getRootWriterData(const ryml::Callbacks& callbacks)
+{
+	return callbacks.m_error == RootWriter_error ?  static_cast<const YamlRootNodeWriter*>(callbacks.m_user_data) : nullptr;
+}
+
 ////////////////////////////////////////////////////////////
 //					YamlNodeReader
 ////////////////////////////////////////////////////////////
 
 
 YamlNodeReader::YamlNodeReader()
-	: _node(ryml::ConstNodeRef(nullptr, ryml::NONE)), _root(nullptr), _invalid(true)
+	: _node(ryml::ConstNodeRef(nullptr, ryml::NONE)), _nextChildId(ryml::NONE)
 {
 }
 
-YamlNodeReader::YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node)
-	: _node(node), _root(root), _invalid(node.invalid())
+YamlNodeReader::YamlNodeReader(const ryml::ConstNodeRef& node)
+	: _node(node), _nextChildId(ryml::NONE)
 {
+
 }
 
-YamlNodeReader::YamlNodeReader(const YamlRootNodeReader* root, const ryml::ConstNodeRef& node, bool useIndex)
-	: _node(node), _root(root), _invalid(node.invalid())
+YamlNodeReader::YamlNodeReader(const ryml::ConstNodeRef& node, bool useIndex) : YamlNodeReader( node)
 {
-	if (_invalid || !useIndex)
+	if (!useIndex || _node.invalid())
 		return;
 	// build and use an index to avoid [] operator's O(n) complexity
 	_index.emplace();
@@ -126,7 +161,23 @@ YamlNodeReader::YamlNodeReader(const YamlRootNodeReader* root, const ryml::Const
 
 YamlNodeReader YamlNodeReader::useIndex() const
 {
-	return YamlNodeReader(_root, _node, true);
+	return YamlNodeReader(_node, true);
+}
+
+std::string_view YamlNodeReader::key() const
+{
+	if (_node.invalid())
+		throw Exception("Tried getting key of an invalid node!");
+	const auto& key = _node.tree()->get(_node.m_id)->m_key.scalar;
+	return std::string_view(key.str, key.len);
+}
+
+std::string_view YamlNodeReader::val() const
+{
+	if (_node.invalid())
+		throw Exception("Tried getting value of an invalid node!");
+	const auto& val = _node.tree()->get(_node.m_id)->m_val.scalar;
+	return std::string_view(val.str, val.len);
 }
 
 std::vector<char> YamlNodeReader::readValBase64() const
@@ -142,40 +193,84 @@ std::vector<char> YamlNodeReader::readValBase64() const
 
 size_t YamlNodeReader::childrenCount() const
 {
-	if (_invalid)
+	if (_node.invalid())
 		return 0;
 	return _index ? _index->size() : _node.num_children();
 }
 
 ryml::ConstNodeRef YamlNodeReader::getChildNode(const ryml::csubstr& key) const
 {
-	if (_invalid)
+	if (_node.invalid())
 		return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
 	if (!_index)
 	{
 		if (!_node.is_map())
 			return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
-		return _node.find_child(key);
+		return findChildNode(key);
 	}
 	if (const auto& keyNodeIdPair = _index->find(key); keyNodeIdPair != _index->end())
 		return _node.tree()->cref(keyNodeIdPair->second);
 	return ryml::ConstNodeRef(_node.tree(), ryml::NONE);
 }
 
+ryml::ConstNodeRef YamlNodeReader::findChildNode(const ryml::csubstr& key) const
+{
+	ryml::id_type firstChildId = _node.m_tree->get(_node.m_id)->m_first_child;
+	if (firstChildId == ryml::NONE)
+		return ryml::ConstNodeRef(_node.m_tree, ryml::NONE);
+	if (_nextChildId == ryml::NONE)
+	{ // do a normal search
+		for (ryml::id_type i = firstChildId; i != ryml::NONE;)
+		{
+			const ryml::NodeData* data = _node.m_tree->_p(i);
+			if (data->m_key.scalar == key)
+			{
+				_nextChildId = data->m_next_sibling;
+				return ryml::ConstNodeRef(_node.m_tree, i);
+			}
+			i = data->m_next_sibling;
+		}
+		return ryml::ConstNodeRef(_node.m_tree, ryml::NONE);
+	}
+	// search from saved iterator to the last child
+	for (ryml::id_type i = _nextChildId; i != ryml::NONE;)
+	{
+		const ryml::NodeData* data = _node.m_tree->_p(i);
+		if (data->m_key.scalar == key)
+		{
+			_nextChildId = data->m_next_sibling;
+			return ryml::ConstNodeRef(_node.m_tree, i);
+		}
+		i = data->m_next_sibling;
+	}
+	// search from the first child to the saved iterator
+	for (ryml::id_type i = firstChildId; i != _nextChildId;)
+	{
+		const ryml::NodeData* data = _node.m_tree->_p(i);
+		if (data->m_key.scalar == key)
+		{
+			_nextChildId = data->m_next_sibling;
+			return ryml::ConstNodeRef(_node.m_tree, i);
+		}
+		i = data->m_next_sibling;
+	}
+	return ryml::ConstNodeRef(_node.m_tree, ryml::NONE);
+}
+
 std::vector<YamlNodeReader> YamlNodeReader::children() const
 {
 	std::vector<YamlNodeReader> children;
-	if (_invalid)
+	if (_node.invalid())
 		return children;
 	children.reserve(_node.num_children());
 	for (const ryml::ConstNodeRef child : _node.cchildren())
-		children.emplace_back(_root, child);
+		children.emplace_back(child);
 	return children;
 }
 
 bool YamlNodeReader::isValid() const
 {
-	return !_invalid;
+	return !_node.invalid();
 }
 
 bool YamlNodeReader::isMap() const
@@ -205,21 +300,21 @@ bool YamlNodeReader::hasValTag() const
 
 bool YamlNodeReader::hasValTag(ryml::YamlTag_e tag) const
 {
-	if (_invalid || !_node.has_val_tag())
+	if (_node.invalid() || !_node.has_val_tag())
 		return false;
 	return ryml::to_tag(_node.val_tag()) == tag;
 }
 
 bool YamlNodeReader::hasValTag(const std::string& tagName) const
 {
-	if (_invalid || !_node.has_val_tag())
+	if (_node.invalid() || !_node.has_val_tag())
 		return false;
 	return _node.val_tag() == tagName;
 }
 
 std::string YamlNodeReader::getValTag() const
 {
-	if (_invalid || !_node.has_val_tag())
+	if (_node.invalid() || !_node.has_val_tag())
 		return std::string();
 	ryml::csubstr valTag = _node.val_tag();
 	return std::string(valTag.str, valTag.len);
@@ -244,7 +339,7 @@ const YamlString YamlNodeReader::emitDescendants(const YamlNodeReader& defaultVa
 		writer.setAsSeq();
 	else
 		return YamlString(std::string());
-	writer._tree->duplicate_children(_root->_tree.get(), _node.id(), writer._node.id(), ryml::NONE);
+	writer._tree->duplicate_children(_node.tree(), _node.id(), writer._node.id(), ryml::NONE);
 	if (defaultValuesReader)
 		for (const ryml::ConstNodeRef child : defaultValuesReader._node.cchildren())
 			if (writer._node.find_child(child.key()).invalid())
@@ -254,33 +349,34 @@ const YamlString YamlNodeReader::emitDescendants(const YamlNodeReader& defaultVa
 
 ryml::Location YamlNodeReader::getLocationInFile() const
 {
-	return _root->getLocationInFile(_node);
+	auto root = _node.tree() ? getRootReaderData(_node.tree()->callbacks()) : nullptr;
+	return root ? root->getLocationInFile(_node) : ryml::Location{};
 }
 
 YamlNodeReader YamlNodeReader::operator[](ryml::csubstr key) const
 {
-	return YamlNodeReader(_root, getChildNode(key));
+	return YamlNodeReader(getChildNode(key));
 }
 
 YamlNodeReader YamlNodeReader::operator[](size_t pos) const
 {
-	if (_invalid)
-		return YamlNodeReader(_root, ryml::ConstNodeRef(_node.tree(), ryml::NONE));
-	return YamlNodeReader(_root, _node.child(pos));
+	if (_node.invalid())
+		return YamlNodeReader(ryml::ConstNodeRef(_node.tree(), ryml::NONE));
+	return YamlNodeReader(_node.child(pos));
 }
 
 YamlNodeReader::operator bool() const
 {
-	return !_invalid;
+	return !_node.invalid();
 }
 
 
 void YamlNodeReader::throwTypeError(const ryml::ConstNodeRef& node, const ryml::cspan<char>& type) const
 {
 	auto name = ryml::csubstr(type.data(), type.size() - (type.back() == 0));
-	if (_root && _root->_parser && node.readable())
+	if (node.readable())
 	{
-		ryml::Location loc = _root->getLocationInFile(node);
+		ryml::Location loc = YamlNodeReader{node}.getLocationInFile();
 		throw Exception(c4::formatrs<std::string>("Could not deserialize value to type <{}>! {} at line {}:{}", name, loc.name, loc.line, loc.col));
 	}
 	else
@@ -291,9 +387,9 @@ void YamlNodeReader::throwTypeError(const ryml::ConstNodeRef& node, const ryml::
 
 void YamlNodeReader::throwNodeError(const std::string& what) const
 {
-	if (_root && _root->_parser && isValid())
+	if (_node.readable())
 	{
-		ryml::Location loc = _root->getLocationInFile(_node);
+		ryml::Location loc = getLocationInFile();
 		throw Exception(c4::formatrs<std::string>("Tried to deserialize {}. {} at line {}:{}", what, loc.name, loc.line, loc.col));
 	}
 	else
@@ -308,7 +404,7 @@ void YamlNodeReader::throwNodeError(const std::string& what) const
 ////////////////////////////////////////////////////////////
 
 
-YamlRootNodeReader::YamlRootNodeReader(const std::string& fullFilePath, bool onlyInfoHeader, bool resolveReferences) : YamlNodeReader(), _tree(new ryml::Tree())
+YamlRootNodeReader::YamlRootNodeReader(const std::string& fullFilePath, bool onlyInfoHeader, bool resolveReferences) : YamlNodeReader(), _tree(new ryml::Tree(callbacksForRootReader(this)))
 {
 	RawData data = onlyInfoHeader ? CrossPlatform::getYamlSaveHeaderRaw(fullFilePath) : CrossPlatform::readFileRaw(fullFilePath);
 	ryml::csubstr str = ryml::csubstr((char*)data.data(), data.size());
@@ -317,12 +413,12 @@ YamlRootNodeReader::YamlRootNodeReader(const std::string& fullFilePath, bool onl
 	Parse(str, fullFilePath, true, resolveReferences);
 }
 
-YamlRootNodeReader::YamlRootNodeReader(const RawData& data, const std::string& fileNameForError, bool resolveReferences) : YamlNodeReader(), _tree(new ryml::Tree())
+YamlRootNodeReader::YamlRootNodeReader(const RawData& data, const std::string& fileNameForError, bool resolveReferences) : YamlNodeReader(), _tree(new ryml::Tree(callbacksForRootReader(this)))
 {
 	Parse(ryml::csubstr((char*)data.data(), data.size()), fileNameForError, true, resolveReferences);
 }
 
-YamlRootNodeReader::YamlRootNodeReader(const YamlString& yamlString, std::string description, bool resolveReferences) : YamlNodeReader(), _tree(new ryml::Tree())
+YamlRootNodeReader::YamlRootNodeReader(const YamlString& yamlString, std::string description, bool resolveReferences) : YamlNodeReader(), _tree(new ryml::Tree(callbacksForRootReader(this)))
 {
 	Parse(ryml::to_csubstr(yamlString.yaml), std::move(description), false, resolveReferences);
 }
@@ -357,19 +453,19 @@ void YamlRootNodeReader::Parse(ryml::csubstr yaml, std::string fileNameForError,
 			_node = _node.first_child();
 		}
 	}
-
-	_root = this;
-	_invalid = _node.invalid();
+	// if the yaml file is an empty document, it's parsed into a single node with type NOTYPE
+	if (_tree->size() == 1 && _node.type() == ryml::NOTYPE)
+		_node = ryml::ConstNodeRef(_tree.get(), ryml::NONE); // treat it as an invalid node
 }
 
 YamlNodeReader YamlRootNodeReader::toBase() const
 {
-	return YamlNodeReader(this, _node);
+	return YamlNodeReader(_node);
 }
 
 ryml::Location YamlRootNodeReader::getLocationInFile(const ryml::ConstNodeRef& node) const
 {
-	if (_parser && _root)
+	if (_parser)
 	{
 		// line and column here are 0-based, which isn't correct.
 		ryml::Location loc = _parser->location(node);
@@ -387,29 +483,29 @@ ryml::Location YamlRootNodeReader::getLocationInFile(const ryml::ConstNodeRef& n
 ////////////////////////////////////////////////////////////
 
 
-YamlNodeWriter::YamlNodeWriter(const YamlRootNodeWriter* root, ryml::NodeRef node) : _root(root), _node(node)
+YamlNodeWriter::YamlNodeWriter(ryml::NodeRef node) : _node(node)
 {
+
 }
 
 YamlNodeReader YamlNodeWriter::toReader()
 {
-	return YamlNodeReader(nullptr, _node);
+	return YamlNodeReader(_node);
 }
 
 YamlNodeWriter YamlNodeWriter::write()
 {
-	return YamlNodeWriter(_root, _node.append_child());
+	return YamlNodeWriter(_node.append_child());
 }
 
 YamlNodeWriter YamlNodeWriter::operator[](ryml::csubstr key)
 {
-	return YamlNodeWriter(_root, _node.append_child({ryml::KEY, key}));
+	return YamlNodeWriter(_node.append_child({ryml::KEY, key}));
 }
 
 YamlNodeWriter YamlNodeWriter::writeBase64(ryml::csubstr key, char* data, size_t size)
 {
-	//return YamlNodeWriter(_root, _node.append_child());
-	return YamlNodeWriter(_root, _node.append_child({ryml::KEY, key}) << c4::fmt::base64(ryml::csubstr(data, size)));
+	return YamlNodeWriter(_node.append_child({ryml::KEY, key}) << c4::fmt::base64(ryml::csubstr(data, size)));
 }
 
 void YamlNodeWriter::setValueNull()
@@ -437,9 +533,59 @@ void YamlNodeWriter::setBlockStyle()
 	_node |= ryml::BLOCK;
 }
 
-void YamlNodeWriter::setAsQuoted()
+bool isPrintable(uint8_t c)
 {
-	_node |= ryml::VAL_DQUO;
+	// TAB, LF, CR, and x20-x7E range; Any 2+ byte UTF-8 characters are assumed to be printable
+	return c == 0x09 || c == 0x0A || c == 0x0D || (c >= 0x20 && c <= 0x7E) || c >= 0x80;
+}
+
+void YamlNodeWriter::setAsQuotedAndEscaped()
+{
+	ryml::csubstr scalar = _node.val();
+	size_t pos, last = 0;
+	for (pos = 0; pos < scalar.len; pos++)
+		if (!isPrintable(scalar[pos]))
+			break;
+	if (pos == scalar.len) // didn't find a non-printable ASCII character;
+	{
+		_node |= ryml::VAL_DQUO;
+		return;
+	}
+	// manually create a double-quoted scalar; escape the non-printable AND special characters
+	_node |= ryml::VAL_PLAIN;
+	const char hexDigits[] = "0123456789ABCDEF";
+	std::string newScalar;
+	newScalar.reserve(scalar.len + 2 + 3); // 2 for quotes and 3 for one hex escape
+	newScalar.push_back('\"');
+	for (pos = 0; pos < scalar.len; pos++)
+	{
+		char toEscape = 0;
+		switch (scalar[pos])
+		{
+		case '"': toEscape = '\"'; break;
+		case '\\': toEscape = '\\'; break;
+		case '\n': toEscape = 'n'; break;
+		case '\r': toEscape = 'r'; break;
+		case '\b': toEscape = 'b'; break;
+		default: if (!isPrintable(scalar[pos])) toEscape = 'x'; break;
+		}
+		if (toEscape != 0)
+		{
+			newScalar.append(&scalar[last], pos - last); // copy from the last escaped to the current position
+			newScalar.push_back('\\');
+			newScalar.push_back(toEscape);
+			if (toEscape == 'x')
+			{
+				newScalar.push_back(hexDigits[(scalar[pos] >> 4) & 0xF]);
+				newScalar.push_back(hexDigits[scalar[pos] & 0xF]);
+			}
+			last = pos + 1;
+		}
+	}
+	if (pos != last)
+		newScalar.append(&scalar[last], pos - last); // copy from the last escaped to the end of string
+	newScalar.push_back('\"');
+	_node.set_val(_node.tree()->to_arena(newScalar));
 }
 
 void YamlNodeWriter::unsetAsMap()
@@ -468,19 +614,19 @@ YamlString YamlNodeWriter::emit()
 ////////////////////////////////////////////////////////////
 
 
-YamlRootNodeWriter::YamlRootNodeWriter() : YamlNodeWriter(this, {}), _tree(new ryml::Tree())
+YamlRootNodeWriter::YamlRootNodeWriter() : YamlNodeWriter(ryml::NodeRef{}), _tree(new ryml::Tree(callbacksForRootWriter(this)))
 {
 	_node = _tree->rootref();
 }
 
-YamlRootNodeWriter::YamlRootNodeWriter(size_t bufferCapacity) : YamlNodeWriter(this, {}), _tree(new ryml::Tree(0, bufferCapacity))
+YamlRootNodeWriter::YamlRootNodeWriter(size_t bufferCapacity) : YamlNodeWriter(ryml::NodeRef{}), _tree(new ryml::Tree(0, bufferCapacity, callbacksForRootWriter(this)))
 {
 	_node = _tree->rootref();
 }
 
 YamlNodeWriter YamlRootNodeWriter::toBase()
 {
-	return YamlNodeWriter(this, _node);
+	return YamlNodeWriter(_node);
 }
 
 } // namespace YAML
@@ -529,7 +675,7 @@ void write(ryml::NodeRef* n, bool const& v)
 }
 
 
-#ifdef OXCE_AUTO_TEST
+#ifndef NDEBUG
 
 #include <cassert>
 

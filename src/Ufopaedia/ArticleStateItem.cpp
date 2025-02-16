@@ -205,7 +205,7 @@ namespace OpenXcom
 			const RuleItem *ammo_rule = (*ammo_data)[0];
 			weightLabel = tr("STR_WEIGHT_PEDIA2").arg(weight).arg(weight + ammo_rule->getWeight());
 		}
-		_txtWeight->setText(weight > 0 ? weightLabel : "");
+		_txtWeight->setText(weight != 0 ? weightLabel : "");
 
 		// SHOT STATS TABLE (for firearms and melee only)
 		if (item->getBattleType() == BT_FIREARM || item->getBattleType() == BT_MELEE)

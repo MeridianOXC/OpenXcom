@@ -32,7 +32,7 @@ namespace OpenXcom
  */
 AlienDeployment::AlienDeployment(const std::string &type) :
 	_type(type), _missionBountyItemCount(1), _bughuntMinTurn(0), _forcePercentageOutsideUfo(false),
-	_width(0), _length(0), _height(0), _civilians(0), _markCiviliansAsVIP(false), _civilianSpawnNodeRank(0),
+	_width(0), _length(0), _height(0), _civilians(0), _ignoreLivingCivilians(false), _markCiviliansAsVIP(false), _civilianSpawnNodeRank(0),
 	_shade(-1), _minShade(-1), _maxShade(-1), _finalDestination(false), _isAlienBase(false), _isHidden(false), _fakeUnderwaterSpawnChance(0),
 	_alert("STR_ALIENS_TERRORISE"), _alertBackground("BACK03.SCR"), _alertDescription(""), _alertSound(-1),
 	_markerName("STR_TERROR_SITE"), _markerIcon(-1), _durationMin(0), _durationMax(0), _minDepth(0), _maxDepth(0),
@@ -96,6 +96,7 @@ void AlienDeployment::load(const YAML::YamlNodeReader& node, Mod *mod)
 	reader.tryRead("length", _length);
 	reader.tryRead("height", _height);
 	reader.tryRead("civilians", _civilians);
+	reader.tryRead("ignoreLivingCivilians", _ignoreLivingCivilians);
 	reader.tryRead("markCiviliansAsVIP", _markCiviliansAsVIP);
 	reader.tryRead("civilianSpawnNodeRank", _civilianSpawnNodeRank);
 	mod->loadUnorderedNamesToInt(_type, _civiliansByType, reader["civiliansByType"]);
@@ -821,14 +822,14 @@ std::string AlienDeployment::generateAlienBaseUpgrade(const size_t baseAgeInMont
 // helper overloads for deserialization-only
 bool read(ryml::ConstNodeRef const& n, ItemSet* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryReadVal(val->items);
 	return true;
 }
 
 bool read(ryml::ConstNodeRef const& n, DeploymentData* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("alienRank", val->alienRank);
 	reader.tryRead("customUnitType", val->customUnitType);
 	reader.tryRead("lowQty", val->lowQty);
@@ -844,7 +845,7 @@ bool read(ryml::ConstNodeRef const& n, DeploymentData* val)
 
 bool read(ryml::ConstNodeRef const& n, BriefingData* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("palette", val->palette);
 	reader.tryRead("textOffset", val->textOffset);
 	reader.tryRead("title", val->title);
@@ -859,7 +860,7 @@ bool read(ryml::ConstNodeRef const& n, BriefingData* val)
 
 bool read(ryml::ConstNodeRef const& n, ReinforcementsData* val)
 {
-	YAML::YamlNodeReader reader(nullptr, n);
+	YAML::YamlNodeReader reader(n);
 	reader.tryRead("type", val->type);
 	reader.tryRead("briefing", val->briefing);
 	reader.tryRead("minDifficulty", val->minDifficulty);

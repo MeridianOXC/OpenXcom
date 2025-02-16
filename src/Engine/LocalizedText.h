@@ -139,8 +139,8 @@ LocalizedText &LocalizedText::arg(T val)
 		{
 			_text.replace(pos, marker.length(), tval);
 		}
-		++_nextArg;
 	}
+	++_nextArg;
 	return *this;
 }
 

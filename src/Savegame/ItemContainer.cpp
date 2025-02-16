@@ -208,10 +208,9 @@ int ItemContainer::getTotalQuantity() const
 
 /**
  * Returns the total size of the items in the container.
- * @param mod Pointer to mod.
  * @return Total item size.
  */
-double ItemContainer::getTotalSize(const Mod *mod) const
+double ItemContainer::getTotalSize() const
 {
 	double total = 0;
 	for (const auto& pair : _qty)

@@ -519,7 +519,9 @@ BattlescapeState::BattlescapeState() :
 	_btnNextSoldier->onMouseIn((ActionHandler)&BattlescapeState::txtTooltipIn);
 	_btnNextSoldier->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 
-	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick);
+	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_LEFT);
+	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_RIGHT);
+	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_MIDDLE);
 	_btnNextStop->onKeyboardPress((ActionHandler)&BattlescapeState::btnNextStopClick, Options::keyBattleDeselectUnit);
 	_btnNextStop->setTooltip("STR_DESELECT_UNIT");
 	_btnNextStop->onMouseIn((ActionHandler)&BattlescapeState::txtTooltipIn);
@@ -1486,12 +1488,43 @@ void BattlescapeState::btnNextSoldierClick(Action *action)
  * Disables reselection of the current soldier and selects the next soldier.
  * @param action Pointer to an action.
  */
-void BattlescapeState::btnNextStopClick(Action *)
+void BattlescapeState::btnNextStopClick(Action *action)
 {
 	if (allowButtons())
 	{
-		selectNextPlayerUnit(true, true);
-		_map->refreshSelectorPosition();
+		if (_game->isLeftClick(action, true))
+		{
+			// vanilla: next by ID + don't reselect
+			_save->setUndoUnit(_save->getSelectedUnit());
+			selectNextPlayerUnit(true, true);
+			_map->refreshSelectorPosition();
+		}
+		else if (_game->isMiddleClick(action, true))
+		{
+			// OXCE: next by distance + don't reselect
+			_save->setUndoUnit(_save->getSelectedUnit());
+			selectNextPlayerUnit(true, true, false, true, true);
+			_map->refreshSelectorPosition();
+		}
+		else if (_game->isRightClick(action, true))
+		{
+			// OXCE: previous unit (last marked as don't reselect)
+			BattleUnit* candidate = _save->getUndoUnit();
+			if (candidate && candidate->isSelectable(_save->getSide(), false, false))
+			{
+				candidate->allowReselect();
+				_save->setSelectedUnit(candidate);
+				_save->setUndoUnit(nullptr);
+
+				updateSoldierInfo();
+				if (candidate && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(candidate->getPosition());
+				_battleGame->cancelAllActions();
+				_battleGame->getCurrentAction()->actor = candidate;
+				_battleGame->setupCursor();
+
+				_map->refreshSelectorPosition();
+			}
+		}
 	}
 }
 
@@ -1514,11 +1547,13 @@ void BattlescapeState::btnPrevSoldierClick(Action *)
  * @param setReselect When true, flag the current unit first.
  * @param checkInventory When true, don't select a unit that has no inventory.
  */
-void BattlescapeState::selectNextPlayerUnit(bool checkReselect, bool setReselect, bool checkInventory, bool checkFOV)
+void BattlescapeState::selectNextPlayerUnit(bool checkReselect, bool setReselect, bool checkInventory, bool checkFOV, bool byDistance)
 {
 	if (allowButtons())
 	{
-		BattleUnit *unit = _save->selectNextPlayerUnit(checkReselect, setReselect, checkInventory);
+		BattleUnit *unit = byDistance
+			? _save->selectNextPlayerUnitByDistance(checkReselect, setReselect, checkInventory)
+			: _save->selectNextPlayerUnit(checkReselect, setReselect, checkInventory);
 		updateSoldierInfo(checkFOV);
 		if (unit && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(unit->getPosition());
 		_battleGame->cancelAllActions();
@@ -2623,7 +2658,11 @@ void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 	}
 	if (hasPsiWeapon)
 	{
-		show(_btnPsi, 1);
+		bool canUsePsiWeapon = (psiWeapon->getRules()->getCostPanic().Time > 0) || (psiWeapon->getRules()->getCostUse().Time > 0);
+		if (canUsePsiWeapon)
+		{
+			show(_btnPsi, 1);
+		}
 	}
 }
 
@@ -2953,7 +2992,21 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-b" - reopen briefing
 				if (key == SDLK_b && ctrlPressed)
 				{
-					_game->pushState(new BriefingState(0, 0, true));
+					Craft* ycraft = nullptr;
+					for (auto* xbase : *_game->getSavedGame()->getBases())
+					{
+						for (auto* xcraft : *xbase->getCrafts())
+						{
+							if (xcraft->isInBattlescape())
+							{
+								ycraft = xcraft;
+								break;
+							}
+						}
+						if (ycraft) break;
+					}
+
+					_game->pushState(new BriefingState(ycraft, 0, true));
 				}
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)
@@ -2988,6 +3041,18 @@ inline void BattlescapeState::handle(Action *action)
 				else if (key == SDLK_END && ctrlPressed)
 				{
 					_map->toggleDebugVisionMode();
+				}
+				// "ctrl-shift-Del" - clear TUs for all allied units
+				else if (key == SDLK_DELETE && ctrlPressed && shiftPressed)
+				{
+					for (auto* bu : *_save->getUnits())
+					{
+						if (bu->getFaction() == _save->getSide() && !bu->isOut())
+						{
+							bu->clearTimeUnits();
+						}
+					}
+					updateSoldierInfo();
 				}
 				// "ctrl-s" - switch xcom unit speed to max and back
 				else if (key == SDLK_s && ctrlPressed)
@@ -3267,6 +3332,10 @@ inline void BattlescapeState::handle(Action *action)
 					if (key == Options::keyQuickSave)
 					{
 						_game->pushState(new SaveGameState(OPT_BATTLESCAPE, SAVE_QUICK, _palette));
+					}
+					else if (key == Options::keyInstaSave)
+					{
+						_game->pushState(new SaveGameState(OPT_BATTLESCAPE, SAVE_INSTA, _palette));
 					}
 					else if (key == Options::keyQuickLoad)
 					{

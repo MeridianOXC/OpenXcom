@@ -72,6 +72,7 @@ es-ES:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Por defecto (sin suministros)"
   STR_FILTER_FACILITY_REQUIRED: "Instalación faltante"
   STR_FILTER_HIDDEN: "Oculto"
+  STR_FILTER_EQUIPPED: "Equipado"
   STR_FILTER_MISSING: "Perdido"
   STR_SORT_DEFAULT: "Por defecto"
   STR_SORT_BY_COST: "Por coste"
