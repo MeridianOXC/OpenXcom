@@ -4568,6 +4568,7 @@ void ScriptGlobal::endLoad()
 	}
 	_parserNames.clear();
 	_parserEvents.clear();
+	_currFile = "After-load validation";
 }
 
 /**

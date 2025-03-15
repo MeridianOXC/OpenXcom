@@ -128,7 +128,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_btnArmor = new BattlescapeButton(RuleInventory::PAPERDOLL_W, RuleInventory::PAPERDOLL_H, RuleInventory::PAPERDOLL_X, RuleInventory::PAPERDOLL_Y);
 	_btnCreateTemplate = new BattlescapeButton(32, 22, _templateBtnX, _createTemplateBtnY);
 	_btnApplyTemplate = new BattlescapeButton(32, 22, _templateBtnX, _applyTemplateBtnY);
-	Element* pixelShift = _game->getMod()->getInterface("inventory")->getElement("buttonLinks");
+	const Element* pixelShift = _game->getMod()->getInterface("inventory")->getElementOptional("buttonLinks");
 	if (pixelShift && pixelShift->TFTDMode)
 	{
 		_btnLinks = new BattlescapeButton(23, 22, 213, 0);
@@ -656,7 +656,7 @@ void InventoryState::updateStats()
 
 	auto updateStatLine = [&](Text* txtField, const std::string& elementId)
 	{
-		Element *element = _game->getMod()->getInterface("inventory")->getElement(elementId);
+		const Element *element = _game->getMod()->getInterface("inventory")->getElementOptional(elementId);
 		if (element)
 		{
 			switch (element->custom)

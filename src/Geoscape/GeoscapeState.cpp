@@ -3065,6 +3065,24 @@ void GeoscapeState::btnBasesClick(Action *)
 	timerReset();
 	if (!_game->getSavedGame()->getBases()->empty())
 	{
+		if (Options::oxceGeoGoToNearestBase)
+		{
+			std::vector< std::pair<size_t, double> > xbaseSorting;
+			size_t baseIdx = 0;
+			for (auto* xbase : *_game->getSavedGame()->getBases())
+			{
+				double xdistance = xbase->getDistance(_game->getSavedGame()->getGlobeLongitude(), _game->getSavedGame()->getGlobeLatitude());
+				xbaseSorting.push_back(std::make_pair(baseIdx, xdistance));
+				baseIdx++;
+			}
+			std::stable_sort(xbaseSorting.begin(), xbaseSorting.end(),
+				[](const std::pair<size_t, double> &a, const std::pair<size_t, double> &b)
+				{
+					return a.second < b.second;
+				}
+			);
+			_game->getSavedGame()->setSelectedBase(xbaseSorting.front().first);
+		}
 		_game->pushState(new BasescapeState(_game->getSavedGame()->getSelectedBase(), _globe));
 	}
 	else

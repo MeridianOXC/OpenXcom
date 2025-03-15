@@ -170,7 +170,7 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_aiUseDelay(-1), _aiMeleeHitCount(25),
 	_recover(true), _recoverCorpse(true), _ignoreInBaseDefense(false), _ignoreInCraftEquip(true), _liveAlien(false),
 	_liveAlienPrisonType(0), _attraction(0), _flatUse(0, 1), _flatThrow(0, 1), _flatPrime(0, 1), _flatUnprime(0, 1), _arcingShot(false),
-	_experienceTrainingMode(ETM_DEFAULT), _manaExperience(0), _listOrder(listOrder),
+	_experienceTrainingMode(ETM_DEFAULT), _manaExperience(0), _loadOrder(0), _listOrder(listOrder),
 	_maxRange(200), _minRange(0), _dropoff(2), _bulletSpeed(0), _explosionSpeed(0), _shotgunPellets(0), _shotgunBehaviorType(0), _shotgunSpread(100), _shotgunChoke(100),
 	_spawnUnitFaction(FACTION_NONE), _zombieUnitFaction(FACTION_HOSTILE),
 	_targetMatrix(7), _convertToCivilian(false),
@@ -604,6 +604,7 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	reader.tryRead("arcingShot", _arcingShot);
 	reader.tryRead("experienceTrainingMode", _experienceTrainingMode);
 	reader.tryRead("manaExperience", _manaExperience);
+	reader.tryRead("loadOrder", _loadOrder);
 	reader.tryRead("listOrder", _listOrder);
 	reader.tryRead("maxRange", _maxRange);
 	reader.tryRead("aimRange", _confAimed.range);
@@ -688,6 +689,12 @@ void RuleItem::afterLoad(const Mod* mod)
 				throw Exception("Weapon " + _type + " has clip size 0 and no ammo defined. Please use 'clipSize: -1' for unlimited ammo, or allocate a compatibleAmmo item.");
 			}
 		}
+	}
+
+	// these are good defaults for vanilla
+	if (_loadOrder <= 0)
+	{
+		_loadOrder = _listOrder;
 	}
 
 	mod->verifySpriteOffset(_type, _bigSprite, "BIGOBS.PCK");

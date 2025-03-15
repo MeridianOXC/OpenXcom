@@ -78,7 +78,7 @@ PrimeGrenadeState::PrimeGrenadeState(BattleAction *action, bool inInventoryView,
 	add(_outside);
 #endif
 
-	Element *grenadeBackground = _game->getMod()->getInterface("battlescape")->getElement("grenadeBackground");
+	const Element *grenadeBackground = _game->getMod()->getInterface("battlescape")->getElement("grenadeBackground");
 
 	// Set up objects
 	add(_bg);

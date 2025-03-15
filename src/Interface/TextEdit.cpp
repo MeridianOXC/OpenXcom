@@ -369,7 +369,7 @@ void TextEdit::draw()
 			newValue += _char;
 		}
 	}
-	_text->setText(Unicode::convUtf32ToUtf8(_value));
+	_text->setText(Unicode::convUtf32ToUtf8(newValue));
 	clear();
 
 	// TODO: this whole thing is old and ugly, rework later

@@ -68,7 +68,7 @@ void MedikitView::draw()
 	std::ostringstream ss, ss1;
 	int green = 0;
 	int red = 3;
-	if (_game->getMod()->getInterface("medikit") && _game->getMod()->getInterface("medikit")->getElement("body"))
+	if (_game->getMod()->getInterface("medikit", false) && _game->getMod()->getInterface("medikit")->getElementOptional("body"))
 	{
 		green = _game->getMod()->getInterface("medikit")->getElement("body")->color;
 		red = _game->getMod()->getInterface("medikit")->getElement("body")->color2;
