@@ -83,12 +83,12 @@ void State::setInterface(const std::string& category, bool alterPal, SavedBattle
 	{
 		_ruleInterfaceParent = _game->getMod()->getInterface(_ruleInterface->getParent());
 		pal = _ruleInterface->getPalette();
-		Element *element = _ruleInterface->getElement("palette");
+		const Element *element = _ruleInterface->getElementOptional("palette");
 		if (_ruleInterfaceParent)
 		{
 			if (!element)
 			{
-				element = _ruleInterfaceParent->getElement("palette");
+				element = _ruleInterfaceParent->getElementOptional("palette");
 			}
 			if (pal.empty())
 			{
@@ -181,9 +181,9 @@ void State::add(Surface *surface, const std::string &id, const std::string &cate
 	// this only works if we're dealing with a battlescape button
 	BattlescapeButton *bsbtn = dynamic_cast<BattlescapeButton*>(surface);
 
-	if (_game->getMod()->getInterface(category))
+	if (_game->getMod()->getInterface(category, false))
 	{
-		Element *element = _game->getMod()->getInterface(category)->getElement(id);
+		const Element *element = _game->getMod()->getInterface(category)->getElementOptional(id);
 		if (element)
 		{
 			if (parent && element->w != INT_MAX && element->h != INT_MAX)
@@ -477,7 +477,7 @@ void State::lowerAllSurfaces()
  */
 void State::applyBattlescapeTheme(const std::string& category)
 {
-	Element * element = _game->getMod()->getInterface("mainMenu")->getElement("battlescapeTheme");
+	const Element * element = _game->getMod()->getInterface("mainMenu")->getElement("battlescapeTheme");
 	std::string altBg = _game->getMod()->getInterface(category)->getAltBackgroundImage();
 	if (altBg.empty())
 	{

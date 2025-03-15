@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <vector>
 #include "../Engine/State.h"
 
 namespace OpenXcom
@@ -26,6 +27,7 @@ class TextButton;
 class Window;
 class Text;
 class TextList;
+class BattlescapeState;
 
 /**
  * Displays a list of soldiers in battlescape and their gained experience.
@@ -38,13 +40,18 @@ private:
 	Text *_txtTitle, *_txtName;
 	Text *_txtBravery, *_txtReactions, *_txtFiring, *_txtThrowing, *_txtPsiSkill, *_txtPsiStrength, *_txtMelee, *_txtMana;
 	TextList *_lstSoldiers;
+
+	BattlescapeState* _parent;
+	std::vector<BattleUnit*> _soldiers;
 public:
 	/// Creates the Experience Overview state.
-	ExperienceOverviewState();
+	ExperienceOverviewState(BattlescapeState* parent);
 	/// Cleans up the Experience Overview state.
 	~ExperienceOverviewState() = default;
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action* action);
+	/// Handler for clicking the Soldiers list.
+	void lstSoldiersClick(Action* action);
 };
 
 }

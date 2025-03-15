@@ -117,7 +117,7 @@ BasescapeState::BasescapeState(Base *base, Globe *globe) : _base(base), _globe(g
 	centerAllSurfaces();
 
 	// Set up objects
-	auto* itf = _game->getMod()->getInterface("basescape")->getElement("trafficLights");
+	auto* itf = _game->getMod()->getInterface("basescape")->getElementOptional("trafficLights");
 	if (itf)
 	{
 		_view->setOtherColors(itf->color, itf->color2, itf->border, !itf->TFTDMode);

@@ -1318,10 +1318,19 @@ void BattlescapeGenerator::deployXCOM(const RuleStartingCondition* startingCondi
 	// refresh list
 	tempItemList = *_craftInventoryTile->getInventory();
 
+	// sort it, so that ammo is loaded in a predictable and moddable manner
+	std::sort(tempItemList.begin(), tempItemList.end(),
+		[](const BattleItem* a, const BattleItem* b)
+		{
+			return a->getRules()->getLoadOrder() < b->getRules()->getLoadOrder();
+		}
+	);
+
 	// load weapons before loadouts take extra clips.
 	loadWeapons(tempItemList);
 
 	// refresh list
+	// (unsorts it again, which is not a problem)
 	tempItemList = *_craftInventoryTile->getInventory();
 
 	for (BattleItem* bi : tempItemList)
@@ -1816,7 +1825,7 @@ BattleUnit *BattlescapeGenerator::addAlien(Unit *rules, int alienRank, bool outs
 	else
 	{
 		// DEMIGOD DIFFICULTY: screw the player: spawn as many aliens as possible.
-		if (_game->getMod()->isDemigod() && placeUnitNearFriend(unit))
+		if ((_game->getMod()->isDemigod() || Mod::EXTENDED_FORCE_SPAWN) && placeUnitNearFriend(unit))
 		{
 			unit->setRankInt(alienRank);
 			int dir = _save->getTileEngine()->faceWindow(unit->getPosition());

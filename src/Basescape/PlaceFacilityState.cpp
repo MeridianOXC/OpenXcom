@@ -85,7 +85,7 @@ PlaceFacilityState::PlaceFacilityState(Base *base, const RuleBaseFacility *rule,
 	// Set up objects
 	setWindowBackground(_window, "placeFacility");
 
-	auto* itf = _game->getMod()->getInterface("basescape")->getElement("trafficLights");
+	auto* itf = _game->getMod()->getInterface("basescape")->getElementOptional("trafficLights");
 	if (itf)
 	{
 		_view->setOtherColors(itf->color, itf->color2, itf->border, !itf->TFTDMode);
@@ -192,6 +192,33 @@ void PlaceFacilityState::viewClick(Action *)
 	}
 	else
 	{
+		// Pre-calculate refunds
+		const BaseAreaSubset areaToBuildOverTemp = BaseAreaSubset(_rule->getSizeX(), _rule->getSizeY()).offset(_view->getGridX(), _view->getGridY());
+		int refundValueTemp = 0;
+		std::map<const std::string, int> refundItemsTemp;
+		for (int i = _base->getFacilities()->size() - 1; i >= 0; --i)
+		{
+			BaseFacility* checkFacilityTemp = _base->getFacilities()->at(i);
+			if (BaseAreaSubset::intersection(areaToBuildOverTemp, checkFacilityTemp->getPlacement()))
+			{
+				const std::map<std::string, std::pair<int, int> >& itemCostTemp = checkFacilityTemp->getRules()->getBuildCostItems();
+				if (checkFacilityTemp->getBuildTime() > checkFacilityTemp->getRules()->getBuildTime())
+				{
+					refundValueTemp = checkFacilityTemp->getRules()->getBuildCost();
+					for (auto& itemTemp : itemCostTemp)
+						refundItemsTemp[itemTemp.first] += itemTemp.second.first;
+				}
+				else
+				{
+					refundValueTemp = checkFacilityTemp->getRules()->getRefundValue();
+					for (auto& itemTemp : itemCostTemp)
+						refundItemsTemp[itemTemp.first] += itemTemp.second.second;
+				}
+				if (checkFacilityTemp->getAmmo() > 0)
+					refundItemsTemp[checkFacilityTemp->getRules()->getAmmoItem()->getType()] += checkFacilityTemp->getAmmo();
+			}
+		}
+
 		// placing a brand new facility
 		BasePlacementErrors placementErrorCode = _view->getPlacementError(_rule);
 		if (placementErrorCode)
@@ -256,7 +283,7 @@ void PlaceFacilityState::viewClick(Action *)
 					break;
 			}
 		}
-		else if (_game->getSavedGame()->getFunds() < _rule->getBuildCost())
+		else if (_game->getSavedGame()->getFunds() < (_rule->getBuildCost() - refundValueTemp))
 		{
 			_game->popState();
 			_game->pushState(new ErrorMessageState(tr("STR_NOT_ENOUGH_MONEY"), _palette, _game->getMod()->getInterface("placeFacility")->getElement("errorMessage")->color, "BACK01.SCR", _game->getMod()->getInterface("placeFacility")->getElement("errorPalette")->color));
@@ -265,7 +292,7 @@ void PlaceFacilityState::viewClick(Action *)
 		{
 			for (const auto& item: _rule->getBuildCostItems())
 			{
-				int needed = item.second.first - _base->getStorageItems()->getItem(item.first);
+				int needed = (item.second.first - refundItemsTemp[item.first]) - _base->getStorageItems()->getItem(item.first);
 				if (needed > 0)
 				{
 					_game->popState();

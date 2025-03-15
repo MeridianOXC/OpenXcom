@@ -91,6 +91,7 @@ OptionsDefaultsState::~OptionsDefaultsState()
 void OptionsDefaultsState::btnYesClick(Action *action)
 {
 	Options::resetDefault(false);
+	Options::save(true);
 	if (_game->isCtrlPressed())
 	{
 		// my development/debug defaults

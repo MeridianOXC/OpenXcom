@@ -109,7 +109,7 @@ SelectMusicTrackState::SelectMusicTrackState(SelectMusicTrackOrigin origin) : _o
 		applyBattlescapeTheme("selectMusicTrack");
 		if (currentTrackIndex > -1)
 		{
-			Element* element = _game->getMod()->getInterface("battlescape")->getElement("optionLists");
+			const Element* element = _game->getMod()->getInterface("battlescape")->getElement("optionLists");
 			_lstTracks->setRowColor(currentTrackIndex, element->color2);
 		}
 	}

@@ -17,7 +17,11 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <sstream>
+#include "BattlescapeGame.h"
+#include "BattlescapeState.h"
+#include "Camera.h"
 #include "ExperienceOverviewState.h"
+#include "Map.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/Language.h"
@@ -37,7 +41,7 @@ namespace OpenXcom
 /**
  * Initializes all the elements in the Experience Overview screen.
  */
-ExperienceOverviewState::ExperienceOverviewState()
+ExperienceOverviewState::ExperienceOverviewState(BattlescapeState* parent) : _parent(parent)
 {
 	_screen = false;
 
@@ -117,6 +121,7 @@ ExperienceOverviewState::ExperienceOverviewState()
 	_lstSoldiers->setHighContrast(true);
 	_lstSoldiers->setBackground(_window);
 	_lstSoldiers->setMargin(2);
+	_lstSoldiers->onMouseClick((ActionHandler)&ExperienceOverviewState::lstSoldiersClick);
 
 	_lstSoldiers->clearList();
 	int row = 0;
@@ -153,6 +158,7 @@ ExperienceOverviewState::ExperienceOverviewState()
 			mana << stats->mana;
 		}
 
+		_soldiers.push_back(soldier);
 		_lstSoldiers->addRow(10,
 			soldier->getName(_game->getLanguage()).c_str(),
 			bravery.str().c_str(),
@@ -182,6 +188,31 @@ ExperienceOverviewState::ExperienceOverviewState()
 void ExperienceOverviewState::btnOkClick(Action*)
 {
 	_game->popState();
+}
+
+/**
+ * Selects the soldier if possible and returns to the previous screen.
+ * @param action Pointer to an action.
+ */
+void ExperienceOverviewState::lstSoldiersClick(Action*)
+{
+	if (_parent->allowButtons())
+	{
+		auto index = _lstSoldiers->getSelectedRow();
+		auto* bu = _soldiers.at(index);
+
+		if (bu->isSelectable(_game->getSavedGame()->getSavedBattle()->getSide(), false, false))
+		{
+			// select
+			_parent->getBattleGame()->cancelAllActions();
+			_parent->getBattleGame()->primaryAction(bu->getPosition());
+		}
+
+		// center on position
+		_parent->getMap()->getCamera()->centerOnPosition(bu->getPosition());
+
+		_game->popState();
+	}
 }
 
 }

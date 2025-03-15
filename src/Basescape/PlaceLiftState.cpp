@@ -68,7 +68,7 @@ PlaceLiftState::PlaceLiftState(Base *base, Globe *globe, bool first) : _base(bas
 	// Set up objects
 	setWindowBackground(_window, "selectFacility");
 
-	auto* itf = _game->getMod()->getInterface("basescape")->getElement("trafficLights");
+	auto* itf = _game->getMod()->getInterface("basescape")->getElementOptional("trafficLights");
 	if (itf)
 	{
 		_view->setOtherColors(itf->color, itf->color2, itf->border, !itf->TFTDMode);

@@ -171,12 +171,33 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 	//clear list of selected crafts before creating a new wing
 	_selCrafts.clear();
 
-	int row = 0;
+	std::vector< std::tuple<Craft*, double, Base*> > craftList;
 	for (auto* xbase : *_game->getSavedGame()->getBases())
 	{
 		if (_base != 0 && xbase != _base)
 			continue;
 		for (auto* xcraft : *xbase->getCrafts())
+		{
+			double xdistance = 0.0;
+			if (_target) xdistance = xcraft->getDistance(_target);
+			craftList.push_back(std::make_tuple(xcraft, xdistance, xbase));
+		}
+	}
+	if (_target && Options::oxceGeoSortCraftByDistanceToTarget)
+	{
+		std::stable_sort(craftList.begin(), craftList.end(),
+			[](const std::tuple<Craft*, double, Base*>& a, const std::tuple<Craft*, double, Base*>& b)
+			{
+				return std::get<1>(a) < std::get<1>(b);
+			}
+		);
+	}
+
+	int row = 0;
+	for (auto& tuple : craftList)
+	{
+		auto* xbase = std::get<2>(tuple);
+		auto* xcraft = std::get<0>(tuple);
 		{
 			std::ostringstream ssStatus;
 			std::string status = xcraft->getStatus();

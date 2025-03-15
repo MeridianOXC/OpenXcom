@@ -38,7 +38,7 @@ ActionMenuItem::ActionMenuItem(int id, Game *game, int x, int y) : InteractiveSu
 	Font *big = game->getMod()->getFont("FONT_BIG"), *small = game->getMod()->getFont("FONT_SMALL");
 	Language *lang = game->getLanguage();
 
-	Element *actionMenu = game->getMod()->getInterface("battlescape")->getElement("actionMenu");
+	const Element *actionMenu = game->getMod()->getInterface("battlescape")->getElement("actionMenu");
 
 	_highlightModifier = actionMenu->TFTDMode ? 12 : 3;
 
