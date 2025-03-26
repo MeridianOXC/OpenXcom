@@ -353,14 +353,6 @@ void AIModule::think(BattleAction *action)
 	{
 		evaluate = true;
 	}
-	else if (_aggroTarget && _aggroTarget->getTurnsSinceSpotted() > _intelligence)
-	{
-		// Special case for snipers, target may not be visible, but that shouldn't cause us to re-evaluate
-		if (!_unit->isSniper() || !_aggroTarget->getTurnsLeftSpottedForSnipers())
-		{
-			evaluate = true;
-		}
-	}
 
 
 	if (_save->isCheating() && _AIMode != AI_COMBAT)
