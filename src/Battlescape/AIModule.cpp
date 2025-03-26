@@ -1162,7 +1162,7 @@ int AIModule::selectNearestTarget()
 	Position target;
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) &&
+		if (validTarget(bu, true, true) &&
 			_save->getTileEngine()->visible(_unit, bu->getTile()))
 		{
 			tally++;
@@ -1216,7 +1216,7 @@ int AIModule::selectNearestTargetLeeroy(bool canRun)
 	_aggroTarget = 0;
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) &&
+		if (validTarget(bu, true, true) &&
 			_save->getTileEngine()->visible(_unit, bu->getTile()))
 		{
 			tally++;
@@ -1280,7 +1280,7 @@ bool AIModule::selectRandomTarget()
 
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (validTarget(bu, true, true))
 		{
 			int dist = RNG::generate(0,20) - Position::distance2d(_unit->getPosition(), bu->getPosition());
 			if (dist > farthest)
@@ -1422,7 +1422,7 @@ bool AIModule::selectSpottedUnitForSniper()
 
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) && bu->getTurnsLeftSpottedForSnipers())
+		if (validTarget(bu, true, true) && bu->getTurnsLeftSpottedForSnipers())
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = bu;
@@ -2043,7 +2043,7 @@ void AIModule::meleeAction()
 	{
 		int newDistance = Position::distance2d(_unit->getPosition(), bu->getPosition());
 		if (newDistance > 20 ||
-			!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+			!validTarget(bu, true, true))
 			continue;
 		//pick closest living unit that we can move to
 		if ((newDistance < distance || newDistance == 1) && !bu->isOut())
@@ -2089,7 +2089,7 @@ void AIModule::meleeActionLeeroy(bool canRun)
 	for (auto* bu : *_save->getUnits())
 	{
 		int newDistance = Position::distance2d(_unit->getPosition(), bu->getPosition());
-		if (!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (!validTarget(bu, true, true))
 			continue;
 		//pick closest living unit
 		if ((newDistance < distance || newDistance == 1) && !bu->isOut())
@@ -2133,7 +2133,7 @@ void AIModule::wayPointAction()
 	for (auto* bu : *_save->getUnits())
 	{
 		if (_aggroTarget != 0) break; // loop finished
-		if (!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (!validTarget(bu, true, true))
 		{
 			continue;
 		}
@@ -2728,7 +2728,7 @@ bool AIModule::validTarget(BattleUnit *target, bool assessDanger, bool includeCi
 		return false;
 	}
 
-	if (includeCivs)
+	if (includeCivs && _unit->getFaction() == FACTION_HOSTILE)
 	{
 		return true;
 	}
