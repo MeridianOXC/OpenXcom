@@ -1901,6 +1901,7 @@ bool AIModule::findFirePoint()
 
 /**
  * Decides if it worth our while to create an explosion here.
+ * Return value in same range as number affected targets but not equal exactly to that value.
  * @param targetPos The target's position.
  * @param attackingUnit The attacking unit.
  * @param radius How big the explosion will be.
