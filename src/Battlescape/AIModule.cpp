@@ -2705,7 +2705,7 @@ void AIModule::meleeAttack()
  */
 AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
 {
-	int weight = 0;
+	AIAttackWeight weight = AIW_IGNORED;
 
 	if (target->getFaction() == _unit->getFaction())
 	{
@@ -2761,11 +2761,11 @@ bool AIModule::validTarget(BattleUnit *target, bool assessDanger, bool includeCi
 
 	if (includeCivs)
 	{
-		return  getTargetAttackWeight(target) > 0;
+		return  getTargetAttackWeight(target) > AIW_IGNORED;
 	}
 	else
 	{
-		return  getTargetAttackWeight(target) > TargetAttackWeightScale / 2;
+		return  getTargetAttackWeight(target) > AIW_CIVILIAN;
 	}
 }
 
