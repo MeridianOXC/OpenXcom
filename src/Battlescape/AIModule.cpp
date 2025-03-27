@@ -1931,23 +1931,23 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 	if (injurylevel > (attackingUnit->getBaseStats()->health / 3) * 2)
 		desperation += 3;
 
-	int efficacy = desperation;
+	int efficacy = AIW_SCALE * desperation;
 
 	// don't go kamikaze unless we're already doomed.
 	if (abs(attackingUnit->getPosition().z - targetPos.z) <= Options::battleExplosionHeight && distance <= radius)
 	{
-		efficacy -= 4;
+		efficacy -= AIW_SCALE * 4;
 	}
 
 	// allow difficulty to have its influence
-	efficacy += diff/2;
+	efficacy += AIW_SCALE * diff/2;
 
 	// account for the unit we're targetting
 	BattleUnit *target = targetTile->getUnit();
 	if (target && !targetTile->getDangerous())
 	{
 		++enemiesAffected;
-		++efficacy;
+		efficacy += getTargetAttackWeight(target);
 	}
 
 	for (auto* bu : *_save->getUnits())
@@ -1962,11 +1962,19 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 			abs(bu->getPosition().z - targetPos.z) <= Options::battleExplosionHeight &&
 			Position::distance2d(bu->getPosition(), targetPos) <= radius)
 		{
+			if (bu->getTile()->getDangerous())
+			{
 				// don't count people who were already grenaded this turn
-			if (bu->getTile()->getDangerous() ||
-				// don't count units we don't know about
-				(bu->getFaction() == _targetFaction && bu->getTurnsSinceSpotted() > _intelligence))
 				continue;
+			}
+
+			auto weight = getTargetAttackWeight(bu);
+
+			if (weight == 0)
+			{
+				// AI do not know anything about this unit
+				continue;
+			}
 
 			// trace a line from the grenade origin to the unit we're checking against
 			Position voxelPosA = Position (targetPos.toVoxel() + TileEngine::voxelTileCenter);
@@ -1979,10 +1987,9 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 				if (bu->getFaction() == _targetFaction)
 				{
 					++enemiesAffected;
-					++efficacy;
 				}
-				else if (bu->getFaction() == attackingUnit->getFaction() || (attackingUnit->getFaction() == FACTION_NEUTRAL && bu->getFaction() == FACTION_PLAYER))
-					efficacy -= 2; // friendlies count double
+
+				efficacy += weight;
 			}
 		}
 	}
@@ -2000,8 +2007,8 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 	}
 	else if (efficacy > 0)
 	{
-		// We kill more enemies than allies.
-		return efficacy;
+		// We kill more enemies than allies. Scale back to number of targets, can round down to zero
+		return efficacy / AIW_SCALE;
 	}
 	else
 	{
@@ -2690,6 +2697,48 @@ void AIModule::meleeAttack()
 	_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);
 }
 
+
+/**
+ *
+ * @param target
+ * @return
+ */
+AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
+{
+	AIAttackWeight weight = AIW_IGNORED;
+
+	if (target->getFaction() == _unit->getFaction())
+	{
+		// friendly target have negative weight, used for AoE attacks.
+		weight = AIW_ALLY;
+	}
+	else if (_unit->getFaction() == FACTION_HOSTILE &&
+		_intelligence < target->getTurnsSinceSpotted() &&
+		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipers()))
+	{
+		// ignore units that we don't "know" about...
+		// ... unless we are a sniper and the spotters know about them
+		weight = AIW_IGNORED;
+	}
+	else if (target->getFaction() == _targetFaction)
+	{
+		// enemy unit, full weight
+		weight = AIW_ENEMY;
+	}
+	else if (_unit->getFaction() == FACTION_HOSTILE)
+	{
+		// if its not xcom unit then its civilian, less value that xcom
+		weight = AIW_CIVILIAN;
+	}
+	else if (_unit->getFaction() == FACTION_NEUTRAL)
+	{
+		// if its not alien then its xcom, humans do not shoot each other, usually...
+		weight = AIW_ALLY;
+	}
+
+	return weight;
+}
+
 /**
  * Validates a target.
  * @param target the target we want to validate.
@@ -2702,31 +2751,22 @@ bool AIModule::validTarget(BattleUnit *target, bool assessDanger, bool includeCi
 	// ignore units that:
 	// 1. are dead/unconscious
 	// 2. are dangerous (they have been grenaded)
-	// 3. are on our side
-	// 4. are hostile/neutral units marked as ignored by the AI
+	// 3. are hostile/neutral units marked as ignored by the AI
 	if (target->isOut() ||
 		(assessDanger && target->getTile()->getDangerous()) ||
-		(target->getFaction() != FACTION_PLAYER && target->isIgnoredByAI()) ||
-		target->getFaction() == _unit->getFaction())
+		(target->getFaction() != FACTION_PLAYER && target->isIgnoredByAI()))
 	{
 		return false;
 	}
 
-	// ignore units that we don't "know" about...
-	// ... unless we are a sniper and the spotters know about them
-	if (_unit->getFaction() == FACTION_HOSTILE &&
-		_intelligence < target->getTurnsSinceSpotted() &&
-		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipers()))
+	if (includeCivs)
 	{
-		return false;
+		return  getTargetAttackWeight(target) > AIW_IGNORED;
 	}
-
-	if (includeCivs && _unit->getFaction() == FACTION_HOSTILE)
+	else
 	{
-		return true;
+		return  getTargetAttackWeight(target) > AIW_CIVILIAN;
 	}
-
-	return target->getFaction() == _targetFaction;
 }
 
 /**
