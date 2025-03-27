@@ -3396,7 +3396,12 @@ void TileEngine::explode(BattleActionAttack attack, Position center, int power, 
 						toRemove.clear();
 						if (bu)
 						{
-							if (
+							if (dest->getPosition() == centetTile)
+							{
+								// direct hit, similar to ground zero but AI will remember attacker, done for compatibility
+								hitUnit(attack, bu, Position(0, 0, 0), damage, type, rangeAtack);
+							}
+							else if (
 									(
 										Position::distance2dSq(dest->getPosition(), centetTile) < 4
 										&& dest->getPosition().z == centetTile.z
@@ -3405,7 +3410,7 @@ void TileEngine::explode(BattleActionAttack attack, Position center, int power, 
 								)
 							{
 								// ground zero effect is in effect, or unit is above explosion
-								hitUnit(attack, bu, Position(0, 0, 0), damage, type, rangeAtack);
+								hitUnit(attack, bu, Position(0, 0, -1), damage, type, rangeAtack);
 							}
 							else
 							{

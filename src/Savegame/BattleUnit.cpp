@@ -1535,7 +1535,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 	if (!type->IgnoreDirection)
 	{
-		if (relative == Position(0, 0, 0))
+		if (relative.x == 0 && relative.y == 0 && relative.z <= 0)
 		{
 			side = SIDE_UNDER;
 		}
@@ -1825,6 +1825,38 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			}
 		}
 
+		// AI direct hit tracking
+		auto newTurnsSinceSpotted = 255;
+		auto newTurnsLeftSpottedForSnipers = 0;
+		if (attack.attacker)
+		{
+			newTurnsSinceSpotted = attack.attacker->getTurnsSinceSpotted();
+			newTurnsLeftSpottedForSnipers = attack.attacker->getTurnsLeftSpottedForSnipers();
+
+			if (getFaction() == FACTION_HOSTILE &&
+				(attack.type == BA_AIMEDSHOT || attack.type == BA_SNAPSHOT || attack.type == BA_AUTOSHOT) &&
+				attack.damage_item != nullptr &&
+				(relative == Position(0,0,0) || (attack.damage_item->getRules()->getExplosionRadius(attack) == 0)))
+			{
+				AIModule *ai = getAIModule();
+				if (ai != 0)
+				{
+					ai->setWasHitBy(attack.attacker);
+					newTurnsSinceSpotted = 0;
+					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
+					{
+						// 0 = don't spot
+						// 1 = spot only if the victim doesn't die or pass out
+						// 2 = always spot
+						if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1 || !this->isOutThresholdExceed())
+						{
+							newTurnsLeftSpottedForSnipers = std::max(newTurnsLeftSpottedForSnipers, getSpotterDuration());
+						}
+					}
+				}
+			}
+		}
+
 
 		// script call
 
@@ -1881,6 +1913,12 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			setAlreadyExploded(true);
 			Position p = getPosition().toVoxel();
 			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, selfDestructItem, selfDestructItem }, 0));
+		}
+
+		if (attack.attacker)
+		{
+			attack.attacker->setTurnsSinceSpotted(newTurnsSinceSpotted);
+			attack.attacker->setTurnsLeftSpottedForSnipers(newTurnsLeftSpottedForSnipers);
 		}
 	}
 
