@@ -597,18 +597,6 @@ bool ProjectileFlyBState::createNewProjectile()
 void ProjectileFlyBState::deinit()
 {
 	_parent->getMap()->setFollowProjectile(true); // turn back on when done shooting
-
-	if (!_victims.empty())
-	{
-		for (auto* victim : _victims)
-		{
-			// is the spotter still standing after ALL shots?
-			if (!victim->isOut() && !victim->isOutThresholdExceed())
-			{
-				_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
-			}
-		}
-	}
 }
 
 /**
@@ -1037,30 +1025,6 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 			if (accuracy < distance)
 			{
 				_unit->getStatistics()->lowAccuracyHitCounter++;
-			}
-		}
-		if (victim->getFaction() == FACTION_HOSTILE)
-		{
-			AIModule *ai = victim->getAIModule();
-			if (ai != 0)
-			{
-				ai->setWasHitBy(_unit);
-				_unit->setTurnsSinceSpotted(0);
-				if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
-				{
-					// 0 = don't spot
-					// 1 = spot only if the victim doesn't die or pass out
-					// 2 = always spot
-					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1)
-					{
-						_unit->setTurnsLeftSpottedForSnipers(std::max(victim->getSpotterDuration(), _unit->getTurnsLeftSpottedForSnipers()));
-					}
-					else
-					{
-						// decide later
-						_victims.insert(victim);
-					}
-				}
 			}
 		}
 	}
