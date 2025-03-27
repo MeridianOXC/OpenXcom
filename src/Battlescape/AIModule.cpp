@@ -2527,7 +2527,7 @@ bool AIModule::psiAction()
 			if (bu->getArmor()->getSize() == 1 &&
 				validTarget(bu, true, false) &&
 				// they must be player units
-				bu->getOriginalFaction() == _targetFaction &&
+				bu->getOriginalFaction() != _unit->getFaction() &&
 				(!LOSRequired ||
 				std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), bu) != _unit->getVisibleUnits()->end()))
 			{
