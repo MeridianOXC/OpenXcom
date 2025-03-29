@@ -114,7 +114,11 @@ private:
 	int _smokeMaxHit;
 	int _moraleRestored;
 	BattleUnit *_charging;
-	int _turnsSinceSpotted, _turnsLeftSpottedForSnipers, _turnsSinceStunned = 255;
+
+	Uint8 _turnsSinceSpotted[FACTION_MAX] = { 255, 255, 255 };
+	Uint8 _turnsLeftSpottedForSnipers[FACTION_MAX] = { 0, 0, 0 };
+	Uint8 _turnsSinceStunned = 255;
+
 	BattleUnit* _previousOwner = nullptr;
 	const Unit *_spawnUnit = nullptr;
 	std::string _activeHand;
