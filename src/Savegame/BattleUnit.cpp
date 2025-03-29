@@ -1929,7 +1929,7 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		if (attack.attacker)
 		{
-			attack.attacker->setTurnsSinceSpotted(newTurnsSinceSpotted && attack.attacker->getTurnsSinceSpotted() ? newTurnsSinceSpotted : 0); // additional check to prevent "unseen" solder that stand next to alien, this could bug AI
+			attack.attacker->setTurnsSinceSpotted(newTurnsSinceSpotted);
 			attack.attacker->setTurnsLeftSpottedForSnipers(newTurnsLeftSpottedForSnipers);
 		}
 	}
