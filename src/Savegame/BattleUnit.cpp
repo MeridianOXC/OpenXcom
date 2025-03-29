@@ -4749,7 +4749,7 @@ void setUint8Array(Uint8 (&arr)[I], int offset, int value)
 
 /// safe getter of value in array
 template<int I>
-int getUint8Array(Uint8 (&arr)[I], int offset)
+int getUint8Array(const Uint8 (&arr)[I], int offset)
 {
 	if (0 <= offset && offset < I)
 	{
@@ -6614,7 +6614,7 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&setBaseStatRangeArrayScript<&BattleUnit::_turnsSinceSpotted, FACTION_HOSTILE, 0, 255>>("setTurnsSinceSpotted");
 
 	bu.add<&BattleUnit::getTurnsSinceSpottedByFaction>("getTurnsSinceSpottedByFaction");
-	bu.add<&BattleUnit::setTurnsSinceSpottedByFaction()>("setTurnsSinceSpottedByFaction");
+	bu.add<&BattleUnit::setTurnsSinceSpottedByFaction>("setTurnsSinceSpottedByFaction");
 
 	bu.add<&BattleUnit::getTurnsLeftSpottedForSnipers>("getTurnsLeftSpottedForSnipers");
 	bu.add<&setBaseStatRangeArrayScript<&BattleUnit::_turnsLeftSpottedForSnipers, FACTION_HOSTILE, 0, 255>>("setTurnsLeftSpottedForSnipers");
