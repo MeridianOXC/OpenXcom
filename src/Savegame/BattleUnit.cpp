@@ -6159,7 +6159,7 @@ void setBaseStatRangeArrayScript(BattleUnit *bu, int val)
 {
 	if (bu)
 	{
-		(bu->*StatCurr) = Clamp(val, Min, Max);
+		(bu->*StatCurr)[Offset] = Clamp(val, Min, Max);
 	}
 }
 
