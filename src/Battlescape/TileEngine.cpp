@@ -1498,13 +1498,15 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 							{
 								unit->addToVisibleUnits(bu);
 								unit->addToVisibleTiles(bu->getTile());
+							}
 
-								if (unit->getFaction() == FACTION_HOSTILE && bu->getFaction() != FACTION_HOSTILE)
-								{
-									bu->setTurnsSinceSpotted(0);
-
-									bu->setTurnsLeftSpottedForSnipers(std::max(unit->getSpotterDuration(), bu->getTurnsLeftSpottedForSnipers())); // defaults to 0 = no information given to snipers
-								}
+							if (unit->getFaction() != bu->getFaction())
+							{
+								bu->setTurnsSinceSpottedByFaction(unit->getFaction(), 0);
+								bu->setTurnsLeftSpottedForSnipersByFaction(
+									unit->getFaction(),
+									std::max(unit->getSpotterDuration(), bu->getTurnsLeftSpottedForSnipersByFaction(unit->getFaction()))
+								); // defaults to 0 = no information given to snipers
 							}
 
 							x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops.

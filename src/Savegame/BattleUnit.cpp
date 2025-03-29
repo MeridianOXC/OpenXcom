@@ -1842,10 +1842,10 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		auto newTurnsLeftSpottedForSnipers = 0;
 		if (attack.attacker)
 		{
-			newTurnsSinceSpotted = attack.attacker->getTurnsSinceSpotted();
-			newTurnsLeftSpottedForSnipers = attack.attacker->getTurnsLeftSpottedForSnipers();
+			newTurnsSinceSpotted = attack.attacker->getTurnsSinceSpottedByFaction(getFaction());
+			newTurnsLeftSpottedForSnipers = attack.attacker->getTurnsLeftSpottedForSnipersByFaction(getFaction());
 
-			if (getFaction() == FACTION_HOSTILE &&
+			if (getFaction() != attack.attacker->getFaction() &&
 				(attack.type == BA_AIMEDSHOT || attack.type == BA_SNAPSHOT || attack.type == BA_AUTOSHOT) &&
 				attack.damage_item != nullptr &&
 				(relative == Position(0,0,0) || (attack.damage_item->getRules()->getExplosionRadius(attack) == 0)))
@@ -1854,16 +1854,17 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 				if (ai != 0)
 				{
 					ai->setWasHitBy(attack.attacker);
-					newTurnsSinceSpotted = 0;
-					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
+				}
+
+				newTurnsSinceSpotted = 0;
+				if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
+				{
+					// 0 = don't spot
+					// 1 = spot only if the victim doesn't die or pass out
+					// 2 = always spot
+					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1 || !this->isOutThresholdExceed())
 					{
-						// 0 = don't spot
-						// 1 = spot only if the victim doesn't die or pass out
-						// 2 = always spot
-						if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1 || !this->isOutThresholdExceed())
-						{
-							newTurnsLeftSpottedForSnipers = std::max(newTurnsLeftSpottedForSnipers, getSpotterDuration());
-						}
+						newTurnsLeftSpottedForSnipers = std::max(newTurnsLeftSpottedForSnipers, getSpotterDuration());
 					}
 				}
 			}
@@ -1929,8 +1930,8 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 
 		if (attack.attacker)
 		{
-			attack.attacker->setTurnsSinceSpotted(newTurnsSinceSpotted);
-			attack.attacker->setTurnsLeftSpottedForSnipers(newTurnsLeftSpottedForSnipers);
+			attack.attacker->setTurnsSinceSpottedByFaction(getFaction(), newTurnsSinceSpotted);
+			attack.attacker->setTurnsLeftSpottedForSnipersByFaction(getFaction(), newTurnsLeftSpottedForSnipers);
 		}
 	}
 
@@ -4696,6 +4697,71 @@ int BattleUnit::getCarriedWeight(BattleItem *draggingItem) const
 	return std::max(0,weight);
 }
 
+
+
+/**
+ * Set default state on unit.
+ */
+void BattleUnit::resetTurnsSince()
+{
+	for (auto& since : _turnsSinceSpotted)
+	{
+		since = 255;
+	}
+	for (auto& left : _turnsLeftSpottedForSnipers)
+	{
+		left = 0;
+	}
+	_turnsSinceStunned = 255;
+}
+
+
+/**
+ * Update counters on unit.
+ */
+void BattleUnit::updateTurnsSince()
+{
+	for (auto& since : _turnsSinceSpotted)
+	{
+		since = Clamp(since + 1, 0, 255);
+	}
+	for (auto& left : _turnsLeftSpottedForSnipers)
+	{
+		left = Clamp(left - 1, 0, 255);
+	}
+	//_turnsSinceStunned is updated elsewhere
+}
+
+
+
+namespace
+{
+
+/// safe setter of value in array
+template<int I>
+void setUint8Array(Uint8 (&arr)[I], int offset, int value)
+{
+	if (0 <= offset && offset < I)
+	{
+		arr[offset] = Clamp(value, 0, 255);
+	}
+}
+
+/// safe getter of value in array
+template<int I>
+int getUint8Array(Uint8 (&arr)[I], int offset)
+{
+	if (0 <= offset && offset < I)
+	{
+		return arr[offset];
+	}
+
+	return 0;
+}
+
+} // namespace
+
+
 /**
  * Set how long since this unit was last exposed.
  * @param turns number of turns
@@ -4703,6 +4769,14 @@ int BattleUnit::getCarriedWeight(BattleItem *draggingItem) const
 void BattleUnit::setTurnsSinceSpotted (int turns)
 {
 	_turnsSinceSpotted[FACTION_HOSTILE] = turns;
+}
+
+/**
+ * Set how many turns this unit will be exposed for. For specific faction.
+ */
+void BattleUnit::setTurnsSinceSpottedByFaction(UnitFaction faction, int turns)
+{
+	setUint8Array(_turnsSinceSpotted, faction, turns);
 }
 
 /**
@@ -4715,6 +4789,14 @@ int BattleUnit::getTurnsSinceSpotted() const
 }
 
 /**
+ * Set how many turns this unit will be exposed for. For specific faction.
+ */
+int BattleUnit::getTurnsSinceSpottedByFaction(UnitFaction faction) const
+{
+	return getUint8Array(_turnsSinceSpotted, faction);
+}
+
+/**
  * Set how many turns left snipers will know about this unit.
  * @param turns number of turns
  */
@@ -4724,12 +4806,28 @@ void BattleUnit::setTurnsLeftSpottedForSnipers (int turns)
 }
 
 /**
+ * Set how many turns left snipers know about this target. For specific faction.
+ */
+void BattleUnit::setTurnsLeftSpottedForSnipersByFaction (UnitFaction faction, int turns)
+{
+	setUint8Array(_turnsLeftSpottedForSnipers, faction, turns);
+}
+
+/**
  * Get how many turns left snipers can fire on this unit.
  * @return number of turns
  */
 int BattleUnit::getTurnsLeftSpottedForSnipers() const
 {
 	return _turnsLeftSpottedForSnipers[FACTION_HOSTILE];
+}
+
+/**
+ * Get how many turns left snipers know about this target. For specific faction.
+ */
+int BattleUnit::getTurnsLeftSpottedForSnipersByFaction(UnitFaction faction) const
+{
+	return getUint8Array(_turnsLeftSpottedForSnipers, faction);
 }
 
 /**
@@ -6510,12 +6608,23 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getPositionYScript>("getPosition.getY");
 	bu.add<&getPositionZScript>("getPosition.getZ");
 	bu.add<&BattleUnit::getPosition>("getPosition");
+
+
 	bu.add<&BattleUnit::getTurnsSinceSpotted>("getTurnsSinceSpotted");
 	bu.add<&setBaseStatRangeArrayScript<&BattleUnit::_turnsSinceSpotted, FACTION_HOSTILE, 0, 255>>("setTurnsSinceSpotted");
+
+	bu.add<&BattleUnit::getTurnsSinceSpottedByFaction>("getTurnsSinceSpottedByFaction");
+	bu.add<&BattleUnit::setTurnsSinceSpottedByFaction()>("setTurnsSinceSpottedByFaction");
+
 	bu.add<&BattleUnit::getTurnsLeftSpottedForSnipers>("getTurnsLeftSpottedForSnipers");
 	bu.add<&setBaseStatRangeArrayScript<&BattleUnit::_turnsLeftSpottedForSnipers, FACTION_HOSTILE, 0, 255>>("setTurnsLeftSpottedForSnipers");
+
+	bu.add<&BattleUnit::getTurnsLeftSpottedForSnipersByFaction>("getTurnsLeftSpottedForSnipersByFaction");
+	bu.add<&BattleUnit::setTurnsLeftSpottedForSnipersByFaction>("setTTurnsLeftSpottedForSnipersByFaction");
+
 	bu.addField<&BattleUnit::_turnsSinceStunned>("getTurnsSinceStunned");
 	bu.add<&setBaseStatRangeScript<&BattleUnit::_turnsSinceStunned, 0, 255>>("setTurnsSinceStunned");
+
 
 	bu.addScriptValue<BindBase::OnlyGet, &BattleUnit::_armor, &Armor::getScriptValuesRaw>();
 	bu.addScriptValue<&BattleUnit::_scriptValues>();
