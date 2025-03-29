@@ -157,6 +157,23 @@ public:
 	template <typename OutputType>
 	bool tryRead(ryml::csubstr key, OutputType& outputValue) const;
 
+	/// Returns false if the node is invalid or the key doesn't exist. Otherwise returns true and deserializes the value of the found child into the outputValue.
+	template <typename ReadType, typename OutputType>
+	bool tryReadAs(ryml::csubstr key, OutputType& outputValue) const
+	{
+		static_assert(std::is_integral<ReadType>::value, "tryReadAs only supported for int like types");
+		ReadType temp = {};
+		if (tryRead(key, temp))
+		{
+			outputValue = static_cast<OutputType>(temp);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	/// Returns false if the node is invalid or itself has no key. Otherwise returns true and deserializes the key of the current node into the outputValue.
 	template <typename OutputType>
 	bool tryReadKey(OutputType& outputValue) const;
@@ -274,12 +291,42 @@ public:
 	/// Adds a scalar value child to the current mapping container, serializing the provided value
 	template <typename InputType>
 	YamlNodeWriter write(ryml::csubstr key, const InputType& inputValue);
+
+	/// Adds a scalar value child to the current mapping container, serializing the provided value
+	template <typename WriteType, typename InputType>
+	YamlNodeWriter writeAs(ryml::csubstr key, const InputType& inputValue)
+	{
+		static_assert(std::is_integral<WriteType>::value, "writeAs only supported for int like types");
+		WriteType temp = static_cast<WriteType>(inputValue);
+		return write(key, temp);
+	}
+
 	/// If the inputVector is not empty, adds a sequence container child to the current mapping container.
 	/// The callback (YamlNodeWriter w, InputType val) should specify how to write a vector element to the sequence container.
 	template <typename InputType, typename Func>
 	void write(ryml::csubstr key, const std::vector<InputType>& inputVector, Func callback);
 	/// Adds a scalar value child to the current mapping container, serializing the provided binary data
 	YamlNodeWriter writeBase64(ryml::csubstr key, char* data, size_t size);
+
+	/// Try write value if is different that default
+	template <typename InputType>
+	void tryWrite(ryml::csubstr key, const InputType& inputValue, const std::remove_reference_t<InputType>& defualtValue)
+	{
+		if (inputValue != defualtValue)
+		{
+			write(key, inputValue);
+		}
+	}
+
+	/// Try write value if is different that default
+	template <typename WriteType, typename InputType>
+	void tryWriteAs(ryml::csubstr key, const InputType& inputValue, const std::remove_reference_t<InputType>& defualtValue)
+	{
+		if (inputValue != defualtValue)
+		{
+			writeAs<WriteType>(key, inputValue);
+		}
+	}
 
 	/// Adds a value to the current node.
 	template <typename InputType>
