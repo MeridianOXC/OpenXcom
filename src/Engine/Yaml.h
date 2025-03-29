@@ -310,7 +310,7 @@ public:
 
 	/// Try write value if is different that default
 	template <typename InputType>
-	void tryWrite(ryml::csubstr key, const InputType& inputValue, const std::remove_reference<InputType>& defualtValue)
+	void tryWrite(ryml::csubstr key, const InputType& inputValue, const std::remove_reference_t<InputType>& defualtValue)
 	{
 		if (inputValue != defualtValue)
 		{
@@ -320,7 +320,7 @@ public:
 
 	/// Try write value if is different that default
 	template <typename WriteType, typename InputType>
-	void tryWriteAs(ryml::csubstr key, const InputType& inputValue, const std::remove_reference<InputType>& defualtValue)
+	void tryWriteAs(ryml::csubstr key, const InputType& inputValue, const std::remove_reference_t<InputType>& defualtValue)
 	{
 		if (inputValue != defualtValue)
 		{
