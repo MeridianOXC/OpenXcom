@@ -1826,26 +1826,32 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		}
 
 		// AI direct hit tracking
-		auto newTurnsSinceSpotted = attack.attacker->getTurnsSinceSpotted();
-		auto newTurnsLeftSpottedForSnipers = attack.attacker->getTurnsLeftSpottedForSnipers();
-		if (getFaction() == FACTION_HOSTILE &&
-			(attack.type == BA_AIMEDSHOT || attack.type == BA_SNAPSHOT || attack.type == BA_AUTOSHOT) &&
-			attack.damage_item != nullptr &&
-			(relative == Position(0,0,0) || (attack.damage_item->getRules()->getExplosionRadius(attack) == 0)))
+		auto newTurnsSinceSpotted = 255;
+		auto newTurnsLeftSpottedForSnipers = 0;
+		if (attack.attacker)
 		{
-			AIModule *ai = getAIModule();
-			if (ai != 0)
+			newTurnsSinceSpotted = attack.attacker->getTurnsSinceSpotted();
+			newTurnsLeftSpottedForSnipers = attack.attacker->getTurnsLeftSpottedForSnipers();
+
+			if (getFaction() == FACTION_HOSTILE &&
+				(attack.type == BA_AIMEDSHOT || attack.type == BA_SNAPSHOT || attack.type == BA_AUTOSHOT) &&
+				attack.damage_item != nullptr &&
+				(relative == Position(0,0,0) || (attack.damage_item->getRules()->getExplosionRadius(attack) == 0)))
 			{
-				ai->setWasHitBy(attack.attacker);
-				newTurnsSinceSpotted = 0;
-				if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
+				AIModule *ai = getAIModule();
+				if (ai != 0)
 				{
-					// 0 = don't spot
-					// 1 = spot only if the victim doesn't die or pass out
-					// 2 = always spot
-					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1 || !this->isOutThresholdExceed())
+					ai->setWasHitBy(attack.attacker);
+					newTurnsSinceSpotted = 0;
+					if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 0)
 					{
-						newTurnsLeftSpottedForSnipers = std::max(newTurnsLeftSpottedForSnipers, getSpotterDuration());
+						// 0 = don't spot
+						// 1 = spot only if the victim doesn't die or pass out
+						// 2 = always spot
+						if (Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING > 1 || !this->isOutThresholdExceed())
+						{
+							newTurnsLeftSpottedForSnipers = std::max(newTurnsLeftSpottedForSnipers, getSpotterDuration());
+						}
 					}
 				}
 			}
@@ -1909,8 +1915,11 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 			save->getBattleGame()->statePushNext(new ExplosionBState(save->getBattleGame(), p, BattleActionAttack{ BA_SELF_DESTRUCT, this, selfDestructItem, selfDestructItem }, 0));
 		}
 
-		attack.attacker->setTurnsSinceSpotted(newTurnsSinceSpotted && attack.attacker->getTurnsSinceSpotted() ? newTurnsSinceSpotted : 0); // additional check to prevent "unseen" solder that stand next to alien, this could bug AI
-		attack.attacker->setTurnsLeftSpottedForSnipers(newTurnsLeftSpottedForSnipers);
+		if (attack.attacker)
+		{
+			attack.attacker->setTurnsSinceSpotted(newTurnsSinceSpotted && attack.attacker->getTurnsSinceSpotted() ? newTurnsSinceSpotted : 0); // additional check to prevent "unseen" solder that stand next to alien, this could bug AI
+			attack.attacker->setTurnsLeftSpottedForSnipers(newTurnsLeftSpottedForSnipers);
+		}
 	}
 
 	return damage;
