@@ -314,7 +314,7 @@ public:
 	{
 		if (inputValue != defualtValue)
 		{
-			tryWrite(key, inputValue);
+			write(key, inputValue);
 		}
 	}
 
@@ -324,7 +324,7 @@ public:
 	{
 		if (inputValue != defualtValue)
 		{
-			tryWriteAs<WriteType>(key, inputValue);
+			writeAs<WriteType>(key, inputValue);
 		}
 	}
 
