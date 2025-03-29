@@ -1414,7 +1414,7 @@ bool AIModule::selectSpottedUnitForSniper()
 
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, true) && bu->getTurnsLeftSpottedForSnipers())
+		if (validTarget(bu, true, true) && bu->getTurnsLeftSpottedForSnipersByFaction(_unit->getFaction()))
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = bu;
@@ -2712,9 +2712,9 @@ AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
 		// friendly target have negative weight, used for AoE attacks.
 		weight = AIW_ALLY;
 	}
-	else if (_unit->getFaction() == FACTION_HOSTILE &&
-		_intelligence < target->getTurnsSinceSpotted() &&
-		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipers()))
+	else if (
+		_intelligence < target->getTurnsSinceSpottedByFaction(_unit->getFaction()) &&
+		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipersByFaction(_unit->getFaction())))
 	{
 		// ignore units that we don't "know" about...
 		// ... unless we are a sniper and the spotters know about them
