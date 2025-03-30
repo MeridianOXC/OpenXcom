@@ -1,5 +1,5 @@
 !insertmacro LANGFILE_EXT "Italian"
-${LangFileString} SETUP_XCOM_FOLDER_TITLE "Seleziona la posizione di X-COM"
+${LangFileString} SETUP_XCOM_FOLDER_TITLE "Seleziona la Posizione di X-COM"
 ${LangFileString} SETUP_XCOM_FOLDER_SUBTITLE "Seleziona le cartelle dove è installato X-COM."
 ${LangFileString} SETUP_XCOM_FOLDER "${GAME_NAME} ${GAME_VERSION} richiede una copia di uno dei seguenti giochi di X-COM. Puoi saltare questo passaggio se stai aggiornando un'installazione preesistente.$\n$\nL'installazione copierà i file richiesti da queste cartelle. Per copiarli da una cartella diversa, clicca ... e seleziona un'altra cartella. Premi Successivo per continuare."
 ${LangFileString} SETUP_UFO_FOLDER "UFO: Enemy Unknown / X-COM: UFO Defense"

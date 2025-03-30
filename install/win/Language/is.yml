@@ -21,3 +21,4 @@ is:
   SETUP_WARNING_UFO: "X-COM 1 fannst ekki í möppunni. ${GAME_NAME} þarfnast lögmætrar uppsettningar X-COM til að virka. Halda áfram?"
   SETUP_WARNING_TFTD: "X-COM 2 fannst ekki í möppunni. ${GAME_NAME} þarfnast lögmætrar uppsettningar X-COM til að virka. Halda áfram?"
   SETUP_WARNING_XCU: "XcomUtil fannst. ${GAME_NAME} er ósamrýnanlegur XcomUtil og gæti ekki virkað rétt. Halda áfram?"
+  SETUP_ERROR_PORTABLE: "Uppsetningarmappan styður ekki færanlega uppsetningu."

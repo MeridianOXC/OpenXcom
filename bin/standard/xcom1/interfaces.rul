@@ -521,6 +521,18 @@ interfaces:
         color: 218   # blue
       - id: button
         color: 218   # blue
+  - type: baseDefense_geo
+    backgroundImage: BACK04.SCR
+    elements:
+      - id: palette
+        color: 2     # red/orange
+      - id: window
+        color: 133   # minty green
+      - id: text
+        color: 239   # bright green
+        color2: 138  # yellow
+      - id: button
+        color: 133   # minty green
   - type: terrorSite
     elements:
       - id: palette
@@ -1324,6 +1336,23 @@ interfaces:
       - id: button
         color: 246   # purple
   - type: globalResearchMenu
+    backgroundImage: BACK05.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 1     # burgundy
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 218   # blue
+        color2: 208  # white
+      - id: list
+        color: 246   # purple
+        color2: 208  # white
+        border: 218  # blue
+      - id: button
+        color: 246   # purple
+  - type: globalResearchDiary
     backgroundImage: BACK05.SCR
     palette: PAL_BASESCAPE
     elements:

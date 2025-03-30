@@ -1,7 +1,7 @@
 sk:
   SETUP_XCOM_FOLDER_TITLE: "Vyberte umiestnenie X-COM"
   SETUP_XCOM_FOLDER_SUBTITLE: "Vyberte priečinky, v ktorých máte nainštalovaný X-COM."
-  SETUP_XCOM_FOLDER: "\"${GAME_NAME} ${GAME_VERSION} vyžaduje kópiu jednej z nasledujúcich X-COM hier. Tento krok môžete preskočiť pokiaľ aktualizujete existujúcu inštaláciu.$\n$\nSetup skopíruje vyžadované súbory z nasledujúcich priečinkov. Pre kopírovanie z iného priečinku kliknite ... a vyberte iný priečinok. Pre pokračovanie kliknite na ďalej.\""
+  SETUP_XCOM_FOLDER: "${GAME_NAME} ${GAME_VERSION} vyžaduje kópiu jednej z nasledujúcich X-COM hier. Tento krok môžete preskočiť pokiaľ aktualizujete existujúcu inštaláciu.$\n$\nSetup skopíruje vyžadované súbory z nasledujúcich priečinkov. Pre kopírovanie z iného priečinku kliknite ... a vyberte iný priečinok. Pre pokračovanie kliknite na ďalej."
   SETUP_UFO_FOLDER: "UFO: Enemy Unknown / X-COM: UFO Defense"
   SETUP_TFTD_FOLDER: "X-COM: Terror From The Deep"
   SETUP_GAME: "Súbory hry"
@@ -20,5 +20,5 @@ sk:
   SETUP_SHORTCUT_UNINSTALL: "Odinštalovať"
   SETUP_WARNING_UFO: "X-COM 1 sa nenašla vo vybranom priečinku. ${GAME_NAME} vyžaduje platnú inštaláciu X-COMu, aby mohla fungovať. Pokračovať?"
   SETUP_WARNING_TFTD: "X-COM 2 sa nenašla vo vybranom priečinku. ${GAME_NAME} vyžaduje platnú inštaláciu X-COMu, aby mohla fungovať. Pokračovať?"
-  SETUP_WARNING_XCU: "Bol nájdený XcomUtil. ${GAME_NAME} nie je kompatibilná s XComUtil a môže fungovať nesprávne. Pokračovať?\""
+  SETUP_WARNING_XCU: "Bol nájdený XcomUtil. ${GAME_NAME} nie je kompatibilná s XComUtil a môže fungovať nesprávne. Pokračovať?"
   SETUP_ERROR_PORTABLE: "Inštalačný priečinok nepodporuje prenosnú inštaláciu."

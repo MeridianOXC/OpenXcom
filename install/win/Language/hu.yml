@@ -21,3 +21,4 @@ hu:
   SETUP_WARNING_UFO: "Az X-COM 1 nem található a mappában. Az ${GAME_NAME}-nak szüksége van egy érvényes/működő X-COM telepítésre a futtatáshoz. Folytatod?"
   SETUP_WARNING_TFTD: "Az X-COM 2 nem található a mappában. Az ${GAME_NAME}-nak szüksége van egy érvényes/működő X-COM telepítésre a futtatáshoz. Folytatod?"
   SETUP_WARNING_XCU: "XcomUtil észlelve. Az ${GAME_NAME} NEM kompatibilis az XcomUtil-lal és előfordulhat, hogy nem fog megfelelően működni. Folytatod?"
+  SETUP_ERROR_PORTABLE: "A telepítési mappa nem támogatja a hordozható telepítést."

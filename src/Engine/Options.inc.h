@@ -78,6 +78,7 @@ OPT int autosaveSlots;
 OPT int oxceGeoAutosaveFrequency;
 OPT int oxceGeoAutosaveSlots;
 OPT bool oxceLinks;
+OPT bool oxceLinksDisableTextEdit;
 OPT bool oxceFatFingerLinks;
 OPT bool oxceQuickSearchButton;
 OPT bool oxceHighlightNewTopics;

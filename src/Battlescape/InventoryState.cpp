@@ -110,6 +110,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 	_bg = new Surface(320, 200, 0, 0);
 	_soldier = new Surface(320, 200, 0, 0);
 	_txtPosition = new Text(70, 9, 65, 95);
+	_txtNameStatic = new Text(210, 17, 28, 6);
 	_txtName = new TextEdit(this, 210, 17, 28, 6);
 	_txtTus = new Text(40, 9, 245, 24);
 	_txtWeight = new Text(70, 9, 245, 24);
@@ -152,6 +153,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 
 	add(_soldier);
 	add(_btnQuickSearch, "textItem", "inventory");
+	add(_txtNameStatic, "textName", "inventory", _bg);
 	add(_txtName, "textName", "inventory", _bg);
 	add(_txtTus, "textTUs", "inventory", _bg);
 	add(_txtWeight, "textWeight", "inventory", _bg);
@@ -185,10 +187,22 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 
 	_txtPosition->setHighContrast(true);
 
+	_txtNameStatic->setBig();
+	_txtNameStatic->setHighContrast(true);
+
 	_txtName->setBig();
 	_txtName->setHighContrast(true);
 	_txtName->onChange((ActionHandler)&InventoryState::edtSoldierChange);
 	_txtName->onMousePress((ActionHandler)&InventoryState::edtSoldierPress);
+
+	if (Options::oxceLinksDisableTextEdit)
+	{
+		_txtName->setVisible(false);
+	}
+	else
+	{
+		_txtNameStatic->setVisible(false);
+	}
 
 	_txtTus->setHighContrast(true);
 
@@ -294,7 +308,7 @@ InventoryState::InventoryState(bool tu, BattlescapeState *parent, Base *base, bo
 
 	_game->getMod()->getSurface("oxceLinksInv")->blitNShade(_btnLinks, 0, 0);
 	_btnLinks->initSurfaces();
-	_btnLinks->setVisible(Options::oxceLinks && !_tu);
+	_btnLinks->setVisible(Options::oxceLinks);
 
 	// only use copy/paste buttons in setup (i.e. non-tu) mode
 	if (_tu)
@@ -443,10 +457,13 @@ void InventoryState::init()
 		_txtPosition->setText(tr("STR_SLOT").arg(unitSlot).arg(totalSlots));
 	}
 
+	_txtNameStatic->setBig();
+	_txtNameStatic->setText(unit->getName(_game->getLanguage()));
+
 	_txtName->setBig();
 	_txtName->setText(unit->getName(_game->getLanguage()));
 
-	_btnLinks->setVisible(Options::oxceLinks && !_tu);
+	_btnLinks->setVisible(Options::oxceLinks);
 
 	bool resetGroundOffset = _tu;
 	if (unit->isSummonedPlayerUnit())
@@ -1295,6 +1312,10 @@ void InventoryState::btnLinksClick(Action *)
 	// don't accept clicks when moving items
 	if (_inv->getSelectedItem() != 0)
 	{
+		// but we can reuse this for ufopedia (as an M-click alternative)
+		std::string articleId = _inv->getSelectedItem()->getRules()->getUfopediaType();
+		Ufopaedia::openArticle(_game, articleId);
+
 		return;
 	}
 

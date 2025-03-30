@@ -19,3 +19,4 @@ zh-TW:
   SETUP_WARNING_UFO: "未在資料夾尋獲X-COM 1。${GAME_NAME}需要一份有效的X-COM才能執行。是否繼續？"
   SETUP_WARNING_TFTD: "未在資料夾尋獲X-COM 2。${GAME_NAME}需要一份有效的X-COM才能執行。是否繼續？"
   SETUP_WARNING_XCU: "偵測到XcomUtil。${GAME_NAME}與該軟體不相容，可能會產生問題。是否繼續？"
+  SETUP_ERROR_PORTABLE: "安裝文件夾不支援可攜式安裝。"

@@ -1,7 +1,7 @@
 es-419:
   SETUP_XCOM_FOLDER_TITLE: "Elija ubicación de X-COM "
   SETUP_XCOM_FOLDER_SUBTITLE: "Elija los archivos donde tienes X-COM instalado."
-  SETUP_XCOM_FOLDER: "${GAME_NAME} ${GAME_VERSION} requiere una copia de uno de los siguientes juegos de X-COM. Puede omitir este paso si va a actualizar una instalación existente. $ \n$ \nEl programa de instalación copiará los archivos necesarios de las siguientes carpetas. Para copiar desde una carpeta diferente, presione... y seleccione otra carpeta. Presione en Siguiente para continuar."
+  SETUP_XCOM_FOLDER: "${GAME_NAME} ${GAME_VERSION} requiere una copia de uno de los siguientes juegos de X-COM. Puede omitir este paso si va a actualizar una instalación existente. $\n$\nEl programa de instalación copiará los archivos necesarios de las siguientes carpetas. Para copiar desde una carpeta diferente, presione... y seleccione otra carpeta. Presione en Siguiente para continuar."
   SETUP_UFO_FOLDER: "UFO: Enemy Unknown / X-COM: UFO Defense"
   SETUP_TFTD_FOLDER: "X-COM: Terror From The Deep"
   SETUP_GAME: "Archivos del Juego"
@@ -21,3 +21,4 @@ es-419:
   SETUP_WARNING_UFO: "X-COM 1 no se encontró en la carpeta. ${GAME_NAME} requiere una instalación válida de X-COM para funcionar. Continuar?"
   SETUP_WARNING_TFTD: "X-COM 2 no se encontró en la carpeta. ${GAME_NAME} requiere una instalación válida de X-COM para funcionar. Continuar?"
   SETUP_WARNING_XCU: "XcomUtil detectado. ${GAME_NAME} es incompatible con XcomUtil y podría no funcionar correctamente. ¿Continuar?"
+  SETUP_ERROR_PORTABLE: "La carpeta de instalación no es portátil."

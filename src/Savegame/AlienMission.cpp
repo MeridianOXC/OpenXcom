@@ -344,6 +344,10 @@ void AlienMission::think(Game &engine, const Globe &globe)
 	if (_rule.getObjective() == OBJECTIVE_BASE && _nextWave == _rule.getWaveCount() && !wave.objectiveOnTheLandingSite)
 	{
 		RuleRegion *region = mod.getRegion(_region, true);
+		if (_rule.getSpawnZone() < 0 || _rule.getSpawnZone() >= region->getMissionZones().size())
+		{
+			throw Exception("Cannot spawn alien base, invalid spawn zone!");
+		}
 		std::vector<MissionArea> areas = region->getMissionZones().at(_rule.getSpawnZone()).areas;
 		std::pair<double, double> pos;
 		int tries = 0;

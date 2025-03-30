@@ -1651,21 +1651,20 @@ int BattleUnit::damage(Position relative, int damage, const RuleDamageType *type
 		&& !specialDamageTransform->getZombieUnit(this).empty()
 		&& getArmor()->getZombiImmune() == false)
 	{
-		if (attack.attacker)
+		specialDamageTransformChance = specialDamageTransform->getZombieUnitChance();
+
+		if (auto conf = attack.weapon_item ? attack.weapon_item->getActionConf(attack.type) : nullptr)
 		{
-			if (getOriginalFaction() == FACTION_HOSTILE && attack.attacker->getOriginalFaction() == FACTION_HOSTILE)
+			specialDamageTransformChance = useIntNullable(conf->ammoZombieUnitChanceOverride, specialDamageTransformChance);
+		}
+
+		if (getOriginalFaction() == FACTION_HOSTILE)
+		{
+			if (attack.attacker == nullptr || attack.attacker->getOriginalFaction() == FACTION_HOSTILE)
 			{
 				// (mind-controlled) chryssalid on snakeman action still not allowed
 				specialDamageTransformChance = 0;
 			}
-			else
-			{
-				specialDamageTransformChance = specialDamageTransform->getZombieUnitChance();
-			}
-		}
-		else
-		{
-			specialDamageTransformChance = getOriginalFaction() != FACTION_HOSTILE ? specialDamageTransform->getZombieUnitChance() : 0;
 		}
 	}
 	else
@@ -3979,7 +3978,7 @@ bool BattleUnit::postMissionProcedures(const Mod *mod, SavedGame *geoscape, Save
 		v = caps.strength - stats->strength;
 		if (v > 0) stats->strength += RNG::generate(0, v/10 + 2);
 		v = caps.stamina - stats->stamina;
-		if (v > 0) stats->stamina += RNG::generate(0, v/10 + 2);
+		if (v > 0) stats->stamina += RNG::generate(0, v/15 + 2);
 	}
 
 	statsDiff.statGrowth += *stats; // add new stat

@@ -226,6 +226,9 @@ en-US:
   name: "Name"
   shortName: "Short name"
   ammoSlot: "Ammo slot used"
+  ammoZombieUnitChanceOverride: "Zombification chance"
+  ammoSpawnUnitChanceOverride: "Unit spawn chance"
+  ammoSpawnItemChanceOverride: "Item spawn chance"
   arcing: "Arcing?"
 #
   clipSize: "Clip size"

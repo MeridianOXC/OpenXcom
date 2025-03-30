@@ -1159,25 +1159,31 @@ void Inventory::mouseClick(Action *action, State *state)
 							{
 								if (item->getFuseTimer() == -1)
 								{
-									// Prime that grenade!
-									if (fuseType == BFT_SET)
+									if (item->getRules()->getCostPrime().Time > 0)
 									{
-										_game->pushState(new PrimeGrenadeState(0, true, item));
-									}
-									else
-									{
-										_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getPrimeActionMessage()));
-										item->setFuseTimer(item->getRules()->getFuseTimerDefault());
-										arrangeGround();
-										playSound(item->getRules()->getPrimeSound()); // prime sound
+										// Prime that grenade!
+										if (fuseType == BFT_SET)
+										{
+											_game->pushState(new PrimeGrenadeState(0, true, item));
+										}
+										else
+										{
+											_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getPrimeActionMessage()));
+											item->setFuseTimer(item->getRules()->getFuseTimerDefault());
+											arrangeGround();
+											playSound(item->getRules()->getPrimeSound()); // prime sound
+										}
 									}
 								}
 								else
 								{
-									_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getUnprimeActionMessage()));
-									item->setFuseTimer(-1);  // Unprime the grenade
-									arrangeGround();
-									playSound(item->getRules()->getUnprimeSound()); // unprime sound
+									if (item->getRules()->getCostUnprime().Time > 0 /* && !item->getRules()->getUnprimeActionName().empty() */ )
+									{
+										_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getUnprimeActionMessage()));
+										item->setFuseTimer(-1);  // Unprime the grenade
+										arrangeGround();
+										playSound(item->getRules()->getUnprimeSound()); // unprime sound
+									}
 								}
 							}
 						}
@@ -1255,6 +1261,10 @@ bool Inventory::unload(bool quickUnload)
 			return false;
 		}
 		if (_selItem->getRules()->getFuseTimerType() == BFT_NONE)
+		{
+			return false;
+		}
+		if (_selItem->getRules()->getCostUnprime().Time == 0 /* || _selItem->getRules()->getUnprimeActionName().empty() */ )
 		{
 			return false;
 		}

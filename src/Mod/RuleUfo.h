@@ -76,6 +76,7 @@ private:
 	int _hunterKillerPercentage, _huntMode, _huntSpeed, _huntBehavior, _softlockThreshold;
 	int _missilePower;
 	bool _unmanned;
+	bool _instaHyper;
 	int _splashdownSurvivalChance;
 	int _fakeWaterLandingChance;
 	int _fireSound;
@@ -166,6 +167,8 @@ public:
 	int getMissilePower() const { return _missilePower; }
 	/// Is this an unmanned UFO (drone, missile, etc.)?
 	bool isUnmanned() const { return _unmanned; }
+	/// Show extra info during base defense even if the UFO was not yet hyper-detected classically?
+	bool isInstaHyper() const { return _instaHyper; }
 	/// Gets the chance of surviving a splashdown on fake water.
 	int getSplashdownSurvivalChance() const { return _splashdownSurvivalChance; }
 	/// Gets the chance for deciding to land on fake water texture.

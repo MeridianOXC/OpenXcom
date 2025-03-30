@@ -515,7 +515,7 @@ interfaces: #done
         color: 1
   - type: baseDefense
     backgroundImage: BACK04.SCR
-    palette: PAL_BASESCAPE
+#    palette: PAL_BASESCAPE
     elements:
       - id: palette
         color: 2     # red/orange
@@ -525,6 +525,18 @@ interfaces: #done
         color: 1   # blue
       - id: button
         color: 1   # blue
+  - type: baseDefense_geo
+    backgroundImage: BACK04.SCR
+    elements:
+      - id: palette
+        color: 2
+      - id: window
+        color: 1
+      - id: text
+        color: 1
+        color2: 239
+      - id: button
+        color: 1
   - type: terrorSite
     elements:
       - id: palette
@@ -1348,6 +1360,22 @@ interfaces: #done
       - id: button
         color: 1   # purple
   - type: globalResearchMenu
+    backgroundImage: BACK05.SCR
+    elements:
+      - id: palette
+        color: 0
+      - id: window
+        color: 1
+      - id: text
+        color: 1
+        color2: 239
+      - id: list
+        color: 239
+        color2: 1
+        border: 1
+      - id: button
+        color: 1
+  - type: globalResearchDiary
     backgroundImage: BACK05.SCR
     elements:
       - id: palette

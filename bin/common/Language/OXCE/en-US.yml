@@ -65,8 +65,16 @@ en-US:
   STR_NOT_ENOUGH_STORAGE_SPACE_2: "NOT ENOUGH STORAGE SPACE AVAILABLE!{SMALLLINE}The items take up too much space! Use a different module or reduce the size of assigned equipment."
 #DismantleFacilityState.cpp
   STR_REFUND_VALUE: "Sales value> {ALT}{0}"
+  STR_REFUND_VALUE_NEGATIVE: "Expenses> {ALT}{0}"
 #GlobalManufactureState.cpp
   STR_PRODUCTION_OVERVIEW: "PRODUCTION OVERVIEW"
+#GlobalResearchDiaryState.cpp
+  STR_RESEARCH_DIARY: "RESEARCH DIARY"
+  STR_DISCOVERY_SOURCE_BASE: "This item was discovered via a research project.{NEWLINE}Research base> {ALT}{1}{ALT}{NEWLINE}Item code> {ALT}{0}{ALT}"
+  STR_DISCOVERY_SOURCE_FREE_FROM: "This item was given for free from another research project.{NEWLINE}From research project> {ALT}{2}{ALT}{NEWLINE}{ALT}{1}{ALT} -> {ALT}{0}{ALT}"
+  STR_DISCOVERY_SOURCE_FREE_AFTER: "This technical item was discovered automatically.{NEWLINE}After research project> {ALT}{2}{ALT}{NEWLINE}{ALT}{1}{ALT} -> {ALT}{0}{ALT}"
+  STR_DISCOVERY_SOURCE_MISSION: "This item was given for free as a mission reward.{NEWLINE}Mission type> {ALT}{2}{ALT}{NEWLINE}{ALT}{1}{ALT} -> {ALT}{0}{ALT}"
+  STR_DISCOVERY_SOURCE_EVENT: "This item was given for free as an event reward.{NEWLINE}Event type> {ALT}{2}{ALT}{NEWLINE}{ALT}{1}{ALT} -> {ALT}{0}{ALT}"
 #GlobalResearchState.cpp
   STR_RESEARCH_OVERVIEW: "RESEARCH OVERVIEW"
 #GlobalAlienContainmentState.cpp

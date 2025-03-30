@@ -21,3 +21,4 @@ fi:
   SETUP_WARNING_UFO: "X-COM 1 ei löytynyt kansiosta. ${GAME_NAME} vaatii kelvollisen asennuksen X-COM:sta toimiakseen. Jatketaanko?"
   SETUP_WARNING_TFTD: "X-COM 2 ei löytynyt kansiosta. ${GAME_NAME} vaatii kelvollisen asennuksen X-COM:sta toimiakseen. Jatketaanko?"
   SETUP_WARNING_XCU: "XcomUtil havaittu. ${GAME_NAME} ei ole yhteensopiva XcomUtilin kanssa eikä välttämättä toimi oikein. Jatketaanko?"
+  SETUP_ERROR_PORTABLE: "Asennuskansio ei tue siirrettävää asennusta."
