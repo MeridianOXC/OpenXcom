@@ -2868,7 +2868,7 @@ bool AIModule::getNodeOfBestEfficacy(BattleAction *action, int radius)
 						if ((_unit->getFaction() == FACTION_HOSTILE && bu->getFaction() != FACTION_HOSTILE) ||
 							(_unit->getFaction() == FACTION_NEUTRAL && bu->getFaction() == FACTION_HOSTILE))
 						{
-							if (bu->getTurnsSinceSpotted() <= _intelligence)
+							if (bu->getTurnsSinceSpottedByFaction(_unit->getFaction()) <= _intelligence)
 							{
 								nodePoints++;
 							}
