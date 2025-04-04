@@ -48,6 +48,7 @@
 #include <c4/format.hpp>
 #include <c4/type_name.hpp>
 #include "../Engine/CrossPlatform.h"
+#include "../Engine/NullableValue.h"
 
 //hash function for ryml::csubstr for unordered_map -> just calls the same thing std::hash<std::string> does
 template <>
@@ -547,6 +548,30 @@ typename std::enable_if<std::is_enum<EnumType>::value, size_t>::type inline to_c
 	return ryml::itoa(buf, (int)v);
 }
 
+template<typename T>
+bool read(ryml::ConstNodeRef const& n, NullableValue<T>* val)
+{
+	if (n.is_val() == false) return false;
+
+	if (n.val_is_null())
+	{
+		val->setNull();
+		return true;
+	}
+	else
+	{
+		T v = {};
+		if (read(n, &v))
+		{
+			val->setValue(v);
+			return val->isValue(); // check for case when someone used reserved "null" value
+		}
+		else
+		{
+			return false;
+		}
+	}
+}
 
 } // namespace OpenXcom
 
