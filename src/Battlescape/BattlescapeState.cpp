@@ -3158,6 +3158,7 @@ void BattlescapeState::saveAIMap()
 						characterRGBA(img, r.x, r.y, (tilePos.z - z) ? 'c' : 'C', 255, 127, 127, 0xff);
 						break;
 					case FACTION_NONE:
+					case FACTION_MAX:
 						break;
 					}
 					break;
