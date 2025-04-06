@@ -174,6 +174,7 @@ set ( engine_src
   Engine/Surface.cpp
   Engine/SurfaceSet.cpp
   Engine/Timer.cpp
+  Engine/TouchState.cpp
   Engine/Unicode.cpp
   Engine/Yaml.cpp
   Engine/Zoom.cpp

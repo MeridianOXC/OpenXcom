@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "../Engine/State.h"
+#include "../Engine/TouchState.h"
 #include <vector>
 #include "SoldierSortUtil.h"
 
@@ -37,7 +37,7 @@ struct SortFunctor;
  * Select Armor screen that lets the player
  * pick armor for the soldiers on the craft.
  */
-class CraftArmorState : public State
+class CraftArmorState : public TouchState
 {
 private:
 	TextButton *_btnOk;

@@ -172,7 +172,9 @@ public:
 	/// Handler for clicking the Next Soldier button.
 	void btnNextSoldierClick(Action *action);
 	/// Handler for clicking the Next Stop button.
-	void btnNextStopClick(Action *action);
+	void btnNextStopLClick(Action *action);
+	void btnNextStopMClick(Action *action);
+	void btnNextStopRClick(Action *action);
 	/// Handler for clicking the Previous Soldier button.
 	void btnPrevSoldierClick(Action *action);
 	/// Handler for clicking the Show Layers button.

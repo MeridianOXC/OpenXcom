@@ -4291,6 +4291,10 @@ bool GeoscapeState::processCommand(RuleMissionScript *command)
 				RuleRegion *region = mod->getRegion((*regionNameIt), true);
 				if ((int)(region->getMissionZones().size()) > targetZoneNumber)
 				{
+					if (targetZoneNumber < 0)
+					{
+						throw Exception("Cannot spawn mission site, invalid spawn zone! Command: " + command->getType() + "; mission: " + missionRules->getType());
+					}
 					std::vector<MissionArea> areas = region->getMissionZones()[targetZoneNumber].areas;
 					int counter = 0;
 					for (const auto& area : areas)

@@ -1046,6 +1046,10 @@ interfaces:
         color: 246   # purple
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
   - type: dependencyTree
     backgroundImage: BACK13.SCR
     palette: PAL_BASESCAPE
@@ -1080,6 +1084,10 @@ interfaces:
         color: 246   # purple
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
       - id: errorPalette
         color: 0     # brown
       - id: errorMessage
@@ -1101,6 +1109,10 @@ interfaces:
         border: 218  # blue
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
       - id: errorPalette
         color: 6     # oxide
       - id: errorMessage
@@ -1155,6 +1167,10 @@ interfaces:
         color: 246   # purple
       - id: button
         color: 246   # purple
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
       - id: errorPalette
         color: 0     # brown
       - id: errorMessage
@@ -1287,6 +1303,10 @@ interfaces:
         color2: 213  # gold
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 213   # gold
+      - id: touchButton
+        color: 213   # gold
       - id: catBox
         color: 241   # pink
   - type: allocateManufacture
@@ -1386,6 +1406,10 @@ interfaces:
         color2: 213  # gold
       - id: button
         color: 246   # purple
+      - id: button2
+        color: 213   # gold
+      - id: touchButton
+        color: 213   # gold
   - type: allocateResearch
     backgroundImage: BACK05.SCR
     parent: researchMenu
@@ -1758,6 +1782,10 @@ interfaces:
         color2: 208  # white
       - id: button
         color: 241   # pink
+      - id: button2
+        color: 218   # blue
+      - id: touchButton
+        color: 218   # blue
       - id: list
         color: 218   # blue
         color2: 208  # white
@@ -1810,6 +1838,10 @@ interfaces:
         color: 218   # blue
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
       - id: list
         color: 218   # blue
         color2: 208  # white
@@ -1869,6 +1901,10 @@ interfaces:
         border: 246  # purple
       - id: button
         color: 218   # blue
+      - id: button2
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
       - id: otherCraft
         color: 246   # purple
   - type: craftPilots

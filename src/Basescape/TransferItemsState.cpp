@@ -76,6 +76,8 @@ TransferItemsState::TransferItemsState(Base *baseFrom, Base *baseTo, DebriefingS
 	_cbxCategory = new ComboBox(this, 120, 16, 10, 24);
 	_lstItems = new TextList(287, 128, 8, 44);
 
+	touchComponentsCreate(_txtTitle);
+
 	// Set palette
 	setInterface("transferMenu");
 
@@ -92,10 +94,14 @@ TransferItemsState::TransferItemsState(Base *baseFrom, Base *baseTo, DebriefingS
 	add(_lstItems, "list", "transferMenu");
 	add(_cbxCategory, "text", "transferMenu");
 
+	touchComponentsAdd("button2", "transferMenu", _window);
+
 	centerAllSurfaces();
 
 	// Set up objects
 	setWindowBackground(_window, "transferMenu");
+
+	touchComponentsConfigure();
 
 	_btnOk->setText(tr("STR_TRANSFER"));
 	_btnOk->onMouseClick((ActionHandler)&TransferItemsState::btnOkClick);
@@ -275,6 +281,16 @@ TransferItemsState::~TransferItemsState()
 {
 	delete _timerInc;
 	delete _timerDec;
+}
+
+/**
+ * Resets stuff when coming back from other screens.
+ */
+void TransferItemsState::init()
+{
+	State::init();
+
+	touchComponentsRefresh();
 }
 
 /**
@@ -678,7 +694,7 @@ void TransferItemsState::btnTransferAllClick(Action *)
 void TransferItemsState::lstItemsLeftArrowPress(Action *action)
 {
 	_sel = _lstItems->getSelectedRow();
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT && !_timerInc->isRunning()) _timerInc->start();
+	if (_game->isLeftClick(action, true) && !_timerInc->isRunning()) _timerInc->start();
 }
 
 /**
@@ -687,7 +703,7 @@ void TransferItemsState::lstItemsLeftArrowPress(Action *action)
  */
 void TransferItemsState::lstItemsLeftArrowRelease(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action, true))
 	{
 		_timerInc->stop();
 	}
@@ -700,10 +716,10 @@ void TransferItemsState::lstItemsLeftArrowRelease(Action *action)
  */
 void TransferItemsState::lstItemsLeftArrowClick(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT) increaseByValue(INT_MAX);
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isRightClick(action, true)) increaseByValue(INT_MAX);
+	if (_game->isLeftClick(action, true))
 	{
-		increaseByValue(1);
+		increaseByValue(_game->getScrollStep());
 		_timerInc->setInterval(250);
 		_timerDec->setInterval(250);
 	}
@@ -716,7 +732,7 @@ void TransferItemsState::lstItemsLeftArrowClick(Action *action)
 void TransferItemsState::lstItemsRightArrowPress(Action *action)
 {
 	_sel = _lstItems->getSelectedRow();
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT && !_timerDec->isRunning()) _timerDec->start();
+	if (_game->isLeftClick(action, true) && !_timerDec->isRunning()) _timerDec->start();
 }
 
 /**
@@ -725,7 +741,7 @@ void TransferItemsState::lstItemsRightArrowPress(Action *action)
  */
 void TransferItemsState::lstItemsRightArrowRelease(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action, true))
 	{
 		_timerDec->stop();
 	}
@@ -738,10 +754,10 @@ void TransferItemsState::lstItemsRightArrowRelease(Action *action)
  */
 void TransferItemsState::lstItemsRightArrowClick(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT) decreaseByValue(INT_MAX);
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isRightClick(action, true)) decreaseByValue(INT_MAX);
+	if (_game->isLeftClick(action, true))
 	{
-		decreaseByValue(1);
+		decreaseByValue(_game->getScrollStep());
 		_timerInc->setInterval(250);
 		_timerDec->setInterval(250);
 	}
@@ -777,7 +793,7 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 				decreaseByValue(Options::changeValueByMouseWheel);
 		}
 	}
-	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	else if (_game->isRightClick(action, true))
 	{
 		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
 			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
@@ -793,7 +809,7 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 			}
 		}
 	}
-	else if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
+	else if (_game->isMiddleClick(action, true))
 	{
 		if (getRow().type == TRANSFER_ITEM)
 		{
@@ -801,7 +817,7 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 			if (rule != 0)
 			{
 				std::string articleId = rule->getUfopediaType();
-				if (_game->isCtrlPressed())
+				if (_game->isCtrlPressed(true))
 				{
 					Ufopaedia::openArticle(_game, articleId);
 				}
@@ -821,7 +837,7 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 			if (rule != 0)
 			{
 				std::string articleId = rule->getRules()->getType();
-				if (_game->isCtrlPressed())
+				if (_game->isCtrlPressed(true))
 				{
 					Ufopaedia::openArticle(_game, articleId);
 				}
@@ -841,7 +857,7 @@ void TransferItemsState::increase()
 {
 	_timerDec->setInterval(50);
 	_timerInc->setInterval(50);
-	increaseByValue(1);
+	increaseByValue(_game->getScrollStep());
 }
 
 /**
@@ -965,7 +981,7 @@ void TransferItemsState::decrease()
 {
 	_timerInc->setInterval(50);
 	_timerDec->setInterval(50);
-	decreaseByValue(1);
+	decreaseByValue(_game->getScrollStep());
 }
 
 /**
@@ -1071,13 +1087,13 @@ void TransferItemsState::cbxCategoryChange(Action *)
 {
 	_previousSort = _currentSort;
 
-	if (_game->isCtrlPressed())
+	if (_game->isCtrlPressed(true))
 	{
-		_currentSort = _game->isShiftPressed() ? TransferSortDirection::BY_UNIT_SIZE : TransferSortDirection::BY_TOTAL_SIZE;
+		_currentSort = _game->isShiftPressed(true) ? TransferSortDirection::BY_UNIT_SIZE : TransferSortDirection::BY_TOTAL_SIZE;
 	}
-	else if (_game->isAltPressed())
+	else if (_game->isAltPressed(true))
 	{
-		_currentSort = _game->isShiftPressed() ? TransferSortDirection::BY_UNIT_COST : TransferSortDirection::BY_TOTAL_COST;
+		_currentSort = _game->isShiftPressed(true) ? TransferSortDirection::BY_UNIT_COST : TransferSortDirection::BY_TOTAL_COST;
 	}
 	else
 	{

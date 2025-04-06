@@ -321,6 +321,17 @@ en-GB:
 #TurnDiaryState.cpp
   STR_HIT_LOG: "Hit Log"
 #=================== Engine ===================
+#TouchState.cpp
+  STR_BUTTON_TOUCH: "Touch"
+  STR_BUTTON_1: "1"
+  STR_BUTTON_10: "10"
+  STR_BUTTON_100: "100"
+  STR_BUTTON_LMB: "LMB"
+  STR_BUTTON_RMB: "RMB"
+  STR_BUTTON_MMB: "MMB"
+  STR_BUTTON_CTRL: "Ctrl"
+  STR_BUTTON_ALT: "Alt"
+  STR_BUTTON_SHIFT: "Shift"
 #Options.cpp
   STR_LAZY_LOADING: "Lazy loading"
   STR_LAZY_LOADING_DESC: "If enabled, graphic resources are loaded on-demand. Otherwise everything is loaded at start-up."

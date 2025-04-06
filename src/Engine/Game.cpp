@@ -56,7 +56,7 @@ const double Game::VOLUME_GRADIENT = 10.0;
  * @param title Title of the game window.
  */
 Game::Game(const std::string &title) : _screen(0), _cursor(0), _lang(0), _save(0), _mod(0), _quit(false), _init(false), _update(false),  _mouseActive(true), _timeUntilNextFrame(0),
-	_ctrl(false), _alt(false), _shift(false), _rmb(false), _mmb(false)
+	_ctrl(false), _alt(false), _shift(false), _rmb(false), _mmb(false), _scrollStep(1)
 {
 	Options::reload = false;
 	Options::mute = false;
@@ -1023,6 +1023,7 @@ void Game::resetTouchButtonFlags()
 	_shift = false;
 	_rmb = false;
 	_mmb = false;
+	_scrollStep = 1;
 }
 
 }

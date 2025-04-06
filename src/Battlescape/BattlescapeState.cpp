@@ -519,10 +519,20 @@ BattlescapeState::BattlescapeState() :
 	_btnNextSoldier->onMouseIn((ActionHandler)&BattlescapeState::txtTooltipIn);
 	_btnNextSoldier->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
 
-	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_LEFT);
-	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_RIGHT);
-	_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopClick, SDL_BUTTON_MIDDLE);
-	_btnNextStop->onKeyboardPress((ActionHandler)&BattlescapeState::btnNextStopClick, Options::keyBattleDeselectUnit);
+	if (Options::oxceSwapDontReselectActions)
+	{
+		_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopMClick, SDL_BUTTON_LEFT);
+		_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopRClick, SDL_BUTTON_RIGHT);
+		_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopLClick, SDL_BUTTON_MIDDLE);
+		_btnNextStop->onKeyboardPress((ActionHandler)&BattlescapeState::btnNextStopMClick, Options::keyBattleDeselectUnit);
+	}
+	else
+	{
+		_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopLClick, SDL_BUTTON_LEFT);
+		_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopRClick, SDL_BUTTON_RIGHT);
+		_btnNextStop->onMouseClick((ActionHandler)&BattlescapeState::btnNextStopMClick, SDL_BUTTON_MIDDLE);
+		_btnNextStop->onKeyboardPress((ActionHandler)&BattlescapeState::btnNextStopLClick, Options::keyBattleDeselectUnit);
+	}
 	_btnNextStop->setTooltip("STR_DESELECT_UNIT");
 	_btnNextStop->onMouseIn((ActionHandler)&BattlescapeState::txtTooltipIn);
 	_btnNextStop->onMouseOut((ActionHandler)&BattlescapeState::txtTooltipOut);
@@ -1489,42 +1499,55 @@ void BattlescapeState::btnNextSoldierClick(Action *action)
  * Disables reselection of the current soldier and selects the next soldier.
  * @param action Pointer to an action.
  */
-void BattlescapeState::btnNextStopClick(Action *action)
+void BattlescapeState::btnNextStopLClick(Action *)
 {
 	if (allowButtons())
 	{
-		if (_game->isLeftClick(action, true))
-		{
-			// vanilla: next by ID + don't reselect
-			_save->setUndoUnit(_save->getSelectedUnit());
-			selectNextPlayerUnit(true, true);
-			_map->refreshSelectorPosition();
-		}
-		else if (_game->isMiddleClick(action, true))
-		{
-			// OXCE: next by distance + don't reselect
-			_save->setUndoUnit(_save->getSelectedUnit());
-			selectNextPlayerUnit(true, true, false, true, true);
-			_map->refreshSelectorPosition();
-		}
-		else if (_game->isRightClick(action, true))
-		{
-			// OXCE: previous unit (last marked as don't reselect)
-			BattleUnit* candidate = _save->getUndoUnit();
-			if (candidate && candidate->isSelectable(_save->getSide(), false, false))
-			{
-				candidate->allowReselect();
-				_save->setSelectedUnit(candidate);
-				_save->setUndoUnit(nullptr);
+		// vanilla: next by ID + don't reselect
+		_save->setUndoUnit(_save->getSelectedUnit());
+		selectNextPlayerUnit(true, true);
+		_map->refreshSelectorPosition();
+	}
+}
 
-				updateSoldierInfo();
-				if (candidate && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(candidate->getPosition());
-				_battleGame->cancelAllActions();
-				_battleGame->getCurrentAction()->actor = candidate;
-				_battleGame->setupCursor();
+/**
+ * Disables reselection of the current soldier and selects the next soldier (by distance).
+ * @param action Pointer to an action.
+ */
+void BattlescapeState::btnNextStopMClick(Action *)
+{
+	if (allowButtons())
+	{
+		// OXCE: next by distance + don't reselect
+		_save->setUndoUnit(_save->getSelectedUnit());
+		selectNextPlayerUnit(true, true, false, true, true);
+		_map->refreshSelectorPosition();
+	}
+}
 
-				_map->refreshSelectorPosition();
-			}
+/**
+ * Selects the previous soldier (last marked as don't reselect).
+ * @param action Pointer to an action.
+ */
+void BattlescapeState::btnNextStopRClick(Action *)
+{
+	if (allowButtons())
+	{
+		// OXCE: previous unit (last marked as don't reselect)
+		BattleUnit* candidate = _save->getUndoUnit();
+		if (candidate && candidate->isSelectable(_save->getSide(), false, false))
+		{
+			candidate->allowReselect();
+			_save->setSelectedUnit(candidate);
+			_save->setUndoUnit(nullptr);
+
+			updateSoldierInfo();
+			if (candidate && !_game->isShiftPressed(true)) _map->getCamera()->centerOnPosition(candidate->getPosition());
+			_battleGame->cancelAllActions();
+			_battleGame->getCurrentAction()->actor = candidate;
+			_battleGame->setupCursor();
+
+			_map->refreshSelectorPosition();
 		}
 	}
 }

@@ -782,6 +782,23 @@ void InventoryState::btnArmorClick(Action *action)
 	// don't accept clicks when moving items
 	if (_inv->getSelectedItem() != 0)
 	{
+		// but we can reuse this for quickly dropping an item (as a Ctrl+L-click alternative)
+		if (Options::oxceInventoryDropItemOverPaperdoll)
+		{
+			if (_inv->quickDrop())
+			{
+				// hide selected item info
+				invMouseOut(action);
+
+				// refresh ui
+				_inv->arrangeGround();
+				updateStats();
+				refreshMouse();
+
+				// give audio feedback
+				_game->getMod()->getSoundByDepth(_battleGame->getDepth(), Mod::ITEM_DROP)->play();
+			}
+		}
 		return;
 	}
 
@@ -1247,7 +1264,18 @@ void InventoryState::btnQuickSearchApply(Action *)
  */
 void InventoryState::btnGroundClickForward(Action *action)
 {
-	if (_game->isShiftPressed())
+	bool scrollBackwards = _game->isShiftPressed();
+	if (Options::oxceInventorySplitScrollButton)
+	{
+		double mx = action->getAbsoluteXMouse();
+		if (mx <= _btnGround->getX() + (_btnGround->getWidth() / 2.0))
+		{
+			// clicked on the left half of the button
+			scrollBackwards = true;
+		}
+	}
+
+	if (scrollBackwards)
 	{
 		// scroll backwards
 		_inv->arrangeGround(-1);
