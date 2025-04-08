@@ -1901,8 +1901,9 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 		// 3  - coefficient of calculation (see getTrajectoryDataHelper).
 		// 20 - maximum view distance in vanilla Xcom.
 		// 100 - % for smokeDensityFactor.
+		// 16 - for voxel scale calculation.
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - (densityOfSmoke * smokeDensityFactor + densityOfFire * fireDensityFactor) * visibleDistanceMaxVoxel/(3 * 20 * 100 * 16);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
 		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), tile, visibleDistanceVoxels, visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
@@ -2079,8 +2080,9 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 		// 3  - coefficient of calculation (see getTrajectoryDataHelper).
 		// 20 - maximum view distance in vanilla Xcom.
 		// 100 - % for smokeDensityFactor.
+		// 16 - for voxel scale calculation.
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - (densityOfSmoke * smokeDensityFactor + densityOfFire * fireDensityFactor) * visibleDistanceMaxVoxel/(3 * 20 * 100 * 16);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
 		ModScript::VisibilityUnit::Worker worker{ currentUnit, /*targetUnit*/ nullptr, tile, visibleDistanceVoxels, visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
