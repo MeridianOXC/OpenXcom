@@ -551,7 +551,7 @@ typename std::enable_if<std::is_enum<EnumType>::value, size_t>::type inline to_c
 template<typename T>
 bool read(ryml::ConstNodeRef const& n, NullableValue<T>* val)
 {
-	if (n.is_val() == false) return false;
+	if (n.has_val() == false) return false;
 
 	if (n.val_is_null())
 	{
