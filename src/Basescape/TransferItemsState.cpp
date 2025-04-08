@@ -769,31 +769,8 @@ void TransferItemsState::lstItemsRightArrowClick(Action *action)
  */
 void TransferItemsState::lstItemsMousePress(Action *action)
 {
-
-}
-
-/**
- * Handles the mouse-wheels on the arrow-buttons.
- * @param action Pointer to an action.
- */
-void TransferItemsState::lstItemsMouseWheel(Action *action)
-{
 	_sel = _lstItems->getSelectedRow();
-	const SDL_Event &ev(*action->getDetails());
-	if (ev.type == SDL_MOUSEWHEEL)
-	{
-		_timerInc->stop();
-		_timerDec->stop();
-		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
-			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
-		{
-			if (ev.wheel.y > 0)
-				increaseByValue(Options::changeValueByMouseWheel);
-			else
-				decreaseByValue(Options::changeValueByMouseWheel);
-		}
-	}
-	else if (_game->isRightClick(action, true))
+	if (_game->isRightClick(action, true))
 	{
 		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
 			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
@@ -846,6 +823,29 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 					_game->pushState(new TechTreeViewerState(0, 0, 0, rule->getRules()));
 				}
 			}
+		}
+	}
+}
+
+/**
+ * Handles the mouse-wheels on the arrow-buttons.
+ * @param action Pointer to an action.
+ */
+void TransferItemsState::lstItemsMouseWheel(Action *action)
+{
+	_sel = _lstItems->getSelectedRow();
+	const SDL_Event &ev(*action->getDetails());
+	if (ev.type == SDL_MOUSEWHEEL)
+	{
+		_timerInc->stop();
+		_timerDec->stop();
+		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
+			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
+		{
+			if (ev.wheel.y > 0)
+				increaseByValue(Options::changeValueByMouseWheel);
+			else
+				decreaseByValue(Options::changeValueByMouseWheel);
 		}
 	}
 }
