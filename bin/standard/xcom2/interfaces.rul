@@ -985,6 +985,7 @@ interfaces: #done
       - id: list
         color: 1     # white
         color2: 1    # white
+        custom: 254
       - id: totals
         color: 1     # white
       - id: button

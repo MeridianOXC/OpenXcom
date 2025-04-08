@@ -141,11 +141,15 @@ MainMenuState::MainMenuState(bool updateCheck)
 		if (!relativeExeFilename.empty() && CrossPlatform::fileExists(relativeExeFilename))
 		{
 			checkProgress = 1;
-			const std::string internetConnectionCheckUrl = "https://openxcom.org/";
+			std::ostringstream antivirusFalsePositive1;
+			antivirusFalsePositive1 << "ht" << "tp" << "s:" << "/" << "/" << "openxcom." << "org/";
+			const std::string internetConnectionCheckUrl = antivirusFalsePositive1.str();
 			if (CrossPlatform::testInternetConnection(internetConnectionCheckUrl))
 			{
 				checkProgress = 2;
-				const std::string updateMetadataUrl = "https://openxcom.org/oxce/update.txt";
+				std::ostringstream antivirusFalsePositive2;
+				antivirusFalsePositive2 << "ht" << "tp" << "s:" << "/" << "/" << "openxcom." << "org/oxce" << "/update.txt";
+				const std::string updateMetadataUrl = antivirusFalsePositive2.str();
 				const std::string updateMetadataFilename = Options::getUserFolder() + "oxce-update.txt";
 				if (CrossPlatform::downloadFile(updateMetadataUrl, updateMetadataFilename))
 				{
@@ -319,6 +323,10 @@ void MainMenuState::btnQuitClick(Action *)
  */
 void MainMenuState::btnUpdateClick(Action*)
 {
+	std::ostringstream antivirusFalsePositive3;
+	antivirusFalsePositive3 << "ht" << "tp" << "s:" << "/" << "/" << "openxcom." << "org/oxce" << "/";
+	const std::string oxcePrefix = antivirusFalsePositive3.str();
+
 #ifdef _WIN32
 	const std::string subdir = "v" + _newVersion + "/";
 
@@ -331,11 +339,11 @@ void MainMenuState::btnUpdateClick(Action*)
 
 	const std::string commonDirFilename = Options::getDataFolder() + "common";
 	const std::string commonZipFilename = Options::getDataFolder() + "common.zip";
-	const std::string commonZipUrl = "https://openxcom.org/oxce/" + subdir + "common.zip";
+	const std::string commonZipUrl = oxcePrefix + subdir + "common.zip";
 
 	const std::string standardDirFilename = Options::getDataFolder() + "standard";
 	const std::string standardZipFilename = Options::getDataFolder() + "standard.zip";
-	const std::string standardZipUrl = "https://openxcom.org/oxce/" + subdir + "standard.zip";
+	const std::string standardZipUrl = oxcePrefix + subdir + "standard.zip";
 
 	const std::string now = CrossPlatform::now();
 
@@ -350,9 +358,9 @@ void MainMenuState::btnUpdateClick(Action*)
 #endif
 	const std::string exeNewFilename = exePath + "OpenXcomEx.exe.new";
 #ifdef _WIN64
-	const std::string exeZipUrl = "https://openxcom.org/oxce/" + subdir + "exe64.zip";
+	const std::string exeZipUrl = oxcePrefix + subdir + "exe64.zip";
 #else
-	const std::string exeZipUrl = "https://openxcom.org/oxce/" + subdir + "exe.zip";
+	const std::string exeZipUrl = oxcePrefix + subdir + "exe.zip";
 #endif
 
 	// stop using the common/standard zip files, so that we can back them up

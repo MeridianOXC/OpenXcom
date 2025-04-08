@@ -70,6 +70,7 @@ et:
   STR_MELEE_SHORT: "Lähivõitlus>{ALT}{0}"
   STR_HIT_LOG_NEW_BULLET: "=> "
   STR_HIT_LOG_NO_DAMAGE: "0"
+  STR_BUTTON_10: "10"
   STR_UFO_LANDING_ALERT: "UFO maandumise hoiatus"
   STR_UFO_LANDING_ALERT_DESC: "Kui aktiveeritud siis iga kord kui avastatud UFO maandub ilmub ekraanile kiri."
   STR_NO_WOUNDED: "-"

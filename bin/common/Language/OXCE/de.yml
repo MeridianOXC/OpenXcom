@@ -249,6 +249,7 @@ de:
   STR_HIT_LOG_BIG_DAMAGE: "TREFFER"
   STR_HIT_LOG_REACTION_FIRE: "Reaktionsfeuer..."
   STR_HIT_LOG: "Treffer-Log"
+  STR_BUTTON_10: "10"
   STR_LAZY_LOADING: "Träges Laden"
   STR_LAZY_LOADING_DESC: "Wenn aktiviert, werden Grafikressourcen bei Bedarf geladen. Ansonsten werden sie beim Starten geladen."
   STR_VSYNC_FOR_OPENGL: "VSync for OpenGL"

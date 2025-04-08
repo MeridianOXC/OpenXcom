@@ -226,6 +226,9 @@ cs:
   name: "Název"
   shortName: ""
   ammoSlot: ""
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Oblouková?"
 #
   clipSize: "Velikost zásobníku"

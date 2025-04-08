@@ -957,6 +957,7 @@ interfaces:
       - id: list
         color: 239   # bright green
         color2: 138  # yellow
+        custom: 254  # min=90, max=254
       - id: totals
         color: 133   # minty green
       - id: button

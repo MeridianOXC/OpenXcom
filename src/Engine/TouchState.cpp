@@ -30,14 +30,14 @@ namespace OpenXcom
 
 void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100, int horizontalOffset, int verticalOffset)
 {
+	// Reset touch flags
+	_game->resetTouchButtonFlags();
+
 	if (!Options::oxceBaseTouchButtons)
 		return;
 
 	_hideGroup100 = hideGroup100;
 	_txtTitlePtr = txtTitlePtr;
-
-	// Reset touch flags
-	_game->resetTouchButtonFlags();
 
 	_btnTouch = new TextButton(40, 16, horizontalOffset + 273, 7 + verticalOffset);
 

@@ -131,6 +131,24 @@ PauseState::PauseState(OptionsOrigin origin) : _origin(origin)
 		_btnSave->setVisible(false);
 		_btnAbandon->setText(tr("STR_SAVE_AND_ABANDON_GAME"));
 	}
+
+	// ENOUGH! No save corruption when trying to save/exit mid-action (e.g. during alien turn)
+	if (origin == OPT_BATTLESCAPE)
+	{
+		bool playerTurn = _game->getSavedGame()->getSavedBattle()->getSide() == FACTION_PLAYER;
+		bool debugMode = _game->getSavedGame()->getSavedBattle()->getDebugMode();
+		bool busy = !_game->getSavedGame()->getSavedBattle()->getBattleGame()->getStates().empty();
+
+		if ((!playerTurn && !debugMode) || busy)
+		{
+			_btnSave->setVisible(false); // non-ironman + ironman
+
+			if (_game->getSavedGame()->isIronman())
+			{
+				_btnAbandon->setVisible(false); // ironman only
+			}
+		}
+	}
 }
 
 /**

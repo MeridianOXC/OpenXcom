@@ -226,6 +226,9 @@ fr:
   name: ""
   shortName: ""
   ammoSlot: ""
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Courbe?"
 #
   clipSize: ""

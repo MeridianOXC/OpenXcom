@@ -250,6 +250,7 @@ pt-BR:
   STR_HIT_LOG_BIG_DAMAGE: "DANO"
   STR_HIT_LOG_REACTION_FIRE: "Fogo de reação..."
   STR_HIT_LOG: "Registro de Atingidos"
+  STR_BUTTON_10: "10"
   STR_LAZY_LOADING: "Carregamento Preguiçoso"
   STR_LAZY_LOADING_DESC: "Se habilitado, os recursos gráficos são carregados sob demanda. Caso contrário, tudo é carregado na inicialização."
   STR_VSYNC_FOR_OPENGL: "VSync para OpenGL"

@@ -226,6 +226,9 @@ ja:
   name: "名"
   shortName: "略称"
   ammoSlot: "弾薬スロット使用済"
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "アーク放電を使用するか"
 #
   clipSize: "装填数"

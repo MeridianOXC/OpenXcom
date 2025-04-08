@@ -241,6 +241,7 @@ cs:
   STR_HIT_LOG_BIG_DAMAGE: "ZÁSAH"
   STR_HIT_LOG_REACTION_FIRE: "Reakční střelba..."
   STR_HIT_LOG: "Záznam zásahů"
+  STR_BUTTON_10: "10"
   STR_LAZY_LOADING: "Líné nahrávání"
   STR_LAZY_LOADING_DESC: "Zdroje grafiky hry jsou nahrávány až tehdy, když jsou potřeba. Při vypnutí se vše nahraje při spuštění."
   STR_VSYNC_FOR_OPENGL: "VSync pro OpenGL"

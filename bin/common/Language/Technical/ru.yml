@@ -226,6 +226,9 @@ ru:
   name: "Наименование"
   shortName: "Краткое наименование"
   ammoSlot: "Используемый приемник боеприпасов"
+  ammoZombieUnitChanceOverride: "Вероятность зомбификации"
+  ammoSpawnUnitChanceOverride: "Вероятность генерации боевой единицы"
+  ammoSpawnItemChanceOverride: "Вероятность генерации предмета"
   arcing: "Навесная стрельба?"
 #
   clipSize: "Зарядов в магазине"
