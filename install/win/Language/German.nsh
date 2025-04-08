@@ -11,7 +11,7 @@ ${LangFileString} SETUP_PORTABLE_DESC "${GAME_NAME} speichert Benutzerdaten im I
 ${LangFileString} SETUP_DESKTOP "Verknüpfung auf dem Desktop"
 ${LangFileString} SETUP_DESKTOP_DESC "Erstellt eine ${GAME_NAME}-Verknüpfung auf dem Desktop."
 ${LangFileString} SETUP_UNDATA "X-COM Daten Löschen"
-${LangFileString} SETUP_UNDATA_DESC "Löscht alle $ {GAME_NAME} Installationsdaten, einschließlich X-COM-Ressourcen. Empfohlen für eine saubere Neuinstallation."
+${LangFileString} SETUP_UNDATA_DESC "Löscht alle ${GAME_NAME} Installationsdaten, einschließlich X-COM-Ressourcen. Empfohlen für eine saubere Neuinstallation."
 ${LangFileString} SETUP_UNUSER "Lösche Benutzerdaten"
 ${LangFileString} SETUP_UNUSER_DESC "Löscht alle ${GAME_NAME} Benutzerdaten, einschließlich mods, Savegames, Screenshots und Optionen."
 ${LangFileString} SETUP_SHORTCUT_CHANGELOG "Changelog"

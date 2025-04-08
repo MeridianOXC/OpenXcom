@@ -61,6 +61,8 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	_txtTitle = new Text(214, 16, 53, 38);
 	_lstResearch = new TextList(198, 88, 53, 54);
 
+	touchComponentsCreate(_txtTitle, true, -45, +30);
+
 	// Set palette
 	setInterface("selectNewResearch");
 
@@ -72,6 +74,8 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	add(_lstResearch, "list", "selectNewResearch");
 	add(_cbxSort, "button", "selectNewResearch");
 
+	touchComponentsAdd("button2", "selectNewResearch", _window);
+
 	_colorNormal = _lstResearch->getColor();
 	_colorNew = Options::oxceHighlightNewTopics ? _lstResearch->getSecondaryColor() : _colorNormal;
 	_colorHidden = _game->getMod()->getInterface("selectNewResearch")->getElement("listExtended")->color;
@@ -80,6 +84,8 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 
 	// Set up objects
 	setWindowBackground(_window, "selectNewResearch");
+
+	touchComponentsConfigure();
 
 	_btnOK->setText(tr("STR_OK"));
 	_btnOK->onMouseClick((ActionHandler)&NewResearchListState::btnOKClick);
@@ -118,9 +124,9 @@ NewResearchListState::NewResearchListState(Base *base, bool sortByCost) : _base(
 	_lstResearch->setBackground(_window);
 	_lstResearch->setMargin(8);
 	_lstResearch->setAlign(ALIGN_CENTER);
-	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onSelectProject, SDL_BUTTON_LEFT);
-	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onToggleProjectStatus, SDL_BUTTON_RIGHT);
-	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onOpenTechTreeViewer, SDL_BUTTON_MIDDLE);
+	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onClick, SDL_BUTTON_LEFT);
+	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onClick, SDL_BUTTON_RIGHT);
+	_lstResearch->onMouseClick((ActionHandler)&NewResearchListState::onClick, SDL_BUTTON_MIDDLE);
 
 	_btnQuickSearch->setText(""); // redraw
 	_btnQuickSearch->onEnter((ActionHandler)&NewResearchListState::btnQuickSearchApply);
@@ -136,6 +142,28 @@ void NewResearchListState::init()
 {
 	State::init();
 	fillProjectList(false);
+
+	touchComponentsRefresh();
+}
+
+/**
+ * LRM-click routing.
+ * @param action A pointer to an Action.
+ */
+void NewResearchListState::onClick(Action* action)
+{
+	if (_game->isLeftClick(action, true))
+	{
+		onSelectProject(action);
+	}
+	else if (_game->isRightClick(action, true))
+	{
+		onToggleProjectStatus(action);
+	}
+	else if (_game->isMiddleClick(action, true))
+	{
+		onOpenTechTreeViewer(action);
+	}
 }
 
 /**

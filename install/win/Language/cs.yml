@@ -21,4 +21,4 @@ cs:
   SETUP_WARNING_UFO: "X-COM 1 nebylo nalezeno v zadané složce. ${GAME_NAME} ke spuštění potřebuje úplnou instalaci X-COM. Pokračovat?"
   SETUP_WARNING_TFTD: "X-COM 2 nebylo nalezeno v zadané složce. ${GAME_NAME} ke spuštění potřebuje úplnou instalaci X-COM. Pokračovat?"
   SETUP_WARNING_XCU: "Detekováno rozšíření XcomUtil. ${GAME_NAME} je s XcomUtil nekompatibilní a nemusí pracovat správně. Pokračovat?"
-  SETUP_ERROR_PORTABLE: "Instační složka není přenositelná."
+  SETUP_ERROR_PORTABLE: "Instalační složka není přenositelná."

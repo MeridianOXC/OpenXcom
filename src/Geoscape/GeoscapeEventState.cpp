@@ -39,6 +39,7 @@
 #include "../Savegame/Base.h"
 #include "../Savegame/ItemContainer.h"
 #include "../Savegame/Region.h"
+#include "../Savegame/ResearchDiary.h"
 #include "../Savegame/SavedGame.h"
 #include "../Savegame/Soldier.h"
 #include "../Savegame/Transfer.h"
@@ -395,13 +396,31 @@ void GeoscapeEventState::eventLogic()
 		size_t pickResearch = RNG::generate(0, possibilities.size() - 1);
 		const RuleResearch *eventResearch = possibilities.at(pickResearch);
 
-		bool alreadyResearched = false;
 		std::string name = eventResearch->getLookup().empty() ? eventResearch->getName() : eventResearch->getLookup();
-		if (save->isResearched(name, false))
-		{
-			alreadyResearched = true; // we have seen the pedia article already, don't show it again
-		}
+		bool alreadyResearched = save->isResearched(name, false); // we have seen the pedia article already, don't show it again
 
+		auto addResearchDiaryEntryForEvent = [&](const RuleResearch* discoveredResearch, DiscoverySourceType sourceType, const RuleEvent* sourceEvent, const RuleResearch* sourceResearch)
+		{
+			if (!save->isResearched(discoveredResearch, false) && !save->isResearchRuleStatusDisabled(discoveredResearch->getName()))
+			{
+				ResearchDiaryEntry* entry = new ResearchDiaryEntry(discoveredResearch);
+				entry->setDate(save->getTime());
+				entry->source.type = sourceType;
+				if (sourceType == DiscoverySourceType::EVENT)
+				{
+					entry->source.event = sourceEvent;
+					entry->source.name = sourceEvent->getName();
+				}
+				else // sourceType == DiscoverySourceType::FREE_FROM
+				{
+					entry->source.research = sourceResearch;
+					entry->source.name = sourceResearch->getName();
+				}
+				save->addResearchDiaryEntry(entry);
+			}
+		};
+
+		addResearchDiaryEntryForEvent(eventResearch, DiscoverySourceType::EVENT, &rule, nullptr);
 		save->addFinishedResearch(eventResearch, mod, hq, true);
 		topicsToCheck.push_back(eventResearch);
 		_researchName = alreadyResearched ? "" : eventResearch->getName();
@@ -409,12 +428,14 @@ void GeoscapeEventState::eventLogic()
 		if (!eventResearch->getLookup().empty())
 		{
 			const RuleResearch *lookupResearch = mod->getResearch(eventResearch->getLookup(), true);
+			addResearchDiaryEntryForEvent(lookupResearch, DiscoverySourceType::EVENT, &rule, nullptr);
 			save->addFinishedResearch(lookupResearch, mod, hq, true);
 			_researchName = alreadyResearched ? "" : lookupResearch->getName();
 		}
 
 		if (auto* bonus = save->selectGetOneFree(eventResearch))
 		{
+			addResearchDiaryEntryForEvent(bonus, DiscoverySourceType::FREE_FROM, nullptr, eventResearch);
 			save->addFinishedResearch(bonus, mod, hq, true);
 			topicsToCheck.push_back(bonus);
 			_bonusResearchName = bonus->getName();
@@ -422,6 +443,7 @@ void GeoscapeEventState::eventLogic()
 			if (!bonus->getLookup().empty())
 			{
 				const RuleResearch *bonusLookup = mod->getResearch(bonus->getLookup(), true);
+				addResearchDiaryEntryForEvent(bonusLookup, DiscoverySourceType::FREE_FROM, nullptr, eventResearch);
 				save->addFinishedResearch(bonusLookup, mod, hq, true);
 				_bonusResearchName = bonusLookup->getName();
 			}

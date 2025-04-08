@@ -11,7 +11,7 @@ de:
   SETUP_DESKTOP: "Verknüpfung auf dem Desktop"
   SETUP_DESKTOP_DESC: "Erstellt eine ${GAME_NAME}-Verknüpfung auf dem Desktop."
   SETUP_UNDATA: "X-COM Daten Löschen"
-  SETUP_UNDATA_DESC: "Löscht alle $ {GAME_NAME} Installationsdaten, einschließlich X-COM-Ressourcen. Empfohlen für eine saubere Neuinstallation."
+  SETUP_UNDATA_DESC: "Löscht alle ${GAME_NAME} Installationsdaten, einschließlich X-COM-Ressourcen. Empfohlen für eine saubere Neuinstallation."
   SETUP_UNUSER: "Lösche Benutzerdaten"
   SETUP_UNUSER_DESC: "Löscht alle ${GAME_NAME} Benutzerdaten, einschließlich mods, Savegames, Screenshots und Optionen."
   SETUP_SHORTCUT_CHANGELOG: "Changelog"

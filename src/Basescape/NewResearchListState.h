@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "../Engine/State.h"
+#include "../Engine/TouchState.h"
 #include <vector>
 
 namespace OpenXcom
@@ -36,7 +36,7 @@ class ComboBox;
 /**
  * Window which displays possible research projects.
  */
-class NewResearchListState : public State
+class NewResearchListState : public TouchState
 {
 private:
 	Base *_base;
@@ -51,6 +51,7 @@ private:
 	size_t _lstScroll;
 	Uint8 _colorNormal, _colorNew, _colorHidden;
 	bool _isSortingEnabled;
+	void onClick(Action* action);
 	void onSelectProject(Action *action);
 	void onToggleProjectStatus(Action *action);
 	void onOpenTechTreeViewer(Action *action);

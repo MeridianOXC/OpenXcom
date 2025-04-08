@@ -1159,25 +1159,31 @@ void Inventory::mouseClick(Action *action, State *state)
 							{
 								if (item->getFuseTimer() == -1)
 								{
-									// Prime that grenade!
-									if (fuseType == BFT_SET)
+									if (item->getRules()->getCostPrime().Time > 0)
 									{
-										_game->pushState(new PrimeGrenadeState(0, true, item));
-									}
-									else
-									{
-										_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getPrimeActionMessage()));
-										item->setFuseTimer(item->getRules()->getFuseTimerDefault());
-										arrangeGround();
-										playSound(item->getRules()->getPrimeSound()); // prime sound
+										// Prime that grenade!
+										if (fuseType == BFT_SET)
+										{
+											_game->pushState(new PrimeGrenadeState(0, true, item));
+										}
+										else
+										{
+											_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getPrimeActionMessage()));
+											item->setFuseTimer(item->getRules()->getFuseTimerDefault());
+											arrangeGround();
+											playSound(item->getRules()->getPrimeSound()); // prime sound
+										}
 									}
 								}
 								else
 								{
-									_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getUnprimeActionMessage()));
-									item->setFuseTimer(-1);  // Unprime the grenade
-									arrangeGround();
-									playSound(item->getRules()->getUnprimeSound()); // unprime sound
+									if (item->getRules()->getCostUnprime().Time > 0 /* && !item->getRules()->getUnprimeActionName().empty() */ )
+									{
+										_warning->showMessage(_game->getLanguage()->getString(item->getRules()->getUnprimeActionMessage()));
+										item->setFuseTimer(-1);  // Unprime the grenade
+										arrangeGround();
+										playSound(item->getRules()->getUnprimeSound()); // unprime sound
+									}
 								}
 							}
 						}
@@ -1225,6 +1231,29 @@ void Inventory::mouseClick(Action *action, State *state)
 }
 
 /**
+ * Quickly drops the selected item on the ground.
+ * @return The success of the item being dropped.
+ */
+bool Inventory::quickDrop()
+{
+	if (_selUnit && _selItem)
+	{
+		if (!_tu || _selUnit->spendTimeUnits(_selItem->getMoveToCost(_inventorySlotGround)))
+		{
+			moveItem(_selItem, _inventorySlotGround, 0, 0);
+			setSelectedItem(0);
+			return true;
+		}
+		else
+		{
+			_warning->showMessage(_game->getLanguage()->getString("STR_NOT_ENOUGH_TIME_UNITS"));
+		}
+	}
+
+	return false;
+}
+
+/**
  * Unloads the selected weapon, placing the gun
  * on the right hand and the ammo on the left hand.
  * Or if only one hand is free, the gun is placed
@@ -1255,6 +1284,10 @@ bool Inventory::unload(bool quickUnload)
 			return false;
 		}
 		if (_selItem->getRules()->getFuseTimerType() == BFT_NONE)
+		{
+			return false;
+		}
+		if (_selItem->getRules()->getCostUnprime().Time == 0 /* || _selItem->getRules()->getUnprimeActionName().empty() */ )
 		{
 			return false;
 		}

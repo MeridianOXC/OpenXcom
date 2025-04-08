@@ -35,7 +35,7 @@ RuleUfo::RuleUfo(const std::string &type) :
 	_sprite(-1), _marker(-1), _markerLand(-1), _markerCrash(-1),
 	_power(0), _range(0), _score(0), _reload(0), _breakOffTime(0), _missionScore(1),
 	_hunterKillerPercentage(0), _huntMode(0), _huntSpeed(100), _huntBehavior(2), _softlockThreshold(100),
-	_missilePower(0), _unmanned(false),
+	_missilePower(0), _unmanned(false), _instaHyper(false),
 	_splashdownSurvivalChance(100), _fakeWaterLandingChance(0),
 	_fireSound(-1), _alertSound(-1), _huntAlertSound(-1), _hitSound(-1),
 	_battlescapeTerrainData(0), _stats(), _statsRaceBonus()
@@ -105,6 +105,7 @@ void RuleUfo::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &
 	reader.tryRead("softlockThreshold", _softlockThreshold);
 	reader.tryRead("missilePower", _missilePower);
 	reader.tryRead("unmanned", _unmanned);
+	reader.tryRead("instaHyper", _instaHyper);
 	reader.tryRead("splashdownSurvivalChance", _splashdownSurvivalChance);
 	reader.tryRead("fakeWaterLandingChance", _fakeWaterLandingChance);
 

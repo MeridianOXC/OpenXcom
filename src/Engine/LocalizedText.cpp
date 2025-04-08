@@ -60,8 +60,8 @@ LocalizedText &LocalizedText::arg(const std::string &val)
 		{
 			_text.replace(pos, marker.length(), val);
 		}
-		++_nextArg;
 	}
+	++_nextArg;
 	return *this;
 }
 

@@ -1,7 +1,7 @@
 zh-CN:
   SETUP_XCOM_FOLDER_TITLE: "选择X-COM的安装目录"
   SETUP_XCOM_FOLDER_SUBTITLE: "选择你已经安装好的X-COM所在目录"
-  SETUP_XCOM_FOLDER: "${GAME_NAME} ${GAME_VERSION} 需要任意一份如下X-COM游戏的副本。如果你是在升级，则可以跳过这一步。$%s$%s安装程序将会从以下目录复制文件，如果要从其他目录复制文件，点击“...”并选择目录。按“下一步”继续。"
+  SETUP_XCOM_FOLDER: "${GAME_NAME} ${GAME_VERSION} 需要任意一份如下X-COM游戏的副本。如果你是在升级，则可以跳过这一步。$\n$\n安装程序将会从以下目录复制文件，如果要从其他目录复制文件，点击“...”并选择目录。按“下一步”继续。"
   SETUP_UFO_FOLDER: "X-COM：飞碟防御"
   SETUP_TFTD_FOLDER: "X-COM：深海出击"
   SETUP_GAME: "游戏文件"
@@ -21,3 +21,4 @@ zh-CN:
   SETUP_WARNING_UFO: "没有找到原版X-COM1的位置。${GAME_NAME}需要一份有效的原版X-COM才能运行。继续吗？"
   SETUP_WARNING_TFTD: "没有找到原版X-COM2的位置。${GAME_NAME}需要一份有效的原版X-COM2才能运行。继续吗？"
   SETUP_WARNING_XCU: "检测到XcomUtil已经安装。${GAME_NAME}与它不兼容，可能会出现问题。继续吗？"
+  SETUP_ERROR_PORTABLE: "安装文件夹不支持移动安装。"

@@ -226,6 +226,9 @@ de:
   name: "Name"
   shortName: "Kurzbezeichnung"
   ammoSlot: "genutzte Munitionsplätze"
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Lichtbogenbildung?"
 #
   clipSize: "Magazingröße"

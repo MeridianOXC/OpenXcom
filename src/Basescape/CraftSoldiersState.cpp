@@ -83,6 +83,8 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 	_cbxSortBy = new ComboBox(this, 148, 16, 8, 176, true);
 	_lstSoldiers = new TextList(288, 128, 8, 40);
 
+	touchComponentsCreate(_txtTitle, true);
+
 	// Set palette
 	setInterface("craftSoldiers");
 
@@ -98,12 +100,16 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 	add(_lstSoldiers, "list", "craftSoldiers");
 	add(_cbxSortBy, "button", "craftSoldiers");
 
+	touchComponentsAdd("button2", "craftSoldiers", _window);
+
 	_otherCraftColor = _game->getMod()->getInterface("craftSoldiers")->getElement("otherCraft")->color;
 
 	centerAllSurfaces();
 
 	// Set up objects
 	setWindowBackground(_window, "craftSoldiers");
+
+	touchComponentsConfigure();
 
 	_btnOk->setText(tr("STR_OK"));
 	_btnOk->onMouseClick((ActionHandler)&CraftSoldiersState::btnOkClick);
@@ -116,7 +122,16 @@ CraftSoldiersState::CraftSoldiersState(Base *base, size_t craft)
 	_btnPreview->onMouseClick((ActionHandler)&CraftSoldiersState::btnPreviewClick);
 
 	_txtTitle->setBig();
-	_txtTitle->setText(tr("STR_SELECT_SQUAD_FOR_CRAFT").arg(c->getName(_game->getLanguage())));
+	if (Options::oxceBaseTouchButtons)
+	{
+		_txtTitle->setAlign(ALIGN_CENTER);
+		_txtTitle->setText(c->getName(_game->getLanguage()));
+	}
+	else
+	{
+		_txtTitle->setAlign(ALIGN_LEFT);
+		_txtTitle->setText(tr("STR_SELECT_SQUAD_FOR_CRAFT").arg(c->getName(_game->getLanguage())));
+	}
 
 	_txtName->setText(tr("STR_NAME_UC"));
 
@@ -212,7 +227,7 @@ CraftSoldiersState::~CraftSoldiersState()
  */
 void CraftSoldiersState::cbxSortByChange(Action *)
 {
-	bool ctrlPressed = _game->isCtrlPressed();
+	bool ctrlPressed = _game->isCtrlPressed(true);
 	size_t selIdx = _cbxSortBy->getSelected();
 	if (selIdx == (size_t)-1)
 	{
@@ -271,7 +286,7 @@ void CraftSoldiersState::cbxSortByChange(Action *)
 			{
 				std::stable_sort(_base->getSoldiers()->begin(), _base->getSoldiers()->end(), *compFunc);
 			}
-			if (_game->isShiftPressed())
+			if (_game->isShiftPressed(true))
 			{
 				std::reverse(_base->getSoldiers()->begin(), _base->getSoldiers()->end());
 			}
@@ -408,6 +423,8 @@ void CraftSoldiersState::init()
 		_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW_SAVED"));
 	else
 		_btnPreview->setText(tr("STR_CRAFT_DEPLOYMENT_PREVIEW"));
+
+	touchComponentsRefresh();
 }
 
 /**
@@ -419,11 +436,11 @@ void CraftSoldiersState::lstItemsLeftArrowClick(Action *action)
 	unsigned int row = _lstSoldiers->getSelectedRow();
 	if (row > 0)
 	{
-		if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+		if (_game->isLeftClick(action, true))
 		{
 			moveSoldierUp(action, row);
 		}
-		else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+		else if (_game->isRightClick(action, true))
 		{
 			moveSoldierUp(action, row, true);
 		}
@@ -474,11 +491,11 @@ void CraftSoldiersState::lstItemsRightArrowClick(Action *action)
 	size_t numSoldiers = _base->getSoldiers()->size();
 	if (0 < numSoldiers && INT_MAX >= numSoldiers && row < numSoldiers - 1)
 	{
-		if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+		if (_game->isLeftClick(action, true))
 		{
 			moveSoldierDown(action, row);
 		}
-		else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+		else if (_game->isRightClick(action, true))
 		{
 			moveSoldierDown(action, row, true);
 		}
@@ -544,7 +561,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 		return;
 	}
 	int row = _lstSoldiers->getSelectedRow();
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action, true))
 	{
 		Craft *c = _base->getCrafts()->at(_craft);
 		Soldier *s = _base->getSoldiers()->at(_lstSoldiers->getSelectedRow());
@@ -588,7 +605,7 @@ void CraftSoldiersState::lstSoldiersClick(Action *action)
 		_txtAvailable->setText(tr("STR_SPACE_AVAILABLE").arg(c->getSpaceAvailable()));
 		_txtUsed->setText(tr("STR_SPACE_USED").arg(c->getSpaceUsed()));
 	}
-	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	else if (_game->isRightClick(action, true))
 	{
 		_game->pushState(new SoldierInfoState(_base, row, false));
 	}

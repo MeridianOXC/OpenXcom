@@ -163,7 +163,7 @@ NextTurnState::NextTurnState(SavedBattleGame *battleGame, BattlescapeState *stat
 	_txtTitle->setBig();
 	_txtTitle->setAlign(ALIGN_CENTER);
 	_txtTitle->setHighContrast(true);
-	_txtTitle->setText(tr("STR_OPENXCOM"));
+	_txtTitle->setText(tr("STR_OPENXCOM").arg(Options::getActiveMasterInfo()->getVersionDisplay()));
 
 
 	_txtTurn->setBig();

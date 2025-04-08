@@ -37,6 +37,7 @@ class GlobalResearchState : public State
 {
 private:
 	TextButton *_btnOk;
+	TextButton *_btnDiary;
 	Window *_window;
 	Text *_txtTitle, *_txtAvailable, *_txtAllocated, *_txtSpace, *_txtProject, *_txtScientists, *_txtProgress;
 	TextList *_lstResearch;
@@ -49,6 +50,8 @@ public:
 	GlobalResearchState(bool openedFromBasescape);
 	/// Cleans up the GlobalResearchState.
 	~GlobalResearchState();
+	/// Handler for clicking the Diary button.
+	void btnDiaryClick(Action* action);
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
 	/// Handler for clicking the ResearchProject list.

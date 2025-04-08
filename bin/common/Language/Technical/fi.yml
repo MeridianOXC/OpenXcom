@@ -226,6 +226,9 @@ fi:
   name: "Nimi"
   shortName: "Lyhyt nimi"
   ammoSlot: "Käytetty ammuspaikka"
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Kaareva?"
 #
   clipSize: "Lipaskoko"

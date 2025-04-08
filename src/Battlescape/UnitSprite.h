@@ -57,6 +57,7 @@ private:
 	const Mod *_mod;
 	int _part, _animationFrame, _drawingRoutine;
 	bool _helmet;
+	int _red, _blue;
 	int _x, _y, _shade, _burn;
 	GraphSubset _mask;
 
@@ -108,7 +109,7 @@ private:
 	void blitBody(Part& body);
 public:
 	/// Creates a new UnitSprite at the specified position and size.
-	UnitSprite(Surface* dest, const Mod* mod, const SavedBattleGame* save, int frame, bool helmet);
+	UnitSprite(Surface* dest, const Mod* mod, const SavedBattleGame* save, int frame, bool helmet, int red, int blue);
 	/// Cleans up the UnitSprite.
 	~UnitSprite();
 	/// Draws the unit.

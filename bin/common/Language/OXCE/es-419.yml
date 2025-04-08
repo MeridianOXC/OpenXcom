@@ -146,6 +146,7 @@ es-419:
   STR_HIT_LOG_SMALL_DAMAGE: "impacto"
   STR_HIT_LOG_BIG_DAMAGE: "IMPACTO"
   STR_HIT_LOG_REACTION_FIRE: "Fuego de reacción..."
+  STR_BUTTON_10: "10"
   STR_UFO_LANDING_ALERT: "Alerta de aterrizaje OVNI"
   STR_UFO_LANDING_ALERT_DESC: "Al estar activado, un mensaje se mostrara cada vez que un OVNI detectado aterrize."
   STR_WOUNDED_DEFEND_BASE_IF: "Los heridos se defienden (si los HP son más de x%)"

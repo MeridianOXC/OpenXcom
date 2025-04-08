@@ -238,6 +238,7 @@ ja:
   STR_HIT_LOG_BIG_DAMAGE: "命中"
   STR_HIT_LOG_REACTION_FIRE: "反応射撃・・"
   STR_HIT_LOG: "命中率の記録"
+  STR_BUTTON_10: "10"
   STR_LAZY_LOADING: "非一括ロード"
   STR_LAZY_LOADING_DESC: "オンにするとグラフィック関連のデータを必要な時に、オフの時は起動時に全てをロードします。"
   STR_VSYNC_FOR_OPENGL: "OpenGLでVSync"

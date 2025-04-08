@@ -291,7 +291,8 @@ DebriefingState::DebriefingState() :
 	_lstSoldierStats->setDot(true);
 
 	// Third page
-	_lstRecoveredItems->setColumns(2, 254, 18);
+	int firstColumnWidth = Clamp(_game->getMod()->getInterface("debriefing")->getElement("list")->custom, 90, 254);
+	_lstRecoveredItems->setColumns(2, firstColumnWidth, 18);
 	_lstRecoveredItems->setAlign(ALIGN_LEFT);
 	_lstRecoveredItems->setDot(true);
 }
@@ -2131,7 +2132,7 @@ void DebriefingState::prepareDebriefing()
 	{
 		// Unlock research defined in alien deployment, if the mission was a success
 		const RuleResearch *research = _game->getMod()->getResearch(ruleDeploy->getUnlockedResearchOnSuccess());
-		save->handleResearchUnlockedByMissions(research, _game->getMod());
+		save->handleResearchUnlockedByMissions(research, _game->getMod(), ruleDeploy);
 
 		// Give bounty item defined in alien deployment, if the mission was a success
 		const RuleItem *bountyItem = _game->getMod()->getItem(ruleDeploy->getMissionBountyItem());
@@ -2163,7 +2164,7 @@ void DebriefingState::prepareDebriefing()
 	{
 		// Unlock research defined in alien deployment, if the mission was a failure
 		const RuleResearch* research = _game->getMod()->getResearch(ruleDeploy->getUnlockedResearchOnFailure());
-		save->handleResearchUnlockedByMissions(research, _game->getMod());
+		save->handleResearchUnlockedByMissions(research, _game->getMod(), ruleDeploy);
 
 		// Increase counters
 		save->increaseCustomCounter(ruleDeploy->getCounterFailure());

@@ -21,3 +21,4 @@ et:
   SETUP_WARNING_UFO: "X-COM 1 puudub kataloogist. ${GAME_NAME} vajab töötamiseks originaal X-COMi. Jätka?"
   SETUP_WARNING_TFTD: "X-COM 2 puudub kataloogist. ${GAME_NAME} vajab töötamiseks originaal X-COMi. Jätka?"
   SETUP_WARNING_XCU: "XcomUtil leitud. ${GAME_NAME} ei ühildu XcomUtiliga ning ei pruugi korrektselt töödata. Jätka?"
+  SETUP_ERROR_PORTABLE: "Installikaust ei toeta kaasaskantavat installimist."

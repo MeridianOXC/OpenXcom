@@ -107,6 +107,8 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	_cbxCategory = new ComboBox(this, 120, 16, 10, 36);
 	_lstItems = new TextList(287, 120, 8, 54);
 
+	touchComponentsCreate(_txtTitle);
+
 	// Set palette
 	setInterface("buyMenu");
 
@@ -125,10 +127,14 @@ PurchaseState::PurchaseState(Base *base, CannotReequipState *parent) : _base(bas
 	add(_lstItems, "list", "buyMenu");
 	add(_cbxCategory, "text", "buyMenu");
 
+	touchComponentsAdd("button2", "buyMenu", _window);
+
 	centerAllSurfaces();
 
 	// Set up objects
 	setWindowBackground(_window, "buyMenu");
+
+	touchComponentsConfigure();
 
 	_btnOk->setText(tr("STR_OK"));
 	_btnOk->onMouseClick((ActionHandler)&PurchaseState::btnOkClick);
@@ -375,6 +381,16 @@ PurchaseState::~PurchaseState()
 {
 	delete _timerInc;
 	delete _timerDec;
+}
+
+/**
+ * Resets stuff when coming back from other screens.
+ */
+void PurchaseState::init()
+{
+	State::init();
+
+	touchComponentsRefresh();
 }
 
 /**
@@ -867,7 +883,7 @@ void PurchaseState::btnCancelClick(Action *)
 void PurchaseState::lstItemsLeftArrowPress(Action *action)
 {
 	_sel = _lstItems->getSelectedRow();
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT && !_timerInc->isRunning()) _timerInc->start();
+	if (_game->isLeftClick(action, true) && !_timerInc->isRunning()) _timerInc->start();
 }
 
 /**
@@ -876,7 +892,7 @@ void PurchaseState::lstItemsLeftArrowPress(Action *action)
  */
 void PurchaseState::lstItemsLeftArrowRelease(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action, true))
 	{
 		_timerInc->stop();
 	}
@@ -889,10 +905,10 @@ void PurchaseState::lstItemsLeftArrowRelease(Action *action)
  */
 void PurchaseState::lstItemsLeftArrowClick(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT) increaseByValue(INT_MAX);
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isRightClick(action, true)) increaseByValue(INT_MAX);
+	if (_game->isLeftClick(action, true))
 	{
-		increaseByValue(1);
+		increaseByValue(_game->getScrollStep());
 		_timerInc->setInterval(250);
 		_timerDec->setInterval(250);
 	}
@@ -905,7 +921,7 @@ void PurchaseState::lstItemsLeftArrowClick(Action *action)
 void PurchaseState::lstItemsRightArrowPress(Action *action)
 {
 	_sel = _lstItems->getSelectedRow();
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT && !_timerDec->isRunning()) _timerDec->start();
+	if (_game->isLeftClick(action, true) && !_timerDec->isRunning()) _timerDec->start();
 }
 
 /**
@@ -914,7 +930,7 @@ void PurchaseState::lstItemsRightArrowPress(Action *action)
  */
 void PurchaseState::lstItemsRightArrowRelease(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isLeftClick(action, true))
 	{
 		_timerDec->stop();
 	}
@@ -927,10 +943,10 @@ void PurchaseState::lstItemsRightArrowRelease(Action *action)
  */
 void PurchaseState::lstItemsRightArrowClick(Action *action)
 {
-	if (action->getDetails()->button.button == SDL_BUTTON_RIGHT) decreaseByValue(INT_MAX);
-	if (action->getDetails()->button.button == SDL_BUTTON_LEFT)
+	if (_game->isRightClick(action, true)) decreaseByValue(INT_MAX);
+	if (_game->isLeftClick(action, true))
 	{
-		decreaseByValue(1);
+		decreaseByValue(_game->getScrollStep());
 		_timerInc->setInterval(250);
 		_timerDec->setInterval(250);
 	}
@@ -943,7 +959,7 @@ void PurchaseState::lstItemsRightArrowClick(Action *action)
 void PurchaseState::lstItemsMousePress(Action *action)
 {
 	_sel = _lstItems->getSelectedRow();
-	if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
+	if (_game->isMiddleClick(action, true))
 	{
 		if (getRow().type == TRANSFER_ITEM)
 		{
@@ -964,7 +980,7 @@ void PurchaseState::lstItemsMousePress(Action *action)
 			}
 		}
 	}
-	else if (action->getDetails()->button.button == SDL_BUTTON_RIGHT)
+	else if (_game->isRightClick(action, true))
 	{
 		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
 			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
@@ -1041,7 +1057,7 @@ void PurchaseState::increase()
 {
 	_timerDec->setInterval(50);
 	_timerInc->setInterval(50);
-	increaseByValue(1);
+	increaseByValue(_game->getScrollStep());
 }
 
 /**
@@ -1219,7 +1235,7 @@ void PurchaseState::decrease()
 {
 	_timerInc->setInterval(50);
 	_timerDec->setInterval(50);
-	decreaseByValue(1);
+	decreaseByValue(_game->getScrollStep());
 }
 
 /**

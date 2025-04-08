@@ -64,6 +64,8 @@ NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _sho
 	_cbxFilter = new ComboBox(this, 146, 16, 10, 46);
 	_cbxCategory = new ComboBox(this, 146, 16, 166, 46);
 
+	touchComponentsCreate(_txtTitle, true, -1, +22);
+
 	// Set palette
 	setInterface("selectNewManufacture");
 
@@ -78,6 +80,8 @@ NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _sho
 	add(_cbxFilter, "catBox", "selectNewManufacture");
 	add(_cbxCategory, "catBox", "selectNewManufacture");
 
+	touchComponentsAdd("button2", "selectNewManufacture", _window);
+
 	_colorNormal = _lstManufacture->getColor();
 	_colorNew = Options::oxceHighlightNewTopics ? _lstManufacture->getSecondaryColor() : _colorNormal;
 	_colorHidden = _game->getMod()->getInterface("selectNewManufacture")->getElement("listExtended")->color;
@@ -85,7 +89,10 @@ NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _sho
 
 	centerAllSurfaces();
 
+	// Set up objects
 	setWindowBackground(_window, "selectNewManufacture");
+
+	touchComponentsConfigure();
 
 	_txtTitle->setText(tr("STR_PRODUCTION_ITEMS"));
 	_txtTitle->setBig();
@@ -99,9 +106,9 @@ NewManufactureListState::NewManufactureListState(Base *base) : _base(base), _sho
 	_lstManufacture->setSelectable(true);
 	_lstManufacture->setBackground(_window);
 	_lstManufacture->setMargin(2);
-	_lstManufacture->onMouseClick((ActionHandler)&NewManufactureListState::lstProdClickLeft, SDL_BUTTON_LEFT);
-	_lstManufacture->onMouseClick((ActionHandler)&NewManufactureListState::lstProdClickRight, SDL_BUTTON_RIGHT);
-	_lstManufacture->onMouseClick((ActionHandler)&NewManufactureListState::lstProdClickMiddle, SDL_BUTTON_MIDDLE);
+	_lstManufacture->onMouseClick((ActionHandler)&NewManufactureListState::lstProdClick, SDL_BUTTON_LEFT);
+	_lstManufacture->onMouseClick((ActionHandler)&NewManufactureListState::lstProdClick, SDL_BUTTON_RIGHT);
+	_lstManufacture->onMouseClick((ActionHandler)&NewManufactureListState::lstProdClick, SDL_BUTTON_MIDDLE);
 
 	_btnOk->setText(tr("STR_OK"));
 	_btnOk->onMouseClick((ActionHandler)&NewManufactureListState::btnOkClick);
@@ -147,6 +154,8 @@ void NewManufactureListState::init()
 	}
 	_doInit = true;
 	_refreshCategories = true;
+
+	touchComponentsRefresh();
 }
 
 /**
@@ -156,6 +165,26 @@ void NewManufactureListState::init()
 void NewManufactureListState::btnOkClick(Action *)
 {
 	_game->popState();
+}
+
+/**
+ * LRM-click routing.
+ * @param action A pointer to an Action.
+ */
+void NewManufactureListState::lstProdClick(Action* action)
+{
+	if (_game->isLeftClick(action, true))
+	{
+		lstProdClickLeft(action);
+	}
+	else if (_game->isRightClick(action, true))
+	{
+		lstProdClickRight(action);
+	}
+	else if (_game->isMiddleClick(action, true))
+	{
+		lstProdClickMiddle(action);
+	}
 }
 
 /**
@@ -255,7 +284,7 @@ void NewManufactureListState::lstProdClickMiddle(Action *)
 	_doInit = false;
 
 	std::string articleId = _displayedStrings[_lstManufacture->getSelectedRow()];
-	if (_game->isCtrlPressed())
+	if (_game->isCtrlPressed(true))
 	{
 		Ufopaedia::openArticle(_game, articleId);
 	}

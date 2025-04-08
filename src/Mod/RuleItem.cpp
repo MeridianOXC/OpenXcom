@@ -282,6 +282,9 @@ void RuleItem::loadConfAction(RuleItemAction& a, const YAML::YamlNodeReader& rea
 		conf.tryRead("name", a.name);
 		conf.tryRead("shortName", a.shortName);
 		loadAmmoSlotChecked(a.ammoSlot, conf["ammoSlot"], _name);
+		loadIntNullable(a.ammoZombieUnitChanceOverride, conf["ammoZombieUnitChanceOverride"]);
+		loadIntNullable(a.ammoSpawnUnitChanceOverride, conf["ammoSpawnUnitChanceOverride"]);
+		loadIntNullable(a.ammoSpawnItemChanceOverride, conf["ammoSpawnItemChanceOverride"]);
 		conf.tryRead("arcing", a.arcing);
 	}
 }

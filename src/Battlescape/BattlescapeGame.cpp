@@ -2212,7 +2212,13 @@ void BattlescapeGame::spawnNewUnit(BattleActionAttack attack, Position position)
 	if (!type)
 		return;
 
-	if (!RNG::percent(item->getSpawnUnitChance()))
+	int chance = item->getSpawnUnitChance();
+	if (auto* conf = attack.weapon_item ? attack.weapon_item->getActionConf(attack.type) : nullptr)
+	{
+		chance = useIntNullable(conf->ammoSpawnUnitChanceOverride, chance);
+	}
+
+	if (!RNG::percent(chance))
 	{
 		return;
 	}
@@ -2330,7 +2336,13 @@ void BattlescapeGame::spawnNewItem(BattleActionAttack attack, Position position)
 	if (!type)
 		return;
 
-	if (!RNG::percent(item->getSpawnItemChance()))
+	int chance = item->getSpawnItemChance();
+	if (auto* conf = attack.weapon_item ? attack.weapon_item->getActionConf(attack.type) : nullptr)
+	{
+		chance = useIntNullable(conf->ammoSpawnItemChanceOverride, chance);
+	}
+
+	if (!RNG::percent(chance))
 	{
 		return;
 	}

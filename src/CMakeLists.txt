@@ -22,6 +22,7 @@ set ( basescape_src
   Basescape/DismantleFacilityState.cpp
   Basescape/GlobalAlienContainmentState.cpp
   Basescape/GlobalManufactureState.cpp
+  Basescape/GlobalResearchDiaryState.cpp
   Basescape/GlobalResearchState.cpp
   Basescape/ManageAlienContainmentState.cpp
   Basescape/ManufactureDependenciesTreeState.cpp
@@ -173,6 +174,7 @@ set ( engine_src
   Engine/Surface.cpp
   Engine/SurfaceSet.cpp
   Engine/Timer.cpp
+  Engine/TouchState.cpp
   Engine/Unicode.cpp
   Engine/Yaml.cpp
   Engine/Zoom.cpp

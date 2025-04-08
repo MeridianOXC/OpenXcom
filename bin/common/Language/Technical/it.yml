@@ -5,7 +5,7 @@ it:
   STR_BAD_NODES_DESC: "Controlla i file RMP per i nodi al di fuori dei limiti della mappa.{NEWLINE}Questi NON causeranno arresti anomali, ma saranno ignorati dal gioco, quindi non funzioneranno come previsto."
 #
   STR_MCD_CHECK: "Controllo MCD"
-  STR_MCD_CHECK_DESC: "Controlla i files MCD per oggetti a terra con zero costo di movimento, controlla anche riferimenti DieMCD/AltMCD invalidi."
+  STR_MCD_CHECK_DESC: "Controlla file MCD per oggetti a terra senza costo di movimento; controlla anche riferimenti invalidi DieMCD/AltMCD; controlla anche LOFTemps invalidi."
 #
   STR_PALETTE_CHECK: "Concordanza Palette"
   STR_PALETTE_CHECK_DESC: "Cerca di abbinare palette di immagini modificate alle tavolozze ufficiali e riporta le immagini che non hanno una corrispondenza del 100%."
@@ -35,7 +35,7 @@ it:
   BT_NONE: "Nessuno"
   BT_FIREARM: "Armi"
   BT_AMMO: "Munizioni"
-  BT_MELEE: "Armi bianche"
+  BT_MELEE: "Armi mischia"
   BT_GRENADE: "Granate"
   BT_PROXIMITYGRENADE: "Granate di prossimità"
   BT_MEDIKIT: "Kit Medici"
@@ -226,6 +226,9 @@ it:
   name: "Nome"
   shortName: "Nome breve"
   ammoSlot: "Slot munizione usato"
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Archi?"
 #
   clipSize: "Dim. caricatore"
@@ -293,7 +296,7 @@ it:
   DRAWING_ROUTINE_CYBERDISC: "Cyberdisco"
   DRAWING_ROUTINE_CIVILIAN_ETHEREAL: "Civile, Etereo"
   DRAWING_ROUTINE_SECTOPOD_REAPER: "Sectopode, Mietitore"
-  DRAWING_ROUTINE_SNAKEMAN: "Vipera"
+  DRAWING_ROUTINE_SNAKEMAN: "Uomo-Serpente"
   DRAWING_ROUTINE_CHRYSSALID: "Crisalide"
   DRAWING_ROUTINE_SILACOID: "Silacoide"
   DRAWING_ROUTINE_CELATID: "Celatide"

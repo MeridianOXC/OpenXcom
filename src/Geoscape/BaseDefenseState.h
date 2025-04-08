@@ -42,6 +42,7 @@ private:
 	TextButton *_btnOk;
 	TextButton *_btnStart, *_btnAbort;
 	Window *_window;
+	InteractiveSurface *_preview;
 	Text *_txtTitle, *_txtInit;
 	TextList *_lstDefenses;
 	Base *_base;

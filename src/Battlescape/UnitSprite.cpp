@@ -38,7 +38,7 @@ namespace OpenXcom
  * @param x X position in pixels.
  * @param y Y position in pixels.
  */
-UnitSprite::UnitSprite(Surface* dest, const Mod* mod, const SavedBattleGame* save, int frame, bool helmet) :
+UnitSprite::UnitSprite(Surface* dest, const Mod* mod, const SavedBattleGame* save, int frame, bool helmet, int red, int blue) :
 	_unit(0), _itemR(0), _itemL(0),
 	_unitSurface(0),
 	_itemSurface(const_cast<Mod*>(mod)->getSurfaceSet("HANDOB.PCK")),
@@ -48,6 +48,7 @@ UnitSprite::UnitSprite(Surface* dest, const Mod* mod, const SavedBattleGame* sav
 	_dest(dest), _save(save), _mod(mod),
 	_part(0), _animationFrame(frame), _drawingRoutine(0),
 	_helmet(helmet),
+	_red(red), _blue(blue),
 	_x(0), _y(0), _shade(0), _burn(0),
 	_mask(0, 0)
 {
@@ -264,7 +265,14 @@ void UnitSprite::draw(const BattleUnit* unit, int part, int x, int y, int shade,
 	{
 		// draw unit facing indicator
 		auto* tmpSurface = _facingArrowSurface->getFrame(7 + ((unit->getDirection() + 1) % 8));
-		tmpSurface->blitNShade(_dest, _x, _y, 0);
+		if (unit->getOriginalFaction() == FACTION_PLAYER)
+		{
+			tmpSurface->blitNShade(_dest, _x, _y, 0);
+		}
+		else
+		{
+			Surface::blitRaw(_dest, tmpSurface, _x, _y, 0, false, unit->getOriginalFaction() == FACTION_HOSTILE ? _blue : _red);
+		}
 	}
 }
 

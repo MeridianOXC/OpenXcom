@@ -226,6 +226,9 @@ ko:
   name: "이름"
   shortName: "약칭"
   ammoSlot: "사용된 탄약 슬롯"
+  ammoZombieUnitChanceOverride: "좀비화 확률"
+  ammoSpawnUnitChanceOverride: "유니트 발생 확률"
+  ammoSpawnItemChanceOverride: "물품 발생 확률"
   arcing: "곡사 무기인가?"
 #
   clipSize: "탄창 크기"

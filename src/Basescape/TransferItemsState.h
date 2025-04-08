@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "../Engine/State.h"
+#include "../Engine/TouchState.h"
 #include "../Savegame/Transfer.h"
 #include <vector>
 #include <string>
@@ -40,7 +40,7 @@ class RuleItem;
  * Transfer screen that lets the player pick
  * what items to transfer between bases.
  */
-class TransferItemsState : public State
+class TransferItemsState : public TouchState
 {
 private:
 	Base *_baseFrom, *_baseTo;
@@ -77,6 +77,8 @@ public:
 	TransferItemsState(Base *baseFrom, Base *baseTo, DebriefingState *debriefingState);
 	/// Cleans up the Transfer Items state.
 	~TransferItemsState();
+	/// Resets state.
+	void init() override;
 	/// Runs the timers.
 	void think() override;
 	/// Updates the item list.

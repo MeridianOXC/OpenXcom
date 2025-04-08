@@ -515,7 +515,7 @@ interfaces: #done
         color: 1
   - type: baseDefense
     backgroundImage: BACK04.SCR
-    palette: PAL_BASESCAPE
+#    palette: PAL_BASESCAPE
     elements:
       - id: palette
         color: 2     # red/orange
@@ -525,6 +525,18 @@ interfaces: #done
         color: 1   # blue
       - id: button
         color: 1   # blue
+  - type: baseDefense_geo
+    backgroundImage: BACK04.SCR
+    elements:
+      - id: palette
+        color: 2
+      - id: window
+        color: 1
+      - id: text
+        color: 1
+        color2: 239
+      - id: button
+        color: 1
   - type: terrorSite
     elements:
       - id: palette
@@ -973,6 +985,7 @@ interfaces: #done
       - id: list
         color: 1     # white
         color2: 1    # white
+        custom: 254
       - id: totals
         color: 1     # white
       - id: button
@@ -1064,6 +1077,10 @@ interfaces: #done
         color: 1
       - id: button
         color: 1
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
   - type: dependencyTree
     backgroundImage: BACK13.SCR
     palette: PAL_GEOSCAPE
@@ -1099,6 +1116,10 @@ interfaces: #done
         color: 1  # white
       - id: button
         color: 1   # blue
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
       - id: errorPalette
         color: 6     # brown
       - id: errorMessage
@@ -1119,6 +1140,10 @@ interfaces: #done
         border: 1  # blue
       - id: button
         color: 1   # blue
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
       - id: errorPalette
         color: 6     # oxide
       - id: errorMessage
@@ -1172,6 +1197,10 @@ interfaces: #done
         color: 239   # purple
       - id: button
         color: 1   # purple
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
       - id: errorPalette
         color: 6     # brown
       - id: errorMessage
@@ -1300,6 +1329,10 @@ interfaces: #done
         color2: 244
       - id: button
         color: 1   # blue
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
       - id: catBox
         color: 1   # pink
   - type: allocateManufacture
@@ -1363,6 +1396,22 @@ interfaces: #done
         border: 1
       - id: button
         color: 1
+  - type: globalResearchDiary
+    backgroundImage: BACK05.SCR
+    elements:
+      - id: palette
+        color: 0
+      - id: window
+        color: 1
+      - id: text
+        color: 1
+        color2: 239
+      - id: list
+        color: 239
+        color2: 1
+        border: 1
+      - id: button
+        color: 1
   - type: selectNewResearch
     backgroundImage: BACK05.SCR
     parent: researchMenu
@@ -1380,6 +1429,10 @@ interfaces: #done
         color2: 244
       - id: button
         color: 1   # purple
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
   - type: allocateResearch
     backgroundImage: BACK05.SCR
     parent: researchMenu
@@ -1748,6 +1801,10 @@ interfaces: #done
         color2: 244
       - id: button
         color: 1
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
       - id: list
         color: 244
         color2: 239
@@ -1799,6 +1856,10 @@ interfaces: #done
         color: 1     # blue
       - id: button
         color: 1     # blue
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
       - id: list
         color: 1     # white
         color2: 239  # blue
@@ -1859,6 +1920,10 @@ interfaces: #done
         border: 1
       - id: button
         color: 1
+      - id: button2
+        color: 244
+      - id: touchButton
+        color: 244
   - type: craftPilots
     backgroundImage: BACK02.SCR
     elements:

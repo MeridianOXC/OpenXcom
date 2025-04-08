@@ -239,6 +239,7 @@ fi:
   STR_HIT_LOG_BIG_DAMAGE: "OSUMA"
   STR_HIT_LOG_REACTION_FIRE: "Reaktiotuli..."
   STR_HIT_LOG: "Osumaloki"
+  STR_BUTTON_10: "10"
   STR_LAZY_LOADING: "Laiska lataaminen"
   STR_LAZY_LOADING_DESC: "Päälle kytkettynä grafiikkaresurssit ladataan tarvittaessa. Muutoin kaikki ladataan käynnistyksen yhteydessä."
   STR_VSYNC_FOR_OPENGL: "OpenGL-pystytahdistus (VSync)"

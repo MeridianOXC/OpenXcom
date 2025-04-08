@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "../Engine/State.h"
+#include "../Engine/TouchState.h"
 #include <vector>
 #include "SoldierSortUtil.h"
 
@@ -38,7 +38,7 @@ class Timer;
  * Select Squad screen that lets the player
  * pick the soldiers to assign to a craft.
  */
-class CraftSoldiersState : public State
+class CraftSoldiersState : public TouchState
 {
 private:
 	TextButton *_btnOk;

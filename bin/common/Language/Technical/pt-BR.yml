@@ -226,6 +226,9 @@ pt-BR:
   name: "Nome"
   shortName: "Nome curto"
   ammoSlot: "Compartimento de munição usado"
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Tiro arqueado?"
 #
   clipSize: "Tamanho do carregador"

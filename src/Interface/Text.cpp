@@ -336,9 +336,9 @@ void Text::processText()
 			// Add line measurements for alignment later
 			_lineWidth.push_back(width);
 			_lineHeight.push_back(font->getCharSize('\n').h);
+			start = true;
 			width = 0;
 			word = 0;
-			start = true;
 
 			if (c == str.size())
 				break;
@@ -354,9 +354,9 @@ void Text::processText()
 				textIndentation++;
 			}
 			space = c;
+			start = start && (word == 0); // consider initial spaces still as start of line until first character is met
 			width += font->getCharSize(str[c]).w;
 			word = 0;
-			start = false;
 		}
 		// Keep track of the width of the last line and word
 		else if (str[c] != Unicode::TOK_COLOR_FLIP)

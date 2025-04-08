@@ -26,7 +26,7 @@
 ;Defines
 
 	!define GAME_NAME "OpenXcom Extended"
-	!define GAME_VERSION "8.1.0"
+	!define GAME_VERSION "8.2.0"
 	!define GAME_AUTHOR "OpenXcom Developers"
 	!include "version.nsh"
 
@@ -596,6 +596,6 @@ SectionEnd
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${GAME_NAME} Installer"
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${GAME_VERSION}.0"
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "${GAME_AUTHOR}"
-	VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2010-2021 ${GAME_AUTHOR}"
+	VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2010-2025 ${GAME_AUTHOR}"
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${GAME_NAME} Installer"
 	VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${GAME_VERSION}.0"

@@ -5,7 +5,7 @@ uk:
   STR_BAD_NODES_DESC: "Перевіряє файли RMP на наявність вузлів за межами карти.{NEWLINE}Вони НЕ спричинять збоїв, але їх ігноруватиме гра, тому вони не працюватимуть належним чином."
 #
   STR_MCD_CHECK: "Перевірки MCD"
-  STR_MCD_CHECK_DESC: "Перевіряє файли MCD для об’єктів ландшафту з нульовою вартістю переміщення; також перевіряє наявність недійсних посилань DieMCD/AltMCD."
+  STR_MCD_CHECK_DESC: "Перевіряє MCD-файли на наявність об'єктів поверху з нульовою вартістю переміщення; також перевіряє на наявність недійсних посилань DieMCD/AltMCD; також перевіряє на наявність недійсних LOFTemps."
 #
   STR_PALETTE_CHECK: "Відповідність палітри"
   STR_PALETTE_CHECK_DESC: "Намагається зіставити палітри модифікованих зображень з офіційними палітрами та повідомляє про будь-які зображення, які не мають 100% відповідності."
@@ -118,7 +118,7 @@ uk:
   landOnly: "Тільки наземне?"
   psiRequired: "Необхідний PSI-навик?"
   targetMatrix: "Цілі предмета"
-  convertToCivilian: ""
+  convertToCivilian: "Перевестися в цивільні?"
   manaRequired: "Необхідна мана?"
   LOSRequired: "Необхідна видимість?"
 #
@@ -226,6 +226,9 @@ uk:
   name: "Ім'я"
   shortName: "Коротке найменування"
   ammoSlot: "Використовується слот для боєприпасів"
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Освітлювач?"
 #
   clipSize: "Розмір магазину"
@@ -353,8 +356,8 @@ uk:
   rearArmor: "Тилова броня"
   underArmor: "Нижня броня"
 #
-  sizeX: ""
-  sizeY: ""
+  sizeX: "Розмір X"
+  sizeY: "Розмір Y"
   buildCost: "Вартість будівництва"
   buildCostItems: "Будівельні матеріали:"
   buildTime: "Час побудови"
@@ -408,12 +411,12 @@ uk:
 #
   costRent: "Вартість оренди"
   soldiers: "Вантажний простір"
-  maxUnitsLimit: ""
+  maxUnitsLimit: "Максимальний вантажний об'єм"
   pilots: "Розмір кабіни"
   vehicles: "Потужність транспортних засобів"
-  onlyOneSoldierGroupAllowed: ""
-  allowedSoldierGroups: ""
-  maxHWPUnitsLimit: ""
+  onlyOneSoldierGroupAllowed: "Допускається лише одна група солдатів?"
+  allowedSoldierGroups: "Дозволені групи солдатів"
+  maxHWPUnitsLimit: "Максимальна вмістимість транспортних засобів"
   maxSmallSoldiers: "Максимум легкої пехоти"
   maxLargeSoldiers: "Максимум важкої пехоти"
   maxSmallVehicles: "Максимум легкої техніки"

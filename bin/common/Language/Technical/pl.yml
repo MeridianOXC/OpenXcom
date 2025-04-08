@@ -226,6 +226,9 @@ pl:
   name: "Nazwa"
   shortName: "Krótka nazwa"
   ammoSlot: "Użyte miejsce na amunicję"
+  ammoZombieUnitChanceOverride: "Szansa na zombifikację"
+  ammoSpawnUnitChanceOverride: "Szansa na utworzenie jednostki"
+  ammoSpawnItemChanceOverride: "Szansa na utworzenie przedmiotu"
   arcing: "Trajektoria artyleryjska?"
 #
   clipSize: "Rozmiar magazynka"

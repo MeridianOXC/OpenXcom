@@ -365,6 +365,7 @@
     <ClCompile Include="Basescape\DismantleFacilityState.cpp" />
     <ClCompile Include="Basescape\GlobalAlienContainmentState.cpp" />
     <ClCompile Include="Basescape\GlobalManufactureState.cpp" />
+    <ClCompile Include="Basescape\GlobalResearchDiaryState.cpp" />
     <ClCompile Include="Basescape\GlobalResearchState.cpp" />
     <ClCompile Include="Basescape\ManageAlienContainmentState.cpp" />
     <ClCompile Include="Basescape\ManufactureDependenciesTreeState.cpp" />
@@ -512,6 +513,7 @@
     <ClCompile Include="Engine\Surface.cpp" />
     <ClCompile Include="Engine\SurfaceSet.cpp" />
     <ClCompile Include="Engine\Timer.cpp" />
+    <ClCompile Include="Engine\TouchState.cpp" />
     <ClCompile Include="Engine\Unicode.cpp" />
     <ClCompile Include="Engine\Yaml.cpp" />
     <ClCompile Include="Engine\Zoom.cpp" />
@@ -839,6 +841,7 @@
     <ClInclude Include="Basescape\DismantleFacilityState.h" />
     <ClInclude Include="Basescape\GlobalAlienContainmentState.h" />
     <ClInclude Include="Basescape\GlobalManufactureState.h" />
+    <ClInclude Include="Basescape\GlobalResearchDiaryState.h" />
     <ClInclude Include="Basescape\GlobalResearchState.h" />
     <ClInclude Include="Basescape\ManufactureDependenciesTreeState.h" />
     <ClInclude Include="Basescape\NewManufactureListState.h" />
@@ -997,6 +1000,7 @@
     <ClInclude Include="Engine\Surface.h" />
     <ClInclude Include="Engine\SurfaceSet.h" />
     <ClInclude Include="Engine\Timer.h" />
+    <ClInclude Include="Engine\TouchState.h" />
     <ClInclude Include="Engine\Unicode.h" />
     <ClInclude Include="Engine\Yaml.h" />
     <ClInclude Include="Engine\Zoom.h" />
@@ -1190,6 +1194,7 @@
     <ClInclude Include="Savegame\Production.h" />
     <ClInclude Include="Savegame\RankCount.h" />
     <ClInclude Include="Savegame\Region.h" />
+    <ClInclude Include="Savegame\ResearchDiary.h" />
     <ClInclude Include="Savegame\ResearchProject.h" />
     <ClInclude Include="Savegame\SaveConverter.h" />
     <ClInclude Include="Savegame\SavedBattleGame.h" />

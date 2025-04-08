@@ -226,6 +226,9 @@ es-419:
   name: ""
   shortName: ""
   ammoSlot: ""
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: ""
 #
   clipSize: ""

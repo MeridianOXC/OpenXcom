@@ -165,6 +165,7 @@ hu:
   STR_HIT_LOG_BIG_DAMAGE: "TALÁLAT"
   STR_HIT_LOG_REACTION_FIRE: "Reakció lövés..."
   STR_HIT_LOG: "Találati Napló"
+  STR_BUTTON_10: "10"
   STR_LAZY_LOADING: "Lusta betöltés"
   STR_LAZY_LOADING_DESC: "Ha engedélyezve van, a grafikus erőforrásokat csak szükség esetén töltjük be. Máskülönben minden betölt induláskor."
   STR_UPDATE_CHECK: "Frissitések automatikus ellenőrzése"

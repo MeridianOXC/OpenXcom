@@ -21,3 +21,4 @@ da:
   SETUP_WARNING_UFO: "X-COM 1 blev ikke fundet i mappen. ${GAME_NAME} kræver en gyldig installation af X-COM for at blive afviklet. Fortsæt?"
   SETUP_WARNING_TFTD: "X-COM 2 blev ikke fundet i mappen. ${GAME_NAME} kræver en gyldig installation af X-COM for at blive afviklet. Fortsæt?"
   SETUP_WARNING_XCU: "XcomUtil detekteret. ${GAME_NAME} er ikke kompatibel med XcomUtil og fungerer måske ikke korrekt. Ønsker du at fortsætte?"
+  SETUP_ERROR_PORTABLE: "Installationsmappen understøtter ikke flytbar installation."

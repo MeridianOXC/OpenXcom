@@ -226,6 +226,9 @@ hu:
   name: "Név"
   shortName: ""
   ammoSlot: "Lőszertárhely"
+  ammoZombieUnitChanceOverride: ""
+  ammoSpawnUnitChanceOverride: ""
+  ammoSpawnItemChanceOverride: ""
   arcing: "Ívelt?"
 #
   clipSize: "Tár mérete"
