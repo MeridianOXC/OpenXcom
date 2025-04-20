@@ -371,10 +371,22 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	int zDist = abs(origin.z - target->z);
 	int xyShift, zShift;
 
-	if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
-		xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
+	if (Options::oxceUniformShootingSpread) // Uniform shooting spread
+	{
+		if (xDist <= yDist)
+			xyShift = xDist / 4 + yDist;
+		else
+			xyShift = xDist + yDist / 4;
+
+		xyShift *= 0.839; // Constant to match average xyShift to vanilla
+	}
 	else
-		xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
+	{
+		if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
+			xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
+		else
+			xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
+	}
 
 	if (xyShift <= zDist)				//slight z deviation
 		zShift = xyShift / 2 + zDist;
@@ -417,8 +429,53 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	deviation = std::max(1, zShift * deviation / 200);	//range ratio
 
-	target->x += RNG::generate(0, deviation) - deviation / 2;
-	target->y += RNG::generate(0, deviation) - deviation / 2;
+	if (Options::oxceUniformShootingSpread)
+	{
+		// First, new target point is rolled as usual. Then, if it lies outside of outer circle (in square's corner)
+		// it's rerolled inside inner circle
+
+		const double OVERALL_SPREAD_COEFF = 1.0; // Overall spread diameter change compared to vanilla
+		const double INNER_SPREAD_COEFF = 0.85; // Inner spread circle diameter compared to outer
+
+		double targetDist2D = sqrt(xDist * xDist + yDist * yDist);
+		bool resultShifted = false;
+		int dX, dY;
+
+		for (int i = 0; i < 10; ++i) // Break from this cycle when proper target is found
+		{
+			dX = RNG::generate(0, deviation) - deviation / 2;
+			dY = RNG::generate(0, deviation) - deviation / 2;
+
+			double exprX = target->x + dX - origin.x;
+			double exprY = target->y + dY - origin.y;
+			double deviateDist2D = sqrt(exprX * exprX + exprY * exprY); // Distance from origin to deviation point
+
+			if (resultShifted &&                  // point is on inner ring and should be a "miss"
+				deviateDist2D > targetDist2D-2 &&
+				deviateDist2D < targetDist2D+2)
+				break;
+
+			if (!resultShifted) // This is the FIRST roll!
+			{
+				int radiusSq = dX*dX + dY*dY;
+				int deviateRadius = OVERALL_SPREAD_COEFF * deviation / 2;
+				int deviateRadiusSq = deviateRadius * deviateRadius;
+				if (radiusSq <= deviateRadiusSq) break;  // If we inside of outer circle - we're done!
+
+				resultShifted = true;
+				deviation *= INNER_SPREAD_COEFF; // Next attempts will be closer to target
+			}
+		}
+		target->x += dX;
+		target->y += dY;
+	}
+
+	else // Classic shooting spread
+	{
+		target->x += RNG::generate(0, deviation) - deviation / 2;
+		target->y += RNG::generate(0, deviation) - deviation / 2;
+	}
+
 	target->z += RNG::generate(0, deviation / 2) / 2 - deviation / 8;
 
 	if (extendLine)
