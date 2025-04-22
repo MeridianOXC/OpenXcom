@@ -38,13 +38,17 @@ private:
 	int64_t _minFunds, _maxFunds;
 	std::string _missionVarName, _missionMarkerName;
 	int _counterMin, _counterMax;
+
 	std::map<std::string, bool> _researchTriggers;
 	std::map<std::string, bool> _itemTriggers;
 	std::map<std::string, bool> _facilityTriggers;
 	std::map<std::string, bool> _soldierTypeTriggers;
 	std::map<std::string, bool> _xcomBaseInRegionTriggers;
 	std::map<std::string, bool> _xcomBaseInCountryTriggers;
+	std::map<std::string, bool> _pactCountryTriggers;
+
 	bool _affectsGameProgression;
+
 public:
 	/// Creates a blank RuleEventScript.
 	RuleEventScript(const std::string &type);
@@ -84,6 +88,7 @@ public:
 	int getCounterMin() const { return _counterMin; }
 	/// Gets the maximum number of missions generated for this command to run.
 	int getCounterMax() const { return _counterMax; }
+
 	/// Gets the research triggers that may apply to this command.
 	const std::map<std::string, bool> &getResearchTriggers() const { return _researchTriggers; }
 	/// Gets the item triggers that may apply to this command.
@@ -96,6 +101,9 @@ public:
 	const std::map<std::string, bool> &getXcomBaseInRegionTriggers() const { return _xcomBaseInRegionTriggers; }
 	/// Gets the xcom base triggers that may apply to this command.
 	const std::map<std::string, bool> &getXcomBaseInCountryTriggers() const { return _xcomBaseInCountryTriggers; }
+	/// Gets the country pact triggers that may apply to this command.
+	const std::map<std::string, bool> &getPactCountryTriggers() const { return _pactCountryTriggers; }
+
 	/// Gets a flag used for TechTreeViewer.
 	bool getAffectsGameProgression() const { return _affectsGameProgression; }
 	/// Generates an event based on the month.

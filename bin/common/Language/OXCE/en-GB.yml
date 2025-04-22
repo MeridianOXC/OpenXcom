@@ -407,6 +407,8 @@ en-GB:
   STR_AUTOMATICPROMOTIONS_DESC: "If enabled, soldiers are automatically promoted after a mission."
   STR_OFF_CENTRE_SHOOTING: "Off-centre shooting"
   STR_OFF_CENTRE_SHOOTING_DESC: "Soldiers will automatically try to adjust the firing angle slightly in case there is no line of fire."
+  STR_UNIFORM_SHOOTING_SPREAD: "Uniform shooting spread"
+  STR_UNIFORM_SHOOTING_SPREAD_DESC: "Spread is uniform in all directions and more tight. Overall chances to hit are the same."
   STR_CRASHED_OR_LANDED: "Crashed/Landed button"
   STR_CRASHED_OR_LANDED_DESC: "If enabled, an extra button is displayed on the New Battle screen. Alternatively, press F11 to show/hide the button. {ALT}0>{ALT}Disabled, {ALT}1>{ALT}Crashed, {ALT}2>{ALT}Landed."
 #===================

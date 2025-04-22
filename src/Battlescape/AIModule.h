@@ -34,6 +34,13 @@ class BattlescapeState;
 class Node;
 
 enum AIMode { AI_PATROL, AI_AMBUSH, AI_COMBAT, AI_ESCAPE };
+enum AIAttackWeight : int
+{
+	/// Base scale of attack weights
+	AIW_SCALE = 100,
+	AIW_IGNORED = 0,
+};
+
 /**
  * This class is used by the BattleUnit AI.
  */
@@ -131,8 +138,12 @@ public:
 	bool psiAction();
 	/// Performs a melee attack action.
 	void meleeAttack();
+
+	/// How much given unit is worth as target of attack.
+	AIAttackWeight getTargetAttackWeight(BattleUnit* target) const;
 	/// Checks to make sure a target is valid, given the parameters
 	bool validTarget(BattleUnit* target, bool assessDanger, bool includeCivs) const;
+
 	/// Checks the alien's TU reservation setting.
 	BattleActionType getReserveMode();
 	/// Assuming we have both a ranged and a melee weapon, we have to select one.

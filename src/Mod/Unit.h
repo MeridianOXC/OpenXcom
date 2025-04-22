@@ -42,9 +42,26 @@ enum MovementType : int;
 enum ForcedTorso : Uint8 { TORSO_USE_GENDER, TORSO_ALWAYS_MALE, TORSO_ALWAYS_FEMALE };
 enum UnitSide : Uint8 { SIDE_FRONT, SIDE_LEFT, SIDE_RIGHT, SIDE_REAR, SIDE_UNDER, SIDE_MAX };
 enum UnitStatus {STATUS_STANDING, STATUS_WALKING, STATUS_FLYING, STATUS_TURNING, STATUS_AIMING, STATUS_COLLAPSING, STATUS_DEAD, STATUS_UNCONSCIOUS, STATUS_PANICKING, STATUS_BERSERK, STATUS_IGNORE_ME};
-enum UnitFaction : int {FACTION_NONE = -1, FACTION_PLAYER = 0, FACTION_HOSTILE = 1, FACTION_NEUTRAL = 2};
+
+/**
+ * Faction naming "absolute":
+ *
+ * Xcom for FACTION_PLAYER.
+ * Aliens for FACTION_HOSTILE.
+ * Civilians for FACTION_NEUTRAL.
+ *
+ *
+ * Faction naming "relative":
+ *
+ * Hostile: between Aliens and Xcom, between Aliens and Civilians.
+ * Friendly: Xcom to Xcom, Aliens to Aliens, Civilians to Civilians.
+ * Neutral: between Xcom and Civilians.
+ * HostileCivilians: Special case for relation of Aliens to Civilians as it should be handled sometimes different than to Xcom.
+ */
+enum UnitFaction : int {FACTION_NONE = -1, FACTION_PLAYER = 0, FACTION_HOSTILE = 1, FACTION_NEUTRAL = 2, FACTION_MAX };
 enum UnitBodyPart : int {BODYPART_HEAD, BODYPART_TORSO, BODYPART_RIGHTARM, BODYPART_LEFTARM, BODYPART_RIGHTLEG, BODYPART_LEFTLEG, BODYPART_MAX};
 enum UnitBodyPartEx {BODYPART_LEGS = BODYPART_MAX, BODYPART_COLLAPSING, BODYPART_ITEM_RIGHTHAND, BODYPART_ITEM_LEFTHAND, BODYPART_ITEM_FLOOR, BODYPART_ITEM_INVENTORY, BODYPART_LARGE_TORSO, BODYPART_LARGE_PROPULSION = BODYPART_LARGE_TORSO + 4, BODYPART_LARGE_TURRET = BODYPART_LARGE_PROPULSION + 4};
+
 
 /**
  * This struct holds some plain unit attribute data together.

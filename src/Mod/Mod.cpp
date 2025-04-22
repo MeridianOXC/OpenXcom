@@ -428,6 +428,7 @@ Mod::Mod() :
 	_kneelBonusGlobal(115), _oneHandedPenaltyGlobal(80),
 	_enableCloseQuartersCombat(0), _closeQuartersAccuracyGlobal(100), _closeQuartersTuCostGlobal(12), _closeQuartersEnergyCostGlobal(8), _closeQuartersSneakUpGlobal(0),
 	_noLOSAccuracyPenaltyGlobal(-1),
+	_explodeInventoryGlobal(0),
 	_surrenderMode(0),
 	_bughuntMinTurn(999), _bughuntMaxEnemies(2), _bughuntRank(0), _bughuntLowMorale(40), _bughuntTimeUnitsLeft(60),
 	_manaEnabled(false), _manaBattleUI(false), _manaTrainingPrimary(false), _manaTrainingSecondary(false), _manaReplenishAfterMission(true),
@@ -3183,6 +3184,12 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		nodeAI.tryRead("destroyBaseFacilities", _aiDestroyBaseFacilities);
 		nodeAI.tryRead("pickUpWeaponsMoreActively", _aiPickUpWeaponsMoreActively);
 		nodeAI.tryRead("pickUpWeaponsMoreActivelyCiv", _aiPickUpWeaponsMoreActivelyCiv);
+
+		nodeAI.tryRead("targetWeightThreatThreshold", _aiTargetWeightThreatThreshold);
+		nodeAI.tryRead("targetWeightAsHostile", _aiTargetWeightAsHostile);
+		nodeAI.tryRead("targetWeightAsHostileCivilians", _aiTargetWeightAsHostileCivilians);
+		nodeAI.tryRead("targetWeightAsFriendly", _aiTargetWeightAsFriendly);
+		nodeAI.tryRead("targetWeightAsNeutral", _aiTargetWeightAsNeutral);
 	}
 	reader.tryRead("maxLookVariant", _maxLookVariant);
 	reader.tryRead("tooMuchSmokeThreshold", _tooMuchSmokeThreshold);
@@ -3202,6 +3209,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 	reader.tryRead("closeQuartersEnergyCostGlobal", _closeQuartersEnergyCostGlobal);
 	reader.tryRead("closeQuartersSneakUpGlobal", _closeQuartersSneakUpGlobal);
 	reader.tryRead("noLOSAccuracyPenaltyGlobal", _noLOSAccuracyPenaltyGlobal);
+	reader.tryRead("explodeInventoryGlobal", _explodeInventoryGlobal);
 	reader.tryRead("surrenderMode", _surrenderMode);
 	reader.tryRead("bughuntMinTurn", _bughuntMinTurn);
 	reader.tryRead("bughuntMaxEnemies", _bughuntMaxEnemies);

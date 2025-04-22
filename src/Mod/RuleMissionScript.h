@@ -40,12 +40,17 @@ private:
 	int _counterMin, _counterMax;
 	std::vector<int> _conditionals;
 	std::vector<std::pair<size_t, WeightedOptions*> > _regionWeights, _missionWeights, _raceWeights;
+
 	std::map<std::string, bool> _researchTriggers;
 	std::map<std::string, bool> _itemTriggers;
 	std::map<std::string, bool> _facilityTriggers;
+	std::map<std::string, bool> _soldierTypeTriggers;
 	std::map<std::string, bool> _xcomBaseInRegionTriggers;
 	std::map<std::string, bool> _xcomBaseInCountryTriggers;
+	std::map<std::string, bool> _pactCountryTriggers;
+
 	bool _useTable, _siteType;
+
 public:
 	/// Creates a new mission script.
 	RuleMissionScript(const std::string &type);
@@ -107,16 +112,22 @@ public:
 	bool hasMissionWeights() const;
 	/// Does this command have region weights?
 	bool hasRegionWeights() const;
+
 	/// Gets the research triggers that may apply to this command.
 	const std::map<std::string, bool> &getResearchTriggers() const;
 	/// Gets the item triggers that may apply to this command.
 	const std::map<std::string, bool> &getItemTriggers() const;
 	/// Gets the facility triggers that may apply to this command.
 	const std::map<std::string, bool> &getFacilityTriggers() const;
+	/// Gets the soldier type triggers that may apply to this command.
+	const std::map<std::string, bool> &getSoldierTypeTriggers() const { return _soldierTypeTriggers; }
 	/// Gets the xcom base triggers that may apply to this command.
 	const std::map<std::string, bool> &getXcomBaseInRegionTriggers() const;
 	/// Gets the xcom base triggers that may apply to this command.
 	const std::map<std::string, bool> &getXcomBaseInCountryTriggers() const;
+	/// Gets the country pact triggers that may apply to this command.
+	const std::map<std::string, bool> &getPactCountryTriggers() const { return _pactCountryTriggers; }
+
 	/// Delete this mission from the table? stops it coming up again in random selection, but NOT if a missionScript calls it by name.
 	bool getUseTable() const;
 	/// Sets this script to a terror mission type command or not.

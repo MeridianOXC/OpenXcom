@@ -43,7 +43,7 @@ private:
 	/// Tries to create a projectile sprite.
 	bool createNewProjectile();
 	bool _initialized, _targetFloor;
-	std::unordered_set<BattleUnit*> _victims;
+
 public:
 	/// Creates a new ProjectileFly class
 	ProjectileFlyBState(BattlescapeGame *parent, BattleAction action);

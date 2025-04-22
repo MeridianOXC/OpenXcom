@@ -633,8 +633,7 @@ void BattlescapeGenerator::nextStage()
 			{
 				++soldiersTotal;
 				bu->resetTurnsSinceStunned();
-				bu->setTurnsSinceSpotted(255);
-				bu->setTurnsLeftSpottedForSnipers(0);
+				bu->resetTurnsSince();
 				if (!selectedFirstSoldier && bu->getGeoscapeSoldier())
 				{
 					_save->setSelectedUnit(bu);
@@ -1481,11 +1480,16 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 	{
 		if (_craft == 0 || !_craftDeployed)
 		{
+			setCustomCraftInventoryTile();
+
 			Node* node = _save->getSpawnNode(NR_XCOM, unit);
 			if (node)
 			{
 				_save->setUnitPosition(unit, node->getPosition());
-				_craftInventoryTile = _save->getTile(node->getPosition());
+				if (!_craftInventoryTile)
+				{
+					_craftInventoryTile = _save->getTile(node->getPosition());
+				}
 				unit->setDirection(RNG::generate(0, 7));
 				_save->getUnits()->push_back(unit);
 				_save->initUnit(unit);
@@ -1495,7 +1499,10 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 			{
 				if (placeUnitNearFriend(unit))
 				{
-					_craftInventoryTile = _save->getTile(unit->getPosition());
+					if (!_craftInventoryTile)
+					{
+						_craftInventoryTile = _save->getTile(unit->getPosition());
+					}
 					unit->setDirection(RNG::generate(0, 7));
 					_save->getUnits()->push_back(unit);
 					_save->initUnit(unit);
@@ -1588,10 +1595,7 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
 		}
 		else
 		{
-			if (_craft)
-			{
-				setCustomCraftInventoryTile();
-			}
+			setCustomCraftInventoryTile();
 
 			for (int i = 0; i < _mapsize_x * _mapsize_y * _mapsize_z; ++i)
 			{
@@ -1616,7 +1620,7 @@ BattleUnit *BattlescapeGenerator::addXCOMUnit(BattleUnit *unit)
  */
 void BattlescapeGenerator::setCustomCraftInventoryTile()
 {
-	if (_craftInventoryTile == 0)
+	if (_craftInventoryTile == 0 && _craft && _craftDeployed && _craftRules)
 	{
 		// Craft inventory tile position defined in the ruleset
 		const std::vector<int> coords = _craftRules->getCraftInventoryTile();
@@ -1624,6 +1628,16 @@ void BattlescapeGenerator::setCustomCraftInventoryTile()
 		{
 			Position craftInventoryTilePosition = Position(coords[0] + (_craftPos.x * 10), coords[1] + (_craftPos.y * 10), coords[2] + _craftZ);
 			canPlaceXCOMUnit(_save->getTile(craftInventoryTilePosition));
+		}
+	}
+	if (_craftInventoryTile == 0)
+	{
+		// Mapblock inventory tile position defined in the ruleset
+		if (!_backupInventoryTiles.empty())
+		{
+			int pilePick = RNG::generate(0, _backupInventoryTiles.size() - 1);
+			Tile* pileTile = _backupInventoryTiles[pilePick];
+			_craftInventoryTile = pileTile; // no checks
 		}
 	}
 }
@@ -2316,6 +2330,14 @@ int BattlescapeGenerator::loadMAP(MapBlock *mapblock, int xoff, int yoff, int zo
 		}
 	}
 
+	if (mapblock->getCraftInventoryTile().size() >= 3)
+	{
+		auto& coords = mapblock->getCraftInventoryTile();
+		Position pilePos = Position(coords[0] + xoff, coords[1] + yoff, coords[2] + zoff);
+		Tile* pileTile = _save->getTile(pilePos);
+		_backupInventoryTiles.push_back(pileTile);
+	}
+
 	return sizez;
 }
 
@@ -2745,6 +2767,8 @@ void BattlescapeGenerator::loadWeapons(const std::vector<BattleItem*> &itemList)
  */
 void BattlescapeGenerator::generateMap(const std::vector<MapScript*> *script, const std::string &customUfoName, const RuleStartingCondition* startingCondition)
 {
+	_backupInventoryTiles.clear(); // just in case
+
 	// reset ambient sound
 	_save->setAmbientSound(Mod::NO_SOUND);
 	_save->setAmbienceRandom({});

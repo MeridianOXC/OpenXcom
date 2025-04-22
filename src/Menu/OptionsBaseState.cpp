@@ -180,6 +180,8 @@ void OptionsBaseState::restart(OptionsOrigin origin)
 		BattlescapeState *bs = new BattlescapeState;
 		_game->pushState(bs);
 		_game->getSavedGame()->getSavedBattle()->setBattleState(bs);
+		// Try to reactivate the touch buttons
+		bs->toggleTouchButtons(false, true);
 	}
 }
 

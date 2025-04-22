@@ -31,6 +31,7 @@ namespace OpenXcom
 
 enum ForcedTorso : Uint8;
 enum UnitSide : Uint8;
+enum AIAttackWeight : int;
 
 class BattleUnit;
 class RuleItem;
@@ -119,6 +120,11 @@ private:
 	bool _drawBubbles;
 	MovementType _movementType;
 	SpecialAbility _specab;
+
+	NullableValue<AIAttackWeight> _aiTargetWeightAsHostile = { };
+	NullableValue<AIAttackWeight> _aiTargetWeightAsHostileCivilians  = { };
+	NullableValue<AIAttackWeight> _aiTargetWeightAsFriendly  = { };
+	NullableValue<AIAttackWeight> _aiTargetWeightAsNeutral = { };
 
 	bool _turnBeforeFirstStep;
 	int _turnCost;
@@ -246,6 +252,15 @@ public:
 	MovementType getMovementTypeByDepth(int depth) const;
 	/// Gets the armor's special ability.
 	int getSpecialAbility() const;
+
+	/// Gets weight value as hostile unit.
+	NullableValue<AIAttackWeight> getAITargetWeightAsHostile() const { return _aiTargetWeightAsHostile; }
+	/// Gets weight value as civilian unit when consider by aliens.
+	NullableValue<AIAttackWeight> getAITargetWeightAsHostileCivilians() const { return _aiTargetWeightAsHostileCivilians; }
+	/// Gets weight value as same faction unit.
+	NullableValue<AIAttackWeight> getAITargetWeightAsFriendly() const { return _aiTargetWeightAsFriendly; }
+	/// Gets weight value as neutral unit (xcom to civ or vice versa).
+	NullableValue<AIAttackWeight> getAITargetWeightAsNeutral() const { return _aiTargetWeightAsNeutral; }
 
 	/// Should turning before first step cost TU or not?
 	bool getTurnBeforeFirstStep() const { return _turnBeforeFirstStep; }

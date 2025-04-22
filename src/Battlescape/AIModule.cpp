@@ -353,14 +353,6 @@ void AIModule::think(BattleAction *action)
 	{
 		evaluate = true;
 	}
-	else if (_aggroTarget && _aggroTarget->getTurnsSinceSpotted() > _intelligence)
-	{
-		// Special case for snipers, target may not be visible, but that shouldn't cause us to re-evaluate
-		if (!_unit->isSniper() || !_aggroTarget->getTurnsLeftSpottedForSnipers())
-		{
-			evaluate = true;
-		}
-	}
 
 
 	if (_save->isCheating() && _AIMode != AI_COMBAT)
@@ -1162,7 +1154,7 @@ int AIModule::selectNearestTarget()
 	Position target;
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) &&
+		if (validTarget(bu, true, true) &&
 			_save->getTileEngine()->visible(_unit, bu->getTile()))
 		{
 			tally++;
@@ -1216,7 +1208,7 @@ int AIModule::selectNearestTargetLeeroy(bool canRun)
 	_aggroTarget = 0;
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) &&
+		if (validTarget(bu, true, true) &&
 			_save->getTileEngine()->visible(_unit, bu->getTile()))
 		{
 			tally++;
@@ -1280,7 +1272,7 @@ bool AIModule::selectRandomTarget()
 
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (validTarget(bu, true, true))
 		{
 			int dist = RNG::generate(0,20) - Position::distance2d(_unit->getPosition(), bu->getPosition());
 			if (dist > farthest)
@@ -1422,7 +1414,7 @@ bool AIModule::selectSpottedUnitForSniper()
 
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) && bu->getTurnsLeftSpottedForSnipers())
+		if (validTarget(bu, true, true) && bu->getTurnsLeftSpottedForSnipersByFaction(_unit->getFaction()))
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = bu;
@@ -1909,6 +1901,7 @@ bool AIModule::findFirePoint()
 
 /**
  * Decides if it worth our while to create an explosion here.
+ * Return value in same range as number affected targets but not equal exactly to that value.
  * @param targetPos The target's position.
  * @param attackingUnit The attacking unit.
  * @param radius How big the explosion will be.
@@ -1938,23 +1931,23 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 	if (injurylevel > (attackingUnit->getBaseStats()->health / 3) * 2)
 		desperation += 3;
 
-	int efficacy = desperation;
+	int efficacy = AIW_SCALE * desperation;
 
 	// don't go kamikaze unless we're already doomed.
 	if (abs(attackingUnit->getPosition().z - targetPos.z) <= Options::battleExplosionHeight && distance <= radius)
 	{
-		efficacy -= 4;
+		efficacy -= AIW_SCALE * 4;
 	}
 
 	// allow difficulty to have its influence
-	efficacy += diff/2;
+	efficacy += AIW_SCALE * diff/2;
 
 	// account for the unit we're targetting
 	BattleUnit *target = targetTile->getUnit();
 	if (target && !targetTile->getDangerous())
 	{
 		++enemiesAffected;
-		++efficacy;
+		efficacy += getTargetAttackWeight(target);
 	}
 
 	for (auto* bu : *_save->getUnits())
@@ -1969,11 +1962,19 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 			abs(bu->getPosition().z - targetPos.z) <= Options::battleExplosionHeight &&
 			Position::distance2d(bu->getPosition(), targetPos) <= radius)
 		{
+			if (bu->getTile()->getDangerous())
+			{
 				// don't count people who were already grenaded this turn
-			if (bu->getTile()->getDangerous() ||
-				// don't count units we don't know about
-				(bu->getFaction() == _targetFaction && bu->getTurnsSinceSpotted() > _intelligence))
 				continue;
+			}
+
+			auto weight = getTargetAttackWeight(bu);
+
+			if (weight == 0)
+			{
+				// AI do not know anything about this unit
+				continue;
+			}
 
 			// trace a line from the grenade origin to the unit we're checking against
 			Position voxelPosA = Position (targetPos.toVoxel() + TileEngine::voxelTileCenter);
@@ -1986,10 +1987,9 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 				if (bu->getFaction() == _targetFaction)
 				{
 					++enemiesAffected;
-					++efficacy;
 				}
-				else if (bu->getFaction() == attackingUnit->getFaction() || (attackingUnit->getFaction() == FACTION_NEUTRAL && bu->getFaction() == FACTION_PLAYER))
-					efficacy -= 2; // friendlies count double
+
+				efficacy += weight;
 			}
 		}
 	}
@@ -2007,8 +2007,8 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 	}
 	else if (efficacy > 0)
 	{
-		// We kill more enemies than allies.
-		return efficacy;
+		// We kill more enemies than allies. Scale back to number of targets, can round down to zero
+		return efficacy / AIW_SCALE;
 	}
 	else
 	{
@@ -2043,7 +2043,7 @@ void AIModule::meleeAction()
 	{
 		int newDistance = Position::distance2d(_unit->getPosition(), bu->getPosition());
 		if (newDistance > 20 ||
-			!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+			!validTarget(bu, true, true))
 			continue;
 		//pick closest living unit that we can move to
 		if ((newDistance < distance || newDistance == 1) && !bu->isOut())
@@ -2089,7 +2089,7 @@ void AIModule::meleeActionLeeroy(bool canRun)
 	for (auto* bu : *_save->getUnits())
 	{
 		int newDistance = Position::distance2d(_unit->getPosition(), bu->getPosition());
-		if (!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (!validTarget(bu, true, true))
 			continue;
 		//pick closest living unit
 		if ((newDistance < distance || newDistance == 1) && !bu->isOut())
@@ -2133,7 +2133,7 @@ void AIModule::wayPointAction()
 	for (auto* bu : *_save->getUnits())
 	{
 		if (_aggroTarget != 0) break; // loop finished
-		if (!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (!validTarget(bu, true, true))
 		{
 			continue;
 		}
@@ -2527,7 +2527,7 @@ bool AIModule::psiAction()
 			if (bu->getArmor()->getSize() == 1 &&
 				validTarget(bu, true, false) &&
 				// they must be player units
-				bu->getOriginalFaction() == _targetFaction &&
+				bu->getOriginalFaction() != _unit->getFaction() &&
 				(!LOSRequired ||
 				std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), bu) != _unit->getVisibleUnits()->end()))
 			{
@@ -2697,6 +2697,57 @@ void AIModule::meleeAttack()
 	_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);
 }
 
+
+/**
+ *
+ * @param target
+ * @return
+ */
+AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
+{
+	AIAttackWeight weight = AIW_IGNORED;
+
+	if (target->getFaction() == _unit->getFaction())
+	{
+		// friendly target have negative weight, used for AoE attacks.
+		weight = target->getAITargetWeightAsFriendly(_save->getMod());
+	}
+	else if (
+		_intelligence < target->getTurnsSinceSpottedByFaction(_unit->getFaction()) &&
+		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipersByFaction(_unit->getFaction())))
+	{
+		// ignore units that we don't "know" about...
+		// ... unless we are a sniper and the spotters know about them
+		weight = AIW_IGNORED;
+	}
+	else if (target->getFaction() == FACTION_HOSTILE || _unit->getFaction() == FACTION_HOSTILE)
+	{
+		if (target->getFaction() == _targetFaction)
+		{
+			// enemy unit, full weight
+			weight = target->getAITargetWeightAsHostile(_save->getMod());
+		}
+		else
+		{
+			// if its not xcom unit then its civilian, less value that xcom
+			weight = target->getAITargetWeightAsHostileCivilians(_save->getMod());
+		}
+	}
+	else if (target->getFaction() == FACTION_NEUTRAL || _unit->getFaction() == FACTION_NEUTRAL)
+	{
+		// if its not alien then its xcom or civilian, humans do not shoot each other, usually...
+		weight = target->getAITargetWeightAsNeutral(_save->getMod());
+	}
+
+	weight = (AIAttackWeight)ModScript::scriptFunc2<ModScript::AiCalculateTargetWeight>(
+		_unit->getArmor(),
+		weight, weight,
+		_unit, target, _save
+	);
+
+	return weight;
+}
+
 /**
  * Validates a target.
  * @param target the target we want to validate.
@@ -2709,31 +2760,22 @@ bool AIModule::validTarget(BattleUnit *target, bool assessDanger, bool includeCi
 	// ignore units that:
 	// 1. are dead/unconscious
 	// 2. are dangerous (they have been grenaded)
-	// 3. are on our side
-	// 4. are hostile/neutral units marked as ignored by the AI
+	// 3. are hostile/neutral units marked as ignored by the AI
 	if (target->isOut() ||
 		(assessDanger && target->getTile()->getDangerous()) ||
-		(target->getFaction() != FACTION_PLAYER && target->isIgnoredByAI()) ||
-		target->getFaction() == _unit->getFaction())
-	{
-		return false;
-	}
-
-	// ignore units that we don't "know" about...
-	// ... unless we are a sniper and the spotters know about them
-	if (_unit->getFaction() == FACTION_HOSTILE &&
-		_intelligence < target->getTurnsSinceSpotted() &&
-		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipers()))
+		(target->getFaction() != FACTION_PLAYER && target->isIgnoredByAI()))
 	{
 		return false;
 	}
 
 	if (includeCivs)
 	{
-		return true;
+		return  getTargetAttackWeight(target) > AIW_IGNORED;
 	}
-
-	return target->getFaction() == _targetFaction;
+	else
+	{
+		return  getTargetAttackWeight(target) > _save->getMod()->getAITargetWeightThreatThreshold();
+	}
 }
 
 /**
@@ -2835,7 +2877,7 @@ bool AIModule::getNodeOfBestEfficacy(BattleAction *action, int radius)
 						if ((_unit->getFaction() == FACTION_HOSTILE && bu->getFaction() != FACTION_HOSTILE) ||
 							(_unit->getFaction() == FACTION_NEUTRAL && bu->getFaction() == FACTION_HOSTILE))
 						{
-							if (bu->getTurnsSinceSpotted() <= _intelligence)
+							if (bu->getTurnsSinceSpottedByFaction(_unit->getFaction()) <= _intelligence)
 							{
 								nodePoints++;
 							}

@@ -101,22 +101,52 @@ class RuleItemCategory;
 
 enum UnitFaction : int;
 
-struct RuleItemUseCost
+template<typename T>
+struct RuleItemUseRuleBase
 {
-	int Time;
-	int Energy;
-	int Morale;
-	int Health;
-	int Stun;
-	int Mana;
+	T Time;
+	T Energy;
+	T Morale;
+	T Health;
+	T Stun;
+	T Mana;
 
 	/// Default constructor.
-	RuleItemUseCost() : Time(0), Energy(0), Morale(0), Health(0), Stun(0), Mana(0)
+	RuleItemUseRuleBase() : Time(), Energy(), Morale(), Health(), Stun(), Mana()
 	{
 
 	}
 	/// Create new cost with one value for time units and another for rest.
-	RuleItemUseCost(int tu, int rest = 0) : Time(tu), Energy(rest), Morale(rest), Health(rest), Stun(rest), Mana(rest)
+	RuleItemUseRuleBase(T tu, T rest) : Time(tu), Energy(rest), Morale(rest), Health(rest), Stun(rest), Mana(rest)
+	{
+
+	}
+
+	void load(const YAML::YamlNodeReader& reader)
+	{
+		reader.tryRead("time", Time);
+		reader.tryRead("energy", Energy);
+		reader.tryRead("morale", Morale);
+		reader.tryRead("health", Health);
+		reader.tryRead("stun", Stun);
+		reader.tryRead("mana", Mana);
+	}
+};
+
+struct RuleItemUseCost : RuleItemUseRuleBase<Sint16>
+{
+	/// Default constructor.
+	RuleItemUseCost() : RuleItemUseRuleBase{ 0, 0 }
+	{
+
+	}
+	/// Create new cost with one value for time units and another for rest.
+	RuleItemUseCost(Sint16 tu, Sint16 rest = 0) : RuleItemUseRuleBase{tu, rest}
+	{
+
+	}
+	/// Copy constructor.
+	RuleItemUseCost(const RuleItemUseRuleBase<Sint16>& b) : RuleItemUseRuleBase{ b }
 	{
 
 	}
@@ -132,6 +162,39 @@ struct RuleItemUseCost
 		Mana += cost.Mana;
 		return *this;
 	}
+};
+
+struct RuleItemUseFlat : RuleItemUseRuleBase<bool>
+{
+	/// Default constructor.
+	RuleItemUseFlat() : RuleItemUseRuleBase{ false, false }
+	{
+
+	}
+	/// Create new cost with one value for time units and another for rest.
+	RuleItemUseFlat(bool tu, bool rest = false) : RuleItemUseRuleBase{tu, rest}
+	{
+
+	}
+	/// Copy constructor.
+	RuleItemUseFlat(const RuleItemUseRuleBase<bool>& b) : RuleItemUseRuleBase{ b }
+	{
+
+	}
+};
+
+struct RuleItemUseCostRule : RuleItemUseRuleBase<NullableValue<Sint16>>
+{
+	/// Default constructor.
+	RuleItemUseCostRule() : RuleItemUseRuleBase{ 0, 0 }
+	{
+
+	}
+	/// Create new cost with one value for time units and another for rest.
+	RuleItemUseCostRule(NullableValue<Sint16> tu, NullableValue<Sint16> rest = 0) : RuleItemUseRuleBase{tu, rest}
+	{
+
+	}
 
 	/**
 	 * Load use cost.
@@ -141,16 +204,25 @@ struct RuleItemUseCost
 	 */
 	void loadCost(const YAML::YamlNodeReader& reader, const std::string& name)
 	{
-		loadIntNullable(Time, reader[ryml::to_csubstr("tu" + name)]);
+		reader.tryRead(ryml::to_csubstr("tu" + name), Time);
 		if (const auto& cost = reader[ryml::to_csubstr("cost" + name)])
 		{
-			loadIntNullable(Time, cost["time"]);
-			loadIntNullable(Energy, cost["energy"]);
-			loadIntNullable(Morale, cost["morale"]);
-			loadIntNullable(Health, cost["health"]);
-			loadIntNullable(Stun, cost["stun"]);
-			loadIntNullable(Mana, cost["mana"]);
+			load(cost);
 		}
+	}
+};
+
+struct RuleItemUseFlatRule : RuleItemUseRuleBase<NullableValue<bool>>
+{
+	/// Default constructor.
+	RuleItemUseFlatRule() : RuleItemUseRuleBase{ false, false }
+	{
+
+	}
+	/// Create new cost with one value for time units and another for rest.
+	RuleItemUseFlatRule(NullableValue<bool> tu, NullableValue<bool> rest = false) : RuleItemUseRuleBase{tu, rest}
+	{
+
 	}
 
 	/**
@@ -159,26 +231,35 @@ struct RuleItemUseCost
 	 * @param node YAML node.
 	 * @param name Name of action type.
 	 */
-	void loadPercent(const YAML::YamlNodeReader& reader, const std::string& name)
+	void loadFlat(const YAML::YamlNodeReader& reader, const std::string& name)
 	{
 		if (const auto& cost = reader[ryml::to_csubstr("flat" + name)])
 		{
 			if (cost.hasVal())
 			{
-				loadBoolNullable(Time, cost);
+				cost.tryReadVal(Time);
 			}
 			else
 			{
-				loadBoolNullable(Time, cost["time"]);
-				loadBoolNullable(Energy, cost["energy"]);
-				loadBoolNullable(Morale, cost["morale"]);
-				loadBoolNullable(Health, cost["health"]);
-				loadBoolNullable(Stun, cost["stun"]);
-				loadBoolNullable(Mana, cost["mana"]);
+				load(cost);
 			}
 		}
 	}
 };
+
+/// Get final value of cost.
+template<typename T, typename... Rest>
+inline RuleItemUseRuleBase<T> getDefault(const RuleItemUseRuleBase<NullableValue<T>>& a, const Rest&... b)
+{
+	RuleItemUseRuleBase<T> n;
+	n.Time = coalesceNullValues(a.Time, b.Time...);
+	n.Energy = coalesceNullValues(a.Energy, b.Energy...);
+	n.Morale = coalesceNullValues(a.Morale, b.Morale...);
+	n.Health = coalesceNullValues(a.Health, b.Health...);
+	n.Stun = coalesceNullValues(a.Stun, b.Stun...);
+	n.Mana = coalesceNullValues(a.Mana, b.Mana...);
+	return n;
+}
 
 /**
  * Common configuration of item action.
@@ -194,8 +275,8 @@ struct RuleItemAction
 	int ammoZombieUnitChanceOverride = -1;
 	int ammoSpawnUnitChanceOverride = -1;
 	int ammoSpawnItemChanceOverride = -1;
-	RuleItemUseCost cost;
-	RuleItemUseCost flat;
+	RuleItemUseCostRule cost;
+	RuleItemUseFlatRule flat;
 	bool arcing = false; // Only overrides arcing: false on a weapon for a specific action
 	std::string name;
 	std::string shortName;
@@ -332,7 +413,8 @@ private:
 	RuleItemAction _confAimed, _confAuto, _confSnap, _confMelee;
 	int _accuracyUse, _accuracyMind, _accuracyPanic, _accuracyThrow, _accuracyCloseQuarters;
 	int _noLOSAccuracyPenalty;
-	RuleItemUseCost _costUse, _costMind, _costPanic, _costThrow, _costPrime, _costUnprime;
+	int _explodeInventory;
+	RuleItemUseCostRule _costUse, _costMind, _costPanic, _costThrow, _costPrime, _costUnprime;
 	int _clipSize, _specialChance, _tuLoad[AmmoSlotMax], _tuUnload[AmmoSlotMax];
 	BattleType _battleType;
 	BattleFuseType _fuseType;
@@ -342,7 +424,7 @@ private:
 	std::string _sellActionMessage;
 
 	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _isConsumable, _isFireExtinguisher;
-	bool _isExplodingInHands, _specialUseEmptyHand, _specialUseEmptyHandShow;
+	bool _specialUseEmptyHand, _specialUseEmptyHandShow;
 	int _inventoryMoveCostPercent = 100;
 	std::string _defaultInventorySlotName;
 	const RuleInventory* _defaultInventorySlot;
@@ -366,7 +448,7 @@ private:
 	bool _recover, _recoverCorpse, _ignoreInBaseDefense, _ignoreInCraftEquip, _liveAlien;
 	int _liveAlienPrisonType;
 	int _attraction;
-	RuleItemUseCost _flatUse, _flatThrow, _flatPrime, _flatUnprime;
+	RuleItemUseFlatRule _flatUse, _flatThrow, _flatPrime, _flatUnprime;
 	bool _arcingShot;
 	ExperienceTrainingMode _experienceTrainingMode;
 	int _manaExperience;
@@ -397,8 +479,6 @@ private:
 	ModScript::BattleItemScripts::Container _battleItemScripts;
 	ScriptValues<RuleItem> _scriptValues;
 
-	/// Get final value of cost.
-	RuleItemUseCost getDefault(const RuleItemUseCost& a, const RuleItemUseCost& b) const;
 	/// Load RuleItemUseCost from yaml.
 	void loadCost(RuleItemUseCost& a, const YAML::YamlNodeReader& reader, const std::string& name) const;
 	/// Load RuleItemUseCost as bool from yaml.
@@ -655,6 +735,8 @@ public:
 	int getAccuracyCloseQuarters(const Mod *mod) const;
 	/// Get penalty for firing this weapon on out-of-LOS targets
 	int getNoLOSAccuracyPenalty(Mod *mod) const;
+	/// Get setting for primed explosives exploding in the inventory.
+	int getExplodeInventory(const Mod* mod) const;
 
 	/// Gets the item's aimed shot cost.
 	RuleItemUseCost getCostAimed() const;
@@ -678,21 +760,21 @@ public:
 	RuleItemUseCost getCostUnprime() const;
 
 	/// Should we charge a flat rate of costAimed?
-	RuleItemUseCost getFlatAimed() const;
+	RuleItemUseFlat getFlatAimed() const;
 	/// Should we charge a flat rate of costAuto?
-	RuleItemUseCost getFlatAuto() const;
+	RuleItemUseFlat getFlatAuto() const;
 	/// Should we charge a flat rate of costSnap?
-	RuleItemUseCost getFlatSnap() const;
+	RuleItemUseFlat getFlatSnap() const;
 	/// Should we charge a flat rate of costMelee?
-	RuleItemUseCost getFlatMelee() const;
+	RuleItemUseFlat getFlatMelee() const;
 	/// Should we charge a flat rate?
-	RuleItemUseCost getFlatUse() const;
+	RuleItemUseFlat getFlatUse() const;
 	/// Should we charge a flat rate of costThrow?
-	RuleItemUseCost getFlatThrow() const;
+	RuleItemUseFlat getFlatThrow() const;
 	/// Should we charge a flat rate of costPrime?
-	RuleItemUseCost getFlatPrime() const;
-	/// Should we charge a flat rate of costPrime?
-	RuleItemUseCost getFlatUnprime() const;
+	RuleItemUseFlat getFlatPrime() const;
+	/// Should we charge a flat rate of costUnrime?
+	RuleItemUseFlat getFlatUnprime() const;
 
 	/// Gets the item's load TU cost.
 	int getTULoad(int slot) const;
@@ -780,8 +862,6 @@ public:
 	bool isConsumable() const;
 	/// Does this item extinguish fire?
 	bool isFireExtinguisher() const;
-	/// Is this item explode in hands?
-	bool isExplodingInHands() const;
 	/// If this is used as a speacialWeapon, is it accessed by empty hand?
 	bool isSpecialUsingEmptyHand() const;
 	/// Display icon in an empty hand?

@@ -1500,13 +1500,15 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 							{
 								unit->addToVisibleUnits(bu);
 								unit->addToVisibleTiles(bu->getTile());
+							}
 
-								if (unit->getFaction() == FACTION_HOSTILE && bu->getFaction() != FACTION_HOSTILE)
-								{
-									bu->setTurnsSinceSpotted(0);
-
-									bu->setTurnsLeftSpottedForSnipers(std::max(unit->getSpotterDuration(), bu->getTurnsLeftSpottedForSnipers())); // defaults to 0 = no information given to snipers
-								}
+							if (unit->getFaction() != bu->getFaction())
+							{
+								bu->setTurnsSinceSpottedByFaction(unit->getFaction(), 0);
+								bu->setTurnsLeftSpottedForSnipersByFaction(
+									unit->getFaction(),
+									std::max(unit->getSpotterDuration(), bu->getTurnsLeftSpottedForSnipersByFaction(unit->getFaction()))
+								); // defaults to 0 = no information given to snipers
 							}
 
 							x = y = sizeOther; //If a unit's tile is visible there's no need to check the others: break the loops.
@@ -1901,8 +1903,9 @@ bool TileEngine::visible(BattleUnit *currentUnit, Tile *tile)
 		// 3  - coefficient of calculation (see getTrajectoryDataHelper).
 		// 20 - maximum view distance in vanilla Xcom.
 		// 100 - % for smokeDensityFactor.
+		// 16 - for voxel scale calculation.
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceMaxVoxel/(3 * 20 * 100 * 16);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
 		ModScript::VisibilityUnit::Worker worker{ currentUnit, tile->getUnit(), tile, visibleDistanceVoxels, visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
@@ -2079,8 +2082,9 @@ bool TileEngine::isTileInLOS(BattleAction *action, Tile *tile, bool drawing)
 		// 3  - coefficient of calculation (see getTrajectoryDataHelper).
 		// 20 - maximum view distance in vanilla Xcom.
 		// 100 - % for smokeDensityFactor.
+		// 16 - for voxel scale calculation.
 		// Even if MaxViewDistance will be increased via ruleset, smoke will keep effect.
-		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceUnitMaxTile/(3 * 20 * 100);
+		int visibilityQuality = visibleDistanceMaxVoxel - visibleDistanceVoxels - ((densityOfSmoke - densityOfSmokeNearUnit / 2) * smokeDensityFactor + (densityOfFire - densityOfFireeNearUnit / 2) * fireDensityFactor) * visibleDistanceMaxVoxel/(3 * 20 * 100 * 16);
 		ModScript::VisibilityUnit::Output arg{ visibilityQuality, visibilityQuality, ScriptTag<BattleUnitVisibility>::getNullTag() };
 		ModScript::VisibilityUnit::Worker worker{ currentUnit, /*targetUnit*/ nullptr, tile, visibleDistanceVoxels, visibleDistanceMaxVoxel, visibleDistanceUnitMaxTile, densityOfSmoke, densityOfFire, densityOfSmokeNearUnit, densityOfFireeNearUnit };
 		worker.execute(currentUnit->getArmor()->getScript<ModScript::VisibilityUnit>(), arg);
@@ -3398,7 +3402,12 @@ void TileEngine::explode(BattleActionAttack attack, Position center, int power, 
 						toRemove.clear();
 						if (bu)
 						{
-							if (
+							if (dest->getPosition() == centetTile)
+							{
+								// direct hit, similar to ground zero but AI will remember attacker, done for compatibility
+								hitUnit(attack, bu, Position(0, 0, 0), damage, type, rangeAtack);
+							}
+							else if (
 									(
 										Position::distance2dSq(dest->getPosition(), centetTile) < 4
 										&& dest->getPosition().z == centetTile.z
@@ -3407,7 +3416,7 @@ void TileEngine::explode(BattleActionAttack attack, Position center, int power, 
 								)
 							{
 								// ground zero effect is in effect, or unit is above explosion
-								hitUnit(attack, bu, Position(0, 0, 0), damage, type, rangeAtack);
+								hitUnit(attack, bu, Position(0, 0, -1), damage, type, rangeAtack);
 							}
 							else
 							{

@@ -114,6 +114,14 @@ void Armor::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &pa
 	reader.tryRead("movementType", _movementType);
 	reader.tryRead("specab", _specab);
 
+	if (const YAML::YamlNodeReader& ai = reader["ai"])
+	{
+		ai.tryRead("targetWeightAsHostile", _aiTargetWeightAsHostile);
+		ai.tryRead("targetWeightAsHostileCivilians", _aiTargetWeightAsHostileCivilians);
+		ai.tryRead("targetWeightAsFriendly", _aiTargetWeightAsFriendly);
+		ai.tryRead("targetWeightAsNeutral", _aiTargetWeightAsNeutral);
+	}
+
 	reader.tryRead("turnBeforeFirstStep", _turnBeforeFirstStep);
 	reader.tryRead("turnCost", _turnCost);
 	if (const YAML::YamlNodeReader& move = reader["moveCost"])

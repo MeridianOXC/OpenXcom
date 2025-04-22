@@ -107,6 +107,7 @@ class ScriptGlobal;
 struct StatAdjustment;
 
 enum GameDifficulty : int;
+enum AIAttackWeight : int;
 
 /**
  * Mod data used when loading resources
@@ -221,10 +222,17 @@ private:
 	int _maxStaticLightDistance, _maxDynamicLightDistance, _enhancedLighting;
 	int _costHireEngineer, _costHireScientist;
 	int _costEngineer, _costScientist, _timePersonnel, _hireByCountryOdds, _hireByRegionOdds, _initialFunding;
+
 	int _aiUseDelayBlaster, _aiUseDelayFirearm, _aiUseDelayGrenade, _aiUseDelayProxy, _aiUseDelayMelee, _aiUseDelayPsionic;
 	int _aiFireChoiceIntelCoeff, _aiFireChoiceAggroCoeff;
 	bool _aiExtendedFireModeChoice, _aiRespectMaxRange, _aiDestroyBaseFacilities;
 	bool _aiPickUpWeaponsMoreActively, _aiPickUpWeaponsMoreActivelyCiv;
+	AIAttackWeight _aiTargetWeightThreatThreshold = AIAttackWeight{ 50 };
+	AIAttackWeight _aiTargetWeightAsHostile = AIAttackWeight{ 100 };
+	AIAttackWeight _aiTargetWeightAsHostileCivilians = AIAttackWeight{ 50 };
+	AIAttackWeight _aiTargetWeightAsFriendly = AIAttackWeight{ -200 };
+	AIAttackWeight _aiTargetWeightAsNeutral = AIAttackWeight{ -100 };
+
 	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor, _minReactionAccuracy;
 	int _chanceToStopRetaliation;
 	bool _lessAliensDuringBaseDefense;
@@ -233,6 +241,7 @@ private:
 	int _kneelBonusGlobal, _oneHandedPenaltyGlobal;
 	int _enableCloseQuartersCombat, _closeQuartersAccuracyGlobal, _closeQuartersTuCostGlobal, _closeQuartersEnergyCostGlobal, _closeQuartersSneakUpGlobal;
 	int _noLOSAccuracyPenaltyGlobal;
+	int _explodeInventoryGlobal;
 	int _surrenderMode;
 	int _bughuntMinTurn, _bughuntMaxEnemies, _bughuntRank, _bughuntLowMorale, _bughuntTimeUnitsLeft;
 
@@ -816,6 +825,17 @@ public:
 	bool getAIPickUpWeaponsMoreActively() const { return _aiPickUpWeaponsMoreActively; }
 	/// Gets whether or not the civilian AI should pick up weapons more actively.
 	bool getAIPickUpWeaponsMoreActivelyCiv() const { return _aiPickUpWeaponsMoreActivelyCiv; }
+	/// Gets weight value that AI use to determine if target is dangerous.
+	AIAttackWeight getAITargetWeightThreatThreshold() const { return _aiTargetWeightThreatThreshold; }
+	/// Gets default weight value of hostile unit.
+	AIAttackWeight getAITargetWeightAsHostile() const { return _aiTargetWeightAsHostile; }
+	/// Gets default weight value of civilian unit when consider by aliens.
+	AIAttackWeight getAITargetWeightAsHostileCivilians() const { return _aiTargetWeightAsHostileCivilians; }
+	/// Gets default weight value of same faction unit.
+	AIAttackWeight getAITargetWeightAsFriendly() const { return _aiTargetWeightAsFriendly; }
+	/// Gets default weight value of neutral unit (xcom to civ or vice versa).
+	AIAttackWeight getAITargetWeightAsNeutral() const { return _aiTargetWeightAsNeutral; }
+
 	/// Gets maximum supported lookVariant.
 	int getMaxLookVariant() const;
 	/// Gets the threshold for too much smoke (vanilla default = 10).
@@ -852,6 +872,8 @@ public:
 	int getCloseQuartersSneakUpGlobal() const { return _closeQuartersSneakUpGlobal; }
 	/// Gets the default accuracy penalty for having no LOS to the target (default = 0 is no penalty)
 	int getNoLOSAccuracyPenaltyGlobal() const { return _noLOSAccuracyPenaltyGlobal; }
+	/// Gets the default setting for primed grenades exploding in the inventory (default = 0 is no explosion)
+	int getExplodeInventoryGlobal() const { return _explodeInventoryGlobal; }
 	/// Gets the surrender mode (default = 0).
 	int getSurrenderMode() const { return _surrenderMode; }
 	/// Gets the bug hunt mode minimum turn requirement (default = 20).

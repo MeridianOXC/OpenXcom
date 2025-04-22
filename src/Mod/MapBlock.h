@@ -61,6 +61,7 @@ private:
 	std::string _name;
 	int _size_x, _size_y, _size_z;
 	std::vector<int> _groups, _revealedFloors;
+	std::vector<int> _craftInventoryTile;
 	std::map<std::string, std::vector<Position> > _items;
 	std::map<std::string, std::pair<int, int> > _itemsFuseTimer;
 	std::vector<RandomizedItems> _randomizedItems;
@@ -92,6 +93,8 @@ public:
 	const std::vector<RandomizedItems> *getRandomizedItems() const { return &_randomizedItems; }
 	/// Gets the layout for any items that belong in this map block. Extended syntax.
 	const std::vector<ExtendedItems> *getExtendedItems() const { return &_extendedItems; }
+	/// Gets the craft inventory tile position.
+	const std::vector<int>& getCraftInventoryTile() const { return _craftInventoryTile; };
 
 };
 

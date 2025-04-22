@@ -107,11 +107,15 @@ void RuleMissionScript::load(const YAML::YamlNodeReader& node)
 		nw->load(monthWeights);
 		_regionWeights.push_back(std::make_pair(monthWeights.readKey<size_t>(0), nw));
 	}
+
 	reader.tryRead("researchTriggers", _researchTriggers);
 	reader.tryRead("itemTriggers", _itemTriggers);
 	reader.tryRead("facilityTriggers", _facilityTriggers);
+	reader.tryRead("soldierTypeTriggers", _soldierTypeTriggers);
 	reader.tryRead("xcomBaseInRegionTriggers", _xcomBaseInRegionTriggers);
 	reader.tryRead("xcomBaseInCountryTriggers", _xcomBaseInCountryTriggers);
+	reader.tryRead("pactCountryTriggers", _pactCountryTriggers);
+
 	reader.tryRead("useTable", _useTable);
 	if (_varName.empty() && (_maxRuns > 0 || _avoidRepeats > 0))
 	{

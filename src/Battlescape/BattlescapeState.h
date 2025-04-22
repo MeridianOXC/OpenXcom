@@ -54,7 +54,7 @@ private:
 	BattlescapeButton *_btnInventory, *_btnCenter, *_btnNextSoldier, *_btnNextStop, *_btnShowLayers, *_btnHelp;
 	BattlescapeButton *_btnEndTurn, *_btnAbort, *_btnLaunch, *_btnPsi, *_btnSpecial, *_btnSkills, *_reserve;
 	BattlescapeButton *_btnCtrl, *_btnAlt, *_btnShift, *_btnRMB, *_btnMMB;
-	bool _touchButtonsEnabled, _touchButtonsEnabledLastTurn;
+	bool _touchButtonsEnabled;
 	InteractiveSurface *_btnStats;
 	BattlescapeButton *_btnReserveNone, *_btnReserveSnap, *_btnReserveAimed, *_btnReserveAuto, *_btnReserveKneel, *_btnZeroTUs;
 	InteractiveSurface *_btnLeftHandItem, *_btnRightHandItem;

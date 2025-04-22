@@ -80,6 +80,7 @@ OPT int oxceGeoAutosaveSlots;
 OPT bool oxceLinks;
 OPT bool oxceLinksDisableTextEdit;
 OPT bool oxceFatFingerLinks;
+OPT bool oxceBattleTouchButtonsEnabled;
 OPT bool oxceQuickSearchButton;
 OPT bool oxceHighlightNewTopics;
 OPT bool oxcePediaShowClipSize;
@@ -111,6 +112,7 @@ OPT int oxceShowAccuracyOnCrosshair;
 OPT bool oxceAutoSell;
 OPT bool oxceAutomaticPromotions;
 OPT bool oxceEnableOffCentreShooting;
+OPT bool oxceUniformShootingSpread;
 OPT int oxceCrashedOrLanded;
 
 // OXCE hidden, accessible only via options.cfg

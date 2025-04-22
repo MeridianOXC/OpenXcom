@@ -89,6 +89,7 @@ private:
 	std::vector<VerticalLevel> _verticalLevels;
 	std::map<RuleTerrain*, int> _loadedTerrains;
 	std::vector<std::pair<MapBlock*, Position> > _verticalLevelSegments;
+	std::vector<Tile*> _backupInventoryTiles;
 
 	/// sets the map size and associated vars
 	void init(bool resetTerrain);

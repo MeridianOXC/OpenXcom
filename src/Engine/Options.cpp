@@ -486,11 +486,13 @@ void createAdvancedOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, true, "STR_OXCE_LINKS", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinksDisableTextEdit", &oxceLinksDisableTextEdit, true, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, true, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBattleTouchButtonsEnabled", &oxceBattleTouchButtonsEnabled, true, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceQuickSearchButton", &oxceQuickSearchButton, true, "", "HIDDEN"));
 #else
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinks", &oxceLinks, false, "STR_OXCE_LINKS", "STR_GENERAL"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceLinksDisableTextEdit", &oxceLinksDisableTextEdit, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceFatFingerLinks", &oxceFatFingerLinks, false, "", "HIDDEN"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceBattleTouchButtonsEnabled", &oxceBattleTouchButtonsEnabled, false, "", "HIDDEN"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceQuickSearchButton", &oxceQuickSearchButton, false, "", "HIDDEN"));
 #endif
 
@@ -527,6 +529,7 @@ void createAdvancedOptionsOXCE()
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutoSell", &oxceAutoSell, false, "STR_AUTO_SELL", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceAutomaticPromotions", &oxceAutomaticPromotions, true, "STR_AUTOMATICPROMOTIONS", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceEnableOffCentreShooting", &oxceEnableOffCentreShooting, false, "STR_OFF_CENTRE_SHOOTING", "STR_BATTLESCAPE"));
+	_info.push_back(OptionInfo(OPTION_OXCE, "oxceUniformShootingSpread", &oxceUniformShootingSpread, false, "STR_UNIFORM_SHOOTING_SPREAD", "STR_BATTLESCAPE"));
 	_info.push_back(OptionInfo(OPTION_OXCE, "oxceCrashedOrLanded", &oxceCrashedOrLanded, 0, "STR_CRASHED_OR_LANDED", "STR_BATTLESCAPE"));
 }
 
