@@ -1470,60 +1470,55 @@ int AIModule::scoreFiringMode(BattleAction *action, BattleUnit *target, bool che
 	{
 		return 0;
 	}
+	auto* weapon = action->weapon->getRules();
 
 	// Get base accuracy for the action
 	int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getMod());
 	int distanceSq = _unit->distance3dToUnitSq(target);
 	int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
-	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
 	{
-		int upperLimit;
-		if (action->type == BA_AIMEDSHOT)
-		{
-			upperLimit = action->weapon->getRules()->getAimRange();
-		}
-		else if (action->type == BA_AUTOSHOT)
-		{
-			upperLimit = action->weapon->getRules()->getAutoRange();
-		}
-		else
-		{
-			upperLimit = action->weapon->getRules()->getSnapRange();
-		}
-		int lowerLimit = action->weapon->getRules()->getMinRange();
+		int upperLimit, lowerLimit;
+		int dropoff = weapon->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), action->type);
 
 		if (distance > upperLimit)
 		{
-			accuracy -= (distance - upperLimit) * action->weapon->getRules()->getDropoff();
+			accuracy -= (distance - upperLimit) * dropoff;
 		}
 		else if (distance < lowerLimit)
 		{
-			accuracy -= (lowerLimit - distance) * action->weapon->getRules()->getDropoff();
+			accuracy -= (lowerLimit - distance) * dropoff;
 		}
 	}
 
-	if (action->type != BA_THROW && action->weapon->getRules()->isOutOfRange(distanceSq))
+	bool outOfRange = action->type == BA_THROW
+		? weapon->isOutOfThrowRange(distanceSq, _save->getDepth())
+		: weapon->isOutOfRange(distanceSq);
+
+	if (outOfRange)
+	{
 		accuracy = 0;
+	}
 
 	int numberOfShots = 1;
 	if (action->type == BA_AIMEDSHOT)
 	{
-		numberOfShots = action->weapon->getRules()->getConfigAimed()->shots;
+		numberOfShots = weapon->getConfigAimed()->shots;
 	}
 	else if (action->type == BA_SNAPSHOT)
 	{
-		numberOfShots = action->weapon->getRules()->getConfigSnap()->shots;
+		numberOfShots = weapon->getConfigSnap()->shots;
 	}
 	else if (action->type == BA_AUTOSHOT)
 	{
-		numberOfShots = action->weapon->getRules()->getConfigAuto()->shots;
+		numberOfShots = weapon->getConfigAuto()->shots;
 	}
 
 	int tuCost = _unit->getActionTUs(action->type, action->weapon).Time;
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	if (action->type == BA_THROW && _grenade)
 	{
+		// FIXME: why not just use action->weapon ?
 		auto* grenadeItem = _unit->getGrenadeFromBelt(_save);
 		tuCost = _unit->getActionTUs(action->type, grenadeItem).Time;
 		tuCost += 4;

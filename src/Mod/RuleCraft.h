@@ -215,6 +215,7 @@ private:
 	std::vector<int> _craftInventoryTile;
 	std::vector<int> _groups;
 	std::vector<int> _allowedSoldierGroups;
+	std::vector<int> _allowedArmorGroups;
 	bool _onlyOneSoldierGroupAllowed;
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
@@ -345,6 +346,8 @@ public:
 	const std::vector<int>& getGroups() const { return _groups; }
 	/// Gets the list of allowed soldier groups.
 	const std::vector<int>& getAllowedSoldierGroups() const { return _allowedSoldierGroups; }
+	/// Gets the list of allowed armor groups.
+	const std::vector<int>& getAllowedArmorGroups() const { return _allowedArmorGroups; }
 	/// Does this craft allow soldiers of the same group only?
 	bool isOnlyOneSoldierGroupAllowed() const { return _onlyOneSoldierGroupAllowed; }
 	/// Gets the item limit for this craft.

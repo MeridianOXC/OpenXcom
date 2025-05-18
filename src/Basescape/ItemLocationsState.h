@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2010-2016 OpenXcom Developers.
+ * Copyright 2010-2025 OpenXcom Developers.
  *
  * This file is part of OpenXcom.
  *
@@ -17,14 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "../Engine/State.h"
 
-#define MIN_REQUIRED_RULESET_VERSION_NUMBER 8,2,0,0
+namespace OpenXcom
+{
 
-#define OPENXCOM_VERSION_ENGINE "Extended"
-#define OPENXCOM_VERSION_SHORT "Extended 8.2.8"
-#define OPENXCOM_VERSION_LONG "8.2.8.0"
-#define OPENXCOM_VERSION_NUMBER 8,2,8,0
+class Window;
+class Text;
+class TextButton;
+class TextList;
+class RuleItem;
 
-#ifndef OPENXCOM_VERSION_GIT
-#define OPENXCOM_VERSION_GIT " (v2025-05-18)"
-#endif
+/**
+ * Window which displays item locations (i.e. which base has how much).
+ */
+class ItemLocationsState : public State
+{
+private:
+	Window *_window;
+	Text *_txtTitle;
+	Text *_txtBase, *_txtQuantity;
+	TextList *_lstLocations;
+	TextButton *_btnOk;
+public:
+	/// Creates the ItemLocationsState state.
+	ItemLocationsState(const RuleItem* selectedItem);
+	/// Cleans up the ItemLocationsState state
+	~ItemLocationsState() = default;
+	/// Handler for clicking the OK button.
+	void btnOkClick(Action* action);
+};
+}

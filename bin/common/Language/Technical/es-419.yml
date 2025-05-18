@@ -105,7 +105,7 @@ es-419:
   manaExperience: ""
   arcingShot: ""
   isFireExtinguisher: ""
-  isExplodingInHands: ""
+  explodeInventory: ""
   waypoints: ""
   sprayWaypoints: ""
 #
@@ -158,6 +158,9 @@ es-419:
   weight: ""
   throwRange: ""
   underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: ""
   accuracyThrow: ""
   costThrow: ""

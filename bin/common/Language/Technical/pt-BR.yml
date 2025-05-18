@@ -5,7 +5,7 @@ pt-BR:
   STR_BAD_NODES_DESC: "Verifica arquivos RMP para nodos fora dos limites do mapa.{NEWLINE}Isso NÃO causará nenhum travamento, mas serão ignorados pelo jogo, portanto, não funcionarão como pretendido."
 #
   STR_MCD_CHECK: "Verificação de MCD"
-  STR_MCD_CHECK_DESC: "Verifica arquivos MCD para objetos de piso com custo de movimento zero; também verifica referências inválidas de DieMCD/AltMCD."
+  STR_MCD_CHECK_DESC: ""
 #
   STR_PALETTE_CHECK: "Verificação de paleta"
   STR_PALETTE_CHECK_DESC: "Tenta corresponder as paletas das imagens modificadas às paletas oficiais e relata quaisquer imagens que não tenham uma correspondência de 100%."
@@ -105,7 +105,7 @@ pt-BR:
   manaExperience: "Experiência de mana"
   arcingShot: "Tiro arqueado?"
   isFireExtinguisher: "Extintor de incêndio?"
-  isExplodingInHands: "Explode no inventário?"
+  explodeInventory: "Explode no inventário?"
   waypoints: "Número máximo de pontos de rota"
   sprayWaypoints: "Pontos de rota do tiro disperso"
 #
@@ -156,8 +156,11 @@ pt-BR:
   costPanic: "Custo do pânico"
 #
   weight: "Peso"
-  throwRange: "Alcance do arremesso"
-  underwaterThrowRange: "Alcance do arremesso subaquático"
+  throwRange: ""
+  underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "Multip. de precisão de arremesso"
   accuracyThrow: "Precisão do arremesso"
   costThrow: "Custo do arremesso"

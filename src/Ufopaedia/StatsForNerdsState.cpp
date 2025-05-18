@@ -1941,8 +1941,12 @@ void StatsForNerdsState::initItemList()
 	}
 
 	addInteger(ss, itemRule->getWeight(), "weight", 3);
-	addInteger(ss, itemRule->getThrowRange(), "throwRange");
-	addInteger(ss, itemRule->getUnderwaterThrowRange(), "underwaterThrowRange");
+	addInteger(ss, itemRule->getThrowRange(), "throwRange", 200);
+	addInteger(ss, itemRule->getUnderwaterThrowRange(), "underwaterThrowRange", 200);
+
+	addInteger(ss, itemRule->getThrowDropoffRange(), "throwDropoffRange", 99);
+	addInteger(ss, itemRule->getUnderwaterThrowDropoffRange(), "underwaterThrowDropoffRange", 99);
+	addInteger(ss, itemRule->getThrowDropoff(), "throwDropoff", 5);
 
 	addRuleStatBonus(ss, *itemRule->getThrowMultiplierRaw(), "throwMultiplier");
 	addIntegerPercent(ss, itemRule->getAccuracyThrow(), "accuracyThrow", 100);
@@ -2830,6 +2834,7 @@ void StatsForNerdsState::initArmorList()
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, armorRule->getType(), "type");
 		addSingleString(ss, armorRule->getUfopediaType(), "ufopediaType");
+		addInteger(ss, armorRule->getGroup(), "group");
 		addInteger(ss, armorRule->getListOrder(), "listOrder");
 		addRuleNamed(ss, armorRule->getRequiredResearch(), "requires");
 
@@ -3294,6 +3299,7 @@ void StatsForNerdsState::initCraftList()
 
 	addBoolean(ss, craftRule->isOnlyOneSoldierGroupAllowed(), "onlyOneSoldierGroupAllowed");
 	addVectorOfIntegers(ss, craftRule->getAllowedSoldierGroups(), "allowedSoldierGroups");
+	addVectorOfIntegers(ss, craftRule->getAllowedArmorGroups(), "allowedArmorGroups");
 
 	addInteger(ss, craftRule->getMaxSmallSoldiers(), "maxSmallSoldiers", -1);
 	addInteger(ss, craftRule->getMaxLargeSoldiers(), "maxLargeSoldiers", -1);

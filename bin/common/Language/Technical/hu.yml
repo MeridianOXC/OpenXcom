@@ -5,7 +5,7 @@ hu:
   STR_BAD_NODES_DESC: "Ellenőrzi az RMP fájlokat pályahatáron kívüli pontokért.{NEWLINE}Ezek NEM okoznak összeomlást, de a játék nem fogja érzékelni őket."
 #
   STR_MCD_CHECK: "MCD ellenőrzés"
-  STR_MCD_CHECK_DESC: "Ellenőrzi, hogy az MCD fájlok tartalmaznak-e nulla mozgáspont-igényű objektumokat, ill. hibás DieMCD/AltMCD referenciákat."
+  STR_MCD_CHECK_DESC: ""
 #
   STR_PALETTE_CHECK: "Színpaletta egyezés"
   STR_PALETTE_CHECK_DESC: "Megpróbálja egyeztetni a modolt és az eredeti színpalettát és jelent minden képet ami nem egyezik 100% -osan."
@@ -105,7 +105,7 @@ hu:
   manaExperience: "Mana tapasztalat"
   arcingShot: "Ívelt?"
   isFireExtinguisher: "Tüzet olt?"
-  isExplodingInHands: "Felszerelések között felrobban?"
+  explodeInventory: "Felszerelések között felrobban?"
   waypoints: "Max útpontok"
   sprayWaypoints: "Max célpontok"
 #
@@ -158,6 +158,9 @@ hu:
   weight: "Súly"
   throwRange: ""
   underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "Dobási pts. szorzó"
   accuracyThrow: "Dobási pontosság"
   costThrow: "Dobás költsége"

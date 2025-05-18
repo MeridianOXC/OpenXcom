@@ -383,6 +383,7 @@ private:
 	int _monthlyBuyLimit;
 	int _costBuy, _costSell, _transferTime, _weight;
 	int _throwRange, _underwaterThrowRange;
+	int _throwDropoffRange, _underwaterThrowDropoffRange, _throwDropoff;
 	int _bigSprite;
 	int _floorSprite;
 	int _handSprite, _bulletSprite;
@@ -558,10 +559,8 @@ public:
 	int getWeight() const;
 	/// Gets the item's maximum throw range.
 	int getThrowRange() const { return _throwRange; }
-	int getThrowRangeSq() const { return _throwRange * _throwRange; }
 	/// Gets the item's maximum underwater throw range.
 	int getUnderwaterThrowRange() const { return _underwaterThrowRange; }
-	int getUnderwaterThrowRangeSq() const { return _underwaterThrowRange * _underwaterThrowRange; }
 	/// Gets the item's reference in BIGOBS.PCK for use in inventory.
 	int getBigSprite() const;
 	/// Gets the item's reference in FLOOROB.PCK for use in battlescape.
@@ -937,6 +936,8 @@ public:
 	int getMaxRange() const;
 	/// Checks whether a given distance is out of range for this item.
 	bool isOutOfRange(int distanceSq) const;
+	/// Checks whether a given distance is out of throw range for this item.
+	bool isOutOfThrowRange(int distanceSq, int depth) const;
 	/// Get the max range of aimed shots with this weapon.
 	int getAimRange() const;
 	/// Get the max range of snap shots with this weapon.
@@ -945,8 +946,16 @@ public:
 	int getAutoRange() const;
 	/// Get the minimum effective range of this weapon.
 	int getMinRange() const;
+	/// Gets the item's throw dropoff range.
+	int getThrowDropoffRange() const { return _throwDropoffRange; }
+	/// Gets the item's underwater throw dropoff range.
+	int getUnderwaterThrowDropoffRange() const { return _underwaterThrowDropoffRange; }
+	/// Get the throwing accuracy dropoff of this weapon.
+	int getThrowDropoff() const { return _throwDropoff; }
 	/// Get the accuracy dropoff of this weapon.
 	int getDropoff() const;
+	/// Helper function to calculate limits and dropoff.
+	int calculateLimits(int& upperLimit, int& lowerLimit, int depth, BattleActionType type) const;
 	/// Get the number of projectiles to trace.
 	int getShotgunPellets() const;
 	/// Get the shotgun behavior type.

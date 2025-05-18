@@ -254,12 +254,20 @@ void ActionMenuState::handle(Action *action)
 	{
 		_game->popState();
 	}
-	else if (action->getDetails()->type == SDL_KEYDOWN &&
-		(action->getDetails()->key.keysym.sym == Options::keyCancel ||
-		action->getDetails()->key.keysym.sym == Options::keyBattleUseLeftHand ||
-		action->getDetails()->key.keysym.sym == Options::keyBattleUseRightHand))
+	else if (action->getDetails()->type == SDL_KEYDOWN)
 	{
-		_game->popState();
+		auto key = action->getDetails()->key.keysym.sym;
+		if (key == Options::keyCancel || key == Options::keyBattleUseLeftHand || key == Options::keyBattleUseRightHand)
+		{
+			if (key != Options::keyBattleActionItem1 &&
+				key != Options::keyBattleActionItem2 &&
+				key != Options::keyBattleActionItem3 &&
+				key != Options::keyBattleActionItem4 &&
+				key != Options::keyBattleActionItem5)
+			{
+				_game->popState();
+			}
+		}
 	}
 }
 

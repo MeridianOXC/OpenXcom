@@ -141,8 +141,6 @@ public:
 	int getBuyCost() const;
 	/// Does salary depend on rank?
 	bool isSalaryDynamic() const;
-	/// Is a skill menu defined for this soldier type?
-	bool isSkillMenuDefined() const;
 	/// Gets the list of defined skills.
 	const std::vector<const RuleSkill*> &getSkills() const;
 	/// Returns the sprite index for the skill icon sprite.

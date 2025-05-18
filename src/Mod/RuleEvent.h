@@ -26,6 +26,9 @@
 namespace OpenXcom
 {
 
+class Mod;
+class RuleResearch;
+
 /**
  * Represents a custom Geoscape event.
  * Events are spawned using Event Script ruleset.
@@ -46,7 +49,9 @@ private:
 	std::vector<std::string> _everyItemList, _randomItemList;
 	std::vector<std::map<std::string, int> > _randomMultiItemList;
 	WeightedOptions _weightedItemList;
-	std::vector<std::string> _researchList;
+	std::vector<std::string> _researchNames;
+	std::vector<const RuleResearch*> _research;
+	std::vector<std::string> _adhocMissionScriptTags;
 	std::string _interruptResearch;
 	int _timer, _timerRandom;
 	bool _invert;
@@ -57,6 +62,9 @@ public:
 	~RuleEvent() = default;
 	/// Loads the event definition from YAML.
 	void load(const YAML::YamlNodeReader& reader);
+	/// Cross link with other rules.
+	void afterLoad(const Mod* mod);
+
 	/// Gets the event's name.
 	const std::string &getName() const { return _name; }
 	/// Gets the event's description.
@@ -101,7 +109,9 @@ public:
 	/// Gets a list of items; one of them is randomly selected (considering weights) and transferred to HQ stores when this event pops up.
 	const WeightedOptions &getWeightedItemList() const { return _weightedItemList; }
 	/// Gets a list of research projects; one of them will be randomly discovered when this event pops up.
-	const std::vector<std::string> &getResearchList() const { return _researchList; }
+	const std::vector<const RuleResearch*> &getResearchList() const { return _research; }
+	/// Gets a list of adhoc script tags; used for adhoc alien mission generation.
+	const std::vector<std::string> &getAdhocMissionScriptTags() const { return _adhocMissionScriptTags; }
 	/// Gets the research project that will interrupt/terminate an already generated (but not yet popped up) event.
 	const std::string &getInterruptResearch() const { return _interruptResearch; }
 	/// Gets the timer of delay for this event, for it occurring after being spawned with eventScripts ruleset.

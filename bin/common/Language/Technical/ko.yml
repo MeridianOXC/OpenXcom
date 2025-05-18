@@ -105,7 +105,7 @@ ko:
   manaExperience: "마나 경험치"
   arcingShot: "곡사 무기인가?"
   isFireExtinguisher: "소화기인가?"
-  isExplodingInHands: "물품공간 안에서 폭발하나?"
+  explodeInventory: "물품공간 안에서 폭발하나?"
   waypoints: "최대 경유지"
   sprayWaypoints: "난사 경유지"
 #
@@ -156,8 +156,11 @@ ko:
   costPanic: "공포 유발 비용"
 #
   weight: "무게"
-  throwRange: "투척 사거리"
-  underwaterThrowRange: "수중 투척 사거리"
+  throwRange: ""
+  underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "기본 투척 정확도"
   accuracyThrow: "투척 정확도 보정계수"
   costThrow: "투척 비용"

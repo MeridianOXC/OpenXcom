@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TransferItemsState.h"
+#include "ItemLocationsState.h"
 #include "ManufactureDependenciesTreeState.h"
 #include <sstream>
 #include <climits>
@@ -782,7 +783,14 @@ void TransferItemsState::lstItemsMousePress(Action *action)
 			RuleItem *rule = (RuleItem*)getRow().rule;
 			if (rule != 0)
 			{
-				_game->pushState(new ManufactureDependenciesTreeState(rule->getType()));
+				if (_game->isCtrlPressed(true))
+				{
+					_game->pushState(new ItemLocationsState(rule));
+				}
+				else
+				{
+					_game->pushState(new ManufactureDependenciesTreeState(rule->getType()));
+				}
 			}
 		}
 	}

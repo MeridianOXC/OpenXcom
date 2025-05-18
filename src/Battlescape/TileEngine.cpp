@@ -2618,27 +2618,31 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 					ReactionScore rs = determineReactionType(bu, unit);
 					if (rs.attackType != BA_NONE)
 					{
-						if (rs.attackType == BA_SNAPSHOT && Options::battleUFOExtenderAccuracy)
+						int reactionFireThreshold = _save->getBattleGame()->getMod()->getReactionFireThreshold(bu->getFaction());
+						if (reactionFireThreshold > 0)
 						{
 							BattleItem *weapon = rs.weapon;
 							int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(rs.attackType, rs.unit, weapon), _save->getBattleGame()->getMod());
 							int distanceSq = unit->distance3dToUnitSq(bu);
 							int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
-							int upperLimit = weapon->getRules()->getSnapRange();
-							int lowerLimit = weapon->getRules()->getMinRange();
-							if (distance > upperLimit)
 							{
-								accuracy -= (distance - upperLimit) * weapon->getRules()->getDropoff();
-							}
-							else if (distance < lowerLimit)
-							{
-								accuracy -= (lowerLimit - distance) * weapon->getRules()->getDropoff();
+								int upperLimit, lowerLimit;
+								int dropoff = weapon->getRules()->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), rs.attackType);
+
+								if (distance > upperLimit)
+								{
+									accuracy -= (distance - upperLimit) * dropoff;
+								}
+								else if (distance < lowerLimit)
+								{
+									accuracy -= (lowerLimit - distance) * dropoff;
+								}
 							}
 
 							bool outOfRange = weapon->getRules()->isOutOfRange(distanceSq);
 
-							if (accuracy > _save->getBattleGame()->getMod()->getMinReactionAccuracy() && !outOfRange)
+							if (accuracy >= reactionFireThreshold && !outOfRange)
 							{
 								spotters.push_back(rs);
 							}

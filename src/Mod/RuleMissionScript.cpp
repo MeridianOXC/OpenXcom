@@ -89,6 +89,7 @@ void RuleMissionScript::load(const YAML::YamlNodeReader& node)
 	reader.tryRead("counterMin", _counterMin);
 	reader.tryRead("counterMax", _counterMax);
 	reader.tryRead("conditionals", _conditionals);
+	reader.tryRead("adhocMissionScriptTags", _adhocMissionScriptTags);
 	for (const auto& monthWeights : reader["missionWeights"].children())
 	{
 		WeightedOptions* nw = new WeightedOptions();

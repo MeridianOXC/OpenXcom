@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "GeoscapeEventState.h"
+#include "GeoscapeState.h"
 #include <map>
 #include "../Basescape/SellState.h"
 #include "../Engine/Game.h"
@@ -135,6 +136,12 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
  */
 void GeoscapeEventState::eventLogic()
 {
+	if (!_eventRule.getAdhocMissionScriptTags().empty())
+	{
+		auto* geo = _game->getGeoscapeState();
+		geo->determineAlienMissions(false, &_eventRule);
+	}
+
 	SavedGame *save = _game->getSavedGame();
 	Base *hq = save->getBases()->front();
 	const Mod *mod = _game->getMod();
@@ -381,9 +388,8 @@ void GeoscapeEventState::eventLogic()
 	// 4. give bonus research
 	std::vector<const RuleResearch*> possibilities;
 
-	for (auto& rName : rule.getResearchList())
+	for (auto* rRule : rule.getResearchList())
 	{
-		const RuleResearch *rRule = mod->getResearch(rName, true);
 		if (!save->isResearched(rRule, false) || save->hasUndiscoveredGetOneFree(rRule, true))
 		{
 			possibilities.push_back(rRule);

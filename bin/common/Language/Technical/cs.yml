@@ -5,7 +5,7 @@ cs:
   STR_BAD_NODES_DESC: "Prověří RPM soubory pro uzly mimo hranice mapy.{NEWLINE}Sice NEzpůsobují crashe, ale budou hrou ignorovány, a tedy nefunkční."
 #
   STR_MCD_CHECK: "Prověření MCD"
-  STR_MCD_CHECK_DESC: "Prověří MCD soubory pro objekty země s nulovou časovou náročností. Také prověří odkazy DieMCD/AltMCD."
+  STR_MCD_CHECK_DESC: ""
 #
   STR_PALETTE_CHECK: "Srovnání palety"
   STR_PALETTE_CHECK_DESC: "Pokusí se porovnat palety modifikovaných obrázků s originální paletou a nahlásí obrázky s odchylkami."
@@ -105,7 +105,7 @@ cs:
   manaExperience: "Zkušenost s manou"
   arcingShot: "Oblouková?"
   isFireExtinguisher: "Hasí oheň?"
-  isExplodingInHands: "Bouchne v inventáři?"
+  explodeInventory: "Bouchne v inventáři?"
   waypoints: "Max záchytných bodů"
   sprayWaypoints: "Pokrop záchytné body"
 #
@@ -156,8 +156,11 @@ cs:
   costPanic: "Cena zpanikaření"
 #
   weight: "Váha"
-  throwRange: "Dosah vrhu"
-  underwaterThrowRange: "Dosah vrhu pod vodou"
+  throwRange: ""
+  underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "Výpočet přes. vrhu"
   accuracyThrow: "Přesnost vrhu"
   costThrow: "Cena vrhnutí"

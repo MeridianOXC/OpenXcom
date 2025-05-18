@@ -5,7 +5,7 @@ fi:
   STR_BAD_NODES_DESC: "Tarkistaa RMP-tiedostoista kentän rajojen ulkopuoliset solmut.{NEWLINE}Nämä EIVÄT aiheuta kaatumisia, mutta peli jättää ne huomiotta eivätkä siis toimi tarkoitetulla tavalla."
 #
   STR_MCD_CHECK: "MCD-tarkistus"
-  STR_MCD_CHECK_DESC: "Tarkistaa MCD-tiedostojen ilmaisen liikkumisen lattiaobjektit; tarkistaa myös virheelliset DieMCD-/AltMCD-viittaukset."
+  STR_MCD_CHECK_DESC: ""
 #
   STR_PALETTE_CHECK: "Palettisovitus"
   STR_PALETTE_CHECK_DESC: "Pyrkii sovittamaan muunneltujen kuvien paletit virallisiin paletteihin ja antaa selon kaikista kuvista, joilla ei ole 100 % vastaavuutta."
@@ -105,7 +105,7 @@ fi:
   manaExperience: "Manakokemus"
   arcingShot: "Kaareva?"
   isFireExtinguisher: "Sammuttaa tulta?"
-  isExplodingInHands: "Räjähtää repussa?"
+  explodeInventory: "Räjähtää repussa?"
   waypoints: "Enimmäisvälietapit"
   sprayWaypoints: "Epätarkan tulen välietapit"
 #
@@ -156,8 +156,11 @@ fi:
   costPanic: "Paniikkihyökkäyksen hinta"
 #
   weight: "Paino"
-  throwRange: "Heittokantama"
-  underwaterThrowRange: "Vedenalainen heittokantama"
+  throwRange: ""
+  underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "Heiton tarkkuuskerroin"
   accuracyThrow: "Heittotarkkuus"
   costThrow: "Heiton hinta"

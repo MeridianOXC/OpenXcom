@@ -347,15 +347,6 @@ bool RuleSoldier::isSalaryDynamic() const
 }
 
 /**
- * Is a skill menu defined?
- * @return True if a skill menu has been defined, false otherwise.
- */
-bool RuleSoldier::isSkillMenuDefined() const
-{
-	return !_skills.empty();
-}
-
-/**
  * Gets the list of defined skills.
  * @return The list of defined skills.
  */

@@ -105,7 +105,7 @@ uk:
   manaExperience: "Досвід мани"
   arcingShot: "Освітлювач?"
   isFireExtinguisher: "Вогнегасник?"
-  isExplodingInHands: "Вибухає в інвентарі?"
+  explodeInventory: "Вибухає в інвентарі?"
   waypoints: "Максимальна кількість маршрутних точок"
   sprayWaypoints: "Вогневі точки"
 #
@@ -156,8 +156,11 @@ uk:
   costPanic: "Вартість паніки"
 #
   weight: "Вага"
-  throwRange: "Дальність кидка"
-  underwaterThrowRange: "Дальність підводного кидка"
+  throwRange: ""
+  underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "Множник точності кидка"
   accuracyThrow: "Точність кидка"
   costThrow: "Вартість кидка"

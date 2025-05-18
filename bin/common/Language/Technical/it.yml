@@ -105,7 +105,7 @@ it:
   manaExperience: "Esperienza mana"
   arcingShot: "Archi?"
   isFireExtinguisher: "Estintore?"
-  isExplodingInHands: "Esplode in inventario?"
+  explodeInventory: "Esplode in inventario?"
   waypoints: "Waypoint massimi"
   sprayWaypoints: "Waypoint sventagliata"
 #
@@ -156,8 +156,11 @@ it:
   costPanic: "Costo panico"
 #
   weight: "Peso"
-  throwRange: "Raggio di tiro"
-  underwaterThrowRange: "Raggio di tiro sott'acqua"
+  throwRange: ""
+  underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "Molt. precisione tiro"
   accuracyThrow: "Precisione tiro"
   costThrow: "Costo tiro"

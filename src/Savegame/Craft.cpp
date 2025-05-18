@@ -1527,6 +1527,29 @@ bool Craft::areTooManyItemsOnboard()
 }
 
 /**
+ * Checks armor constraints.
+ * @return True if there are soldiers wearing banned armor onboard.
+ */
+bool Craft::areBannedArmorsOnboard()
+{
+	if (!_rules->getAllowedArmorGroups().empty())
+	{
+		auto& allowedArmorGroups = _rules->getAllowedArmorGroups();
+		for (auto* xsoldier : *_base->getSoldiers())
+		{
+			if (xsoldier->getCraft() == this)
+			{
+				if (std::find(allowedArmorGroups.begin(), allowedArmorGroups.end(), xsoldier->getArmor()->getGroup()) == allowedArmorGroups.end())
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+/**
 * Checks if there are enough pilots onboard.
 * @return True if the craft has enough pilots.
 */
@@ -2211,6 +2234,14 @@ CraftPlacementErrors Craft::validateAddingSoldier(int space, const Soldier* s) c
 		if (s->getRules()->getGroup() != currentGroup)
 		{
 			return CPE_SoldierGroupNotSame;
+		}
+	}
+	auto& allowedArmorGroups = _rules->getAllowedArmorGroups();
+	if (!allowedArmorGroups.empty())
+	{
+		if (std::find(allowedArmorGroups.begin(), allowedArmorGroups.end(), s->getArmor()->getGroup()) == allowedArmorGroups.end())
+		{
+			return CPE_ArmorGroupNotAllowed;
 		}
 	}
 	return CPE_None;

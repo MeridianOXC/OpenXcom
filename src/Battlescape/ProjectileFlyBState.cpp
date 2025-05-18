@@ -891,19 +891,11 @@ bool ProjectileFlyBState::validThrowRange(BattleAction *action, Position origin,
 	int ydiff = action->target.y - action->actor->getPosition().y;
 	int realDistanceSq = (xdiff * xdiff) + (ydiff * ydiff);
 
-	if (depth > 0)
+	int compatibilityDistanceSq = action->actor->distance3dToPositionSq(action->target); // 3d distance for compatibility with Map::drawTerrain()
+	if (action->weapon->getRules()->isOutOfThrowRange(compatibilityDistanceSq, depth))
 	{
-		if (action->weapon->getRules()->getUnderwaterThrowRange() > 0)
-		{
-			return realDistanceSq <= action->weapon->getRules()->getUnderwaterThrowRangeSq();
-		}
-	}
-	else
-	{
-		if (action->weapon->getRules()->getThrowRange() > 0)
-		{
-			return realDistanceSq <= action->weapon->getRules()->getThrowRangeSq();
-		}
+		// if out of item's throw range, stop... no need to check weight- and strength-based range
+		return false;
 	}
 
 	double realDistance = sqrt((double)realDistanceSq);
@@ -989,27 +981,18 @@ void ProjectileFlyBState::projectileHitUnit(Position pos)
 			int distanceSq = _action.actor->distance3dToUnitSq(victim);
 			int distance = (int)std::ceil(sqrt(float(distanceSq)));
 			int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetAferShoot(_action, _ammo), _parent->getMod());
-			// code from Map::drawTerrain(), where the crosshair accuracy is calculated
-			if (Options::battleUFOExtenderAccuracy)
+
 			{
-				const RuleItem* weapon = _action.weapon->getRules();
-				int upperLimit = weapon->getAimRange();
-				int lowerLimit = weapon->getMinRange();
-				if (_action.type == BA_AUTOSHOT)
-				{
-					upperLimit = weapon->getAutoRange();
-				}
-				else if (_action.type == BA_SNAPSHOT)
-				{
-					upperLimit = weapon->getSnapRange();
-				}
+				int upperLimit, lowerLimit;
+				int dropoff = _action.weapon->getRules()->calculateLimits(upperLimit, lowerLimit, _parent->getSave()->getDepth(), _action.type);
+
 				if (distance > upperLimit)
 				{
-					accuracy -= (distance - upperLimit) * weapon->getDropoff();
+					accuracy -= (distance - upperLimit) * dropoff;
 				}
 				else if (distance < lowerLimit)
 				{
-					accuracy -= (lowerLimit - distance) * weapon->getDropoff();
+					accuracy -= (lowerLimit - distance) * dropoff;
 				}
 				if (accuracy < 0)
 				{

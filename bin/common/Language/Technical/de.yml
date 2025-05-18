@@ -5,7 +5,7 @@ de:
   STR_BAD_NODES_DESC: "Prüft die RMP-Dateien auf Knoten außerhalb der Kartengrenzen.{NEWLINE}Diese verursachen zwar KEINE Abstürze, werden aber vom Spiel ignoriert und funktionieren daher nicht wie vorgesehen."
 #
   STR_MCD_CHECK: "MCD Überprüfung"
-  STR_MCD_CHECK_DESC: "Prüfe MCD Dateien für Bodenobjekte mit Null Bewegungskosten; prüfe auch nach falschen DieMCD/AltMCD Referenzen"
+  STR_MCD_CHECK_DESC: ""
 #
   STR_PALETTE_CHECK: "Farbabgleich"
   STR_PALETTE_CHECK_DESC: "Versucht, die Paletten der modifizierten Bilder mit den offiziellen Paletten abzugleichen und meldet alle Bilder, die nicht zu 100% übereinstimmen."
@@ -105,7 +105,7 @@ de:
   manaExperience: "Mana-Erfahrung"
   arcingShot: "Lichtbogenbildung?"
   isFireExtinguisher: "Feuerlöscher?"
-  isExplodingInHands: "Explodiert im Inventar?"
+  explodeInventory: "Explodiert im Inventar?"
   waypoints: "Maximale Wegpunkte"
   sprayWaypoints: "Wegpunkte für Streuschüsse"
 #
@@ -156,8 +156,11 @@ de:
   costPanic: "Panik Kosten"
 #
   weight: "Gewicht"
-  throwRange: "Wurfreichweite"
-  underwaterThrowRange: "Unterwasser-Wurfweite"
+  throwRange: ""
+  underwaterThrowRange: ""
+  throwDropoffRange: ""
+  underwaterThrowDropoffRange: ""
+  throwDropoff: ""
   throwMultiplier: "Multiplikator der Wurfgenauigkeit"
   accuracyThrow: "Wurfgenauigkeit"
   costThrow: "Wurfkosten"

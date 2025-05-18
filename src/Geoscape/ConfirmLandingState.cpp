@@ -157,6 +157,11 @@ void ConfirmLandingState::init()
 */
 std::string ConfirmLandingState::checkStartingCondition()
 {
+	if (_craft->areBannedArmorsOnboard())
+	{
+		return tr("STR_ARMOR_NOT_ALLOWED_ONBOARD");
+	}
+
 	Ufo* u = dynamic_cast<Ufo*>(_craft->getDestination());
 	MissionSite* m = dynamic_cast<MissionSite*>(_craft->getDestination());
 	AlienBase* b = dynamic_cast<AlienBase*>(_craft->getDestination());

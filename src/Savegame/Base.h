@@ -246,6 +246,8 @@ public:
 	int getMonthlyMaintenace() const;
 	/// Get the list of base's ResearchProject
 	const std::vector<ResearchProject *> & getResearch() const;
+	/// Get the list of base's ResearchProject
+	std::vector<ResearchProject *> & getResearch() { return _research; }
 	/// Add a new ResearchProject to the Base
 	void addResearch(ResearchProject *);
 	/// Remove a ResearchProject from the Base

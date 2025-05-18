@@ -105,7 +105,7 @@ ru:
   manaExperience: "Опыт для маны"
   arcingShot: "Навесная стрельба?"
   isFireExtinguisher: "Тушение огня?"
-  isExplodingInHands: "Взрывается в инвентаре?"
+  explodeInventory: "Взрывается в инвентаре?"
   waypoints: "Макс. точек траектории"
   sprayWaypoints: "Точек веерного огня"
 #
@@ -156,8 +156,11 @@ ru:
   costPanic: "Стоимость попытки вызова паники"
 #
   weight: "Вес"
-  throwRange: "Дальность броска"
-  underwaterThrowRange: "Дальность броска под водой"
+  throwRange: "Макс. дальн. броска (поверх.)"
+  underwaterThrowRange: "Макс. дальн. броска (вода)"
+  throwDropoffRange: "Эффективная дальн. броска (поверх.)"
+  underwaterThrowDropoffRange: "Эффективная дальн. броска (вода)"
+  throwDropoff: "Снижение точности броска/тайл"
   throwMultiplier: "Множит. точности броска"
   accuracyThrow: "Точность броска"
   costThrow: "Стоимость броска"

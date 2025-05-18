@@ -174,6 +174,7 @@ private:
 	bool _capturable;
 	bool _vip;
 	bool _bannedInNextStage;
+	bool _skillMenuCheck;
 	ScriptValues<BattleUnit> _scriptValues;
 
 	/// Calculate stat improvement.
@@ -846,6 +847,8 @@ public:
 	bool isVIP() const { return _vip; }
 	/// Is this unit banned in the next stage?
 	bool isBannedInNextStage() const { return _bannedInNextStage; }
+	/// Is at least one soldier skill usable? (i.e. shown in the skill menu)
+	bool skillMenuCheck() const { return _skillMenuCheck; }
 	/// Is the unit eagerly picking up weapons?
 	bool getPickUpWeaponsMoreActively() const { return _pickUpWeaponsMoreActively; }
 	/// Is the unit afraid to pathfind through fire?

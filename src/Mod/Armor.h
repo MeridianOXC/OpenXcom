@@ -185,6 +185,7 @@ private:
 	bool _isAlwaysVisible = false;
 	int _standHeight, _kneelHeight, _floatHeight;
 	int _meleeOriginVoxelVerticalOffset;
+	int _group;
 	int _listOrder;
 public:
 	/// Creates a blank armor ruleset.
@@ -475,6 +476,8 @@ public:
 	/// Gets a unit's offset for melee attacks.
 	int getMeleeOriginVoxelVerticalOffset() const { return _meleeOriginVoxelVerticalOffset; }
 
+	/// Gets the armor type group.
+	int getGroup() const { return _group; }
 	/// Get the list weight for this armor.
 	int getListOrder() const { return _listOrder; }
 };

@@ -59,6 +59,15 @@ public:
 	void fillProjectList(size_t scrl);
 	/// Updates the research list.
 	void init() override;
+
+	/// Handler for clicking the reordering up button.
+	void lstResearchLeftArrowClick(Action* action);
+	/// Moves a research topic up.
+	void moveTopicUp(Action* action, unsigned int row, bool max = false);
+	/// Handler for clicking the reordering down button.
+	void lstResearchRightArrowClick(Action* action);
+	/// Moves a research topic down.
+	void moveTopicDown(Action* action, unsigned int row, bool max = false);
 };
 
 }

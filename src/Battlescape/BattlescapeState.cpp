@@ -2680,12 +2680,7 @@ void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 	// if we have psi amp with icon then it will show one button only, but if we have two psi amps and one with icon is second (this is important) then we will show both buttons.
 	bool hasPsiWeapon = psiWeapon != 0 && psiWeapon != specialWeapon;
 
-	bool hasSkills = false;
-	Soldier* soldier = battleUnit->getGeoscapeSoldier();
-	if (soldier)
-	{
-		hasSkills = soldier->getRules()->isSkillMenuDefined();
-	}
+	bool hasSkills = battleUnit->getGeoscapeSoldier() && battleUnit->skillMenuCheck();
 
 	resetUiButton();
 
@@ -2708,7 +2703,7 @@ void BattlescapeState::updateUiButton(const BattleUnit *battleUnit)
 	}
 	if (hasSkills)
 	{
-		show(_btnSkills, soldier->getRules()->getSkillIconSprite());
+		show(_btnSkills, battleUnit->getGeoscapeSoldier()->getRules()->getSkillIconSprite());
 	}
 	if (hasPsiWeapon)
 	{

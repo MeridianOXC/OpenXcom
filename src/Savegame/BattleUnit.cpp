@@ -74,7 +74,7 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	_statistics(), _murdererId(0), _mindControllerID(0), _fatalShotSide(SIDE_FRONT), _fatalShotBodyPart(BODYPART_HEAD), _armor(0),
 	_geoscapeSoldier(soldier), _unitRules(0), _rankInt(0), _turretType(-1), _hidingForTurn(false), _floorAbove(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
-	_capturable(true), _vip(false), _bannedInNextStage(false)
+	_capturable(true), _vip(false), _bannedInNextStage(false), _skillMenuCheck(false)
 {
 	_name = soldier->getName(true);
 	_id = soldier->getId();
@@ -117,6 +117,21 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	deriveSoldierRank();
 
 	updateArmorFromSoldier(mod, soldier, soldier->getArmor(), depth, false, sc);
+
+	// soldier bonus cache was built above in updateArmorFromSoldier(), so we can also calculate this now
+	if (_geoscapeSoldier)
+	{
+		for (auto* skill : _geoscapeSoldier->getRules()->getSkills())
+		{
+			if (_geoscapeSoldier->hasAllRequiredBonusesForSkill(skill)
+				&& (skill->getCost().Time > 0 || skill->getCost().Mana > 0)
+				&& (!skill->isPsiRequired() || getBaseStats()->psiSkill > 0))
+			{
+				_skillMenuCheck = true;
+				break;
+			}
+		}
+	}
 }
 
 /**
@@ -407,7 +422,7 @@ BattleUnit::BattleUnit(const Mod *mod, Unit *unit, UnitFaction faction, int id, 
 	_fatalShotBodyPart(BODYPART_HEAD), _armor(armor), _geoscapeSoldier(0),  _unitRules(unit),
 	_rankInt(0), _turretType(-1), _hidingForTurn(false), _respawn(false), _alreadyRespawned(false),
 	_isLeeroyJenkins(false), _summonedPlayerUnit(false), _resummonedFakeCivilian(false), _pickUpWeaponsMoreActively(false), _disableIndicators(false),
-	_vip(false), _bannedInNextStage(false)
+	_vip(false), _bannedInNextStage(false), _skillMenuCheck(false)
 {
 	if (enviro)
 	{

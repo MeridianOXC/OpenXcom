@@ -2899,7 +2899,7 @@ void GeoscapeState::time1Month()
 	popup(new MonthlyReportState(_globe));
 
 	// Handle Xcom Operatives discovering bases
-	if (!_game->getSavedGame()->getAlienBases()->empty() && RNG::percent(20))
+	if (!_game->getSavedGame()->getAlienBases()->empty() && RNG::percent(_game->getMod()->getChanceToDetectAlienBaseEachMonth()))
 	{
 		for (auto* ab : *_game->getSavedGame()->getAlienBases())
 		{
@@ -3578,7 +3578,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 /**
  * Determine the alien missions to start this month.
  */
-void GeoscapeState::determineAlienMissions()
+void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eventRules)
 {
 	SavedGame *save = _game->getSavedGame();
 	AlienStrategy &strategy = save->getAlienStrategy();
@@ -3591,7 +3591,10 @@ void GeoscapeState::determineAlienMissions()
 		performanceBonus = 0; // bonus only, no malus
 	}
 	int64_t currentFunds = save->getFunds();
-	currentFunds += save->getCountryFunding() + performanceBonus - save->getBaseMaintenance(); // peek into the next month
+	if (isNewMonth)
+	{
+		currentFunds += save->getCountryFunding() + performanceBonus - save->getBaseMaintenance(); // peek into the next month
+	}
 	std::vector<RuleMissionScript*> availableMissions;
 	std::unordered_map<int, bool> conditions;
 
@@ -3620,6 +3623,7 @@ void GeoscapeState::determineAlienMissions()
 	}
 
 	// sorry to interrupt, but before we start determining the actual monthly missions, let's determine and/or adjust our overall game plan
+	if (isNewMonth)
 	{
 		std::vector<RuleArcScript*> relevantArcScripts;
 
@@ -3815,11 +3819,28 @@ void GeoscapeState::determineAlienMissions()
 	}
 
 	// well, here it is, ladies and gents, the nuts and bolts behind the geoscape mission scheduling.
+	const std::vector<std::string>* scriptList = isNewMonth ? mod->getMissionScriptList() : mod->getAdhocScriptList();
 
 	// first we need to build a list of "valid" commands
-	for (auto& missionScriptName : *mod->getMissionScriptList())
+	for (auto& missionScriptName : *scriptList)
 	{
-		RuleMissionScript *command = mod->getMissionScript(missionScriptName);
+		RuleMissionScript *command = isNewMonth ? mod->getMissionScript(missionScriptName) : mod->getAdhocScript(missionScriptName);
+
+		// level zero condition check: filter adhoc mission scripts by tags
+		if (!isNewMonth && eventRules)
+		{
+			bool matchFound = false;
+			for (auto& atag : eventRules->getAdhocMissionScriptTags())
+			{
+				for (auto& btag : command->getAdhocMissionScriptTags())
+				{
+					if (atag == btag) matchFound = true;
+					break;
+				}
+				if (matchFound) break;
+			}
+			if (!matchFound) continue;
+		}
 
 			// level one condition check: make sure we're within our time constraints
 		if (command->getFirstMonth() <= month &&
@@ -4002,6 +4023,7 @@ void GeoscapeState::determineAlienMissions()
 	}
 
 	// after the mission scripts, it's time for the event scripts
+	if (isNewMonth)
 	{
 		std::vector<RuleEventScript *> relevantEventScripts;
 
@@ -4181,7 +4203,7 @@ void GeoscapeState::determineAlienMissions()
 	}
 
 	// Alien base upgrades happen only AFTER the first game month
-	if (month > 0)
+	if (isNewMonth && month > 0)
 	{
 		for (auto* alienBase : *save->getAlienBases())
 		{

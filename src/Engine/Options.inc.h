@@ -109,6 +109,7 @@ OPT bool oxcePlayBriefingMusicDuringEquipment;
 OPT int oxceNightVisionColor;
 OPT int oxceAutoNightVisionThreshold;
 OPT int oxceShowAccuracyOnCrosshair;
+OPT int oxceReactionFireThreshold;
 OPT bool oxceAutoSell;
 OPT bool oxceAutomaticPromotions;
 OPT bool oxceEnableOffCentreShooting;
@@ -161,6 +162,7 @@ OPT int oxceTogglePersonalLightType;
 OPT int oxceToggleNightVisionType;
 OPT int oxceToggleBrightnessType;
 
+OPT bool oxceDisableInfoOnThrowCursor;
 OPT bool oxceSwapDontReselectActions;
 OPT bool oxceEnableUnitResponseSounds;
 OPT int oxceHiddenMovementBackgroundChangeFrequency;

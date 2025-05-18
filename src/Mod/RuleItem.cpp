@@ -148,7 +148,8 @@ const float TilesToVexels = 16.0f;
  */
 RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_type(type), _name(type), _vehicleUnit(nullptr), _vehicleFixedAmmoSlot(0), _size(0.0),
-	_monthlyBuyLimit(0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3), _throwRange(0), _underwaterThrowRange(0),
+	_monthlyBuyLimit(0), _costBuy(0), _costSell(0), _transferTime(24), _weight(3), _throwRange(200), _underwaterThrowRange(200),
+	_throwDropoffRange(99), _underwaterThrowDropoffRange(99), _throwDropoff(5),
 	_bigSprite(-1), _floorSprite(-1), _handSprite(120), _bulletSprite(-1), _specialIconSprite(-1),
 	_hitAnimation(0), _hitAnimFrames(-1), _hitMissAnimation(-1), _hitMissAnimFrames(-1),
 	_meleeAnimation(0), _meleeAnimFrames(-1), _meleeMissAnimation(-1), _meleeMissAnimFrames(-1),
@@ -337,6 +338,9 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	reader.tryRead("weight", _weight);
 	reader.tryRead("throwRange", _throwRange);
 	reader.tryRead("underwaterThrowRange", _underwaterThrowRange);
+	reader.tryRead("throwDropoffRange", _throwDropoffRange);
+	reader.tryRead("underwaterThrowDropoffRange", _underwaterThrowDropoffRange);
+	reader.tryRead("throwDropoff", _throwDropoff);
 
 	mod->loadSpriteOffset(_type, _bigSprite, reader["bigSprite"], "BIGOBS.PCK");
 	mod->loadSpriteOffset(_type, _floorSprite, reader["floorSprite"], "FLOOROB.PCK");
@@ -2293,6 +2297,33 @@ bool RuleItem::isOutOfRange(int distanceSq) const
 }
 
 /**
+ * Checks whether a given distance is out of throw range for this item.
+ * @return True, if out of throw range.
+ */
+bool RuleItem::isOutOfThrowRange(int distanceSq, int depth) const
+{
+	bool outOfRange = false;
+
+	if (depth > 0)
+	{
+		if (distanceSq > _underwaterThrowRange * _underwaterThrowRange)
+		{
+			outOfRange = true;
+		}
+	}
+	else
+	{
+		if (distanceSq > _throwRange * _throwRange)
+		{
+			outOfRange = true;
+		}
+	}
+
+	// no special handling for short ranges and diagonals
+	return outOfRange;
+}
+
+/**
  * Gets the maximum effective range of this weapon when using Aimed Shot.
  * @return The maximum range.
  */
@@ -2335,6 +2366,36 @@ int RuleItem::getMinRange() const
 int RuleItem::getDropoff() const
 {
 	return _dropoff;
+}
+
+/**
+ * Helper function to calculate limits and dropoff.
+ * @return The per-tile dropoff.
+ */
+int RuleItem::calculateLimits(int& upperLimit, int& lowerLimit, int depth, BattleActionType type) const
+{
+	upperLimit = type == BA_THROW ? 200 : getAimRange();
+	lowerLimit = type == BA_THROW ?   0 : getMinRange();
+
+	if (Options::battleUFOExtenderAccuracy)
+	{
+		switch (type)
+		{
+		case BA_SNAPSHOT:
+			upperLimit = getSnapRange();
+			break;
+		case BA_AUTOSHOT:
+			upperLimit = getAutoRange();
+			break;
+		case BA_THROW:
+			upperLimit = depth > 0 ? getUnderwaterThrowDropoffRange() : getThrowDropoffRange();
+			break;
+		default:
+			break;
+		}
+	}
+
+	return type == BA_THROW ? getThrowDropoff() : getDropoff();
 }
 
 /**
