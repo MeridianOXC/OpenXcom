@@ -305,7 +305,9 @@ void ResearchState::moveTopicUp(Action* action, unsigned int row, bool max)
 		std::swap(topics[row], topics[row - 1]);
 		if (row != _lstResearch->getScroll())
 		{
+#ifndef __MOBILE__
 			SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() - static_cast<Uint16>(8 * action->getYScale()));
+#endif
 		}
 		else
 		{
@@ -356,7 +358,9 @@ void ResearchState::moveTopicDown(Action* action, unsigned int row, bool max)
 		std::swap(topics[row], topics[row + 1]);
 		if (row != _lstResearch->getVisibleRows() - 1 + _lstResearch->getScroll())
 		{
+#ifndef __MOBILE__
 			SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() + static_cast<Uint16>(8 * action->getYScale()));
+#endif
 		}
 		else
 		{
