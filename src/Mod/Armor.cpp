@@ -37,7 +37,9 @@ Armor::Armor(const std::string &type, int listOrder) :
 	_type(type), _infiniteSupply(false), _frontArmor(0), _sideArmor(0), _leftArmorDiff(0), _rearArmor(0), _underArmor(0),
 	_drawingRoutine(0), _drawBubbles(false), _movementType(MT_WALK), _specab(SPECAB_NONE), _turnBeforeFirstStep(false), _turnCost(1), _moveSound(-1), _size(1), _weight(0),
 	_visibilityAtDark(0), _visibilityAtDay(0),
-	_camouflageAtDay(0), _camouflageAtDark(0), _antiCamouflageAtDay(0), _antiCamouflageAtDark(0), _heatVision(0), _psiVision(0), _psiCamouflage(0),
+	_camouflageAtDay(0), _camouflageAtDark(0), _antiCamouflageAtDay(0), _antiCamouflageAtDark(0),
+	_visibilityThroughSmoke(0), _visibilityThroughFire(100),
+	_psiVision(0), _psiCamouflage(0),
 	_deathFrames(3), _constantAnimation(false), _hasInventory(true), _forcedTorso(TORSO_USE_GENDER),
 	_faceColorGroup(0), _hairColorGroup(0), _utileColorGroup(0), _rankColorGroup(0),
 	_fearImmune(defBoolNullable), _bleedImmune(defBoolNullable), _painImmune(defBoolNullable), _zombiImmune(defBoolNullable),
@@ -172,7 +174,8 @@ void Armor::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &pa
 	reader.tryRead("camouflageAtDark", _camouflageAtDark);
 	reader.tryRead("antiCamouflageAtDay", _antiCamouflageAtDay);
 	reader.tryRead("antiCamouflageAtDark", _antiCamouflageAtDark);
-	reader.tryRead("heatVision", _heatVision);
+	reader.tryRead("heatVision", _visibilityThroughSmoke);
+	reader.tryRead("visibilityThroughFire", _visibilityThroughFire);
 	reader.tryRead("psiVision", _psiVision);
 	reader.tryRead("psiCamouflage", _psiCamouflage);
 	reader.tryRead("alwaysVisible", _isAlwaysVisible);
@@ -832,15 +835,6 @@ int Armor::getAntiCamouflageAtDark() const
 }
 
 /**
-* Gets info about heat vision.
-* @return How much smoke is ignored, in percent.
-*/
-int Armor::getHeatVision() const
-{
-	return _heatVision;
-}
-
-/**
 * Gets info about psi vision.
 * @return How many tiles can units be sensed even through solid obstacles (e.g. walls).
 */
@@ -1246,7 +1240,8 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	ar.add<&Armor::getCamouflageAtDay>("getCamouflageAtDay");
 	ar.add<&Armor::getAntiCamouflageAtDark>("getAntiCamouflageAtDark");
 	ar.add<&Armor::getAntiCamouflageAtDay>("getAntiCamouflageAtDay");
-	ar.add<&Armor::getHeatVision>("getHeatVision");
+	ar.add<&Armor::getVisibilityThroughSmoke>("getHeatVision", "getVisibilityThroughSmoke");
+	ar.add<&Armor::getVisibilityThroughFire>("getVisibilityThroughFire", "getVisibilityThroughFire");
 	ar.add<&Armor::getPersonalLightFriend>("getPersonalLight");
 	ar.add<&Armor::getPersonalLightHostile>("getPersonalLightHostile");
 	ar.add<&Armor::getPersonalLightNeutral>("getPersonalLightNeutral");

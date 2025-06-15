@@ -41,7 +41,7 @@ struct RuleCraftStats
 {
 	int fuelMax, damageMax, speedMax, accel;
 	int radarRange, radarChance, sightRange;
-	int hitBonus, avoidBonus, powerBonus, armor;
+	int hitBonus, avoidBonus, avoidBonus2, powerBonus, armor;
 	int shieldCapacity, shieldRecharge, shieldRechargeInGeoscape, shieldBleedThrough;
 	int soldiers, vehicles;
 	int maxItems;
@@ -51,7 +51,7 @@ struct RuleCraftStats
 	RuleCraftStats() :
 		fuelMax(0), damageMax(0), speedMax(0), accel(0),
 		radarRange(0), radarChance(0), sightRange(0),
-		hitBonus(0), avoidBonus(0), powerBonus(0), armor(0),
+		hitBonus(0), avoidBonus(0), avoidBonus2(0), powerBonus(0), armor(0),
 		shieldCapacity(0), shieldRecharge(0), shieldRechargeInGeoscape(0), shieldBleedThrough(0),
 		soldiers(0), vehicles(0),
 		maxItems(0), maxStorageSpace(0.0)
@@ -70,6 +70,7 @@ struct RuleCraftStats
 		sightRange += r.sightRange;
 		hitBonus += r.hitBonus;
 		avoidBonus += r.avoidBonus;
+		avoidBonus2 += r.avoidBonus2;
 		powerBonus += r.powerBonus;
 		armor += r.armor;
 		shieldCapacity += r.shieldCapacity;
@@ -94,6 +95,7 @@ struct RuleCraftStats
 		sightRange -= r.sightRange;
 		hitBonus -= r.hitBonus;
 		avoidBonus -= r.avoidBonus;
+		avoidBonus2 -= r.avoidBonus2;
 		powerBonus -= r.powerBonus;
 		armor -= r.armor;
 		shieldCapacity -= r.shieldCapacity;
@@ -126,6 +128,7 @@ struct RuleCraftStats
 		reader.tryRead("sightRange", sightRange);
 		reader.tryRead("hitBonus", hitBonus);
 		reader.tryRead("avoidBonus", avoidBonus);
+		reader.tryRead("avoidBonus2", avoidBonus2);
 		reader.tryRead("powerBonus", powerBonus);
 		reader.tryRead("armor", armor);
 		reader.tryRead("shieldCapacity", shieldCapacity);
@@ -150,6 +153,7 @@ struct RuleCraftStats
 		b.template addField<Stat, &RuleCraftStats::sightRange>(prefix + "getSightRange");
 		b.template addField<Stat, &RuleCraftStats::hitBonus>(prefix + "getHitBonus");
 		b.template addField<Stat, &RuleCraftStats::avoidBonus>(prefix + "getAvoidBonus");
+		b.template addField<Stat, &RuleCraftStats::avoidBonus2>(prefix + "getAvoidBonus2");
 		b.template addField<Stat, &RuleCraftStats::powerBonus>(prefix + "getPowerBonus");
 		b.template addField<Stat, &RuleCraftStats::armor>(prefix + "getArmor");
 		b.template addField<Stat, &RuleCraftStats::shieldCapacity>(prefix + "getShieldCapacity");

@@ -200,6 +200,222 @@ void AIModule::dont_think(BattleAction *action)
 }
 
 /**
+ * Tries to use self-target medikit if needed and desired (used for AI).
+ * @return Was it used?
+ */
+bool AIModule::medikit_think(BattleMediKitType healOrStim)
+{
+	// 1. sanity checks, division by zero
+	BattleUnit* self = _unit;
+
+	if (self->getBaseStats()->stamina <= 0 || self->getBaseStats()->health <= 0)
+	{
+		return false;
+	}
+
+	// 2. quick unit checks (without RNG)
+	int totalWounds = self->getFatalWounds();
+	int percentHealthLeft = Clamp((self->getHealth() - self->getStunlevel()) * 100 / self->getBaseStats()->health, 0, 100);
+	int percentEnergyLeft = Clamp(self->getEnergy() * 100 / self->getBaseStats()->stamina, 0, 100);
+
+	if (healOrStim == BMT_HEAL)
+	{
+		if (totalWounds <= 0)
+			return false;
+	}
+	else if (healOrStim == BMT_STIMULANT)
+	{
+		if (self->getStunlevel() <= 0 && percentEnergyLeft >= 40)
+			return false;
+	}
+	else
+	{
+		// unsupported medikit type
+		return false;
+	}
+
+	// 3. quick item checks
+	std::vector<BattleItem*> usableMedikits;
+
+	for (auto* item : *self->getInventory())
+	{
+		const RuleItem* itemRule = item->getRules();
+		if (itemRule->getBattleType() == BT_MEDIKIT &&
+			(itemRule->getMediKitType() == healOrStim || itemRule->getMediKitType() == BMT_NORMAL) &&
+			itemRule->getAllowTargetSelf())
+		{
+			if (_save->getTurn() < itemRule->getAIUseDelay(_save->getMod()))
+			{
+				// can't use it yet, too soon
+				continue;
+			}
+			usableMedikits.push_back(item);
+		}
+	}
+	if (usableMedikits.empty())
+	{
+		// no compatible medikits available
+		return false;
+	}
+
+	// 4. detailed unit checks (with RNG)
+	bool wantsToHeal = false;
+	bool wantsToStimStun = false;
+	bool wantsToStimEnergy = false;
+
+	if (healOrStim == BMT_HEAL)
+	{
+		if (totalWounds > 0)
+		{
+			if (self->getStunlevel() + totalWounds >= self->getHealth())
+			{
+				// going to die or pass out unless we do something, so do something!
+				wantsToHeal = true;
+			}
+			else
+			{
+				//  0% health left = 120% chance to heal
+				// 15% health left =  60% chance to heal
+				// 30% health left =   0% chance to heal (actually 5% chance because of random heal wish)
+				int chanceToHeal = 120 - (percentHealthLeft * 4);
+				if (chanceToHeal <= 0)
+				{
+					// 5% for random heal wish (it's not urgent, but you know damage accumulates over time)
+					chanceToHeal = 5;
+				}
+				wantsToHeal = RNG::percent(chanceToHeal);
+			}
+		}
+		if (!wantsToHeal)
+		{
+			return false;
+		}
+	}
+	else if (healOrStim == BMT_STIMULANT)
+	{
+		// 1. do we want to decrease stun level?
+		if (self->getStunlevel() > 0)
+		{
+			if (self->getStunlevel() + totalWounds >= self->getHealth())
+			{
+				// going to die or pass out unless we do something, so do something!
+				wantsToStimStun = true;
+			}
+			else
+			{
+				//  0% health left = 140% chance to stim
+				// 10% health left =  70% chance to stim
+				// 20% health left =   0% chance to stim
+				int chanceToStim1 = 140 - (percentHealthLeft * 7);
+				wantsToStimStun = chanceToStim1 > 0 ? RNG::percent(chanceToStim1) : false;
+			}
+		}
+		// 2. do we want to increase energy?
+		if (percentEnergyLeft < 40)
+		{
+			//  0% energy left = 120% chance to stim
+			// 20% energy left =  60% chance to stim
+			// 40% energy left =   0% chance to stim
+			int chanceToStim2 = 120 - (percentEnergyLeft * 3);
+			wantsToStimEnergy = RNG::percent(chanceToStim2);
+		}
+		if (!wantsToStimStun && !wantsToStimEnergy)
+		{
+			return false;
+		}
+	}
+
+	// 5. let's do it
+	bool used = false;
+
+	for (auto* medikit : usableMedikits)
+	{
+		const RuleItem* medikitRule = medikit->getRules();
+		{
+			if ((wantsToHeal && medikit->getHealQuantity() > 0) ||
+				(wantsToStimStun && medikit->getStimulantQuantity() > 0 && medikitRule->getStunRecovery() > 0) ||
+				(wantsToStimEnergy && medikit->getStimulantQuantity() > 0 && medikitRule->getEnergyRecovery() > 0))
+			{
+				BattleAction medikitAction;
+				{
+					medikitAction.weapon = medikit;
+					medikitAction.type = BA_USE;
+					medikitAction.actor = self;
+
+					medikitAction.updateTU();
+
+					// yes, hardcoded 4 TUs
+					// AI throwing grenades does that for decades and nobody cares, so calm down
+					// also, AI pays this cost each time, even if using the same medikit multiple times in a row
+					medikitAction.Time += 4; // 4TUs for picking up the medikit
+
+					// sigh, modders...
+					//medikitAction.Health = 0;
+					//medikitAction.Stun = 0;
+				}
+				if (!medikitAction.spendTU())
+				{
+					// not enough TUs, try next item
+					continue;
+				}
+				else
+				{
+					switch (healOrStim)
+					{
+					case BMT_HEAL:
+						if (_traceAI)
+						{
+							Log(LOG_INFO) << "  Using medikit (heal). TU*/HP/Stun/Wounds: " <<
+								self->getTimeUnits() << "/" << self->getHealth() << "/" << self->getStunlevel() << "/" << totalWounds;
+						}
+						for (int i = 0; i < BODYPART_MAX; ++i)
+						{
+							if (self->getFatalWound((UnitBodyPart)i))
+							{
+								_save->getTileEngine()->medikitUse(&medikitAction, self, BMA_HEAL, (UnitBodyPart)i);
+								_save->getTileEngine()->medikitRemoveIfEmpty(&medikitAction);
+								used = true;
+								break;
+							}
+						}
+						break;
+					case BMT_STIMULANT:
+						if (_traceAI)
+						{
+							if (wantsToStimStun)
+							{
+								Log(LOG_INFO) << "  Using medikit (-stun). TU*/HP/Stun/Wounds: " <<
+									self->getTimeUnits() << "/" << self->getHealth() << "/" << self->getStunlevel() << "/" << totalWounds;
+							}
+							else
+							{
+								Log(LOG_INFO) << "  Using medikit (+energy). TU*/Energy: " << self->getTimeUnits() << "/" << self->getEnergy();
+							}
+						}
+						_save->getTileEngine()->medikitUse(&medikitAction, self, BMA_STIMULANT, BODYPART_TORSO);
+						_save->getTileEngine()->medikitRemoveIfEmpty(&medikitAction);
+						used = true;
+						break;
+					case BMT_PAINKILLER:
+					case BMT_NORMAL:
+						// not supported
+						break;
+					}
+				}
+			}
+		}
+		if (used)
+		{
+			// only one use per attempt
+			break;
+		}
+	}
+
+	// 6. if we used something, let's try again
+	return used;
+}
+
+/**
  * Runs any code the state needs to keep updating every AI cycle.
  * @param action (possible) AI action to execute after thinking is done.
  */

@@ -251,6 +251,52 @@ void GeoscapeEventState::eventLogic()
 		}
 	}
 
+	// 3. spawn/transfer multiple soldiers into the HQ
+	{
+		std::map<const RuleSoldier*, int> soldiersToTransfer;
+
+		for (auto& pair : rule.getEveryMultiSoldierList())
+		{
+			const RuleSoldier* soldierRule = mod->getSoldier(pair.first, true);
+			if (soldierRule)
+			{
+				soldiersToTransfer[soldierRule] += pair.second;
+			}
+		}
+
+		if (!rule.getRandomMultiSoldierList().empty())
+		{
+			size_t pickSoldier = RNG::generate(0, rule.getRandomMultiSoldierList().size() - 1);
+			auto& sublist = rule.getRandomMultiSoldierList().at(pickSoldier);
+			for (auto& pair : sublist)
+			{
+				const RuleSoldier* soldierRule = mod->getSoldier(pair.first, true);
+				if (soldierRule)
+				{
+					soldiersToTransfer[soldierRule] += pair.second;
+				}
+			}
+		}
+
+		for (auto& ts : soldiersToTransfer)
+		{
+			for (int i = 0; i < ts.second; ++i)
+			{
+				Transfer* t = new Transfer(24);
+				int nationality = _game->getSavedGame()->selectSoldierNationalityByLocation(_game->getMod(), ts.first, city);
+				Soldier* s = mod->genSoldier(save, ts.first, nationality);
+				YAML::YamlRootNodeReader reader(rule.getSpawnedSoldierTemplate(), "(spawned soldier template)");
+				s->load(reader, mod, save, mod->getScriptGlobal(), true); // load from soldier template
+				{
+					// reset what may have been loaded
+					s->genName();
+				}
+				t->setSoldier(s);
+				hq->getTransfers()->push_back(t);
+			}
+		}
+	}
+
 	// 3. spawn/transfer item into the HQ
 	std::map<std::string, int> itemsToTransfer;
 

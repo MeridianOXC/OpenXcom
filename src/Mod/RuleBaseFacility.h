@@ -63,6 +63,8 @@ private:
 	int _radarRange, _radarChance, _defense, _hitRatio, _fireSound, _hitSound, _placeSound;
 	int _ammoMax, _rearmRate;
 	int _ammoNeeded;
+	bool _unifiedDamageFormula;
+	int _shieldDamageModifier;
 	const RuleItem* _ammoItem = nullptr;
 	std::string _ammoItemName;
 	std::string _mapName;
@@ -177,6 +179,10 @@ public:
 	int getRearmRate() const { return _rearmRate; }
 	/// Gets the facility's weapon ammo spent per shot.
 	int getAmmoNeeded() const { return _ammoNeeded; }
+	/// Should unified or vanilla formula be used?
+	bool unifiedDamageFormula() const { return _unifiedDamageFormula; }
+	/// Gets the facility's weapon effectiveness against shields.
+	int getShieldDamageModifier() const { return _shieldDamageModifier; }
 	/// Gets the facility's weapon ammo item.
 	const RuleItem* getAmmoItem() const { return _ammoItem; }
 	/// Gets the facility's battlescape map name.

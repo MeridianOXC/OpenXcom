@@ -160,7 +160,9 @@ private:
 	int _personalLightHostile = 0;
 	int _personalLightNeutral = 0;
 
-	int _camouflageAtDay, _camouflageAtDark, _antiCamouflageAtDay, _antiCamouflageAtDark, _heatVision, _psiVision, _psiCamouflage;
+	int _camouflageAtDay, _camouflageAtDark, _antiCamouflageAtDay, _antiCamouflageAtDark;
+	int _visibilityThroughSmoke, _visibilityThroughFire;
+	int _psiVision, _psiCamouflage;
 	float _damageModifier[DAMAGE_TYPES];
 	std::vector<int> _loftempsSet;
 	UnitStats _stats;
@@ -387,7 +389,9 @@ public:
 	/// Gets info about anti camouflage at dark.
 	int getAntiCamouflageAtDark() const;
 	/// Gets info about heat vision.
-	int getHeatVision() const;
+	int getVisibilityThroughSmoke() const { return _visibilityThroughSmoke; }
+	/// Gets info about visibility through fire.
+	int getVisibilityThroughFire() const { return _visibilityThroughFire; }
 	/// Gets info about psi vision.
 	int getPsiVision() const;
 	/// Gets info about psi camouflage.

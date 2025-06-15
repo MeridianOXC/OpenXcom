@@ -71,6 +71,9 @@ void RuleEvent::load(const YAML::YamlNodeReader& node)
 	reader.tryRead("timer", _timer);
 	reader.tryRead("timerRandom", _timerRandom);
 	reader.tryRead("invert", _invert);
+
+	reader.tryRead("everyMultiSoldierList", _everyMultiSoldierList);
+	reader.tryRead("randomMultiSoldierList", _randomMultiSoldierList);
 }
 
 /**

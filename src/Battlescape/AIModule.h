@@ -69,6 +69,8 @@ private:
 	void meleeActionLeeroy(bool canRun);
 	void dont_think(BattleAction *action);
 public:
+	bool medikit_think(BattleMediKitType healOrStim);
+public:
 	/// Creates a new AIModule linked to the game and a certain unit.
 	AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node);
 	/// Cleans up the AIModule.

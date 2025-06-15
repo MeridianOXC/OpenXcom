@@ -32,7 +32,7 @@ RuleCraftWeapon::RuleCraftWeapon(const std::string &type) :
 	_reloadCautious(0), _reloadStandard(0), _reloadAggressive(0), _ammoMax(0),
 	_rearmRate(1), _projectileSpeed(0), _weaponType(0), _projectileType(CWPT_CANNON_ROUND),
 	_stats(), _underwaterOnly(false),
-	_tractorBeamPower(0), _hidePediaInfo(false), _statisticalBulletSaving(false)
+	_tractorBeamPower(0), _hidePediaInfo(false), _statisticalBulletSaving(false), _unifiedDamageFormula(false)
 {
 }
 
@@ -73,6 +73,7 @@ void RuleCraftWeapon::load(const YAML::YamlNodeReader& node, Mod *mod)
 	}
 	mod->loadSoundOffset(_type, _sound, reader["sound"], "GEO.CAT");
 	reader.tryRead("damage", _damage);
+	reader.tryRead("unifiedDamageFormula", _unifiedDamageFormula);
 	reader.tryRead("shieldDamageModifier", _shieldDamageModifier);
 	reader.tryRead("range", _range);
 	reader.tryRead("accuracy", _accuracy);
@@ -101,6 +102,10 @@ void RuleCraftWeapon::afterLoad(const Mod* mod)
 	mod->linkRule(_launcher, _launcherName);
 	mod->linkRule(_clip, _clipName);
 
+	if (_unifiedDamageFormula && !_launcher && !_clip)
+	{
+		throw Exception("Unified damage formula requires `clip` or `launcher` to be defined.");
+	}
 
 	if (_projectileType < CWPT_LASER_BEAM && _damage > 0)
 	{

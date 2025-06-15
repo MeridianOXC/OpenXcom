@@ -39,6 +39,7 @@
 #include "../Basescape/BasescapeState.h"
 #include "../Basescape/CraftInfoState.h"
 #include "../Ufopaedia/Ufopaedia.h"
+#include "../Mod/RuleInterface.h"
 
 namespace OpenXcom
 {
@@ -364,6 +365,29 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 			if (hasEnoughPilots && status == "STR_READY")
 			{
 				_lstCrafts->setCellColor(row, 1, _lstCrafts->getSecondaryColor());
+			}
+			if (_target)
+			{
+				bool craftReturning = xcraft->getLowFuel() || xcraft->getMissionComplete();
+				if (craftReturning)
+				{
+					auto disabledColor = _game->getMod()->getInterface("intercept")->getElement("disabled")->color;
+					_lstCrafts->setCellColor(row, 0, disabledColor);
+				}
+				else
+				{
+					bool craftAvailable = Options::craftLaunchAlways || status == "STR_READY" || status == "STR_OUT";
+					if (craftAvailable)
+					{
+						double craftDistanceToTarget = std::get<1>(tuple);
+						double baseDistanceToTarget = xcraft->getBase()->getDistance(_target);
+						if (craftDistanceToTarget + baseDistanceToTarget > xcraft->getBaseRange() * 2.0)
+						{
+							auto disabledColor = _game->getMod()->getInterface("intercept")->getElement("disabled")->color;
+							_lstCrafts->setCellColor(row, 0, disabledColor);
+						}
+					}
+				}
 			}
 			row++;
 		}

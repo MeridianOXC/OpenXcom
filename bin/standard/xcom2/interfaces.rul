@@ -319,6 +319,8 @@ interfaces: #done
         color: 1
         color2: 239
         border: 1
+      - id: disabled
+        color: 3
       - id: button
         color: 1
   - type: ufoTracker

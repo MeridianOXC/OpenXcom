@@ -55,6 +55,8 @@ private:
 	std::string _interruptResearch;
 	int _timer, _timerRandom;
 	bool _invert;
+	std::map<std::string, int> _everyMultiSoldierList;
+	std::vector<std::map<std::string, int> > _randomMultiSoldierList;
 public:
 	/// Creates a blank RuleEvent.
 	RuleEvent(const std::string &name);
@@ -120,6 +122,11 @@ public:
 	int getTimerRandom() const { return _timerRandom; }
 	/// Should the event remove items instead of adding them?
 	bool getInvert() const { return _invert; }
+
+	/// Gets a list of soldiers; they are all transferred to HQ when this event pops up.
+	const std::map<std::string, int> &getEveryMultiSoldierList() const { return _everyMultiSoldierList; }
+	/// Gets a list of lists of soldiers; one of them is randomly selected and transferred to HQ when this event pops up.
+	const std::vector<std::map<std::string, int> > &getRandomMultiSoldierList() const { return _randomMultiSoldierList; }
 };
 
 }

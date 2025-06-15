@@ -849,7 +849,7 @@ fr:
   STR_PLASMA_RIFLE_CLIP: "Chargeur de Fusil Plasma"
   STR_PLASMA_PISTOL: "Pistolet Plasma"
   STR_PLASMA_PISTOL_CLIP: "Chargeur de Pistolet Plasma"
-  STR_BLASTER_LAUNCHER: "Lanceur Nucléaire"
+  STR_BLASTER_LAUNCHER: "Lanceur Blaster"
   STR_BLASTER_BOMB: "Bombe Nucléaire"
   STR_SMALL_LAUNCHER: "Petit Lanceur"
   STR_STUN_BOMB: "Bombe Assommante"

@@ -321,6 +321,8 @@ interfaces:
         color: 239   # bright green
         color2: 138  # yellow
         border: 133  # minty green
+      - id: disabled
+        color: 100   # grey
   - type: ufoTracker
     backgroundImage: BACK12.SCR
     elements:
