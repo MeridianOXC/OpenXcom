@@ -11,6 +11,7 @@
 		5B0DC8AF22F300E70092A513 /* RuleEnviroEffects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B0DC8AE22F300E70092A513 /* RuleEnviroEffects.cpp */; };
 		5B0DC8B222F300FA0092A513 /* RuleArcScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B0DC8B022F300FA0092A513 /* RuleArcScript.cpp */; };
 		5B189CEC241CBF2C00E11BE9 /* RuleManufactureShortcut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B189CEB241CBF2C00E11BE9 /* RuleManufactureShortcut.cpp */; };
+		5B287CA22DFF1BDC00155995 /* ItemLocationsState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B287CA12DFF1BDC00155995 /* ItemLocationsState.cpp */; };
 		5B32845D255B1B14002C2AC1 /* NotesState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B328451255B1B13002C2AC1 /* NotesState.cpp */; };
 		5B498CD325404F5D00D97DF7 /* SoldierTransformationListState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B498CC725404F5C00D97DF7 /* SoldierTransformationListState.cpp */; };
 		5B5F680D2391B9A100D2D740 /* OptionsFoldersState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B5F68012391B9A000D2D740 /* OptionsFoldersState.cpp */; };
@@ -537,6 +538,9 @@
 		5B0DC8B122F300FA0092A513 /* RuleArcScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuleArcScript.h; sourceTree = "<group>"; };
 		5B189CE0241CBF2C00E11BE9 /* RuleManufactureShortcut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuleManufactureShortcut.h; sourceTree = "<group>"; };
 		5B189CEB241CBF2C00E11BE9 /* RuleManufactureShortcut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RuleManufactureShortcut.cpp; sourceTree = "<group>"; };
+		5B287C9E2DFF15EF00155995 /* NullableValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NullableValue.h; sourceTree = "<group>"; };
+		5B287CA02DFF1BDB00155995 /* ItemLocationsState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ItemLocationsState.h; sourceTree = "<group>"; };
+		5B287CA12DFF1BDC00155995 /* ItemLocationsState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ItemLocationsState.cpp; sourceTree = "<group>"; };
 		5B328451255B1B13002C2AC1 /* NotesState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NotesState.cpp; sourceTree = "<group>"; };
 		5B32845C255B1B13002C2AC1 /* NotesState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotesState.h; sourceTree = "<group>"; };
 		5B498CC725404F5C00D97DF7 /* SoldierTransformationListState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoldierTransformationListState.cpp; sourceTree = "<group>"; };
@@ -1972,6 +1976,7 @@
 		B2834264201F6D9C00BAEC9D /* Engine */ = {
 			isa = PBXGroup;
 			children = (
+				5B287C9E2DFF15EF00155995 /* NullableValue.h */,
 				5B9804F92DA5167F00DC818D /* TouchState.cpp */,
 				5B9804F82DA5167F00DC818D /* TouchState.h */,
 				5B8153192D247BD500B41A33 /* Yaml.cpp */,
@@ -2413,6 +2418,8 @@
 		B28343BD201F6D9D00BAEC9D /* Basescape */ = {
 			isa = PBXGroup;
 			children = (
+				5B287CA12DFF1BDC00155995 /* ItemLocationsState.cpp */,
+				5B287CA02DFF1BDB00155995 /* ItemLocationsState.h */,
 				5B9804FE2DA51DBA00DC818D /* GlobalResearchDiaryState.cpp */,
 				5B9804FF2DA51DBA00DC818D /* GlobalResearchDiaryState.h */,
 				5BC900FE2CD50DD7007AE997 /* SoldierDiaryLightState.cpp */,
@@ -3120,6 +3127,7 @@
 				5B7A846C25D94098003698D9 /* ExtendedInventoryLinksState.cpp in Sources */,
 				B283446E201F6D9D00BAEC9D /* SlideshowState.cpp in Sources */,
 				B2834478201F6D9D00BAEC9D /* ConfirmLoadState.cpp in Sources */,
+				5B287CA22DFF1BDC00155995 /* ItemLocationsState.cpp in Sources */,
 				5BD0BADF2242E009008E6DFB /* CraftPilotsState.cpp in Sources */,
 				B28344A9201F6D9E00BAEC9D /* LocalizedText.cpp in Sources */,
 				B28344D2201F6D9E00BAEC9D /* Game.cpp in Sources */,
