@@ -39,6 +39,7 @@
 #include "../Mod/RuleCommendations.h"
 #include "Base.h"
 #include "ItemContainer.h"
+#include "../Mod/RuleSkill.h"
 
 namespace OpenXcom
 {
@@ -2121,6 +2122,29 @@ UnitStats* Soldier::getDailyDogfightExperienceCache()
 void Soldier::resetDailyDogfightExperienceCache()
 {
 	_dailyDogfightExperienceCache = UnitStats::scalar(0);
+}
+
+/**
+ * Check if the soldier has all the required soldier bonuses for the given soldier skill.
+ * @param skillRules Skill rules.
+ */
+bool Soldier::hasAllRequiredBonusesForSkill(const RuleSkill* skillRules)
+{
+	for (auto* requiredBonusRule : skillRules->getRequiredBonuses())
+	{
+		bool found = false;
+		for (auto* bonusRule : *getBonuses(nullptr))
+		{
+			if (bonusRule == requiredBonusRule)
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			return false;
+	}
+	return true;
 }
 
 

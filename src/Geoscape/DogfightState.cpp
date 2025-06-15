@@ -357,6 +357,7 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	_btnDisengage = new ImageButton(36, 15, _x + 120, _y + 36);
 	_btnUfo = new ImageButton(36, 17, _x + 120, _y + 52);
 	_txtDistance = new Text(40, 9, _x + 116, _y + 72);
+	_txtOceanIndicator = new Text(16, 9, _x + 150, _y + 72);
 	_txtStatus = new Text(154, 9, _x + 4, _y + 85);
 	_btnMinimizedIcon = new InteractiveSurface(32, 20, _minimizedIconX, _minimizedIconY);
 	_txtInterceptionNumber = new Text(16, 9, _minimizedIconX + 18, _minimizedIconY + 6);
@@ -391,6 +392,7 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 		add(_txtAmmo[i], "numbers", "dogfight", _window);
 	}
 	add(_txtDistance, "distance", "dogfight", _window);
+	add(_txtOceanIndicator, "oceanIndicator", "dogfight", _window);
 	add(_preview);
 	add(_txtStatus, "text", "dogfight", _window);
 	add(_btnMinimizedIcon);
@@ -517,6 +519,7 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	_btnUfo->onMouseClick((ActionHandler)&DogfightState::btnUfoClick);
 
 	_txtDistance->setText("640");
+	updateOceanIndicator();
 
 	if (_ufoIsAttacking)
 		_txtStatus->setText(tr("STR_AGGRESSIVE_ATTACK"));
@@ -1203,8 +1206,18 @@ void DogfightState::update()
 						// Formula delivered by Volutar, altered by Extended version.
 						int power = p->getDamage() * (_craft->getCraftStats().powerBonus + 100) / 100;
 
+						int damage = 0;
+						if (p->getDamageItem())
+						{
+							// unified damage formula
+							damage = p->getDamageItem()->getDamageType()->getRandomDamage(power);
+						}
+						else
+						{
+							// vanilla dmg formula: 50-100%
+							damage = RNG::generate(power / 2, power);
+						}
 						// Handle UFO shields
-						int damage = RNG::generate(power / 2, power);
 						int shieldDamage = 0;
 						if (_ufo->getShield() != 0)
 						{
@@ -1865,7 +1878,7 @@ void DogfightState::ufoFireWeapon()
 	_ufo->setFireCountdown(RNG::generate(0, fireCountdown) + fireCountdown);
 
 	setStatus("STR_UFO_RETURN_FIRE");
-	CraftWeaponProjectile *p = new CraftWeaponProjectile();
+	CraftWeaponProjectile *p = new CraftWeaponProjectile(nullptr);
 	p->setType(CWPT_PLASMA_BEAM);
 	p->setAccuracy(60);
 	p->setDamage(_ufo->getRules()->getWeaponPower());
@@ -2411,12 +2424,44 @@ bool DogfightState::isMinimized() const
 	return _minimized;
 }
 
+void DogfightState::updateOceanIndicator()
+{
+	// ocean (or cosmetic ocean texture)
+	bool oceanTexture = !_state->getGlobe()->insideLand(_ufo->getLongitude(), _ufo->getLatitude());
+	// fake ocean texture
+	bool fakeUnderwaterTexture = _state->getGlobe()->insideFakeUnderwaterTexture(_ufo->getLongitude(), _ufo->getLatitude());
+	int survivalChance = _ufo->getRules()->getSplashdownSurvivalChance();
+
+	if (oceanTexture)
+	{
+		_txtOceanIndicator->setText(tr("STR_OCEAN_INDICATOR")); // ! ufo lost
+	}
+	else if (fakeUnderwaterTexture)
+	{
+		if (survivalChance >= 100)
+			_txtOceanIndicator->setText("");
+		else if (survivalChance > 0)
+			_txtOceanIndicator->setText(tr("STR_OCEAN_INDICATOR_RNG")); // ? ufo maybe lost, maybe not
+		else
+			_txtOceanIndicator->setText(tr("STR_OCEAN_INDICATOR")); // ! ufo lost
+	}
+	else
+	{
+		_txtOceanIndicator->setText("");
+	}
+}
+
 /**
  * Sets the state to minimized/maximized status.
  * @param minimized Is the dogfight minimized?
  */
 void DogfightState::setMinimized(const bool minimized)
 {
+	if (!minimized)
+	{
+		updateOceanIndicator();
+	}
+
 	// set these to the same as the incoming minimized state
 	_minimized = minimized;
 	_btnMinimizedIcon->setVisible(minimized);
@@ -2442,6 +2487,7 @@ void DogfightState::setMinimized(const bool minimized)
 	_damage->setVisible(!minimized);
 	_craftShield->setVisible(!minimized);
 	_txtDistance->setVisible(!minimized);
+	_txtOceanIndicator->setVisible(!minimized);
 	_txtStatus->setVisible(!minimized);
 
 	// set to false regardless

@@ -543,9 +543,13 @@ void BattlescapeGame::endTurn()
 				const RuleItem *rule = item->getRules();
 				const Tile *tile = item->getTile();
 				BattleUnit *unit = item->getOwner();
-				if (!tile && unit && rule->isExplodingInHands() && !_allEnemiesNeutralized)
+				if (!tile && unit && item->getFuseTimer() != -1 && !_allEnemiesNeutralized)
 				{
-					tile = unit->getTile();
+					int explodeAnyway = rule->getExplodeInventory(getMod());
+					if (explodeAnyway >= 2 || (explodeAnyway == 1 && item->getSlot()->getType() != INV_HAND))
+					{
+						tile = unit->getTile();
+					}
 				}
 				if (tile)
 				{

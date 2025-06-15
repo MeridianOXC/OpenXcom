@@ -321,6 +321,8 @@ interfaces:
         color: 239   # bright green
         color2: 138  # yellow
         border: 133  # minty green
+      - id: disabled
+        color: 100   # grey
   - type: ufoTracker
     backgroundImage: BACK12.SCR
     elements:
@@ -711,6 +713,8 @@ interfaces:
         color: 89
       - id: distance
         color: 89
+      - id: oceanIndicator
+        color: 80
       - id: minimizedNumber
         color: 80
       - id: radarDetail
@@ -1064,6 +1068,22 @@ interfaces:
         color2: 208  # white
       - id: list
         color: 218   # blue
+        color2: 241  # pink
+      - id: button
+        color: 218   # blue
+  - type: itemLocations
+    backgroundImage: BACK13.SCR
+    palette: PAL_BASESCAPE
+    elements:
+      - id: palette
+        color: 0     # brown
+      - id: window
+        color: 218   # blue
+      - id: text
+        color: 218   # blue
+        color2: 208  # white
+      - id: list
+        color: 208   # white
         color2: 241  # pink
       - id: button
         color: 218   # blue

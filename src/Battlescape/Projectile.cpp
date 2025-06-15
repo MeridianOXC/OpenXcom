@@ -333,37 +333,28 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 {
 	int xdiff = origin.x - target->x;
 	int ydiff = origin.y - target->y;
-	double realDistance = sqrt((double)(xdiff*xdiff)+(double)(ydiff*ydiff));
+	int zdiff = origin.z - target->z;
+	double realDistance = sqrt((double)(xdiff*xdiff)+(double)(ydiff*ydiff)+(double)(zdiff*zdiff));
 	// maxRange is the maximum range a projectile shall ever travel in voxel space
 	double maxRange = keepRange?realDistance:16*1000; // 1000 tiles
 	maxRange = _action.type == BA_HIT?46:maxRange; // up to 2 tiles diagonally (as in the case of reaper v reaper)
-	const RuleItem *weapon = _action.weapon->getRules();
 
-	if (_action.type != BA_THROW && _action.type != BA_HIT)
+	if (_action.type != BA_HIT)
 	{
-		double modifier = 0.0;
-		int upperLimit = weapon->getAimRange();
-		int lowerLimit = weapon->getMinRange();
-		if (Options::battleUFOExtenderAccuracy)
+		int upperLimit, lowerLimit;
+		int dropoff = _action.weapon->getRules()->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), _action.type);
+
+		double distance = realDistance / 16; // distance in tiles, but still fractional
+		double accuracyLoss = 0.0;
+		if (distance > upperLimit)
 		{
-			if (_action.type == BA_AUTOSHOT)
-			{
-				upperLimit = weapon->getAutoRange();
-			}
-			else if (_action.type == BA_SNAPSHOT)
-			{
-				upperLimit = weapon->getSnapRange();
-			}
+			accuracyLoss = (dropoff * (distance - upperLimit)) / 100;
 		}
-		if (realDistance / 16 < lowerLimit)
+		else if (distance < lowerLimit)
 		{
-			modifier = (weapon->getDropoff() * (lowerLimit - realDistance / 16)) / 100;
+			accuracyLoss = (dropoff * (lowerLimit - distance)) / 100;
 		}
-		else if (upperLimit < realDistance / 16)
-		{
-			modifier = (weapon->getDropoff() * (realDistance / 16 - upperLimit)) / 100;
-		}
-		accuracy = std::max(0.0, accuracy - modifier);
+		accuracy = std::max(0.0, accuracy - accuracyLoss);
 	}
 
 	int xDist = abs(origin.x - target->x);
@@ -371,10 +362,22 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 	int zDist = abs(origin.z - target->z);
 	int xyShift, zShift;
 
-	if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
-		xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
+	if (Options::oxceUniformShootingSpread) // Uniform shooting spread
+	{
+		if (xDist <= yDist)
+			xyShift = xDist / 4 + yDist;
+		else
+			xyShift = xDist + yDist / 4;
+
+		xyShift *= 0.839; // Constant to match average xyShift to vanilla
+	}
 	else
-		xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
+	{
+		if (xDist / 2 <= yDist)				//yes, we need to add some x/y non-uniformity
+			xyShift = xDist / 4 + yDist;	//and don't ask why, please. it's The Commandment
+		else
+			xyShift = (xDist + yDist) / 2;	//that's uniform part of spreading
+	}
 
 	if (xyShift <= zDist)				//slight z deviation
 		zShift = xyShift / 2 + zDist;
@@ -417,8 +420,53 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 
 	deviation = std::max(1, zShift * deviation / 200);	//range ratio
 
-	target->x += RNG::generate(0, deviation) - deviation / 2;
-	target->y += RNG::generate(0, deviation) - deviation / 2;
+	if (Options::oxceUniformShootingSpread)
+	{
+		// First, new target point is rolled as usual. Then, if it lies outside of outer circle (in square's corner)
+		// it's rerolled inside inner circle
+
+		const double OVERALL_SPREAD_COEFF = 1.0; // Overall spread diameter change compared to vanilla
+		const double INNER_SPREAD_COEFF = 0.85; // Inner spread circle diameter compared to outer
+
+		double targetDist2D = sqrt(xDist * xDist + yDist * yDist);
+		bool resultShifted = false;
+		int dX, dY;
+
+		for (int i = 0; i < 10; ++i) // Break from this cycle when proper target is found
+		{
+			dX = RNG::generate(0, deviation) - deviation / 2;
+			dY = RNG::generate(0, deviation) - deviation / 2;
+
+			double exprX = target->x + dX - origin.x;
+			double exprY = target->y + dY - origin.y;
+			double deviateDist2D = sqrt(exprX * exprX + exprY * exprY); // Distance from origin to deviation point
+
+			if (resultShifted &&                  // point is on inner ring and should be a "miss"
+				deviateDist2D > targetDist2D-2 &&
+				deviateDist2D < targetDist2D+2)
+				break;
+
+			if (!resultShifted) // This is the FIRST roll!
+			{
+				int radiusSq = dX*dX + dY*dY;
+				int deviateRadius = OVERALL_SPREAD_COEFF * deviation / 2;
+				int deviateRadiusSq = deviateRadius * deviateRadius;
+				if (radiusSq <= deviateRadiusSq) break;  // If we inside of outer circle - we're done!
+
+				resultShifted = true;
+				deviation *= INNER_SPREAD_COEFF; // Next attempts will be closer to target
+			}
+		}
+		target->x += dX;
+		target->y += dY;
+	}
+
+	else // Classic shooting spread
+	{
+		target->x += RNG::generate(0, deviation) - deviation / 2;
+		target->y += RNG::generate(0, deviation) - deviation / 2;
+	}
+
 	target->z += RNG::generate(0, deviation / 2) / 2 - deviation / 8;
 
 	if (extendLine)

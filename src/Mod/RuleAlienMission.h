@@ -159,6 +159,8 @@ public:
 	bool isMultiUfoRetaliationExtra() const { return _multiUfoRetaliationExtra; }
 	/// Should the retaliation UFO ignore xcom base defenses?
 	bool ignoreBaseDefenses() const { return _ignoreBaseDefenses; }
+	/// Show extra info during base defense even if the UFO was not yet hyper-detected classically?
+	bool isInstaHyper() const { return _instaHyper; }
 	/// Should the mission site despawn even if targeted?
 	bool despawnEvenIfTargeted() const { return _despawnEvenIfTargeted; }
 	/// Should the original UFO be respawned when the mission site despawns?
@@ -210,6 +212,8 @@ private:
 	bool _multiUfoRetaliationExtra;
 	/// Should the retaliation UFO ignore xcom base defenses?
 	bool _ignoreBaseDefenses;
+	/// Should the retaliation UFO display extra info before xcom base defenses?
+	bool _instaHyper;
 	/// Should the mission site despawn even if targeted?
 	bool _despawnEvenIfTargeted;
 	/// Should the original UFO be respawned when the mission site despawns?

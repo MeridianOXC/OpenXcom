@@ -558,7 +558,7 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 				{
 					return {{INVALID_MOVE_COST, 0}}; // consider any tile occupied by a friendly as being blocked
 				}
-				else if (unit->getUnitRules() && unitHere->getTurnsSinceSpotted() <= unit->getUnitRules()->getIntelligence())
+				else if (unit->getUnitRules() && unitHere->getTurnsSinceSpottedByFaction(unit->getFaction()) <= unit->getUnitRules()->getIntelligence())
 				{
 					return {{INVALID_MOVE_COST, 0}}; // consider any tile occupied by a known unit that isn't our target as being blocked
 				}

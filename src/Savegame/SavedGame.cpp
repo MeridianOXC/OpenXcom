@@ -3576,6 +3576,16 @@ void isResearchedScript(const SavedGame* sg, int& val, const RuleResearch* name)
 	val = 0;
 }
 
+bool filterCountryConstScript(const SavedGame*, const Country*)
+{
+	return true;
+}
+
+bool filterCountryScript(SavedGame*, Country*)
+{
+	return true;
+}
+
 std::string debugDisplayScript(const SavedGame* p)
 {
 	if (p)
@@ -3603,6 +3613,7 @@ std::string debugDisplayScript(const SavedGame* p)
  */
 void SavedGame::ScriptRegister(ScriptParserBase* parser)
 {
+	parser->registerPointerType<Country>();
 
 	{
 		const auto name = std::string{ "RandomState" };
@@ -3641,6 +3652,9 @@ void SavedGame::ScriptRegister(ScriptParserBase* parser)
 	sgg.add<&difficultyLevelScript>("difficultyLevel", "Get difficulty level");
 	sgg.add<&SavedGame::getMonthsPassed>("getMonthsPassed", "Number of months passed from start");
 	sgg.add<&SavedGame::getDaysPassed>("getDaysPassed", "Number of days passed from start");
+
+	sgg.addList<&filterCountryConstScript, &SavedGame::_countries>("getCountries");
+	sgg.addList<&filterCountryScript, &SavedGame::_countries>("getCountries");
 
 	sgg.add<&isResearchedScript>("isResearched");
 

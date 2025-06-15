@@ -941,6 +941,77 @@ static auto dummyTestRead = ([]
 	}
 
 
+	{
+		auto reader = createRootReader("foo: 1");
+		OpenXcom::NullableValue<int> p;
+
+		assert_noexcept(reader.tryRead("foo", p));
+		assert(p.isValue());
+		assert(p.getValueOrDefualt() == 1);
+	}
+
+	{
+		auto reader = createRootReader("foo: -42");
+		OpenXcom::NullableValue<int> p;
+
+		assert_noexcept(reader.tryRead("foo", p));
+		assert(p.isValue());
+		assert(p.getValueOrDefualt() == -42);
+	}
+
+	{
+		auto reader = createRootReader("foo: ~");
+		OpenXcom::NullableValue<int> p;
+
+		assert_noexcept(reader.tryRead("foo", p));
+		assert(p.isNull());
+		assert(p.getValueOrDefualt() == 0);
+	}
+
+	{
+		auto reader = createRootReader("foo: []");
+		OpenXcom::NullableValue<int> p;
+
+		assert_exception(reader.tryRead("foo", p));
+	}
+
+
+	{
+		auto reader = createRootReader("foo: true");
+		OpenXcom::NullableValue<bool> p;
+
+		assert_noexcept(reader.tryRead("foo", p));
+		assert(p.isValue());
+		assert(p.getValueOrDefualt() == true);
+	}
+
+
+	{
+		auto reader = createRootReader("foo: false");
+		OpenXcom::NullableValue<bool> p;
+
+		assert_noexcept(reader.tryRead("foo", p));
+		assert(p.isValue());
+		assert(p.getValueOrDefualt() == false);
+	}
+
+	{
+		auto reader = createRootReader("foo: ~");
+		OpenXcom::NullableValue<bool> p;
+
+		assert_noexcept(reader.tryRead("foo", p));
+		assert(p.isNull());
+		assert(p.getValueOrDefualt() == false);
+	}
+
+	{
+		auto reader = createRootReader("foo: []");
+		OpenXcom::NullableValue<bool> p;
+
+		assert_exception(reader.tryRead("foo", p));
+	}
+
+
 	return 0;
 })();
 

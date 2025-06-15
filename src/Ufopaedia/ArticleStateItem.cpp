@@ -236,7 +236,7 @@ namespace OpenXcom
 			_lstInfo->setBig();
 		}
 
-		auto addAttack = [&](int& row, const std::string& name, const RuleItemUseCost& cost, const RuleItemUseCost& flat, const RuleItemAction *config, const RuleItem *weapon)
+		auto addAttack = [&](int& row, const std::string& name, const RuleItemUseCost& cost, const RuleItemUseFlat& flat, const RuleItemAction *config, const RuleItem *weapon)
 		{
 			if (row < 3 && cost.Time > 0 && config->ammoSlot == ammoSlot)
 			{

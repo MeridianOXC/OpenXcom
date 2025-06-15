@@ -142,6 +142,7 @@ void RuleCraft::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript
 	reader.tryRead("craftInventoryTile", _craftInventoryTile);
 	mod->loadUnorderedInts(_type, _groups, reader["groups"]);
 	mod->loadUnorderedInts(_type, _allowedSoldierGroups, reader["allowedSoldierGroups"]);
+	mod->loadUnorderedInts(_type, _allowedArmorGroups, reader["allowedArmorGroups"]);
 	reader.tryRead("onlyOneSoldierGroupAllowed", _onlyOneSoldierGroupAllowed);
 	reader.tryRead("maxSkinIndex", _maxSkinIndex);
 	reader.tryRead("deployment", _deployment);

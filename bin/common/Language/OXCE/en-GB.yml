@@ -52,6 +52,7 @@ en-GB:
   STR_BOLD: "Bold (+50%)"
   STR_VERY_BOLD: "Very bold (+100%)"
 #CraftSoldiersState.cpp
+  STR_ARMOR_GROUP_NOT_ALLOWED: "This armor type is not allowed onboard."
   STR_SOLDIER_GROUP_NOT_ALLOWED: "This soldier type is not allowed onboard."
   STR_SOLDIER_GROUP_NOT_SAME: "This soldier type is not compatible with other soldiers onboard."
   STR_CRAFT_DEPLOYMENT_PREVIEW: "Preview"
@@ -401,12 +402,16 @@ en-GB:
   STR_AUTO_NIGHT_VISION_THRESHOLD_DESC: "If darker than this threshold, toggle Night Vision on automatically."
   STR_SHOW_ACCURACY_ON_CROSSHAIR: "Show accuracy on crosshair"
   STR_SHOW_ACCURACY_ON_CROSSHAIR_DESC: "{ALT}0>{ALT}Never {ALT}1>{ALT}Only if UFO Extender accuracy is enabled {ALT}2>{ALT}Always"
+  STR_REACTION_FIRE_THRESHOLD: "Reaction fire threshold"
+  STR_REACTION_FIRE_THRESHOLD_DESC: "Xcom-controlled units will not reaction fire, if their accuracy (for a given target) is below this threshold."
   STR_AUTO_SELL: "Auto-Sell Manager"
   STR_AUTO_SELL_DESC: "In the battle debriefing sell screen, any item types you sold in previous battles will be automatically marked for selling."
   STR_AUTOMATICPROMOTIONS: "Automatic promotions"
   STR_AUTOMATICPROMOTIONS_DESC: "If enabled, soldiers are automatically promoted after a mission."
   STR_OFF_CENTRE_SHOOTING: "Off-centre shooting"
   STR_OFF_CENTRE_SHOOTING_DESC: "Soldiers will automatically try to adjust the firing angle slightly in case there is no line of fire."
+  STR_UNIFORM_SHOOTING_SPREAD: "Uniform shooting spread"
+  STR_UNIFORM_SHOOTING_SPREAD_DESC: "Spread is uniform in all directions and more tight."
   STR_CRASHED_OR_LANDED: "Crashed/Landed button"
   STR_CRASHED_OR_LANDED_DESC: "If enabled, an extra button is displayed on the New Battle screen. Alternatively, press F11 to show/hide the button. {ALT}0>{ALT}Disabled, {ALT}1>{ALT}Crashed, {ALT}2>{ALT}Landed."
 #===================
@@ -467,6 +472,7 @@ en-GB:
   STR_STARTING_CONDITION_ITEM: "This mission requires specific item(s):{NEWLINE}{NEWLINE}{0}"
   STR_NOT_ENOUGH_FUEL_TO_REACH_TARGET: "NOT ENOUGH FUEL!{SMALLLINE}The destination is too far for the range of the craft."
   STR_TOO_MANY_ITEMS_ONBOARD: "TOO MANY ITEMS!{SMALLLINE}This craft cannot carry so many items."
+  STR_ARMOR_NOT_ALLOWED_ONBOARD: "ARMOR NOT ALLOWED!{SMALLLINE}Some soldiers are wearing forbidden armor."
   STR_FOLLOW_WING_LEADER_QUESTION: "Follow wing leader?"
 #CraftNotEnoughPilotsState.cpp
   STR_ASSIGN_PILOTS: "Assign pilots..."
@@ -485,6 +491,8 @@ en-GB:
   STR_SELF_DESTRUCT_CANCELLED: "SELF-DESTRUCT CANCELLED"
   STR_MISSILE_DAMAGED: ">>> MISSILE DAMAGED <<<"
   STR_MISSILE_DESTROYED: ">>> MISSILE DESTROYED <<<"
+  STR_OCEAN_INDICATOR: ""
+  STR_OCEAN_INDICATOR_RNG: ""
 #ExtendedGeoscapeLinksState.cpp
   STR_EXTENDED_LINKS: "Links"
 #GeoscapeCraftState.cpp

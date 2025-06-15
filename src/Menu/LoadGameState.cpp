@@ -195,6 +195,8 @@ void LoadGameState::think()
 					BattlescapeState *bs = new BattlescapeState;
 					_game->pushState(bs);
 					_game->getSavedGame()->getSavedBattle()->setBattleState(bs);
+					// Try to reactivate the touch buttons
+					bs->toggleTouchButtons(false, true);
 				}
 			}
 

@@ -200,6 +200,222 @@ void AIModule::dont_think(BattleAction *action)
 }
 
 /**
+ * Tries to use self-target medikit if needed and desired (used for AI).
+ * @return Was it used?
+ */
+bool AIModule::medikit_think(BattleMediKitType healOrStim)
+{
+	// 1. sanity checks, division by zero
+	BattleUnit* self = _unit;
+
+	if (self->getBaseStats()->stamina <= 0 || self->getBaseStats()->health <= 0)
+	{
+		return false;
+	}
+
+	// 2. quick unit checks (without RNG)
+	int totalWounds = self->getFatalWounds();
+	int percentHealthLeft = Clamp((self->getHealth() - self->getStunlevel()) * 100 / self->getBaseStats()->health, 0, 100);
+	int percentEnergyLeft = Clamp(self->getEnergy() * 100 / self->getBaseStats()->stamina, 0, 100);
+
+	if (healOrStim == BMT_HEAL)
+	{
+		if (totalWounds <= 0)
+			return false;
+	}
+	else if (healOrStim == BMT_STIMULANT)
+	{
+		if (self->getStunlevel() <= 0 && percentEnergyLeft >= 40)
+			return false;
+	}
+	else
+	{
+		// unsupported medikit type
+		return false;
+	}
+
+	// 3. quick item checks
+	std::vector<BattleItem*> usableMedikits;
+
+	for (auto* item : *self->getInventory())
+	{
+		const RuleItem* itemRule = item->getRules();
+		if (itemRule->getBattleType() == BT_MEDIKIT &&
+			(itemRule->getMediKitType() == healOrStim || itemRule->getMediKitType() == BMT_NORMAL) &&
+			itemRule->getAllowTargetSelf())
+		{
+			if (_save->getTurn() < itemRule->getAIUseDelay(_save->getMod()))
+			{
+				// can't use it yet, too soon
+				continue;
+			}
+			usableMedikits.push_back(item);
+		}
+	}
+	if (usableMedikits.empty())
+	{
+		// no compatible medikits available
+		return false;
+	}
+
+	// 4. detailed unit checks (with RNG)
+	bool wantsToHeal = false;
+	bool wantsToStimStun = false;
+	bool wantsToStimEnergy = false;
+
+	if (healOrStim == BMT_HEAL)
+	{
+		if (totalWounds > 0)
+		{
+			if (self->getStunlevel() + totalWounds >= self->getHealth())
+			{
+				// going to die or pass out unless we do something, so do something!
+				wantsToHeal = true;
+			}
+			else
+			{
+				//  0% health left = 120% chance to heal
+				// 15% health left =  60% chance to heal
+				// 30% health left =   0% chance to heal (actually 5% chance because of random heal wish)
+				int chanceToHeal = 120 - (percentHealthLeft * 4);
+				if (chanceToHeal <= 0)
+				{
+					// 5% for random heal wish (it's not urgent, but you know damage accumulates over time)
+					chanceToHeal = 5;
+				}
+				wantsToHeal = RNG::percent(chanceToHeal);
+			}
+		}
+		if (!wantsToHeal)
+		{
+			return false;
+		}
+	}
+	else if (healOrStim == BMT_STIMULANT)
+	{
+		// 1. do we want to decrease stun level?
+		if (self->getStunlevel() > 0)
+		{
+			if (self->getStunlevel() + totalWounds >= self->getHealth())
+			{
+				// going to die or pass out unless we do something, so do something!
+				wantsToStimStun = true;
+			}
+			else
+			{
+				//  0% health left = 140% chance to stim
+				// 10% health left =  70% chance to stim
+				// 20% health left =   0% chance to stim
+				int chanceToStim1 = 140 - (percentHealthLeft * 7);
+				wantsToStimStun = chanceToStim1 > 0 ? RNG::percent(chanceToStim1) : false;
+			}
+		}
+		// 2. do we want to increase energy?
+		if (percentEnergyLeft < 40)
+		{
+			//  0% energy left = 120% chance to stim
+			// 20% energy left =  60% chance to stim
+			// 40% energy left =   0% chance to stim
+			int chanceToStim2 = 120 - (percentEnergyLeft * 3);
+			wantsToStimEnergy = RNG::percent(chanceToStim2);
+		}
+		if (!wantsToStimStun && !wantsToStimEnergy)
+		{
+			return false;
+		}
+	}
+
+	// 5. let's do it
+	bool used = false;
+
+	for (auto* medikit : usableMedikits)
+	{
+		const RuleItem* medikitRule = medikit->getRules();
+		{
+			if ((wantsToHeal && medikit->getHealQuantity() > 0) ||
+				(wantsToStimStun && medikit->getStimulantQuantity() > 0 && medikitRule->getStunRecovery() > 0) ||
+				(wantsToStimEnergy && medikit->getStimulantQuantity() > 0 && medikitRule->getEnergyRecovery() > 0))
+			{
+				BattleAction medikitAction;
+				{
+					medikitAction.weapon = medikit;
+					medikitAction.type = BA_USE;
+					medikitAction.actor = self;
+
+					medikitAction.updateTU();
+
+					// yes, hardcoded 4 TUs
+					// AI throwing grenades does that for decades and nobody cares, so calm down
+					// also, AI pays this cost each time, even if using the same medikit multiple times in a row
+					medikitAction.Time += 4; // 4TUs for picking up the medikit
+
+					// sigh, modders...
+					//medikitAction.Health = 0;
+					//medikitAction.Stun = 0;
+				}
+				if (!medikitAction.spendTU())
+				{
+					// not enough TUs, try next item
+					continue;
+				}
+				else
+				{
+					switch (healOrStim)
+					{
+					case BMT_HEAL:
+						if (_traceAI)
+						{
+							Log(LOG_INFO) << "  Using medikit (heal). TU*/HP/Stun/Wounds: " <<
+								self->getTimeUnits() << "/" << self->getHealth() << "/" << self->getStunlevel() << "/" << totalWounds;
+						}
+						for (int i = 0; i < BODYPART_MAX; ++i)
+						{
+							if (self->getFatalWound((UnitBodyPart)i))
+							{
+								_save->getTileEngine()->medikitUse(&medikitAction, self, BMA_HEAL, (UnitBodyPart)i);
+								_save->getTileEngine()->medikitRemoveIfEmpty(&medikitAction);
+								used = true;
+								break;
+							}
+						}
+						break;
+					case BMT_STIMULANT:
+						if (_traceAI)
+						{
+							if (wantsToStimStun)
+							{
+								Log(LOG_INFO) << "  Using medikit (-stun). TU*/HP/Stun/Wounds: " <<
+									self->getTimeUnits() << "/" << self->getHealth() << "/" << self->getStunlevel() << "/" << totalWounds;
+							}
+							else
+							{
+								Log(LOG_INFO) << "  Using medikit (+energy). TU*/Energy: " << self->getTimeUnits() << "/" << self->getEnergy();
+							}
+						}
+						_save->getTileEngine()->medikitUse(&medikitAction, self, BMA_STIMULANT, BODYPART_TORSO);
+						_save->getTileEngine()->medikitRemoveIfEmpty(&medikitAction);
+						used = true;
+						break;
+					case BMT_PAINKILLER:
+					case BMT_NORMAL:
+						// not supported
+						break;
+					}
+				}
+			}
+		}
+		if (used)
+		{
+			// only one use per attempt
+			break;
+		}
+	}
+
+	// 6. if we used something, let's try again
+	return used;
+}
+
+/**
  * Runs any code the state needs to keep updating every AI cycle.
  * @param action (possible) AI action to execute after thinking is done.
  */
@@ -352,14 +568,6 @@ void AIModule::think(BattleAction *action)
 		|| _unit->getHealth() < 2 * _unit->getBaseStats()->health / 3)
 	{
 		evaluate = true;
-	}
-	else if (_aggroTarget && _aggroTarget->getTurnsSinceSpotted() > _intelligence)
-	{
-		// Special case for snipers, target may not be visible, but that shouldn't cause us to re-evaluate
-		if (!_unit->isSniper() || !_aggroTarget->getTurnsLeftSpottedForSnipers())
-		{
-			evaluate = true;
-		}
 	}
 
 
@@ -1162,7 +1370,7 @@ int AIModule::selectNearestTarget()
 	Position target;
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) &&
+		if (validTarget(bu, true, true) &&
 			_save->getTileEngine()->visible(_unit, bu->getTile()))
 		{
 			tally++;
@@ -1216,7 +1424,7 @@ int AIModule::selectNearestTargetLeeroy(bool canRun)
 	_aggroTarget = 0;
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) &&
+		if (validTarget(bu, true, true) &&
 			_save->getTileEngine()->visible(_unit, bu->getTile()))
 		{
 			tally++;
@@ -1280,7 +1488,7 @@ bool AIModule::selectRandomTarget()
 
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (validTarget(bu, true, true))
 		{
 			int dist = RNG::generate(0,20) - Position::distance2d(_unit->getPosition(), bu->getPosition());
 			if (dist > farthest)
@@ -1422,7 +1630,7 @@ bool AIModule::selectSpottedUnitForSniper()
 
 	for (auto* bu : *_save->getUnits())
 	{
-		if (validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE) && bu->getTurnsLeftSpottedForSnipers())
+		if (validTarget(bu, true, true) && bu->getTurnsLeftSpottedForSnipersByFaction(_unit->getFaction()))
 		{
 			// Determine which firing mode to use based on how many hits we expect per turn and the unit's intelligence/aggression
 			_aggroTarget = bu;
@@ -1478,60 +1686,55 @@ int AIModule::scoreFiringMode(BattleAction *action, BattleUnit *target, bool che
 	{
 		return 0;
 	}
+	auto* weapon = action->weapon->getRules();
 
 	// Get base accuracy for the action
 	int accuracy = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(*action), _save->getMod());
 	int distanceSq = _unit->distance3dToUnitSq(target);
 	int distance = (int)std::ceil(sqrt(float(distanceSq)));
 
-	if (Options::battleUFOExtenderAccuracy && action->type != BA_THROW)
 	{
-		int upperLimit;
-		if (action->type == BA_AIMEDSHOT)
-		{
-			upperLimit = action->weapon->getRules()->getAimRange();
-		}
-		else if (action->type == BA_AUTOSHOT)
-		{
-			upperLimit = action->weapon->getRules()->getAutoRange();
-		}
-		else
-		{
-			upperLimit = action->weapon->getRules()->getSnapRange();
-		}
-		int lowerLimit = action->weapon->getRules()->getMinRange();
+		int upperLimit, lowerLimit;
+		int dropoff = weapon->calculateLimits(upperLimit, lowerLimit, _save->getDepth(), action->type);
 
 		if (distance > upperLimit)
 		{
-			accuracy -= (distance - upperLimit) * action->weapon->getRules()->getDropoff();
+			accuracy -= (distance - upperLimit) * dropoff;
 		}
 		else if (distance < lowerLimit)
 		{
-			accuracy -= (lowerLimit - distance) * action->weapon->getRules()->getDropoff();
+			accuracy -= (lowerLimit - distance) * dropoff;
 		}
 	}
 
-	if (action->type != BA_THROW && action->weapon->getRules()->isOutOfRange(distanceSq))
+	bool outOfRange = action->type == BA_THROW
+		? weapon->isOutOfThrowRange(distanceSq, _save->getDepth())
+		: weapon->isOutOfRange(distanceSq);
+
+	if (outOfRange)
+	{
 		accuracy = 0;
+	}
 
 	int numberOfShots = 1;
 	if (action->type == BA_AIMEDSHOT)
 	{
-		numberOfShots = action->weapon->getRules()->getConfigAimed()->shots;
+		numberOfShots = weapon->getConfigAimed()->shots;
 	}
 	else if (action->type == BA_SNAPSHOT)
 	{
-		numberOfShots = action->weapon->getRules()->getConfigSnap()->shots;
+		numberOfShots = weapon->getConfigSnap()->shots;
 	}
 	else if (action->type == BA_AUTOSHOT)
 	{
-		numberOfShots = action->weapon->getRules()->getConfigAuto()->shots;
+		numberOfShots = weapon->getConfigAuto()->shots;
 	}
 
 	int tuCost = _unit->getActionTUs(action->type, action->weapon).Time;
 	// Need to include TU cost of getting grenade from belt + priming if we're checking throwing
 	if (action->type == BA_THROW && _grenade)
 	{
+		// FIXME: why not just use action->weapon ?
 		auto* grenadeItem = _unit->getGrenadeFromBelt(_save);
 		tuCost = _unit->getActionTUs(action->type, grenadeItem).Time;
 		tuCost += 4;
@@ -1909,6 +2112,7 @@ bool AIModule::findFirePoint()
 
 /**
  * Decides if it worth our while to create an explosion here.
+ * Return value in same range as number affected targets but not equal exactly to that value.
  * @param targetPos The target's position.
  * @param attackingUnit The attacking unit.
  * @param radius How big the explosion will be.
@@ -1938,23 +2142,23 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 	if (injurylevel > (attackingUnit->getBaseStats()->health / 3) * 2)
 		desperation += 3;
 
-	int efficacy = desperation;
+	int efficacy = AIW_SCALE * desperation;
 
 	// don't go kamikaze unless we're already doomed.
 	if (abs(attackingUnit->getPosition().z - targetPos.z) <= Options::battleExplosionHeight && distance <= radius)
 	{
-		efficacy -= 4;
+		efficacy -= AIW_SCALE * 4;
 	}
 
 	// allow difficulty to have its influence
-	efficacy += diff/2;
+	efficacy += AIW_SCALE * diff/2;
 
 	// account for the unit we're targetting
 	BattleUnit *target = targetTile->getUnit();
 	if (target && !targetTile->getDangerous())
 	{
 		++enemiesAffected;
-		++efficacy;
+		efficacy += getTargetAttackWeight(target);
 	}
 
 	for (auto* bu : *_save->getUnits())
@@ -1969,11 +2173,19 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 			abs(bu->getPosition().z - targetPos.z) <= Options::battleExplosionHeight &&
 			Position::distance2d(bu->getPosition(), targetPos) <= radius)
 		{
+			if (bu->getTile()->getDangerous())
+			{
 				// don't count people who were already grenaded this turn
-			if (bu->getTile()->getDangerous() ||
-				// don't count units we don't know about
-				(bu->getFaction() == _targetFaction && bu->getTurnsSinceSpotted() > _intelligence))
 				continue;
+			}
+
+			auto weight = getTargetAttackWeight(bu);
+
+			if (weight == 0)
+			{
+				// AI do not know anything about this unit
+				continue;
+			}
 
 			// trace a line from the grenade origin to the unit we're checking against
 			Position voxelPosA = Position (targetPos.toVoxel() + TileEngine::voxelTileCenter);
@@ -1986,10 +2198,9 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 				if (bu->getFaction() == _targetFaction)
 				{
 					++enemiesAffected;
-					++efficacy;
 				}
-				else if (bu->getFaction() == attackingUnit->getFaction() || (attackingUnit->getFaction() == FACTION_NEUTRAL && bu->getFaction() == FACTION_PLAYER))
-					efficacy -= 2; // friendlies count double
+
+				efficacy += weight;
 			}
 		}
 	}
@@ -2007,8 +2218,8 @@ int AIModule::explosiveEfficacy(Position targetPos, BattleUnit *attackingUnit, i
 	}
 	else if (efficacy > 0)
 	{
-		// We kill more enemies than allies.
-		return efficacy;
+		// We kill more enemies than allies. Scale back to number of targets, can round down to zero
+		return efficacy / AIW_SCALE;
 	}
 	else
 	{
@@ -2043,7 +2254,7 @@ void AIModule::meleeAction()
 	{
 		int newDistance = Position::distance2d(_unit->getPosition(), bu->getPosition());
 		if (newDistance > 20 ||
-			!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+			!validTarget(bu, true, true))
 			continue;
 		//pick closest living unit that we can move to
 		if ((newDistance < distance || newDistance == 1) && !bu->isOut())
@@ -2089,7 +2300,7 @@ void AIModule::meleeActionLeeroy(bool canRun)
 	for (auto* bu : *_save->getUnits())
 	{
 		int newDistance = Position::distance2d(_unit->getPosition(), bu->getPosition());
-		if (!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (!validTarget(bu, true, true))
 			continue;
 		//pick closest living unit
 		if ((newDistance < distance || newDistance == 1) && !bu->isOut())
@@ -2133,7 +2344,7 @@ void AIModule::wayPointAction()
 	for (auto* bu : *_save->getUnits())
 	{
 		if (_aggroTarget != 0) break; // loop finished
-		if (!validTarget(bu, true, _unit->getFaction() == FACTION_HOSTILE))
+		if (!validTarget(bu, true, true))
 		{
 			continue;
 		}
@@ -2527,7 +2738,7 @@ bool AIModule::psiAction()
 			if (bu->getArmor()->getSize() == 1 &&
 				validTarget(bu, true, false) &&
 				// they must be player units
-				bu->getOriginalFaction() == _targetFaction &&
+				bu->getOriginalFaction() != _unit->getFaction() &&
 				(!LOSRequired ||
 				std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), bu) != _unit->getVisibleUnits()->end()))
 			{
@@ -2697,6 +2908,57 @@ void AIModule::meleeAttack()
 	_attackAction.weapon = _unit->getUtilityWeapon(BT_MELEE);
 }
 
+
+/**
+ *
+ * @param target
+ * @return
+ */
+AIAttackWeight AIModule::getTargetAttackWeight(BattleUnit* target) const
+{
+	AIAttackWeight weight = AIW_IGNORED;
+
+	if (target->getFaction() == _unit->getFaction())
+	{
+		// friendly target have negative weight, used for AoE attacks.
+		weight = target->getAITargetWeightAsFriendly(_save->getMod());
+	}
+	else if (
+		_intelligence < target->getTurnsSinceSpottedByFaction(_unit->getFaction()) &&
+		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipersByFaction(_unit->getFaction())))
+	{
+		// ignore units that we don't "know" about...
+		// ... unless we are a sniper and the spotters know about them
+		weight = AIW_IGNORED;
+	}
+	else if (target->getFaction() == FACTION_HOSTILE || _unit->getFaction() == FACTION_HOSTILE)
+	{
+		if (target->getFaction() == _targetFaction)
+		{
+			// enemy unit, full weight
+			weight = target->getAITargetWeightAsHostile(_save->getMod());
+		}
+		else
+		{
+			// if its not xcom unit then its civilian, less value that xcom
+			weight = target->getAITargetWeightAsHostileCivilians(_save->getMod());
+		}
+	}
+	else if (target->getFaction() == FACTION_NEUTRAL || _unit->getFaction() == FACTION_NEUTRAL)
+	{
+		// if its not alien then its xcom or civilian, humans do not shoot each other, usually...
+		weight = target->getAITargetWeightAsNeutral(_save->getMod());
+	}
+
+	weight = (AIAttackWeight)ModScript::scriptFunc2<ModScript::AiCalculateTargetWeight>(
+		_unit->getArmor(),
+		weight, weight,
+		_unit, target, _save
+	);
+
+	return weight;
+}
+
 /**
  * Validates a target.
  * @param target the target we want to validate.
@@ -2709,31 +2971,22 @@ bool AIModule::validTarget(BattleUnit *target, bool assessDanger, bool includeCi
 	// ignore units that:
 	// 1. are dead/unconscious
 	// 2. are dangerous (they have been grenaded)
-	// 3. are on our side
-	// 4. are hostile/neutral units marked as ignored by the AI
+	// 3. are hostile/neutral units marked as ignored by the AI
 	if (target->isOut() ||
 		(assessDanger && target->getTile()->getDangerous()) ||
-		(target->getFaction() != FACTION_PLAYER && target->isIgnoredByAI()) ||
-		target->getFaction() == _unit->getFaction())
-	{
-		return false;
-	}
-
-	// ignore units that we don't "know" about...
-	// ... unless we are a sniper and the spotters know about them
-	if (_unit->getFaction() == FACTION_HOSTILE &&
-		_intelligence < target->getTurnsSinceSpotted() &&
-		(!_unit->isSniper() || !target->getTurnsLeftSpottedForSnipers()))
+		(target->getFaction() != FACTION_PLAYER && target->isIgnoredByAI()))
 	{
 		return false;
 	}
 
 	if (includeCivs)
 	{
-		return true;
+		return  getTargetAttackWeight(target) > AIW_IGNORED;
 	}
-
-	return target->getFaction() == _targetFaction;
+	else
+	{
+		return  getTargetAttackWeight(target) > _save->getMod()->getAITargetWeightThreatThreshold();
+	}
 }
 
 /**
@@ -2835,7 +3088,7 @@ bool AIModule::getNodeOfBestEfficacy(BattleAction *action, int radius)
 						if ((_unit->getFaction() == FACTION_HOSTILE && bu->getFaction() != FACTION_HOSTILE) ||
 							(_unit->getFaction() == FACTION_NEUTRAL && bu->getFaction() == FACTION_HOSTILE))
 						{
-							if (bu->getTurnsSinceSpotted() <= _intelligence)
+							if (bu->getTurnsSinceSpottedByFaction(_unit->getFaction()) <= _intelligence)
 							{
 								nodePoints++;
 							}

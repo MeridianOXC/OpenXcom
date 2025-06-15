@@ -107,6 +107,7 @@ class ScriptGlobal;
 struct StatAdjustment;
 
 enum GameDifficulty : int;
+enum AIAttackWeight : int;
 
 /**
  * Mod data used when loading resources
@@ -205,6 +206,7 @@ private:
 	std::map<std::string, RuleEventScript*> _eventScripts;
 	std::map<std::string, RuleEvent*> _events;
 	std::map<std::string, RuleMissionScript*> _missionScripts;
+	std::map<std::string, RuleMissionScript*> _adhocScripts;
 	std::map<std::string, std::vector<ExtraSprites *> > _extraSprites;
 	std::map<std::string, CustomPalettes *> _customPalettes;
 	std::vector<std::pair<std::string, ExtraSounds *> > _extraSounds;
@@ -221,18 +223,28 @@ private:
 	int _maxStaticLightDistance, _maxDynamicLightDistance, _enhancedLighting;
 	int _costHireEngineer, _costHireScientist;
 	int _costEngineer, _costScientist, _timePersonnel, _hireByCountryOdds, _hireByRegionOdds, _initialFunding;
-	int _aiUseDelayBlaster, _aiUseDelayFirearm, _aiUseDelayGrenade, _aiUseDelayProxy, _aiUseDelayMelee, _aiUseDelayPsionic;
+
+	int _aiUseDelayBlaster, _aiUseDelayFirearm, _aiUseDelayGrenade, _aiUseDelayProxy, _aiUseDelayMelee, _aiUseDelayPsionic, _aiUseDelayMedikit;
 	int _aiFireChoiceIntelCoeff, _aiFireChoiceAggroCoeff;
 	bool _aiExtendedFireModeChoice, _aiRespectMaxRange, _aiDestroyBaseFacilities;
 	bool _aiPickUpWeaponsMoreActively, _aiPickUpWeaponsMoreActivelyCiv;
-	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor, _minReactionAccuracy;
+	int _aiReactionFireThreshold, _aiReactionFireThresholdCiv;
+	AIAttackWeight _aiTargetWeightThreatThreshold = AIAttackWeight{ 50 };
+	AIAttackWeight _aiTargetWeightAsHostile = AIAttackWeight{ 100 };
+	AIAttackWeight _aiTargetWeightAsHostileCivilians = AIAttackWeight{ 50 };
+	AIAttackWeight _aiTargetWeightAsFriendly = AIAttackWeight{ -200 };
+	AIAttackWeight _aiTargetWeightAsNeutral = AIAttackWeight{ -100 };
+
+	int _maxLookVariant, _tooMuchSmokeThreshold, _customTrainingFactor;
 	int _chanceToStopRetaliation;
+	int _chanceToDetectAlienBaseEachMonth;
 	bool _lessAliensDuringBaseDefense;
 	bool _allowCountriesToCancelAlienPact, _buildInfiltrationBaseCloseToTheCountry, _infiltrateRandomCountryInTheRegion;
 	bool _allowAlienBasesOnWrongTextures;
 	int _kneelBonusGlobal, _oneHandedPenaltyGlobal;
 	int _enableCloseQuartersCombat, _closeQuartersAccuracyGlobal, _closeQuartersTuCostGlobal, _closeQuartersEnergyCostGlobal, _closeQuartersSneakUpGlobal;
 	int _noLOSAccuracyPenaltyGlobal;
+	int _explodeInventoryGlobal;
 	int _surrenderMode;
 	int _bughuntMinTurn, _bughuntMaxEnemies, _bughuntRank, _bughuntLowMorale, _bughuntTimeUnitsLeft;
 
@@ -303,7 +315,7 @@ private:
 	std::vector<std::string> _countriesIndex, _extraGlobeLabelsIndex, _regionsIndex, _facilitiesIndex, _craftsIndex, _craftWeaponsIndex, _itemCategoriesIndex, _itemsIndex, _invsIndex, _ufosIndex;
 	std::vector<std::string> _aliensIndex, _enviroEffectsIndex, _startingConditionsIndex, _deploymentsIndex, _armorsIndex, _ufopaediaIndex, _ufopaediaCatIndex, _researchIndex, _manufactureIndex;
 	std::vector<std::string> _skillsIndex, _soldiersIndex, _soldierTransformationIndex, _soldierBonusIndex;
-	std::vector<std::string> _alienMissionsIndex, _terrainIndex, _customPalettesIndex, _arcScriptIndex, _eventScriptIndex, _eventIndex, _missionScriptIndex;
+	std::vector<std::string> _alienMissionsIndex, _terrainIndex, _customPalettesIndex, _arcScriptIndex, _eventScriptIndex, _eventIndex, _missionScriptIndex, _adhocScriptIndex;
 	std::vector<std::vector<int> > _alienItemLevels;
 	std::vector<std::array<SDL_Color, TransparenciesOpacityLevels>> _transparencies;
 	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _armorListOrder, _alienRaceListOrder, _researchListOrder,  _manufactureListOrder;
@@ -802,6 +814,8 @@ public:
 	int getAIUseDelayMelee() const {return _aiUseDelayMelee;}
 	/// Gets first turn when AI can use psionic abilities.
 	int getAIUseDelayPsionic() const  {return _aiUseDelayPsionic;}
+	/// Gets first turn when AI can use self-target medikits.
+	int getAIUseDelayMedikit() const { return _aiUseDelayMedikit; }
 	/// Gets how much AI intelligence should be used to determine firing mode for sniping.
 	int getAIFireChoiceIntelCoeff() const {return _aiFireChoiceIntelCoeff;}
 	/// Gets how much AI aggression should be used to determine firing mode for sniping.
@@ -816,16 +830,29 @@ public:
 	bool getAIPickUpWeaponsMoreActively() const { return _aiPickUpWeaponsMoreActively; }
 	/// Gets whether or not the civilian AI should pick up weapons more actively.
 	bool getAIPickUpWeaponsMoreActivelyCiv() const { return _aiPickUpWeaponsMoreActivelyCiv; }
+	/// Gets the reaction fire threshold (default = 0).
+	int getReactionFireThreshold(UnitFaction faction) const;
+	/// Gets weight value that AI use to determine if target is dangerous.
+	AIAttackWeight getAITargetWeightThreatThreshold() const { return _aiTargetWeightThreatThreshold; }
+	/// Gets default weight value of hostile unit.
+	AIAttackWeight getAITargetWeightAsHostile() const { return _aiTargetWeightAsHostile; }
+	/// Gets default weight value of civilian unit when consider by aliens.
+	AIAttackWeight getAITargetWeightAsHostileCivilians() const { return _aiTargetWeightAsHostileCivilians; }
+	/// Gets default weight value of same faction unit.
+	AIAttackWeight getAITargetWeightAsFriendly() const { return _aiTargetWeightAsFriendly; }
+	/// Gets default weight value of neutral unit (xcom to civ or vice versa).
+	AIAttackWeight getAITargetWeightAsNeutral() const { return _aiTargetWeightAsNeutral; }
+
 	/// Gets maximum supported lookVariant.
 	int getMaxLookVariant() const;
 	/// Gets the threshold for too much smoke (vanilla default = 10).
 	int getTooMuchSmokeThreshold() const  {return _tooMuchSmokeThreshold;}
 	/// Gets the custom physical training factor in percent (default = 100).
 	int getCustomTrainingFactor() const { return _customTrainingFactor; }
-	/// Gets the minimum firing accuracy for reaction fire (default = 0).
-	int getMinReactionAccuracy() const { return _minReactionAccuracy; }
 	/// Gets the chance to stop retaliation after unsuccessful xcom base attack (default = 0).
 	int getChanceToStopRetaliation() const { return _chanceToStopRetaliation; }
+	/// Gets the chance to detect an alien base by xcom operatives each month (default = 20).
+	int getChanceToDetectAlienBaseEachMonth() const { return _chanceToDetectAlienBaseEachMonth; }
 	/// Should a damaged UFO deploy less aliens during the base defense?
 	bool getLessAliensDuringBaseDefense() const { return _lessAliensDuringBaseDefense; }
 	/// Will countries join the good side again after the infiltrator base is destroyed?
@@ -852,6 +879,8 @@ public:
 	int getCloseQuartersSneakUpGlobal() const { return _closeQuartersSneakUpGlobal; }
 	/// Gets the default accuracy penalty for having no LOS to the target (default = 0 is no penalty)
 	int getNoLOSAccuracyPenaltyGlobal() const { return _noLOSAccuracyPenaltyGlobal; }
+	/// Gets the default setting for primed grenades exploding in the inventory (default = 0 is no explosion)
+	int getExplodeInventoryGlobal() const { return _explodeInventoryGlobal; }
 	/// Gets the surrender mode (default = 0).
 	int getSurrenderMode() const { return _surrenderMode; }
 	/// Gets the bug hunt mode minimum turn requirement (default = 20).
@@ -1061,7 +1090,9 @@ public:
 	const std::vector<std::string>* getEventList() const;
 	RuleEvent* getEvent(const std::string& name, bool error = false) const;
 	const std::vector<std::string> *getMissionScriptList() const;
+	const std::vector<std::string> *getAdhocScriptList() const;
 	RuleMissionScript *getMissionScript(const std::string &name, bool error = false) const;
+	RuleMissionScript *getAdhocScript(const std::string &name, bool error = false) const;
 	/// Get global script data.
 	ScriptGlobal *getScriptGlobal() const;
 	RuleResearch *getFinalResearch() const;

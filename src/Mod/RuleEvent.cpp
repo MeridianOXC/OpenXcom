@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "RuleEvent.h"
+#include "Mod.h"
 
 namespace OpenXcom
 {
@@ -64,11 +65,23 @@ void RuleEvent::load(const YAML::YamlNodeReader& node)
 	{
 		_weightedItemList.load(reader["weightedItemList"]);
 	}
-	reader.tryRead("researchList", _researchList);
+	reader.tryRead("researchList", _researchNames);
+	reader.tryRead("adhocMissionScriptTags", _adhocMissionScriptTags);
 	reader.tryRead("interruptResearch", _interruptResearch);
 	reader.tryRead("timer", _timer);
 	reader.tryRead("timerRandom", _timerRandom);
 	reader.tryRead("invert", _invert);
+
+	reader.tryRead("everyMultiSoldierList", _everyMultiSoldierList);
+	reader.tryRead("randomMultiSoldierList", _randomMultiSoldierList);
+}
+
+/**
+ * Cross link with other Rules.
+ */
+void RuleEvent::afterLoad(const Mod* mod)
+{
+	mod->linkRule(_research, _researchNames);
 }
 
 }

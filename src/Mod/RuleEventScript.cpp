@@ -87,12 +87,15 @@ void RuleEventScript::load(const YAML::YamlNodeReader& node)
 	}
 	reader.tryRead("counterMin", _counterMin);
 	reader.tryRead("counterMax", _counterMax);
+
 	reader.tryRead("researchTriggers", _researchTriggers);
 	reader.tryRead("itemTriggers", _itemTriggers);
 	reader.tryRead("facilityTriggers", _facilityTriggers);
 	reader.tryRead("soldierTypeTriggers", _soldierTypeTriggers);
 	reader.tryRead("xcomBaseInRegionTriggers", _xcomBaseInRegionTriggers);
 	reader.tryRead("xcomBaseInCountryTriggers", _xcomBaseInCountryTriggers);
+	reader.tryRead("pactCountryTriggers", _pactCountryTriggers);
+
 	reader.tryRead("affectsGameProgression", _affectsGameProgression);
 }
 

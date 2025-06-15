@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "TransferItemsState.h"
+#include "ItemLocationsState.h"
 #include "ManufactureDependenciesTreeState.h"
 #include <sstream>
 #include <climits>
@@ -769,31 +770,8 @@ void TransferItemsState::lstItemsRightArrowClick(Action *action)
  */
 void TransferItemsState::lstItemsMousePress(Action *action)
 {
-
-}
-
-/**
- * Handles the mouse-wheels on the arrow-buttons.
- * @param action Pointer to an action.
- */
-void TransferItemsState::lstItemsMouseWheel(Action *action)
-{
 	_sel = _lstItems->getSelectedRow();
-	const SDL_Event &ev(*action->getDetails());
-	if (ev.type == SDL_MOUSEWHEEL)
-	{
-		_timerInc->stop();
-		_timerDec->stop();
-		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
-			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
-		{
-			if (ev.wheel.y > 0)
-				increaseByValue(Options::changeValueByMouseWheel);
-			else
-				decreaseByValue(Options::changeValueByMouseWheel);
-		}
-	}
-	else if (_game->isRightClick(action, true))
+	if (_game->isRightClick(action, true))
 	{
 		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
 			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
@@ -805,7 +783,14 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 			RuleItem *rule = (RuleItem*)getRow().rule;
 			if (rule != 0)
 			{
-				_game->pushState(new ManufactureDependenciesTreeState(rule->getType()));
+				if (_game->isCtrlPressed(true))
+				{
+					_game->pushState(new ItemLocationsState(rule));
+				}
+				else
+				{
+					_game->pushState(new ManufactureDependenciesTreeState(rule->getType()));
+				}
 			}
 		}
 	}
@@ -846,6 +831,29 @@ void TransferItemsState::lstItemsMouseWheel(Action *action)
 					_game->pushState(new TechTreeViewerState(0, 0, 0, rule->getRules()));
 				}
 			}
+		}
+	}
+}
+
+/**
+ * Handles the mouse-wheels on the arrow-buttons.
+ * @param action Pointer to an action.
+ */
+void TransferItemsState::lstItemsMouseWheel(Action *action)
+{
+	_sel = _lstItems->getSelectedRow();
+	const SDL_Event &ev(*action->getDetails());
+	if (ev.type == SDL_MOUSEWHEEL)
+	{
+		_timerInc->stop();
+		_timerDec->stop();
+		if (action->getAbsoluteXMouse() >= _lstItems->getArrowsLeftEdge() &&
+			action->getAbsoluteXMouse() <= _lstItems->getArrowsRightEdge())
+		{
+			if (ev.wheel.y > 0)
+				increaseByValue(Options::changeValueByMouseWheel);
+			else
+				decreaseByValue(Options::changeValueByMouseWheel);
 		}
 	}
 }

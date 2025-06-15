@@ -193,7 +193,12 @@ int CraftWeapon::rearm(const int available, const int clipSize)
  */
 CraftWeaponProjectile* CraftWeapon::fire() const
 {
-	CraftWeaponProjectile *p = new CraftWeaponProjectile();
+	const RuleItem* damageItem = nullptr;
+	if (this->getRules()->unifiedDamageFormula())
+	{
+		damageItem = this->getRules()->getClipItem() ? this->getRules()->getClipItem() : this->getRules()->getLauncherItem();
+	}
+	CraftWeaponProjectile *p = new CraftWeaponProjectile(damageItem);
 	p->setType(this->getRules()->getProjectileType());
 	p->setSpeed(this->getRules()->getProjectileSpeed());
 	p->setAccuracy(this->getRules()->getAccuracy());

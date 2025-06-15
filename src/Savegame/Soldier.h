@@ -42,6 +42,7 @@ class SoldierDiary;
 class SavedGame;
 class RuleSoldierTransformation;
 class RuleSoldierBonus;
+class RuleSkill;
 class Base;
 struct BaseSumDailyRecovery;
 
@@ -299,6 +300,8 @@ public:
 	UnitStats* getDailyDogfightExperienceCache();
 	/// Resets the daily dogfight experience cache.
 	void resetDailyDogfightExperienceCache();
+	/// Check if the soldier has all the required soldier bonuses for the given soldier skill.
+	bool hasAllRequiredBonusesForSkill(const RuleSkill* skillRules);
 
 private:
 	std::string generateCallsign(const std::vector<SoldierNamePool*> &names);

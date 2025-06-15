@@ -20,6 +20,7 @@
 namespace OpenXcom {
 
 class Surface;
+class RuleItem;
 
 // Do not change the order of these enums because they are related to blob order.
 enum CraftWeaponProjectileType { CWPT_STINGRAY_MISSILE, CWPT_AVALANCHE_MISSILE, CWPT_CANNON_ROUND, CWPT_FUSION_BALL, CWPT_LASER_BEAM, CWPT_PLASMA_BEAM };
@@ -32,6 +33,7 @@ const int HP_RIGHT = 1;
 class CraftWeaponProjectile
 {
 private:
+	const RuleItem* _damageItem;
 	CraftWeaponProjectileType _type;
 	CraftWeaponProjectileGlobalType _globalType;
 	int _speed;
@@ -49,7 +51,7 @@ private:
 	int _shieldDamageModifier;
 	
 public:
-	CraftWeaponProjectile();
+	CraftWeaponProjectile(const RuleItem* damageItem);
 	~CraftWeaponProjectile(void);
 
 	/// Sets projectile type. This determines it's speed.
@@ -100,6 +102,8 @@ public:
 	void setShieldDamageModifier(const int &shieldDamageModifier);
 	/// Gets how effective this projectile is against shields
 	int getShieldDamageModifier() const;
+	/// Gets the damage item.
+	const RuleItem* getDamageItem() const { return _damageItem; }
 };
 
 }

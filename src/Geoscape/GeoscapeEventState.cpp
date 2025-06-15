@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "GeoscapeEventState.h"
+#include "GeoscapeState.h"
 #include <map>
 #include "../Basescape/SellState.h"
 #include "../Engine/Game.h"
@@ -135,6 +136,12 @@ GeoscapeEventState::GeoscapeEventState(const RuleEvent& eventRule) : _eventRule(
  */
 void GeoscapeEventState::eventLogic()
 {
+	if (!_eventRule.getAdhocMissionScriptTags().empty())
+	{
+		auto* geo = _game->getGeoscapeState();
+		geo->determineAlienMissions(false, &_eventRule);
+	}
+
 	SavedGame *save = _game->getSavedGame();
 	Base *hq = save->getBases()->front();
 	const Mod *mod = _game->getMod();
@@ -240,6 +247,52 @@ void GeoscapeEventState::eventLogic()
 					t->setSoldier(s);
 					hq->getTransfers()->push_back(t);
 				}
+			}
+		}
+	}
+
+	// 3. spawn/transfer multiple soldiers into the HQ
+	{
+		std::map<const RuleSoldier*, int> soldiersToTransfer;
+
+		for (auto& pair : rule.getEveryMultiSoldierList())
+		{
+			const RuleSoldier* soldierRule = mod->getSoldier(pair.first, true);
+			if (soldierRule)
+			{
+				soldiersToTransfer[soldierRule] += pair.second;
+			}
+		}
+
+		if (!rule.getRandomMultiSoldierList().empty())
+		{
+			size_t pickSoldier = RNG::generate(0, rule.getRandomMultiSoldierList().size() - 1);
+			auto& sublist = rule.getRandomMultiSoldierList().at(pickSoldier);
+			for (auto& pair : sublist)
+			{
+				const RuleSoldier* soldierRule = mod->getSoldier(pair.first, true);
+				if (soldierRule)
+				{
+					soldiersToTransfer[soldierRule] += pair.second;
+				}
+			}
+		}
+
+		for (auto& ts : soldiersToTransfer)
+		{
+			for (int i = 0; i < ts.second; ++i)
+			{
+				Transfer* t = new Transfer(24);
+				int nationality = _game->getSavedGame()->selectSoldierNationalityByLocation(_game->getMod(), ts.first, city);
+				Soldier* s = mod->genSoldier(save, ts.first, nationality);
+				YAML::YamlRootNodeReader reader(rule.getSpawnedSoldierTemplate(), "(spawned soldier template)");
+				s->load(reader, mod, save, mod->getScriptGlobal(), true); // load from soldier template
+				{
+					// reset what may have been loaded
+					s->genName();
+				}
+				t->setSoldier(s);
+				hq->getTransfers()->push_back(t);
 			}
 		}
 	}
@@ -381,9 +434,8 @@ void GeoscapeEventState::eventLogic()
 	// 4. give bonus research
 	std::vector<const RuleResearch*> possibilities;
 
-	for (auto& rName : rule.getResearchList())
+	for (auto* rRule : rule.getResearchList())
 	{
-		const RuleResearch *rRule = mod->getResearch(rName, true);
 		if (!save->isResearched(rRule, false) || save->hasUndiscoveredGetOneFree(rRule, true))
 		{
 			possibilities.push_back(rRule);

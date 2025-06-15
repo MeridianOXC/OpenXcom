@@ -181,6 +181,15 @@ ConfirmDestinationState::~ConfirmDestinationState()
 */
 std::string ConfirmDestinationState::checkStartingCondition()
 {
+	// Check all selected craft
+	for (auto* xcraft : _crafts)
+	{
+		if (xcraft->areBannedArmorsOnboard())
+		{
+			return tr("STR_ARMOR_NOT_ALLOWED_ONBOARD");
+		}
+	}
+
 	Ufo* u = dynamic_cast<Ufo*>(_target);
 	MissionSite* m = dynamic_cast<MissionSite*>(_target);
 	AlienBase* b = dynamic_cast<AlienBase*>(_target);

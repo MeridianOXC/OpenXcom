@@ -1073,7 +1073,8 @@ void GeoscapeState::time5Seconds()
 					timerReset();
 					if (!base->getDefenses()->empty() && !ufo->getMission()->getRules().ignoreBaseDefenses())
 					{
-						popup(new BaseDefenseState(base, ufo, this));
+						bool instaHyper = ufo->getRules()->isInstaHyper() || mission->getRules().isInstaHyper();
+						popup(new BaseDefenseState(base, ufo, this, instaHyper));
 						return; // don't allow multiple simultaneous attacks in the same game tick
 					}
 					else
@@ -2899,7 +2900,7 @@ void GeoscapeState::time1Month()
 	popup(new MonthlyReportState(_globe));
 
 	// Handle Xcom Operatives discovering bases
-	if (!_game->getSavedGame()->getAlienBases()->empty() && RNG::percent(20))
+	if (!_game->getSavedGame()->getAlienBases()->empty() && RNG::percent(_game->getMod()->getChanceToDetectAlienBaseEachMonth()))
 	{
 		for (auto* ab : *_game->getSavedGame()->getAlienBases())
 		{
@@ -3578,7 +3579,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 /**
  * Determine the alien missions to start this month.
  */
-void GeoscapeState::determineAlienMissions()
+void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eventRules)
 {
 	SavedGame *save = _game->getSavedGame();
 	AlienStrategy &strategy = save->getAlienStrategy();
@@ -3591,12 +3592,16 @@ void GeoscapeState::determineAlienMissions()
 		performanceBonus = 0; // bonus only, no malus
 	}
 	int64_t currentFunds = save->getFunds();
-	currentFunds += save->getCountryFunding() + performanceBonus - save->getBaseMaintenance(); // peek into the next month
+	if (isNewMonth)
+	{
+		currentFunds += save->getCountryFunding() + performanceBonus - save->getBaseMaintenance(); // peek into the next month
+	}
 	std::vector<RuleMissionScript*> availableMissions;
-	std::map<int, bool> conditions;
+	std::unordered_map<int, bool> conditions;
 
-	std::set<std::string> xcomBaseRegions;
-	std::set<std::string> xcomBaseCountries;
+	std::unordered_set<std::string> xcomBaseRegions;
+	std::unordered_set<std::string> xcomBaseCountries;
+	std::unordered_set<std::string> pactCountries;
 	for (auto* xcomBase : *save->getBases())
 	{
 		auto* region = save->locateRegion(*xcomBase);
@@ -3610,8 +3615,16 @@ void GeoscapeState::determineAlienMissions()
 			xcomBaseCountries.insert(country->getRules()->getType());
 		}
 	}
+	for (auto* country : *save->getCountries())
+	{
+		if (country->getPact())
+		{
+			pactCountries.insert(country->getRules()->getType());
+		}
+	}
 
 	// sorry to interrupt, but before we start determining the actual monthly missions, let's determine and/or adjust our overall game plan
+	if (isNewMonth)
 	{
 		std::vector<RuleArcScript*> relevantArcScripts;
 
@@ -3687,6 +3700,16 @@ void GeoscapeState::determineAlienMissions()
 				}
 				if (triggerHappy)
 				{
+					// soldier type requirements
+					for (auto& triggerSoldierType : arcScript->getSoldierTypeTriggers())
+					{
+						triggerHappy = (save->isSoldierTypeHired(triggerSoldierType.first) == triggerSoldierType.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
 					// xcom base requirements
 					for (auto& triggerXcomBase : arcScript->getXcomBaseInRegionTriggers())
 					{
@@ -3703,6 +3726,17 @@ void GeoscapeState::determineAlienMissions()
 					{
 						bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
 						triggerHappy = (found == triggerXcomBase2.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
+				if (triggerHappy)
+				{
+					// country with pact
+					for (auto& triggerPact : arcScript->getPactCountryTriggers())
+					{
+						bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+						triggerHappy = (found == triggerPact.second);
 						if (!triggerHappy)
 							break;
 					}
@@ -3786,11 +3820,28 @@ void GeoscapeState::determineAlienMissions()
 	}
 
 	// well, here it is, ladies and gents, the nuts and bolts behind the geoscape mission scheduling.
+	const std::vector<std::string>* scriptList = isNewMonth ? mod->getMissionScriptList() : mod->getAdhocScriptList();
 
 	// first we need to build a list of "valid" commands
-	for (auto& missionScriptName : *mod->getMissionScriptList())
+	for (auto& missionScriptName : *scriptList)
 	{
-		RuleMissionScript *command = mod->getMissionScript(missionScriptName);
+		RuleMissionScript *command = isNewMonth ? mod->getMissionScript(missionScriptName) : mod->getAdhocScript(missionScriptName);
+
+		// level zero condition check: filter adhoc mission scripts by tags
+		if (!isNewMonth && eventRules)
+		{
+			bool matchFound = false;
+			for (auto& atag : eventRules->getAdhocMissionScriptTags())
+			{
+				for (auto& btag : command->getAdhocMissionScriptTags())
+				{
+					if (atag == btag) matchFound = true;
+					break;
+				}
+				if (matchFound) break;
+			}
+			if (!matchFound) continue;
+		}
 
 			// level one condition check: make sure we're within our time constraints
 		if (command->getFirstMonth() <= month &&
@@ -3861,6 +3912,16 @@ void GeoscapeState::determineAlienMissions()
 			}
 			if (triggerHappy)
 			{
+				// soldier type requirements
+				for (auto& triggerSoldierType : command->getSoldierTypeTriggers())
+				{
+					triggerHappy = (save->isSoldierTypeHired(triggerSoldierType.first) == triggerSoldierType.second);
+					if (!triggerHappy)
+						break;
+				}
+			}
+			if (triggerHappy)
+			{
 				// xcom base requirements
 				for (auto& triggerXcomBase : command->getXcomBaseInRegionTriggers())
 				{
@@ -3877,6 +3938,17 @@ void GeoscapeState::determineAlienMissions()
 				{
 					bool found = (xcomBaseCountries.find(triggerXcomBase2.first) != xcomBaseCountries.end());
 					triggerHappy = (found == triggerXcomBase2.second);
+					if (!triggerHappy)
+						break;
+				}
+			}
+			if (triggerHappy)
+			{
+				// country with pact
+				for (auto& triggerPact : command->getPactCountryTriggers())
+				{
+					bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+					triggerHappy = (found == triggerPact.second);
 					if (!triggerHappy)
 						break;
 				}
@@ -3952,6 +4024,7 @@ void GeoscapeState::determineAlienMissions()
 	}
 
 	// after the mission scripts, it's time for the event scripts
+	if (isNewMonth)
 	{
 		std::vector<RuleEventScript *> relevantEventScripts;
 
@@ -4057,6 +4130,17 @@ void GeoscapeState::determineAlienMissions()
 							break;
 					}
 				}
+				if (triggerHappy)
+				{
+					// country with pact
+					for (auto& triggerPact : eventScript->getPactCountryTriggers())
+					{
+						bool found = (pactCountries.find(triggerPact.first) != pactCountries.end());
+						triggerHappy = (found == triggerPact.second);
+						if (!triggerHappy)
+							break;
+					}
+				}
 				// level three condition check: does random chance favour this command's execution?
 				if (triggerHappy && RNG::percent(eventScript->getExecutionOdds()))
 				{
@@ -4120,7 +4204,7 @@ void GeoscapeState::determineAlienMissions()
 	}
 
 	// Alien base upgrades happen only AFTER the first game month
-	if (month > 0)
+	if (isNewMonth && month > 0)
 	{
 		for (auto* alienBase : *save->getAlienBases())
 		{

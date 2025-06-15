@@ -51,6 +51,7 @@ private:
 	int _tractorBeamPower;
 	bool _hidePediaInfo;
 	bool _statisticalBulletSaving;
+	bool _unifiedDamageFormula;
 public:
 	/// Creates a blank craft weapon ruleset.
 	RuleCraftWeapon(const std::string &type);
@@ -75,6 +76,8 @@ public:
 	bool getHidePediaInfo() const { return _hidePediaInfo; }
 	/// Should the statistical bullet saving be used or not?
 	bool useStatisticalBulletSaving() const { return _statisticalBulletSaving; }
+	/// Should unified or vanilla formula be used?
+	bool unifiedDamageFormula() const { return _unifiedDamageFormula; }
 	/// Gets the craft weapon's effectiveness against shields.
 	int getShieldDamageModifier() const;
 	/// Gets the craft weapon's range.

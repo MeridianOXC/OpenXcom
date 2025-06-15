@@ -1220,6 +1220,9 @@
     <ClCompile Include="Engine\TouchState.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Basescape\ItemLocationsState.cpp">
+      <Filter>Basescape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -2691,6 +2694,12 @@
       <Filter>Basescape</Filter>
     </ClInclude>
     <ClInclude Include="Engine\TouchState.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Basescape\ItemLocationsState.h">
+      <Filter>Basescape</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\NullableValue.h">
       <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>

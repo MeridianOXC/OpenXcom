@@ -41,6 +41,7 @@
 #include "Unicode.h"
 #include "../Ufopaedia/UfopaediaStartState.h"
 #include "../Menu/NotesState.h"
+#include "../Geoscape/GeoscapeState.h"
 #include "../Menu/TestState.h"
 #include <algorithm>
 #include "../fallthrough.h"
@@ -799,6 +800,23 @@ bool Game::containsNotesState() const
 		}
 	}
 	return false;
+}
+
+/**
+ * Returns the GeoscapeState from the background (if available).
+ * @return Pointer to GeoscapeState, or nullptr if not available.
+ */
+GeoscapeState* Game::getGeoscapeState() const
+{
+	for (auto* state : _states)
+	{
+		auto* geoscape = dynamic_cast<GeoscapeState*>(state);
+		if (geoscape)
+		{
+			return geoscape;
+		}
+	}
+	return nullptr;
 }
 
 /**

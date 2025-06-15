@@ -216,14 +216,7 @@ void UnitDieBState::think()
 		{
 			_unit->instaKill();
 		}
-		if (_unit->getTurnsSinceSpotted() < 255)
-		{
-			_unit->setTurnsSinceSpotted(255);
-		}
-		if (_unit->getTurnsLeftSpottedForSnipers() != 0)
-		{
-			_unit->setTurnsLeftSpottedForSnipers(0);
-		}
+		_unit->resetTurnsSince();
 		if (_unit->getSpawnUnit() && !_overKill)
 		{
 			if (!_unit->getAlreadyRespawned())

@@ -156,6 +156,11 @@ SelectDestinationState::SelectDestinationState(std::vector<Craft*> crafts, Globe
 				break;
 			}
 		}
+		// ok, ok, one more...
+		if (_crafts.front()->areBannedArmorsOnboard())
+		{
+			_btnCydonia->setVisible(false);
+		}
 	}
 
 	if (_crafts.front()->getStatus() != "STR_OUT")

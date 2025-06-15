@@ -350,7 +350,7 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 		{
 			increment *= 10;
 		}
-		else if (i == &Options::oxceResearchScrollSpeedWithCtrl || i == &Options::oxceManufactureScrollSpeedWithCtrl)
+		else if (i == &Options::oxceResearchScrollSpeedWithCtrl || i == &Options::oxceManufactureScrollSpeedWithCtrl || i == &Options::oxceReactionFireThreshold)
 		{
 			increment *= 5;
 		}
@@ -410,7 +410,7 @@ void OptionsAdvancedState::lstOptionsClick(Action *action)
 			min = 8;
 			max = 80;
 		}
-		else if (i == &Options::oxceWoundedDefendBaseIf) {
+		else if (i == &Options::oxceWoundedDefendBaseIf || i == &Options::oxceReactionFireThreshold) {
 			min = 0;
 			max = 100;
 		}

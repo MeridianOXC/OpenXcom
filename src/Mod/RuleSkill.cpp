@@ -56,7 +56,7 @@ void RuleSkill::load(const YAML::YamlNodeReader& reader, Mod *mod, const ModScri
 	reader.tryRead("checkHandsOnly2", _checkHandsOnly2);
 
 	_cost.loadCost(reader, "Use");
-	_flat.loadPercent(reader, "Use");
+	_flat.loadFlat(reader, "Use");
 
 	mod->loadUnorderedNames(_type, _compatibleWeaponNames, reader["compatibleWeapons"]);
 	mod->loadUnorderedNames(_type,_requiredBonusNames, reader["requiredBonuses"]);

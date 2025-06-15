@@ -1520,7 +1520,7 @@ public:
  */
 class ScriptParserEventsBase : public ScriptParserBase
 {
-	constexpr static size_t EventsMax = 64;
+	constexpr static size_t EventsMax = 256;
 	constexpr static size_t OffsetScale = 100;
 	constexpr static size_t OffsetMax = 100 * OffsetScale;
 

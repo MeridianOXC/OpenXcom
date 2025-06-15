@@ -100,11 +100,14 @@ ResearchState::ResearchState(Base *base) : _base(base)
 
 	_txtProgress->setText(tr("STR_PROGRESS"));
 
+	_lstResearch->setArrowColumn(192, ARROW_VERTICAL);
 	_lstResearch->setColumns(3, 158, 58, 70);
 	_lstResearch->setSelectable(true);
 	_lstResearch->setBackground(_window);
 	_lstResearch->setMargin(2);
 	_lstResearch->setWordWrap(true);
+	_lstResearch->onLeftArrowClick((ActionHandler)&ResearchState::lstResearchLeftArrowClick);
+	_lstResearch->onRightArrowClick((ActionHandler)&ResearchState::lstResearchRightArrowClick);
 	_lstResearch->onMouseClick((ActionHandler)&ResearchState::onSelectProject, SDL_BUTTON_LEFT);
 	_lstResearch->onMouseClick((ActionHandler)&ResearchState::onOpenTechTreeViewer, SDL_BUTTON_MIDDLE);
 	//_lstResearch->onMousePress((ActionHandler)&ResearchState::lstResearchMousePress);
@@ -140,8 +143,14 @@ void ResearchState::btnNewClick(Action *)
  * Displays the list of possible ResearchProjects.
  * @param action Pointer to an action.
  */
-void ResearchState::onSelectProject(Action *)
+void ResearchState::onSelectProject(Action *action)
 {
+	double mx = action->getAbsoluteXMouse();
+	if (mx >= _lstResearch->getArrowsLeftEdge() && mx < _lstResearch->getArrowsRightEdge())
+	{
+		return;
+	}
+
 	const std::vector<ResearchProject *> & baseProjects(_base->getResearch());
 	_game->pushState(new ResearchInfoState(_base, baseProjects[_lstResearch->getSelectedRow()]));
 }
@@ -150,8 +159,14 @@ void ResearchState::onSelectProject(Action *)
 * Opens the TechTreeViewer for the corresponding topic.
 * @param action Pointer to an action.
 */
-void ResearchState::onOpenTechTreeViewer(Action *)
+void ResearchState::onOpenTechTreeViewer(Action *action)
 {
+	double mx = action->getAbsoluteXMouse();
+	if (mx >= _lstResearch->getArrowsLeftEdge() && mx < _lstResearch->getArrowsRightEdge())
+	{
+		return;
+	}
+
 	const std::vector<ResearchProject *> & baseProjects(_base->getResearch());
 	const RuleResearch *selectedTopic = baseProjects[_lstResearch->getSelectedRow()]->getRules();
 	_game->pushState(new TechTreeViewerState(selectedTopic, 0));
@@ -248,6 +263,111 @@ void ResearchState::fillProjectList(size_t scrl)
 
 	if (scrl)
 		_lstResearch->scrollTo(scrl);
+}
+
+/**
+ * Reorders a research topic up.
+ * @param action Pointer to an action.
+ */
+void ResearchState::lstResearchLeftArrowClick(Action* action)
+{
+	unsigned int row = _lstResearch->getSelectedRow();
+	if (row > 0)
+	{
+		if (_game->isLeftClick(action, true))
+		{
+			moveTopicUp(action, row);
+		}
+		else if (_game->isRightClick(action, true))
+		{
+			moveTopicUp(action, row, true);
+		}
+	}
+}
+
+/**
+ * Moves a research topic up on the list.
+ * @param action Pointer to an action.
+ * @param row Selected research topic row.
+ * @param max Move the research topic to the top?
+ */
+void ResearchState::moveTopicUp(Action* action, unsigned int row, bool max)
+{
+	auto& topics = _base->getResearch();
+	if (max)
+	{
+		auto* r = topics.at(row);
+		topics.erase(topics.begin() + row);
+		topics.insert(topics.begin(), r);
+	}
+	else
+	{
+		std::swap(topics[row], topics[row - 1]);
+		if (row != _lstResearch->getScroll())
+		{
+#ifndef __MOBILE__
+			SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() - static_cast<Uint16>(8 * action->getYScale()));
+#endif
+		}
+		else
+		{
+			_lstResearch->scrollUp(false);
+		}
+	}
+	fillProjectList(_lstResearch->getScroll());
+}
+
+/**
+ * Reorders a research topic down.
+ * @param action Pointer to an action.
+ */
+void ResearchState::lstResearchRightArrowClick(Action* action)
+{
+	unsigned int row = _lstResearch->getSelectedRow();
+	size_t numTopics = _base->getResearch().size();
+	if (0 < numTopics && INT_MAX >= numTopics && row < numTopics - 1)
+	{
+		if (_game->isLeftClick(action, true))
+		{
+			moveTopicDown(action, row);
+		}
+		else if (_game->isRightClick(action, true))
+		{
+			moveTopicDown(action, row, true);
+		}
+	}
+}
+
+/**
+ * Moves a research topic down on the list.
+ * @param action Pointer to an action.
+ * @param row Selected research topic row.
+ * @param max Move the research topic to the bottom?
+ */
+void ResearchState::moveTopicDown(Action* action, unsigned int row, bool max)
+{
+	auto& topics = _base->getResearch();
+	if (max)
+	{
+		auto* r = topics.at(row);
+		topics.erase(topics.begin() + row);
+		topics.insert(topics.end(), r);
+	}
+	else
+	{
+		std::swap(topics[row], topics[row + 1]);
+		if (row != _lstResearch->getVisibleRows() - 1 + _lstResearch->getScroll())
+		{
+#ifndef __MOBILE__
+			SDL_WarpMouse(action->getLeftBlackBand() + action->getXMouse(), action->getTopBlackBand() + action->getYMouse() + static_cast<Uint16>(8 * action->getYScale()));
+#endif
+		}
+		else
+		{
+			_lstResearch->scrollDown(false);
+		}
+	}
+	fillProjectList(_lstResearch->getScroll());
 }
 
 }
