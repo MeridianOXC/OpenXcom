@@ -1,6 +1,8 @@
 # Building for MacOS
 
-## Dependencies
+## Using brew
+
+### Dependencies
 To successfully build an OpenXcom OSX bundle you will need to ensure all the relevant dependencies installed in /usr/local/.
 
 The dependencies you require are following:
@@ -15,6 +17,17 @@ We recommend using [Homebrew](https://brew.sh) to facilitate this.  With a worki
 $ brew install cmake sdl sdl_gfx sdl_image sdl_mixer --with-flac --with-libmikmod --with-libvorbis --with-static-lib
 ```
 This should install all of these necessary dependencies to their appropriate place under /usr/local.
+
+
+## Using Nix
+
+All needed stuff related to installing and configure shell already described at flake.nix, just execute
+
+```
+$ nix develop -c $SHELL
+```
+
+Note: After it all below building command are applicable
 
 ## Building
 This project has two ways to build: one with make and the other with Xcode.  The make way is typically used for CI builds and produces a similar artifact as the Linux build.  If you're just looking to get a quick build, this is a good way to do so.  The Xcode way is useful if you're developing features (or bug fixes) and require the need for a debugger or an IDE experience.
