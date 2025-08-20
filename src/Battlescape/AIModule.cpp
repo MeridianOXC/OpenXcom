@@ -799,14 +799,17 @@ void AIModule::setupPatrol()
 		}
 
 		// in base defense missions, the smaller aliens walk towards target nodes - or if there, shoot objects around them
-		else if (_unit->getArmor()->getSize() == 1 && _unit->getOriginalFaction() == FACTION_HOSTILE)
+		else if (_unit->getArmor()->getSize() == 1 && _unit->getOriginalFaction() == FACTION_HOSTILE &&
+				_attackAction.weapon &&
+				_attackAction.weapon->getRules()->getAccuracySnap() &&
+				!_attackAction.weapon->getRules()->getArcingShot() &&
+				_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT) &&
+				!_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT)->getRules()->getArcingShot() &&
+				_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT)->getRules()->getDamageType()->isDirect() &&
+				_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT)->getRules()->getDamageType()->ToTile > 0.01f)
 		{
 			// can i shoot an object?
 			if (_fromNode->isTarget() &&
-				_attackAction.weapon &&
-				_attackAction.weapon->getRules()->getAccuracySnap() &&
-				_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT) &&
-				_attackAction.weapon->getAmmoForAction(BA_SNAPSHOT)->getRules()->getDamageType()->isDirect() &&
 				_save->canUseWeapon(_attackAction.weapon, _unit, false, BA_SNAPSHOT) &&
 				_save->getModuleMap()[_fromNode->getPosition().x / 10][_fromNode->getPosition().y / 10].second > 0)
 			{
@@ -833,13 +836,21 @@ void AIModule::setupPatrol()
 			{
 				// find closest high value target which is not already allocated
 				int closest = 1000000;
+				BattleUnit* nodeunit = nullptr;
 				for (auto* node : *_save->getNodes())
 				{
 					if (node->isDummy())
 					{
 						continue;
 					}
-					if (node->isTarget() && !node->isAllocated())
+
+					nodeunit = _save->getTile(node->getPosition())->getUnit();
+					if (nodeunit && nodeunit->getFaction() == _unit->getFaction())
+					{
+						continue;
+					}
+
+					if (node->isTarget() && !node->isAllocated() && _save->getModuleMap()[node->getPosition().x / 10][node->getPosition().y / 10].second > 0)
 					{
 						int d = Position::distanceSq(_unit->getPosition(), node->getPosition());
 						if (!_toNode ||  (d < closest && node != _fromNode))
@@ -2006,6 +2017,11 @@ void AIModule::evaluateAIMode()
 	if (_AIMode == AI_PATROL)
 	{
 		if (_toNode || _foundBaseModuleToDestroy)
+		{
+			return;
+		}
+		// base defense mission protocol: patrol action becomes an attack action when base modules are sighted
+		if (_patrolAction.type == BA_SNAPSHOT)
 		{
 			return;
 		}

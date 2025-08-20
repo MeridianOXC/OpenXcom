@@ -408,6 +408,8 @@ public:
 
 	/// Get the list of items in the inventory.
 	std::vector<BattleItem*> *getInventory();
+	/// Get the list of items in the inventory.
+	const std::vector<BattleItem*> *getInventory() const;
 	/// Fit item into inventory slot.
 	bool fitItemToInventory(const RuleInventory *slot, BattleItem *item);
 	/// Add item to unit.

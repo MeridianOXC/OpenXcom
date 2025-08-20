@@ -622,6 +622,10 @@ public:
 		{
 			rule = getEvent(name, true);
 		}
+		else if constexpr (std::is_same_v<T, RuleCommendations>)
+		{
+			rule = getCommendation(name, true);
+		}
 		else
 		{
 			static_assert(sizeof(T) == 0, "Unsupported type to link");

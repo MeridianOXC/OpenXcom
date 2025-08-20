@@ -49,6 +49,7 @@ private:
 	Text * _txtTitle, * _txtAvailableEngineer, * _txtAvailableSpace, * _txtHoursPerUnit, * _txtMonthlyProfit;
 	Text * _txtAllocatedEngineer, * _txtUnitToProduce, * _txtUnitUp, * _txtUnitDown, * _txtEngineerUp, * _txtEngineerDown, * _txtAllocated, * _txtTodo;
 	ToggleTextButton *_btnSell;
+	ToggleTextButton *_btnFallback;
 	Timer * _timerMoreEngineer, * _timerMoreUnit, * _timerLessEngineer, * _timerLessUnit;
 	InteractiveSurface *_surfaceEngineers, *_surfaceUnits;
 	int _producedItemsValue;

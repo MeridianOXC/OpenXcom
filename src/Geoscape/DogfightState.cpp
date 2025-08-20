@@ -270,12 +270,8 @@ DogfightState::DogfightState(GeoscapeState *state, Craft *craft, Ufo *ufo, bool 
 	}
 
 	// pilot modifiers
-	const std::vector<Soldier*> pilots = _craft->getPilotList(false);
+	const std::vector<Soldier*> pilots = _craft->getPilotList(false, _game->getMod()); // refresh soldier bonuses
 
-	for (auto* pilot : pilots)
-	{
-		pilot->prepareStatsWithBonuses(_game->getMod()); // refresh soldier bonuses
-	}
 	_pilotAccuracyBonus = _craft->getPilotAccuracyBonus(pilots, _game->getMod());
 	_pilotDodgeBonus = _craft->getPilotDodgeBonus(pilots, _game->getMod());
 	_pilotApproachSpeedModifier = _craft->getPilotApproachSpeedModifier(pilots, _game->getMod());
@@ -2716,7 +2712,7 @@ void DogfightState::awardExperienceToPilots()
 	if (_firedAtLeastOnce && !_experienceAwarded && _craft && _ufo && (_ufo->isCrashed() || _ufo->isDestroyed()))
 	{
 		bool psiStrengthEval = (Options::psiStrengthEval && _game->getSavedGame()->isResearched(_game->getMod()->getPsiRequirements()));
-		for (auto* pilot : _craft->getPilotList(false))
+		for (auto* pilot : _craft->getPilotList(false, nullptr)) // refresh already done in the constructor
 		{
 			if (pilot->getCurrentStats()->firing < pilot->getRules()->getStatCaps().firing)
 			{

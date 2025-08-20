@@ -1019,6 +1019,10 @@ interfaces:
         color: 244   # even lighter blue
         color2: 133  # minty green
         custom: -12  # above Intercept button
+      - id: trainingIndicator
+        color: 244   # even lighter blue
+        color2: 133  # minty green
+        custom: 4  # below standard visible area
       - id: genericWindow
         color: 239   # bright green
       - id: genericText

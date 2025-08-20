@@ -2951,6 +2951,15 @@ std::vector<BattleItem*> *BattleUnit::getInventory()
 }
 
 /**
+ * Get the pointer to the vector of inventory items.
+ * @return pointer to vector.
+ */
+const std::vector<BattleItem*> *BattleUnit::getInventory() const
+{
+	return &_inventory;
+}
+
+/**
  * Fit item into inventory slot.
  * @param slot Slot to fit.
  * @param item Item to fit.
@@ -6389,6 +6398,22 @@ void getInventoryItemScript(BattleUnit* bu, BattleItem *&foundItem, const RuleIt
 	}
 }
 
+void getInventoryItemConstScript(const BattleUnit* bu, const BattleItem *&foundItem, const RuleItem *itemRules)
+{
+	foundItem = nullptr;
+	if (bu)
+	{
+		for (auto* i : *bu->getInventory())
+		{
+			if (i->getRules() == itemRules)
+			{
+				foundItem = i;
+				break;
+			}
+		}
+	}
+}
+
 void getInventoryItemScript1(BattleUnit* bu, BattleItem *&foundItem, const RuleInventory *inv, const RuleItem *itemRules)
 {
 	foundItem = nullptr;
@@ -6405,7 +6430,39 @@ void getInventoryItemScript1(BattleUnit* bu, BattleItem *&foundItem, const RuleI
 	}
 }
 
+void getInventoryItemConstScript1(const BattleUnit* bu, const BattleItem *&foundItem, const RuleInventory *inv, const RuleItem *itemRules)
+{
+	foundItem = nullptr;
+	if (bu)
+	{
+		for (auto* i : *bu->getInventory())
+		{
+			if (i->getSlot() == inv && i->getRules() == itemRules)
+			{
+				foundItem = i;
+				break;
+			}
+		}
+	}
+}
+
 void getInventoryItemScript2(BattleUnit* bu, BattleItem *&foundItem, const RuleInventory *inv)
+{
+	foundItem = nullptr;
+	if (bu)
+	{
+		for (auto* i : *bu->getInventory())
+		{
+			if (i->getSlot() == inv)
+			{
+				foundItem = i;
+				break;
+			}
+		}
+	}
+}
+
+void getInventoryItemConstScript2(const BattleUnit* bu, const BattleItem *&foundItem, const RuleInventory *inv)
 {
 	foundItem = nullptr;
 	if (bu)
@@ -6438,7 +6495,22 @@ void getListScript(BattleUnit* bu, BattleItem *&foundItem, int i)
 
 //TODO: move it to script bindings
 template<auto Member>
-void getListSizeScript(BattleUnit* bu, int& i)
+void getListConstScript(const BattleUnit* bu, const BattleItem *&foundItem, int i)
+{
+	foundItem = nullptr;
+	if (bu)
+	{
+		auto& ptr = (bu->*Member);
+		if ((size_t)i < std::size(ptr))
+		{
+			foundItem = ptr[i];
+		}
+	}
+}
+
+//TODO: move it to script bindings
+template<auto Member>
+void getListSizeScript(const BattleUnit* bu, int& i)
 {
 	i = 0;
 	if (bu)
@@ -6449,7 +6521,7 @@ void getListSizeScript(BattleUnit* bu, int& i)
 }
 
 template<auto Member>
-void getListSizeHackScript(BattleUnit* bu, int& i)
+void getListSizeHackScript(const BattleUnit* bu, int& i)
 {
 	i = 0;
 	if (bu)
@@ -6464,6 +6536,11 @@ void getListSizeHackScript(BattleUnit* bu, int& i)
 }
 
 bool filterItemScript(BattleUnit* unit, BattleItem* item)
+{
+	return item;
+}
+
+bool filterItemConstScript(const BattleUnit* unit, const BattleItem* item)
 {
 	return item;
 }
@@ -6665,12 +6742,19 @@ void BattleUnit::ScriptRegister(ScriptParserBase* parser)
 	bu.add<&getInventoryItemScript>("getInventoryItem");
 	bu.add<&getInventoryItemScript1>("getInventoryItem");
 	bu.add<&getInventoryItemScript2>("getInventoryItem");
+	bu.add<&getInventoryItemConstScript>("getInventoryItem");
+	bu.add<&getInventoryItemConstScript1>("getInventoryItem");
+	bu.add<&getInventoryItemConstScript2>("getInventoryItem");
 	bu.add<&getListSizeScript<&BattleUnit::_inventory>>("getInventoryItem.size");
 	bu.add<&getListScript<&BattleUnit::_inventory>>("getInventoryItem");
+	bu.add<&getListConstScript<&BattleUnit::_inventory>>("getInventoryItem");
 	bu.addList<&filterItemScript, &BattleUnit::_inventory>("getInventoryItem");
+	bu.addList<&filterItemConstScript, &BattleUnit::_inventory>("getInventoryItem");
 	bu.add<&getListSizeHackScript<&BattleUnit::_specWeapon>>("getSpecialItem.size");
 	bu.add<&getListScript<&BattleUnit::_specWeapon>>("getSpecialItem");
+	bu.add<&getListConstScript<&BattleUnit::_specWeapon>>("getSpecialItem");
 	bu.addList<&filterItemScript, &BattleUnit::_specWeapon>("getSpecialItem");
+	bu.addList<&filterItemConstScript, &BattleUnit::_specWeapon>("getSpecialItem");
 
 	bu.add<&getPositionXScript>("getPosition.getX");
 	bu.add<&getPositionYScript>("getPosition.getY");

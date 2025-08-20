@@ -3937,8 +3937,13 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 			{
 				// "Large soldiers" just stay in the base
 			}
-			else if (soldier->getRules()->getAllowPiloting())
+			else
 			{
+				if (soldier->getRules()->getAllowPiloting())
+				{
+					soldier->prepareStatsWithBonuses(this); // refresh stats for checking pilot requirements
+				}
+
 				Craft *found = 0;
 				for (auto* craft : *base->getCrafts())
 				{
@@ -3951,22 +3956,11 @@ SavedGame *Mod::newSave(GameDifficulty diff) const
 					if (!craft->getRules()->getAllowLanding() && err == CPE_None && craft->getSpaceUsed() < craft->getRules()->getPilots())
 					{
 						// Fill interceptors with minimum amount of pilots necessary
-						found = craft;
-					}
-				}
-				soldier->setCraft(found);
-			}
-			else
-			{
-				Craft *found = 0;
-				for (auto* craft : *base->getCrafts())
-				{
-					CraftPlacementErrors err = craft->validateAddingSoldier(craft->getSpaceAvailable(), soldier);
-					if (craft->getRules()->getAllowLanding() && err == CPE_None)
-					{
-						// First available transporter will do
-						found = craft;
-						break;
+						if (soldier->hasAllPilotingRequirements(craft))
+						{
+							found = craft;
+							break;
+						}
 					}
 				}
 				soldier->setCraft(found);

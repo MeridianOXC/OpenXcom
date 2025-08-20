@@ -25,6 +25,7 @@ namespace OpenXcom
 {
 
 class Mod;
+class SavedGame;
 
 struct Element
 {
@@ -56,6 +57,7 @@ private:
 	std::string _altBackgroundImage;
 	std::string _music;
 	int _sound;
+	std::vector< std::pair<std::string, std::string> > _upgBackgroundImage;
 
 	std::map <std::string, Element> _elements;
 public:
@@ -74,7 +76,7 @@ public:
 	/// Get parent interface rule.
 	const std::string &getParent() const;
 	/// Get background image.
-	const std::string &getBackgroundImage() const;
+	const std::string &getBackgroundImage(const Mod* mod, const SavedGame* save) const;
 	/// Get alternative background image (for battlescape theme).
 	const std::string &getAltBackgroundImage() const;
 	/// Get music.

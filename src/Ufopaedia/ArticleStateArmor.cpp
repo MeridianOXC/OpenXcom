@@ -79,9 +79,13 @@ namespace OpenXcom
 		_txtTitle->setText(tr(defs->getTitleForPage(_state->current_page)));
 
 		// optional background image
-		if (!defs->customPalette && !itf->getBackgroundImage().empty())
+		if (!defs->customPalette)
 		{
-			_game->getMod()->getSurface(itf->getBackgroundImage())->blitNShade(_bg, 0, 0);
+			auto& bgImageName = itf->getBackgroundImage(_game->getMod(), _game->getSavedGame());
+			if (!bgImageName.empty())
+			{
+				_game->getMod()->getSurface(bgImageName)->blitNShade(_bg, 0, 0);
+			}
 		}
 
 		if (customArmorSprite)

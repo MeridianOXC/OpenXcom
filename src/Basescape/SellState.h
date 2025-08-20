@@ -71,6 +71,8 @@ private:
 	std::string getCategory(int sel) const;
 	/// Determines if the current selection belongs to a given category.
 	bool belongsToCategory(int sel, const std::string &cat) const;
+	/// Checks for hidden items
+	bool isHidden(int sel) const;
 	/// Gets the row of the current selection.
 	TransferRow &getRow() { return _items[_rows[_sel]]; }
 public:

@@ -1799,6 +1799,9 @@ std::vector<Position> &SavedBattleGame::getStorageSpace()
  */
 void SavedBattleGame::randomizeItemLocations(Tile *t)
 {
+	// remove position of Tile t from the vector (because of potential endless loop)
+	Collections::removeIf(_storageSpace, [&](Position& p) { return p == t->getPosition(); });
+
 	if (!_storageSpace.empty())
 	{
 		for (auto iter = t->getInventory()->begin(); iter != t->getInventory()->end();)

@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include "../Engine/Yaml.h"
+#include "Unit.h"
 #include "RuleBaseFacilityFunctions.h"
 #include "ModScript.h"
 
@@ -227,6 +228,9 @@ private:
 	bool _useAllStartTiles;
 	std::string _customPreview;
 	std::vector<int> _selectSound, _takeoffSound;
+	UnitStats _pilotMinStatsRequired;
+	std::vector<std::string> _pilotSoldierBonusesRequiredNames;
+	std::vector<const RuleSoldierBonus*> _pilotSoldierBonusesRequired;
 
 	ModScript::CraftScripts::Container _craftScripts;
 	ScriptValues<RuleCraft> _scriptValues;
@@ -394,6 +398,11 @@ public:
 	/// Gets the sound played when a craft takes off from a base.
 	int getTakeoffSound() const;
 	const std::vector<int>& getTakeoffSoundRaw() const { return _takeoffSound; }
+
+	/// Gets the minimum stats a soldier needs to be eligible for piloting this craft
+	const UnitStats& getPilotMinStatsRequired() const { return _pilotMinStatsRequired; }
+	/// Gets the list of soldier bonuses a soldier needs to be eligible for piloting this craft
+	const std::vector<const RuleSoldierBonus*>& getPilotSoldierBonusesRequired() const { return _pilotSoldierBonusesRequired; }
 
 	/// Gets script.
 	template<typename Script>

@@ -1049,6 +1049,10 @@ interfaces: #done
         color: 1     # white
         color2: 239  # light blue
         custom: -12  # above Intercept button
+      - id: trainingIndicator
+        color: 1     # white
+        color2: 239  # light blue
+        custom: 4  # below standard visible area
       - id: genericWindow
         color: 1
       - id: genericText

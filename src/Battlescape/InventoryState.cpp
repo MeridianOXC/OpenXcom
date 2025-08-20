@@ -976,10 +976,16 @@ bool InventoryState::tryArmorChange(const std::string& armorName)
 				armorAvailable = false;
 			}
 		}
-		// does the armor fit on the current unit?
-		if (!next->getCanBeUsedBy(soldier->getRules()))
+		if (armorAvailable)
 		{
-			armorAvailable = false;
+			// refresh soldier's _bonusCache, needed below in Armor::getCanBeUsedBy()
+			//soldier->getBonuses(_game->getMod());
+
+			// does the armor fit on the current unit?
+			if (!next->getCanBeUsedBy(soldier))
+			{
+				armorAvailable = false;
+			}
 		}
 	}
 

@@ -296,7 +296,7 @@ public:
 	/// Checks armor constraints.
 	bool areBannedArmorsOnboard();
 	/// Checks if there are enough pilots onboard.
-	bool arePilotsOnboard();
+	bool arePilotsOnboard(const Mod* mod);
 	/// Checks if a pilot is already on the list.
 	bool isPilot(int pilotId);
 	/// Adds a pilot to the list.
@@ -304,7 +304,7 @@ public:
 	/// Removes all pilots from the list.
 	void removeAllPilots();
 	/// Gets the list of craft pilots.
-	const std::vector<Soldier*> getPilotList(bool autoAdd);
+	const std::vector<Soldier*> getPilotList(bool autoAdd, const Mod* mod);
 	/// Calculates the accuracy bonus based on pilot skills.
 	int getPilotAccuracyBonus(const std::vector<Soldier*> &pilots, const Mod *mod) const;
 	/// Calculates the dodge bonus based on pilot skills.

@@ -130,8 +130,10 @@ public:
 	int getDaysWoundedTotal() const;
 	/// Get the solder's commendations.
 	std::vector<SoldierCommendations*> *getSoldierCommendations();
+	/// Checks whether the diary contains a given commendation.
+	bool containsCommendation(const RuleCommendations* rule) const;
 	/// Manage commendations, return true if a medal is awarded.
-	bool manageCommendations(Mod*, std::vector<MissionStatistics*>*);
+	bool manageCommendations(const Mod* mod, SavedGame* save, const Soldier* soldier);
 	/// Increment the soldier's service time.
 	void addMonthlyService();
 	/// Get the total months in service.
@@ -156,9 +158,9 @@ public:
 	/// Get the soldier's accuracy.
 	int getAccuracy() const;
 	/// Get the total number of trap kills.
-	int getTrapKillTotal(Mod*) const;
+	int getTrapKillTotal(const Mod* mod) const;
 	/// Get the total number of reaction fire kills.
-	int getReactionFireKillTotal(Mod*) const;
+	int getReactionFireKillTotal(const Mod* mod) const;
 	/// Get the total number of terror missions.
 	int getTerrorMissionTotal(std::vector<MissionStatistics*>*) const;
 	/// Get the total number of night missions.

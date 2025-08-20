@@ -116,11 +116,16 @@ SoldierArmorState::SoldierArmorState(Base *base, size_t soldier, SoldierArmorOri
 	_sortName->setX(_sortName->getX() + _txtType->getTextWidth() + 4);
 	_sortName->onMouseClick((ActionHandler)&SoldierArmorState::sortNameClick);
 
+	{
+		// refresh soldier's _bonusCache, needed below in Armor::getCanBeUsedBy()
+		//s->getBonuses(_game->getMod());
+	}
+
 	for (auto* a : _game->getMod()->getArmorsForSoldiers())
 	{
 		if (a->getRequiredResearch() && !_game->getSavedGame()->isResearched(a->getRequiredResearch()))
 			continue;
-		if (!a->getCanBeUsedBy(s->getRules()))
+		if (!a->getCanBeUsedBy(s))
 			continue;
 		if (a->hasInfiniteSupply())
 		{

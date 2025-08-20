@@ -490,17 +490,53 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 			}
 		}
 
+		int wallCounter = 0;
+		int wallTmp = 0;
 		int wallcost = 0; // walking through rubble walls, but don't charge for walking diagonally through doors (which is impossible),
 						// they're a special case unto themselves, if we can walk past them diagonally, it means we can go around,
 						// as there is no wall blocking us.
 		if ((direction == 0 || direction == 7 || direction == 1) && !startTile[i]->hasLadderOnNorthWall())
-			wallcost += startTile[i]->getTUCost(O_NORTHWALL, movementType);
+		{
+			wallTmp = startTile[i]->getTUCost(O_NORTHWALL, movementType);
+			if (wallTmp > 0)
+			{
+				wallcost += wallTmp;
+				wallCounter += 1;
+			}
+		}
 		if (!triedStairsDown && (direction == 2 || direction == 1 || direction == 3) && !destinationTile[i]->hasLadderOnWestWall())
-			wallcost += destinationTile[i]->getTUCost(O_WESTWALL, movementType);
+		{
+			wallTmp = destinationTile[i]->getTUCost(O_WESTWALL, movementType);
+			if (wallTmp > 0)
+			{
+				wallcost += wallTmp;
+				wallCounter += 1;
+			}
+		}
 		if (!triedStairsDown && (direction == 4 || direction == 3 || direction == 5) && !destinationTile[i]->hasLadderOnNorthWall())
-			wallcost += destinationTile[i]->getTUCost(O_NORTHWALL, movementType);
+		{
+			wallTmp = destinationTile[i]->getTUCost(O_NORTHWALL, movementType);
+			if (wallTmp > 0)
+			{
+				wallcost += wallTmp;
+				wallCounter += 1;
+			}
+		}
 		if ((direction == 6 || direction == 5 || direction == 7) && !startTile[i]->hasLadderOnWestWall())
-			wallcost += startTile[i]->getTUCost(O_WESTWALL, movementType);
+		{
+			wallTmp = startTile[i]->getTUCost(O_WESTWALL, movementType);
+			if (wallTmp > 0)
+			{
+				wallcost += wallTmp;
+				wallCounter += 1;
+			}
+		}
+
+		// "average" cost: https://openxcom.org/forum/index.php?topic=12589.0
+		if (wallCounter > 0)
+		{
+			wallcost /= wallCounter;
+		}
 
 		// for backward compatiblity (100 + 100 + 100 > 255) or for (255 + 10 > 255)
 		if (wallcost >= INVALID_MOVE_COST)
@@ -537,7 +573,6 @@ PathfindingStep Pathfinding::getTUCost(Position startPosition, int direction, co
 		// diagonal walking (uneven directions) costs 50% more tu's
 		if (direction < DIR_UP && direction & 1)
 		{
-			wallcost /= 2;
 			cost = (int)((double)cost * 1.5);
 		}
 

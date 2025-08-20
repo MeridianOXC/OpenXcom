@@ -162,7 +162,7 @@ void CraftPilotsState::updateUI()
 
 	Craft *c = _base->getCrafts()->at(_craft);
 
-	const std::vector<Soldier*> pilots = c->getPilotList(false);
+	const std::vector<Soldier*> pilots = c->getPilotList(false, nullptr); // stats already refreshed in the constructor
 	for (const auto* pilot : pilots)
 	{
 		std::ostringstream ss1;
@@ -212,7 +212,7 @@ void CraftPilotsState::updateUI()
 	for (const auto* soldier : *_base->getSoldiers())
 	{
 		// must be on board & able to drive
-		if (soldier->getCraft() == c && soldier->getRules()->getAllowPiloting())
+		if (soldier->getCraft() == c && soldier->hasAllPilotingRequirements())
 		{
 			availablePilots++;
 		}

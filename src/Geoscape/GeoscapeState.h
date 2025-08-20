@@ -58,6 +58,7 @@ private:
 	Text *_txtDebug;
 	ComboBox *_cbxRegion, *_cbxZone, *_cbxArea, *_cbxCountry;
 	Text *_txtSlacking;
+	Text *_txtTraining;
 	std::list<State*> _popups;
 	std::list<DogfightState*> _dogfights, _dogfightsToBeStarted;
 	std::vector<Craft*> _activeCrafts;

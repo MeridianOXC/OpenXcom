@@ -95,7 +95,7 @@ CraftPilotSelectState::CraftPilotSelectState(Base *base, size_t craft) : _base(b
 	for (const auto* soldier : *_base->getSoldiers())
 	{
 		// must be on board & able to drive
-		if (soldier->getCraft() == c && soldier->getRules()->getAllowPiloting())
+		if (soldier->getCraft() == c && soldier->hasAllPilotingRequirements())
 		{
 			// is not assigned yet
 			if (!c->isPilot(soldier->getId()))

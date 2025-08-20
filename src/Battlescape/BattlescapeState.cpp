@@ -2619,13 +2619,16 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 		for (auto* bu : *_save->getUnits())
 		{
 			if (j >= VISIBLE_MAX) break; // loop finished
-			if (bu->getFaction() == FACTION_PLAYER && bu->getStatus() != STATUS_DEAD && !bu->isIgnored() && bu->getFatalWounds() > 0 && bu->indicatorsAreEnabled())
+			if (bu->getFaction() == FACTION_PLAYER && bu->getStatus() != STATUS_DEAD && !bu->isIgnored() && bu->indicatorsAreEnabled())
 			{
-				_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX]);
-				_btnVisibleUnit[j]->setVisible(true);
-				_numVisibleUnit[j]->setVisible(true);
-				_visibleUnit[j] = bu;
-				++j;
+				if (bu->getFatalWounds() > 0 || bu->getFire() > 0)
+				{
+					_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX]);
+					_btnVisibleUnit[j]->setVisible(true);
+					_numVisibleUnit[j]->setVisible(true);
+					_visibleUnit[j] = bu;
+					++j;
+				}
 			}
 		}
 	}
