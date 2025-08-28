@@ -203,7 +203,7 @@ InterceptState::InterceptState(Globe *globe, bool useCustomSound, Base *base, Ta
 			std::ostringstream ssStatus;
 			std::string status = xcraft->getStatus();
 
-			bool hasEnoughPilots = xcraft->arePilotsOnboard();
+			bool hasEnoughPilots = xcraft->arePilotsOnboard(_game->getMod());
 			if (status == "STR_OUT")
 			{
 				// QoL: let's give the player a bit more info

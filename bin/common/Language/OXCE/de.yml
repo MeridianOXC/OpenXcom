@@ -389,6 +389,7 @@ de:
   STR_CRAFT_IS_READY: "{0} in {1} ist bereit."
   STR_ECONOMY_WARNING: "Die Gelder {0} und das Einkommen {1} sind zu niedrig und der Unterhalt {2} zu hoch! Verkaufe etwas um Schulden zu vermeiden... fehlende Gelder: {3}"
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "ERWEITERT"
   STR_RETURNING: "RÜCKKEHR"
   STR_INTERCEPTING: "ABFANGKURS"

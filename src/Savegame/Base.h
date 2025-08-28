@@ -87,6 +87,8 @@ enum BasePlacementErrors : int
 	BPE_Used_Gyms = 16,
 	/// 17: not enough alien containment
 	BPE_Used_AlienContainment = 17,
+	/// 18: trying to build a facility (from scratch) that can only be built as an upgrade of another facility
+	BPE_UpgradeOnly = 18,
 };
 
 struct BaseSumDailyRecovery

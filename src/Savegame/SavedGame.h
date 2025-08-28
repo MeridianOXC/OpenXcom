@@ -299,6 +299,8 @@ public:
 	const std::vector<ResearchDiaryEntry*> & getResearchDiary() const { return _researchDiary; }
 	/// Get the list of already discovered research projects
 	const std::vector<const RuleResearch*> & getDiscoveredResearch() const;
+	/// Does this item correspond to at least one research topic that can be researched now or in the future?
+	bool isResearchable(const RuleItem* item, const Mod* mod) const;
 	/// Get the list of ResearchProject which can be researched in a Base
 	void getAvailableResearchProjects(std::vector<RuleResearch*> & projects, const Mod *mod, Base *base, bool considerDebugMode = false) const;
 	/// Get the list of newly available research projects once a research has been completed.

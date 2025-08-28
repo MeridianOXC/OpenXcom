@@ -203,6 +203,16 @@ void AlienDeployment::load(const YAML::YamlNodeReader& node, Mod *mod)
 	reader.tryRead("resetAlienBaseAgeAfterUpgrade", _resetAlienBaseAgeAfterUpgrade);
 	reader.tryRead("resetAlienBaseAge", _resetAlienBaseAge);
 	reader.tryRead("upgradeRace", _upgradeRace);
+	reader.tryRead("alienRaceEvolution", _alienRaceEvolution);
+	if (!_alienRaceEvolution.empty())
+	{
+		std::stable_sort(_alienRaceEvolution.begin(), _alienRaceEvolution.end(),
+			[](std::tuple<size_t, std::string, std::string> a, std::tuple<size_t, std::string, std::string> b)
+			{
+				return std::get<0>(a) > std::get<0>(b);
+			}
+		);
+	}
 	reader.tryRead("noWeaponPile", _noWeaponPile);
 }
 

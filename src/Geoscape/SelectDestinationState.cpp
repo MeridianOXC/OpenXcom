@@ -161,6 +161,10 @@ SelectDestinationState::SelectDestinationState(std::vector<Craft*> crafts, Globe
 		{
 			_btnCydonia->setVisible(false);
 		}
+		if (!_crafts.front()->arePilotsOnboard(_game->getMod()))
+		{
+			_btnCydonia->setVisible(false);
+		}
 	}
 
 	if (_crafts.front()->getStatus() != "STR_OUT")

@@ -95,6 +95,8 @@ void RuleSoldierTransformation::load(const YAML::YamlNodeReader& node, Mod* mod)
 	reader.tryRead("upperBoundAtMaxStats", _upperBoundAtMaxStats);
 	reader.tryRead("upperBoundAtStatCaps", _upperBoundAtStatCaps);
 	reader.tryRead("upperBoundType", _upperBoundType);
+
+	mod->loadUnorderedNames(_name, _removeTransformations, reader["removeTransformations"]);
 	reader.tryRead("reset", _reset);
 	reader.tryRead("resetRank", _resetRank);
 	reader.tryRead("soldierBonusType", _soldierBonusType);

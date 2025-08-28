@@ -267,6 +267,8 @@ pt-BR:
   requiresBuy: "Tecnologia necessária para comprar"
   requiresBuyBaseFunc: "Serviços necessários para comprar"
   requiresBuyCountry: "País aliado necessário"
+  requiresAward: ""
+  requiresBonus: ""
   categories: "Categorias"
   supportedInventorySections: "Compartimentos de inventário"
 #
@@ -354,6 +356,7 @@ pt-BR:
   stun: "Atordoamento"
   mana: "Mana"
   units: "Unidades compatíveis"
+  ranks: ""
   frontArmor: "Armadura frontal"
   sideArmor: "Armadura lateral"
   leftArmorDiff: "Diferença de armadura esquerda"
@@ -402,6 +405,7 @@ pt-BR:
   leavesBehindOnSell: "Deixa para trás ao vender"
   removalTime: "Tempo de remoção"
   canBeBuiltOver: "Pode ser construído sobre ele?"
+  upgradeOnly: ""
   buildOverFacilities: "Instalações de construção"
 #
   BFRCT_DEFAULT: "padrão baunilha"
@@ -418,6 +422,8 @@ pt-BR:
   soldiers: "Espaço de carga"
   maxUnitsLimit: "Limite máximo de carga"
   pilots: "Tamanho da cabine"
+  pilotMinStatsRequired: ""
+  pilotSoldierBonusesRequired: ""
   vehicles: "Capacidade de PAP"
   onlyOneSoldierGroupAllowed: "Apenas um grupo de soldados permitido?"
   allowedSoldierGroups: "Grupos de soldados permitidos"

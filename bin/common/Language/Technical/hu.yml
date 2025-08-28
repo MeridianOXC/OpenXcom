@@ -267,6 +267,8 @@ hu:
   requiresBuy: "Vételhez szükséges tech"
   requiresBuyBaseFunc: "Vételhez szükséges szolgáltatások"
   requiresBuyCountry: ""
+  requiresAward: ""
+  requiresBonus: ""
   categories: "Kategóriák"
   supportedInventorySections: "Felszerelés tárhelyek"
 #
@@ -354,6 +356,7 @@ hu:
   stun: "Kábultság"
   mana: "Mana"
   units: "Kompatibilis egységek"
+  ranks: ""
   frontArmor: ""
   sideArmor: ""
   leftArmorDiff: ""
@@ -402,6 +405,7 @@ hu:
   leavesBehindOnSell: "Eladáskor marad utána"
   removalTime: "Eltávolítás ideje"
   canBeBuiltOver: "Lehet ráépíteni?"
+  upgradeOnly: ""
   buildOverFacilities: "Ráépülő funkciók"
 #
   BFRCT_DEFAULT: "vanilla alapérték"
@@ -418,6 +422,8 @@ hu:
   soldiers: "Raktér"
   maxUnitsLimit: ""
   pilots: "Pilótafülke mérete"
+  pilotMinStatsRequired: ""
+  pilotSoldierBonusesRequired: ""
   vehicles: "NFP kapacitás"
   onlyOneSoldierGroupAllowed: ""
   allowedSoldierGroups: ""

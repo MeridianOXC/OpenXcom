@@ -45,7 +45,7 @@ InfoboxState::InfoboxState(const std::string &msg)
 	_game->getSavedGame()->getSavedBattle()->setPaletteByDepth(this);
 
 	add(_frame, "infoBox", "battlescape");
-	add(_text, "infoBox", "battlescape");
+	add(_text, "infoBoxText", "battlescape");
 
 	centerAllSurfaces();
 

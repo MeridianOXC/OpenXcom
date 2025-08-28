@@ -267,6 +267,8 @@ en-US:
   requiresBuy: "Tech required to buy"
   requiresBuyBaseFunc: "Services needed to buy"
   requiresBuyCountry: "Allied country required"
+  requiresAward: "Award required"
+  requiresBonus: "Bonus required"
   categories: "Categories"
   supportedInventorySections: "Inventory slots"
 #
@@ -354,6 +356,7 @@ en-US:
   stun: "Stun"
   mana: "Mana"
   units: "Compatible units"
+  ranks: "Compatible ranks"
   frontArmor: "Front Armor"
   sideArmor: "Side Armor"
   leftArmorDiff: "Left Armor Diff"
@@ -402,6 +405,7 @@ en-US:
   leavesBehindOnSell: "Leaves behind on sell"
   removalTime: "Removal time"
   canBeBuiltOver: "Can be built-over?"
+  upgradeOnly: "Upgrade only?"
   buildOverFacilities: "Build-over facilities"
 #
   BFRCT_DEFAULT: "vanilla default"
@@ -418,6 +422,8 @@ en-US:
   soldiers: "Cargo space"
   maxUnitsLimit: "Max cargo space"
   pilots: "Cockpit size"
+  pilotMinStatsRequired: "Pilot min stats"
+  pilotSoldierBonusesRequired: "Pilot requirements"
   vehicles: "HWP capacity"
   onlyOneSoldierGroupAllowed: "Only one soldier group allowed?"
   allowedSoldierGroups: "Allowed soldier groups"

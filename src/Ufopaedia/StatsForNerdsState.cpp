@@ -37,6 +37,7 @@
 #include "../Mod/ExtraSprites.h"
 #include "../Mod/Mod.h"
 #include "../Mod/RuleBaseFacility.h"
+#include "../Mod/RuleCommendations.h"
 #include "../Mod/RuleCraft.h"
 #include "../Mod/RuleCraftWeapon.h"
 #include "../Mod/RuleInterface.h"
@@ -2824,7 +2825,10 @@ void StatsForNerdsState::initArmorList()
 		endHeading();
 	}
 
-	addVectorOfRules(ss, armorRule->getUnits(), "units");
+	addVectorOfRules(ss, armorRule->getUnitsRaw(), "units");
+	addVectorOfIntegers(ss, armorRule->getRanksRaw(), "ranks");
+	addRule(ss, armorRule->getRequiredAward(), "requiresAward");
+	addRuleNamed(ss, armorRule->getRequiredBonus(), "requiresBonus");
 
 	ModScript::scriptCallback<ModScript::StatsForNerdsArmor>(armorRule, armorRule, this, _game->getSavedGame());
 
@@ -3206,6 +3210,7 @@ void StatsForNerdsState::initFacilityList()
 	addVectorOfRules(ss, facilityRule->getLeavesBehindOnSell(), "leavesBehindOnSell");
 	addInteger(ss, facilityRule->getRemovalTime(), "removalTime");
 	addBoolean(ss, facilityRule->getCanBeBuiltOver(), "canBeBuiltOver");
+	addBoolean(ss, facilityRule->isUpgradeOnly(), "upgradeOnly");
 	addVectorOfRules(ss, facilityRule->getBuildOverFacilities(), "buildOverFacilities");
 
 	if (facilityRule->getDefenseValue() > 0)
@@ -3321,6 +3326,8 @@ void StatsForNerdsState::initCraftList()
 	addInteger(ss, craftRule->getMaxUnits(), "soldiers");
 	addInteger(ss, craftRule->getMaxUnitsLimit(), "maxUnitsLimit", craftRule->getMaxUnits());
 	addInteger(ss, craftRule->getPilots(), "pilots");
+	addUnitStatBonus(ss, craftRule->getPilotMinStatsRequired(), "pilotMinStatsRequired");
+	addVectorOfRulesNamed(ss, craftRule->getPilotSoldierBonusesRequired(), "pilotSoldierBonusesRequired");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiers(), "vehicles");
 	addInteger(ss, craftRule->getMaxVehiclesAndLargeSoldiersLimit(), "maxHWPUnitsLimit", craftRule->getMaxVehiclesAndLargeSoldiers());
 

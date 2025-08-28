@@ -20,6 +20,7 @@
 #include "RuleInterface.h"
 #include "Mod.h"
 #include <climits>
+#include "../Savegame/SavedGame.h"
 
 namespace OpenXcom
 {
@@ -52,6 +53,7 @@ void RuleInterface::load(const YAML::YamlNodeReader& reader, Mod *mod)
 	reader.tryRead("parent", _parent);
 	reader.tryRead("backgroundImage", _backgroundImage);
 	reader.tryRead("altBackgroundImage", _altBackgroundImage);
+	reader.tryRead("upgBackgroundImage", _upgBackgroundImage);
 	reader.tryRead("music", _music);
 	mod->loadSoundOffset(_type, _sound, reader["sound"], "GEO.CAT");
 	for (const auto& elementReader : reader["elements"].children())
@@ -111,8 +113,19 @@ const std::string &RuleInterface::getParent() const
 	return _parent;
 }
 
-const std::string &RuleInterface::getBackgroundImage() const
+const std::string &RuleInterface::getBackgroundImage(const Mod* mod, const SavedGame* save) const
 {
+	if (save)
+	{
+		for (auto& pair : _upgBackgroundImage)
+		{
+			auto r = mod->getResearch(pair.first, false);
+			if (r && save->isResearched(r))
+			{
+				return pair.second;
+			}
+		}
+	}
 	return _backgroundImage;
 }
 

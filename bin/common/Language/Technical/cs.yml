@@ -267,6 +267,8 @@ cs:
   requiresBuy: "Technologie pro nákup"
   requiresBuyBaseFunc: "Vyžaduje pořídit služby"
   requiresBuyCountry: "Vyžaduje spojenectví se státem"
+  requiresAward: ""
+  requiresBonus: ""
   categories: "Kategorie"
   supportedInventorySections: "Sloty inventáře"
 #
@@ -354,6 +356,7 @@ cs:
   stun: "Omráčení"
   mana: "Mana"
   units: "Kompatibilní jednotky"
+  ranks: ""
   frontArmor: "Čelní zbroj"
   sideArmor: "Boční zbroj"
   leftArmorDiff: ""
@@ -402,6 +405,7 @@ cs:
   leavesBehindOnSell: "Po prodej po sobě nechá"
   removalTime: "Čas odstranění"
   canBeBuiltOver: "Může být přestavěno?"
+  upgradeOnly: ""
   buildOverFacilities: ""
 #
   BFRCT_DEFAULT: "Výchozí vanilla"
@@ -418,6 +422,8 @@ cs:
   soldiers: "Nákladový prostor"
   maxUnitsLimit: ""
   pilots: "Kapacita kokpitu"
+  pilotMinStatsRequired: ""
+  pilotSoldierBonusesRequired: ""
   vehicles: "Kapacita platformy"
   onlyOneSoldierGroupAllowed: ""
   allowedSoldierGroups: ""

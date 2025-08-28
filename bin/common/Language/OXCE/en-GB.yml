@@ -8,6 +8,7 @@ en-GB:
   STR_CANNOT_UPGRADE_FACILITY_WRONG_TYPE: "CANNOT BUILD HERE!{SMALLLINE}Existing facility cannot be upgraded over by selected facility."
   STR_CANNOT_UPGRADE_FACILITY_DISALLOWED: "CANNOT BUILD HERE!{SMALLLINE}Existing facility cannot be built over."
   STR_CANNOT_BUILD_QUEUE_OFF: "CANNOT BUILD HERE!{SMALLLINE}Connecting facilities must finish construction first."
+  STR_CANNOT_BUILD_UPGRADE_ONLY: "CANNOT BUILD HERE!{SMALLLINE}This facility can be built only as an upgrade of another facility."
   STR_FACILITY_FORBIDDEN_BY_OTHER: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility forbids building this facility."
   STR_FACILITY_OTHER_FORBIDDEN_BY_THIS: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility would be forbidden by this facility."
   STR_NOT_ENOUGH_ITEMS: "NOT ENOUGH MATERIALS!{SMALLLINE}We need more resources to build this facility.{NEWLINE}Missing> {0}: {1}"
@@ -102,6 +103,7 @@ en-GB:
   STR_MORE_DEPENDENCIES: "There are even deeper dependencies..."
   STR_END_OF_SEARCH: "End of search."
 #ManufactureInfoState.cpp
+  STR_FALLBACK_PRODUCTION: "FALLBACK"
   STR_REFUND_PRODUCTION: "REFUND!"
   STR_HOURS_PER_UNIT: "HOURS PER UNIT>{ALT}{0}"
 #ManufactureStartState.cpp
@@ -236,6 +238,8 @@ en-GB:
   STR_ITEMS_AT_DESTINATION: "Items at destination"
   STR_PRISONERS: "Prisoners"
   STR_ARMORS: "Armors"
+  STR_FILTER_RESEARCHED: "Fully researched"
+  STR_FILTER_RESEARCHABLE: "Researchable"
 #=================== Battlescape ===================
 #AbortMissionState.cpp
   STR_CRAFT_DEPLOYMENT_QUESTION: "Save Craft Deployment?"
@@ -504,6 +508,7 @@ en-GB:
   STR_CRAFT_IS_READY: "{0} at {1} is ready."
   STR_ECONOMY_WARNING: "The funds {0} and income {1} are low and the maintenance {2} too high! Sell something to avoid taking a credit... funds missing: {3}"
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "EXTENDED"
 #InterceptState.cpp
   STR_RETURNING: "RETURNING"

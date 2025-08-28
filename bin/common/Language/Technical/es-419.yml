@@ -267,6 +267,8 @@ es-419:
   requiresBuy: ""
   requiresBuyBaseFunc: ""
   requiresBuyCountry: ""
+  requiresAward: ""
+  requiresBonus: ""
   categories: ""
   supportedInventorySections: ""
 #
@@ -354,6 +356,7 @@ es-419:
   stun: ""
   mana: ""
   units: ""
+  ranks: ""
   frontArmor: ""
   sideArmor: ""
   leftArmorDiff: ""
@@ -402,6 +405,7 @@ es-419:
   leavesBehindOnSell: ""
   removalTime: ""
   canBeBuiltOver: ""
+  upgradeOnly: ""
   buildOverFacilities: ""
 #
   BFRCT_DEFAULT: "Normal por defecto"
@@ -418,6 +422,8 @@ es-419:
   soldiers: ""
   maxUnitsLimit: ""
   pilots: ""
+  pilotMinStatsRequired: ""
+  pilotSoldierBonusesRequired: ""
   vehicles: ""
   onlyOneSoldierGroupAllowed: ""
   allowedSoldierGroups: ""

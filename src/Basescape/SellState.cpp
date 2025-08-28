@@ -56,6 +56,7 @@
 #include "TechTreeViewerState.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Menu/ErrorMessageState.h"
+#include "../Engine/Sound.h"
 
 namespace OpenXcom
 {
@@ -186,6 +187,12 @@ void SellState::delayedInit()
 	_lstItems->onMouseWheel((ActionHandler)&SellState::lstItemsMouseWheel);
 
 	_cats.push_back("STR_ALL_ITEMS");
+	_cats.push_back("STR_FILTER_HIDDEN");
+	if (Options::oxceBaseFilterResearchable)
+	{
+		_cats.push_back("STR_FILTER_RESEARCHED");
+		_cats.push_back("STR_FILTER_RESEARCHABLE");
+	}
 
 	for (auto* soldier : *_base->getSoldiers())
 	{
@@ -313,6 +320,12 @@ void SellState::delayedInit()
 		{
 			_cats.clear();
 			_cats.push_back("STR_ALL_ITEMS");
+			_cats.push_back("STR_FILTER_HIDDEN");
+			if (Options::oxceBaseFilterResearchable)
+			{
+				_cats.push_back("STR_FILTER_RESEARCHED");
+				_cats.push_back("STR_FILTER_RESEARCHABLE");
+			}
 			_vanillaCategories = _cats.size();
 		}
 		for (auto& categoryName : _game->getMod()->getItemCategoriesList())
@@ -445,6 +458,49 @@ bool SellState::belongsToCategory(int sel, const std::string &cat) const
 }
 
 /**
+ * Determines if a row item is supposed to be hidden
+ * @param sel Selected row.
+ * @param cat Category.
+ * @returns True if row item is hidden
+ */
+bool SellState::isHidden(int sel) const
+{
+	std::string itemName;
+
+	switch (_items[sel].type)
+	{
+	case TRANSFER_SOLDIER:
+	case TRANSFER_SCIENTIST:
+	case TRANSFER_ENGINEER:
+		return false;
+	case TRANSFER_CRAFT:
+		return false;
+	case TRANSFER_ITEM:
+		RuleItem* rule = (RuleItem*)_items[sel].rule;
+		if (rule != 0)
+		{
+			itemName = rule->getType();
+		}
+		if (!itemName.empty())
+		{
+			auto& hiddenMap = _game->getSavedGame()->getHiddenPurchaseItems();
+			auto iter = hiddenMap.find(itemName);
+			if (iter != hiddenMap.end())
+			{
+				return iter->second;
+			}
+			else
+			{
+				// not found = not hidden
+				return false;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
 * Quick search toggle.
 * @param action Pointer to an action.
 */
@@ -487,6 +543,9 @@ void SellState::updateList()
 	const std::string selectedCategory = _cats[selCategory];
 	bool categoryFilterEnabled = (selectedCategory != "STR_ALL_ITEMS");
 	bool categoryUnassigned = (selectedCategory == "STR_UNASSIGNED");
+	bool categoryHidden = (selectedCategory == "STR_FILTER_HIDDEN");
+	bool categoryResearched = (selectedCategory == "STR_FILTER_RESEARCHED");
+	bool categoryResearchable = (selectedCategory == "STR_FILTER_RESEARCHABLE");
 
 	if (_previousSort != _currentSort)
 	{
@@ -503,7 +562,30 @@ void SellState::updateList()
 	for (size_t i = 0; i < _items.size(); ++i)
 	{
 		// filter
-		if (selCategory >= _vanillaCategories)
+		if (categoryHidden)
+		{
+			bool hidden = isHidden(i);
+			if (!hidden)
+			{
+				continue;
+			}
+		}
+		else if (categoryResearched || categoryResearchable)
+		{
+			if (_items[i].type == TRANSFER_ITEM)
+			{
+				RuleItem* rule = (RuleItem*)_items[i].rule;
+				bool isResearchable = _game->getSavedGame()->isResearchable(rule, _game->getMod());
+				if (categoryResearched && isResearchable) continue;
+				if (categoryResearchable && !isResearchable) continue;
+			}
+			else
+			{
+				// don't show non-items (e.g. craft, personnel)
+				continue;
+			}
+		}
+		else if (selCategory >= _vanillaCategories)
 		{
 			if (categoryUnassigned && _items[i].type == TRANSFER_ITEM)
 			{
@@ -932,7 +1014,45 @@ void SellState::lstItemsMousePress(Action *action)
 			{
 				if (_game->isCtrlPressed(true))
 				{
-					_game->pushState(new ItemLocationsState(rule));
+					if (_game->isShiftPressed(true))
+					{
+						if (!rule->getType().empty())
+						{
+							bool categoryHidden = (_cats[_cbxCategory->getSelected()] == "STR_FILTER_HIDDEN");
+
+							auto& hiddenMap = _game->getSavedGame()->getHiddenPurchaseItems();
+							auto iter = hiddenMap.find(rule->getType());
+							bool hidden = false;
+							if (iter != hiddenMap.end())
+							{
+								// found => unhide it when in "Hidden" view; mark it as hidden otherwise
+								hidden = !categoryHidden;
+							}
+							else
+							{
+								// not found = not hidden yet => mark it as hidden
+								hidden = true;
+							}
+							_game->getSavedGame()->setHiddenPurchaseItemsStatus(rule->getType(), hidden);
+
+							if (categoryHidden)
+							{
+								// update screen
+								size_t scrollPos = _lstItems->getScroll();
+								updateList();
+								_lstItems->scrollTo(scrollPos);
+							}
+							else
+							{
+								// no screen update, at least play a sound
+								_game->getMod()->getSound("GEO.CAT", Mod::UFO_EXPLODE)->play();
+							}
+						}
+					}
+					else
+					{
+						_game->pushState(new ItemLocationsState(rule));
+					}
 				}
 				else
 				{

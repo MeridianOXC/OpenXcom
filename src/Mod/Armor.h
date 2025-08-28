@@ -37,6 +37,8 @@ class BattleUnit;
 class RuleItem;
 class RuleResearch;
 class RuleSoldier;
+class RulesoldierBonus;
+class RuleCommendations;
 
 /**
  * Move cost multipler.
@@ -99,6 +101,8 @@ private:
 	std::string _ufopediaType;
 	std::string _type, _spriteSheet, _spriteInv, _corpseGeoName, _storeItemName, _selfDestructItemName, _specWeaponName;
 	std::string _requiresName;
+	std::string _requiresAwardName;
+	std::string _requiresBonusName;
 	std::string _layersDefaultPrefix;
 	std::map<int, std::string> _layersSpecificPrefix;
 	std::map<std::string, std::vector<std::string> > _layersDefinition;
@@ -109,7 +113,10 @@ private:
 	std::vector<const RuleItem*> _corpseBattle;
 	std::vector<const RuleItem*> _builtInWeapons;
 	std::vector<const RuleSoldier*> _units;
+	std::vector<int> _ranks;
 	const RuleResearch* _requires = nullptr;
+	const RuleCommendations* _requiresAward = nullptr;
+	const RuleSoldierBonus* _requiresBonus = nullptr;
 	const RuleItem* _corpseGeo = nullptr;
 	const RuleItem* _storeItem = nullptr;
 	const RuleItem* _selfDestructItem = nullptr;
@@ -235,6 +242,10 @@ public:
 	const RuleItem* getSpecialWeapon() const;
 	/// Gets the research required to be able to equip this armor.
 	const RuleResearch* getRequiredResearch() const;
+	/// Gets the commendation required to be able to equip this armor.
+	const RuleCommendations* getRequiredAward() const { return _requiresAward; }
+	/// Gets the soldier bonus required to be able to equip this armor.
+	const RuleSoldierBonus* getRequiredBonus() const { return _requiresBonus; }
 
 	/// Armor have layered armor definition. Check by Prefix.
 	bool hasLayersDefinition() const { return !_layersDefaultPrefix.empty(); }
@@ -448,9 +459,11 @@ public:
 	const ScriptValues<Armor> &getScriptValuesRaw() const { return _scriptValues; }
 
 	/// Gets the armor's units.
-	const std::vector<const RuleSoldier*> &getUnits() const;
+	const std::vector<const RuleSoldier*> &getUnitsRaw() const;
+	/// Gets the armor's supported soldier ranks.
+	const std::vector<int>& getRanksRaw() const { return _ranks; }
 	/// Check if a soldier can use this armor.
-	bool getCanBeUsedBy(const RuleSoldier* soldier) const;
+	bool getCanBeUsedBy(const Soldier* soldier) const;
 
 
 	/// Gets the index of the sprite in the CustomArmorPreview sprite set

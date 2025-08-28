@@ -340,6 +340,7 @@ fi:
   STR_CRAFT_IS_READY: "{0} kohteessa {1} on valmis."
   STR_ECONOMY_WARNING: "Varat {0} ja tulot {1} ovat alhaiset ja ylläpitokustannukset {2} liian korkeat! Myy jotain välttääksesi luoton ottamisen... Varoja puuttuu {3}."
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "LAAJENNETTU"
   STR_RETURNING: "PALAAMASSA"
   STR_INTERCEPTING: "TORJUNNASSA"

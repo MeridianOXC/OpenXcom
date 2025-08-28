@@ -194,6 +194,8 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 
 	int slackingIndicatorOffset = _game->getMod()->getInterface("geoscape")->getElement("slackingIndicator")->custom;
 	_txtSlacking = new Text(59, 17, screenWidth - 61, screenHeight / 2 - 100 + slackingIndicatorOffset);
+	int trainingIndicatorOffset = _game->getMod()->getInterface("geoscape")->getElement("trainingIndicator")->custom;
+	_txtTraining = new Text(59, 17, screenWidth - 61, screenHeight / 2 + 100 + trainingIndicatorOffset);
 
 	_timeSpeed = _btn5Secs;
 	_gameTimer = new Timer(Options::geoClockSpeed);
@@ -252,6 +254,7 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 	add(_txtMonth, "text", "geoscape");
 	add(_txtYear, "text", "geoscape");
 	add(_txtSlacking, "slackingIndicator", "geoscape");
+	add(_txtTraining, "trainingIndicator", "geoscape");
 
 	add(_txtDebug, "text", "geoscape");
 	add(_cbxRegion, "button", "geoscape");
@@ -407,6 +410,7 @@ GeoscapeState::GeoscapeState() : _pause(false), _zoomInEffectDone(false), _zoomO
 	_txtYear->setAlign(ALIGN_CENTER);
 
 	_txtSlacking->setAlign(ALIGN_RIGHT);
+	_txtTraining->setAlign(ALIGN_RIGHT);
 
 	if (Options::showFundsOnGeoscape)
 	{
@@ -4240,8 +4244,59 @@ void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eve
 			}
 		}
 	}
+
+	// Alien race evolution
+	if (isNewMonth && month > 0)
+	{
+		for (auto* alienBase : *save->getAlienBases())
+		{
+			if (!alienBase->getDeployment()->getAlienRaceEvolution().empty())
+			{
+				std::ostringstream ss;
+				ss << "month: " << month;
+				ss << " baseId: " << alienBase->getId();
+				ss << " baseType: " << alienBase->getType();
+				ss << " deployment: " << alienBase->getDeployment()->getType();
+				ss << " old race: " << alienBase->getAlienRace();
+				int tries = 0;
+				while (attemptAlienRaceEvolution(month, alienBase))
+				{
+					ss << " new race: " << alienBase->getAlienRace();
+					if (++tries >= 100)
+					{
+						throw Exception("Alien race evolution: endless loop detected. It's not my fault. Crashing now!");
+					}
+				}
+				ss << " end.";
+				if (Options::oxceGeoscapeDebugLogMaxEntries > 0)
+				{
+					save->getGeoscapeDebugLog().push_back(ss.str());
+				}
+			}
+		}
+	}
 }
 
+/**
+ * Try to perform alien race evolution.
+ * @return whether the attempt was successful or not.
+ */
+bool GeoscapeState::attemptAlienRaceEvolution(int month, AlienBase* ab) const
+{
+	for (const auto& tuple : ab->getDeployment()->getAlienRaceEvolution())
+	{
+		if (std::get<0>(tuple) <= month && std::get<1>(tuple) == ab->getAlienRace())
+		{
+			auto* newRace = _game->getMod()->getAlienRace(std::get<2>(tuple), false);
+			if (newRace)
+			{
+				ab->setAlienRace(newRace->getId());
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 /**
  * Processes a directive to start up a mission, if possible.
@@ -4745,6 +4800,25 @@ bool GeoscapeState::buttonsDisabled()
 
 void GeoscapeState::updateSlackingIndicator()
 {
+	if (Options::oxceGeoEnableTrainingIndicator)
+	{
+		int freeGym = 0;
+		int freePsi = 0;
+		for (auto* xcomBase : *_game->getSavedGame()->getBases())
+		{
+			freeGym += xcomBase->getFreeTrainingSpace();
+			freePsi += xcomBase->getFreePsiLabs();
+		}
+		if (freeGym > 0 || freePsi > 0)
+		{
+			_txtTraining->setText(tr("STR_TRAINING_INDICATOR").arg(freePsi).arg(freeGym));
+		}
+		else
+		{
+			_txtTraining->setText("");
+		}
+	}
+
 	if (!Options::oxceEnableSlackingIndicator)
 		return;
 

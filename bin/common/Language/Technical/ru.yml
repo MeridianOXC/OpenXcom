@@ -267,6 +267,8 @@ ru:
   requiresBuy: "Исследование, необх. для покупки"
   requiresBuyBaseFunc: "Функции, необх. для покупки"
   requiresBuyCountry: "Необходима страна-союзник"
+  requiresAward: "Требует награды"
+  requiresBonus: "Требует бонуса"
   categories: "Категории"
   supportedInventorySections: "Ячейки инвентаря"
 #
@@ -354,6 +356,7 @@ ru:
   stun: "Оглушение"
   mana: "Мана"
   units: "Могут использовать"
+  ranks: "Доступно званиям"
   frontArmor: "Фронтальная броня"
   sideArmor: "Боковая броня"
   leftArmorDiff: "Бонус к броне слева"
@@ -402,6 +405,7 @@ ru:
   leavesBehindOnSell: "Заменяющий модуль"
   removalTime: "Время на снос"
   canBeBuiltOver: "Может надстраиваться?"
+  upgradeOnly: "Только улучшение?"
   buildOverFacilities: "Надстраивается над"
 #
   BFRCT_DEFAULT: "как в оригинале"
@@ -418,6 +422,8 @@ ru:
   soldiers: "Вместимость"
   maxUnitsLimit: "Макс. вместимость"
   pilots: "Размер кабины"
+  pilotMinStatsRequired: "Мин. характеристики пилота"
+  pilotSoldierBonusesRequired: "Требования к пилоту"
   vehicles: "Мест под ТБП"
   onlyOneSoldierGroupAllowed: "Может перевозить только один тип бойцов?"
   allowedSoldierGroups: "Перевозимые типы бойцов"
