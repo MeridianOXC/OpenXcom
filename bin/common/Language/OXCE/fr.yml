@@ -416,6 +416,7 @@ fr:
   STR_CRAFT_IS_READY: "{0} à {1} est prêt."
   STR_ECONOMY_WARNING: "Les fonds {0} et les revenus {1} sont bas et la maintenance {2} est trop élevée ! Vendez quelque-chose pour éviter à devoir prendre un crédit... fonds manquants : {3}"
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "ÉTENDU"
   STR_RETURNING: "RETOUR"
   STR_INTERCEPTING: "INTERCEPTE"

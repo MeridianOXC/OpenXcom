@@ -267,6 +267,8 @@ de:
   requiresBuy: "Forschung benötigt zum Kaufen:"
   requiresBuyBaseFunc: "Dienstleistungen benötigt um zu kaufen"
   requiresBuyCountry: "Verbündetes Land erforderlich"
+  requiresAward: ""
+  requiresBonus: ""
   categories: "Kategorien"
   supportedInventorySections: "Inventarplätze"
 #
@@ -354,6 +356,7 @@ de:
   stun: "Betäubung"
   mana: "Mana"
   units: "Kompatible Einheiten"
+  ranks: ""
   frontArmor: "Rüstung vorn"
   sideArmor: "Rüstung seitlich"
   leftArmorDiff: "Differenz Rüstung links"
@@ -402,6 +405,7 @@ de:
   leavesBehindOnSell: "Hinterlassenschaften beim Verkauf"
   removalTime: "Zeit für die Beseitigung"
   canBeBuiltOver: "Kann überbaut werden?"
+  upgradeOnly: ""
   buildOverFacilities: "Überbaubare Einrichtungen"
 #
   BFRCT_DEFAULT: "Originale Voreinstellung"
@@ -418,6 +422,8 @@ de:
   soldiers: "Lagerraum"
   maxUnitsLimit: "Maximaler Lagerraum"
   pilots: "Cockpit Größe"
+  pilotMinStatsRequired: ""
+  pilotSoldierBonusesRequired: ""
   vehicles: "SWT Kapazität"
   onlyOneSoldierGroupAllowed: "Nur eine Soldatengruppe erlaubt?"
   allowedSoldierGroups: "Erlaubte Soldatengruppen"

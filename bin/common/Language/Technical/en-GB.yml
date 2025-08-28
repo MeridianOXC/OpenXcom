@@ -405,6 +405,7 @@ en-GB:
   leavesBehindOnSell: "Leaves behind on sell"
   removalTime: "Removal time"
   canBeBuiltOver: "Can be built-over?"
+  upgradeOnly: "Upgrade only?"
   buildOverFacilities: "Build-over facilities"
 #
   BFRCT_DEFAULT: "vanilla default"

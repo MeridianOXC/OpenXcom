@@ -278,6 +278,9 @@ void PlaceFacilityState::viewClick(Action *)
 				case BPE_ForbiddenByThis:
 					_game->pushState(new ErrorMessageState(tr("STR_FACILITY_OTHER_FORBIDDEN_BY_THIS"), _palette, errorColor1, "BACK01.SCR", errorColor2));
 					break;
+				case BPE_UpgradeOnly:
+					_game->pushState(new ErrorMessageState(tr("STR_CANNOT_BUILD_UPGRADE_ONLY"), _palette, errorColor1, "BACK13.SCR", errorColor2));
+					break;
 				default:
 					_game->pushState(new ErrorMessageState(tr("STR_CANNOT_BUILD_HERE"), _palette, errorColor1, "BACK01.SCR", errorColor2));
 					break;

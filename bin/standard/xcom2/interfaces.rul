@@ -2162,6 +2162,10 @@ interfaces: #done
         color: 47
         color2: 63
         border: 54
+      - id: infoBoxText
+        color: 47
+        color2: 80
+        border: 54
       - id: grenadeMenu
         color: 47
         color2: 63

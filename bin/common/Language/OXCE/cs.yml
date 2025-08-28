@@ -374,6 +374,7 @@ cs:
   STR_CRAFT_IS_READY: "{0} na {1} je připravena."
   STR_ECONOMY_WARNING: "Finance {0} a a příjem {1} jsou nízké, a údržba {2} příliš nákladná! Raději něco prodej, aby nebyla nutná půjčka... Chybějící finance: {3}"
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "ROZŠÍŘENÍ"
   STR_RETURNING: "VRACÍ SE"
   STR_INTERCEPTING: "STÍHÁ"

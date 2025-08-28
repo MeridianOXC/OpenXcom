@@ -80,7 +80,8 @@ PlaceLiftState::PlaceLiftState(Base *base, Globe *globe, bool first) : _base(bas
 	for (auto& facilityType : _game->getMod()->getBaseFacilitiesList())
 	{
 		auto* facilityRule = _game->getMod()->getBaseFacility(facilityType);
-		if (facilityRule->isLift() && facilityRule->isAllowedForBaseType(_base->isFakeUnderwater()) && _game->getSavedGame()->isResearched(facilityRule->getRequirements()))
+		if ((facilityRule->isLift() && !facilityRule->isUpgradeOnly())
+			&& facilityRule->isAllowedForBaseType(_base->isFakeUnderwater()) && _game->getSavedGame()->isResearched(facilityRule->getRequirements()))
 		{
 			_accessLifts.push_back(facilityRule);
 		}

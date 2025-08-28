@@ -267,6 +267,8 @@ fi:
   requiresBuy: "Vaatii tutkimusta ostoon"
   requiresBuyBaseFunc: "Tarvitaan palveluja ostoon"
   requiresBuyCountry: "Valtion oltava liitossa"
+  requiresAward: ""
+  requiresBonus: ""
   categories: "Luokat"
   supportedInventorySections: "Varustepaikat"
 #
@@ -354,6 +356,7 @@ fi:
   stun: "Tainnutus"
   mana: "Mana"
   units: "Yhteensopivat yksiköt"
+  ranks: ""
   frontArmor: "Etupanssari"
   sideArmor: "Sivupanssari"
   leftArmorDiff: "Vasemman panssarin ero"
@@ -402,6 +405,7 @@ fi:
   leavesBehindOnSell: "Jättää jälkeen myynnissä"
   removalTime: "Poistoaika"
   canBeBuiltOver: "Päälle voi rakentaa?"
+  upgradeOnly: ""
   buildOverFacilities: "Päällerakennuslaitokset"
 #
   BFRCT_DEFAULT: "alkuperäispelin (vanilla) oletus"
@@ -418,6 +422,8 @@ fi:
   soldiers: "Rahtitila"
   maxUnitsLimit: ""
   pilots: "Ohjaamotila"
+  pilotMinStatsRequired: ""
+  pilotSoldierBonusesRequired: ""
   vehicles: "MTK-tila"
   onlyOneSoldierGroupAllowed: ""
   allowedSoldierGroups: ""

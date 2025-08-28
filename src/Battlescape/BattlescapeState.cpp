@@ -3154,7 +3154,10 @@ inline void BattlescapeState::handle(Action *action)
 								if (bu->getGeoscapeSoldier() && !bu->hasGainedAnyExperience())
 								{
 									if (!first) ss << ", ";
-									ss << bu->getName(_game->getLanguage());
+									if (bu == _save->getSelectedUnit())
+										ss << Unicode::TOK_COLOR_FLIP << bu->getName(_game->getLanguage()) << Unicode::TOK_COLOR_FLIP;
+									else
+										ss << bu->getName(_game->getLanguage());
 									first = false;
 								}
 							}

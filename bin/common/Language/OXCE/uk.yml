@@ -402,6 +402,7 @@ uk:
   STR_CRAFT_IS_READY: "{0} на {1} готовий."
   STR_ECONOMY_WARNING: "Кошти {0} та дохід {1} низькі, а утримання {2} занадто велике! Продайте щось, щоб не брати кредит ... коштів не вистачає: {3}"
   STR_SLACKING_INDICATOR: "{0}:{1}"
+  STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "РОЗШИРЕНО"
   STR_RETURNING: "ПОВЕРНЕННЯ"
   STR_INTERCEPTING: "ПЕРЕХОПЛЕННЯ"

@@ -8,6 +8,7 @@ en-GB:
   STR_CANNOT_UPGRADE_FACILITY_WRONG_TYPE: "CANNOT BUILD HERE!{SMALLLINE}Existing facility cannot be upgraded over by selected facility."
   STR_CANNOT_UPGRADE_FACILITY_DISALLOWED: "CANNOT BUILD HERE!{SMALLLINE}Existing facility cannot be built over."
   STR_CANNOT_BUILD_QUEUE_OFF: "CANNOT BUILD HERE!{SMALLLINE}Connecting facilities must finish construction first."
+  STR_CANNOT_BUILD_UPGRADE_ONLY: "CANNOT BUILD HERE!{SMALLLINE}This facility can be built only as an upgrade of another facility."
   STR_FACILITY_FORBIDDEN_BY_OTHER: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility forbids building this facility."
   STR_FACILITY_OTHER_FORBIDDEN_BY_THIS: "CANNOT BUILD HERE!{SMALLLINE}Some existing facility would be forbidden by this facility."
   STR_NOT_ENOUGH_ITEMS: "NOT ENOUGH MATERIALS!{SMALLLINE}We need more resources to build this facility.{NEWLINE}Missing> {0}: {1}"

@@ -4670,7 +4670,7 @@ std::vector<RuleBaseFacility*> Mod::getCustomBaseFacilities(GameDifficulty diff)
 	{
 		std::string type = facilityReader["type"].readVal<std::string>();
 		RuleBaseFacility *facility = getBaseFacility(type, true);
-		if (!facility->isLift())
+		if (!facility->isLift() && !facility->isUpgradeOnly())
 		{
 			placeList.push_back(facility);
 		}

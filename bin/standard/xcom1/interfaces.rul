@@ -2066,6 +2066,10 @@ interfaces:
         color: -1
         color2: 10
         border: 2
+      - id: infoBoxText
+        color: -1
+        color2: 14
+        border: 2
       - id: grenadeMenu
         color: 15
         color2: 27

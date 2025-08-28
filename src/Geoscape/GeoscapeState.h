@@ -37,6 +37,7 @@ class MissionSite;
 class Base;
 class RuleMissionScript;
 class RuleEvent;
+class AlienBase;
 
 /**
  * Geoscape screen which shows an overview of
@@ -192,6 +193,7 @@ public:
 	/// Handle alien mission generation.
 	void determineAlienMissions(bool isNewMonth = true, const RuleEvent* eventRules = nullptr);
 private:
+	bool attemptAlienRaceEvolution(int month, AlienBase* ab) const;
 	/// Process each individual mission script command.
 	bool processCommand(RuleMissionScript *command);
 	bool buttonsDisabled();

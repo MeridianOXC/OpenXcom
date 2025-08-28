@@ -46,7 +46,8 @@ RuleBaseFacility::RuleBaseFacility(const std::string &type, int listOrder) :
 	_defense(0), _hitRatio(0), _fireSound(0), _hitSound(0), _placeSound(-1),
 	_ammoMax(0), _rearmRate(1), _ammoNeeded(1), _unifiedDamageFormula(false), _shieldDamageModifier(100), _listOrder(listOrder),
 	_trainingRooms(0), _maxAllowedPerBase(0), _sickBayAbsoluteBonus(0.0f), _sickBayRelativeBonus(0.0f),
-	_prisonType(0), _rightClickActionType(0), _verticalLevels(), _removalTime(0), _canBeBuiltOver(false), _destroyedFacility(0)
+	_prisonType(0), _rightClickActionType(0), _verticalLevels(),
+	_removalTime(0), _canBeBuiltOver(false), _upgradeOnly(false), _destroyedFacility(0)
 {
 }
 
@@ -173,6 +174,7 @@ void RuleBaseFacility::load(const YAML::YamlNodeReader& node, Mod *mod)
 	mod->loadNames(_type, _leavesBehindOnSellNames, reader["leavesBehindOnSell"]);
 	reader.tryRead("removalTime", _removalTime);
 	reader.tryRead("canBeBuiltOver", _canBeBuiltOver);
+	reader.tryRead("upgradeOnly", _upgradeOnly);
 	mod->loadUnorderedNames(_type, _buildOverFacilitiesNames, reader["buildOverFacilities"]);
 	std::sort(_buildOverFacilities.begin(), _buildOverFacilities.end());
 

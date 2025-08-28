@@ -3210,6 +3210,7 @@ void StatsForNerdsState::initFacilityList()
 	addVectorOfRules(ss, facilityRule->getLeavesBehindOnSell(), "leavesBehindOnSell");
 	addInteger(ss, facilityRule->getRemovalTime(), "removalTime");
 	addBoolean(ss, facilityRule->getCanBeBuiltOver(), "canBeBuiltOver");
+	addBoolean(ss, facilityRule->isUpgradeOnly(), "upgradeOnly");
 	addVectorOfRules(ss, facilityRule->getBuildOverFacilities(), "buildOverFacilities");
 
 	if (facilityRule->getDefenseValue() > 0)

@@ -52,6 +52,7 @@ private:
 	UnitStats _rerollStats;
 	bool _lowerBoundAtMinStats, _upperBoundAtMaxStats, _upperBoundAtStatCaps;
 	int _upperBoundType;
+	std::vector<std::string> _removeTransformations;
 	bool _reset;
 	bool _resetRank;
 	std::string _soldierBonusType;
@@ -147,6 +148,8 @@ public:
 	/// Gets whether to use soft upper bound limit or not.
 	bool isSoftLimit(bool isSameSoldierType) const;
 
+	/// Gets the list of (potential) previous soldier transformations to remove when undergoing this project
+	const std::vector<std::string>& getRemoveTransformations() const { return _removeTransformations; }
 	/// Gets whether or not this project should reset info about all previous transformations and all previously assigned soldier bonuses
 	bool getReset() const;
 	/// Gets whether or not this project should reset the rank of the destination soldier to rookie
