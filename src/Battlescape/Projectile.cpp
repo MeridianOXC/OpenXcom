@@ -425,10 +425,8 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 		// First, new target point is rolled as usual. Then, if it lies outside of outer circle (in square's corner)
 		// it's rerolled inside inner circle
 
-		const double OVERALL_SPREAD_COEFF = 1.0; // Overall spread diameter change compared to vanilla
-		const double INNER_SPREAD_COEFF = 0.85; // Inner spread circle diameter compared to outer
+		const double SECONDARY_SPREAD_COEFF = 0.85; // Inner spread circle diameter compared to outer
 
-		double targetDist2D = sqrt(xDist * xDist + yDist * yDist);
 		bool resultShifted = false;
 		int dX, dY;
 
@@ -437,26 +435,19 @@ void Projectile::applyAccuracy(Position origin, Position *target, double accurac
 			dX = RNG::generate(0, deviation) - deviation / 2;
 			dY = RNG::generate(0, deviation) - deviation / 2;
 
-			double exprX = target->x + dX - origin.x;
-			double exprY = target->y + dY - origin.y;
-			double deviateDist2D = sqrt(exprX * exprX + exprY * exprY); // Distance from origin to deviation point
+			int radiusSq = dX*dX + dY*dY;
+			int deviateRadius = deviation / 2;
+			int deviateRadiusSq = deviateRadius * deviateRadius;
 
-			if (resultShifted &&                  // point is on inner ring and should be a "miss"
-				deviateDist2D > targetDist2D-2 &&
-				deviateDist2D < targetDist2D+2)
-				break;
+			if (radiusSq <= deviateRadiusSq) break;  // If we inside of the spread circle - we're done!
 
-			if (!resultShifted) // This is the FIRST roll!
+			if (!resultShifted)
 			{
-				int radiusSq = dX*dX + dY*dY;
-				int deviateRadius = OVERALL_SPREAD_COEFF * deviation / 2;
-				int deviateRadiusSq = deviateRadius * deviateRadius;
-				if (radiusSq <= deviateRadiusSq) break;  // If we inside of outer circle - we're done!
-
 				resultShifted = true;
-				deviation *= INNER_SPREAD_COEFF; // Next attempts will be closer to target
+				deviation *= SECONDARY_SPREAD_COEFF; // Change spread radius for second+ attempts
 			}
 		}
+
 		target->x += dX;
 		target->y += dY;
 	}
