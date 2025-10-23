@@ -931,7 +931,8 @@ void BattleItem::spendAmmoForAction(BattleActionType action, SavedBattleGame* sa
 	auto* ammo = getAmmoForAction(action, nullptr, &spendPerShot);
 	if (ammo)
 	{
-		if (ammo->getRules()->getClipSize() > 0 && ammo->spendBullet(spendPerShot) == false)
+		if (ammo->getRules()->getClipSize() > 0 && ammo->spendBullet(spendPerShot) == false 
+			&& (ammo->getRules()->getBattleType() != BT_FIREARM || ammo->getRules()->isConsumable()))
 		{
 			save->removeItem(ammo);
 			ammo->setIsAmmo(false);
