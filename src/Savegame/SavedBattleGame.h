@@ -129,6 +129,7 @@ private:
 	int _toggleBrightnessTemp = 0, _toggleNightVisionColorTemp = 0;
 	std::string _hiddenMovementBackground;
 	HitLog *_hitLog;
+	std::vector<BattleItem*> _tempLinkedItems; // no need to save these
 	ScriptValues<SavedBattleGame> _scriptValues;
 	/// Selects a soldier.
 	BattleUnit *selectPlayerUnit(int dir, bool checkReselect = false, bool setReselect = false, bool checkInventory = false);
@@ -664,6 +665,8 @@ public:
 	void appendToHitLog(HitLogEntryType type, UnitFaction faction, const std::string &text);
 	/// Gets the hit log.
 	const HitLog *getHitLog() const;
+	/// Gets the temporary linked items.
+	std::vector<BattleItem*> *getLinkedItems() { return &_tempLinkedItems; }
 	/// Reset all the unit hit state flags.
 	void resetUnitHitStates();
 };

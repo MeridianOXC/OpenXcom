@@ -382,6 +382,11 @@ void StatsForNerdsState::cbxAmmoSelect(Action *)
 		{
 			// perform same checks as in ArticleStateItem.cpp
 			const auto& ammoId = _filterOptions.at(selIdx);
+			if (ammoId == "STR_NO_WOUNDED")
+			{
+				// just a divider "-"
+				return;
+			}
 			auto* ammo_article = _game->getMod()->getUfopaediaArticle(ammoId, true);
 			if (Ufopaedia::isArticleAvailable(_game->getSavedGame(), ammo_article))
 			{
@@ -1841,6 +1846,11 @@ void StatsForNerdsState::initItemList()
 			_filterOptions.push_back(ammo->getType());
 		}
 	}
+	for (auto* linked : itemRule->getLinkedItems())
+	{
+		_filterOptions.push_back("STR_NO_WOUNDED"); // just a divider "-"
+		_filterOptions.push_back(linked->getType());
+	}
 	_cbxRelatedStuff->setOptions(_filterOptions, true);
 	_cbxRelatedStuff->setVisible(_filterOptions.size() > 1);
 	if (_filterOptions.size() > 1)
@@ -2257,6 +2267,7 @@ void StatsForNerdsState::initItemList()
 		addSingleString(ss, itemRule->getUfopediaType(), "ufopediaType");
 		addSingleString(ss, itemRule->getName(), "name", itemRule->getType());
 		addSingleString(ss, itemRule->getNameAsAmmo(), "nameAsAmmo");
+		addVectorOfRules(ss, itemRule->getLinkedItems(), "linkedItems");
 		addInteger(ss, itemRule->getLoadOrder(), "loadOrder");
 		addInteger(ss, itemRule->getListOrder(), "listOrder");
 		addBoolean(ss, itemRule->getHidePower(), "hidePower");

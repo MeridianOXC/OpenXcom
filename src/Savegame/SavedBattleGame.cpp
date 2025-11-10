@@ -124,6 +124,10 @@ SavedBattleGame::~SavedBattleGame()
 	delete _tileEngine;
 	delete _baseItems;
 	delete _hitLog;
+	for (auto* bi : _tempLinkedItems)
+	{
+		delete bi;
+	}
 }
 
 /**
@@ -1608,6 +1612,14 @@ void SavedBattleGame::endTurn()
 
 	if (_side != FACTION_PLAYER)
 		selectNextPlayerUnit();
+
+
+	// cleanup (not strictly necessary, but doesn't hurt)
+	for (auto* bi : _tempLinkedItems)
+	{
+		delete bi;
+	}
+	_tempLinkedItems.clear();
 }
 
 /**

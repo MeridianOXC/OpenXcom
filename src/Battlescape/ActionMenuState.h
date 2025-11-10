@@ -34,8 +34,10 @@ class ActionMenuState : public State
 protected:
 	BattleAction *_action;
 	ActionMenuItem *_actionMenu[6];
+	/// Adds linked items actions.
+	void addLinkedItems(const RuleItem* origWeapon, int& id);
 	/// Adds a new menu item for an action.
-	void addItem(BattleActionType ba, const std::string &name, int *id, SDLKey key);
+	void addItem(BattleActionType ba, const std::string &name, int *id, SDLKey key, BattleItem* tempLinkedItem = nullptr);
 	/// Acts on the action instance that has been chosen and set.
 	void handleAction();
 public:

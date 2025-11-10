@@ -189,6 +189,95 @@ ActionMenuState::ActionMenuState(BattleAction *action, int x, int y) : _action(a
 		addItem(BA_USE, weapon->getPsiAttackName().empty() ? "STR_USE_MIND_PROBE" : weapon->getPsiAttackName(), &id, Options::keyBattleActionItem1);
 	}
 
+	addLinkedItems(weapon, id);
+}
+
+void ActionMenuState::addLinkedItems(const RuleItem* origWeapon, int& id)
+{
+	for (auto* linked : origWeapon->getLinkedItems())
+	{
+		int dummyId = -1;
+		BattleItem* tempLinkedItem = new BattleItem(linked, &dummyId);
+
+		if (linked->getBattleType() == BT_FIREARM)
+		{
+			bool isLauncher = tempLinkedItem->getCurrentWaypoints() != 0;
+			int slotLauncher = tempLinkedItem->getActionConf(BA_LAUNCH)->ammoSlot;
+			int slotSnap = tempLinkedItem->getActionConf(BA_SNAPSHOT)->ammoSlot;
+			int slotAuto = tempLinkedItem->getActionConf(BA_AUTOSHOT)->ammoSlot;
+
+			if ((!isLauncher || slotLauncher != slotAuto) && linked->getCostAuto().Time > 0)
+			{
+				addItem(BA_AUTOSHOT, linked->getConfigAuto()->name, &id, SDLK_UNKNOWN, tempLinkedItem);
+			}
+
+			if ((!isLauncher || slotLauncher != slotSnap) && linked->getCostSnap().Time > 0)
+			{
+				addItem(BA_SNAPSHOT, linked->getConfigSnap()->name, &id, SDLK_UNKNOWN, tempLinkedItem);
+			}
+
+			if (isLauncher)
+			{
+				addItem(BA_LAUNCH, "STR_LAUNCH_MISSILE", &id, SDLK_UNKNOWN, tempLinkedItem);
+			}
+			else if (linked->getCostAimed().Time > 0)
+			{
+				addItem(BA_AIMEDSHOT, linked->getConfigAimed()->name, &id, SDLK_UNKNOWN, tempLinkedItem);
+			}
+		}
+
+		if (linked->getCostMelee().Time > 0)
+		{
+			std::string name = linked->getConfigMelee()->name;
+			if (name.empty())
+			{
+				// stun rod
+				if (linked->getBattleType() == BT_MELEE && linked->getDamageType()->ResistType == DT_STUN)
+				{
+					name = "STR_STUN";
+				}
+				else
+					// melee weapon
+				{
+					name = "STR_HIT_MELEE";
+				}
+			}
+			addItem(BA_HIT, name, &id, SDLK_UNKNOWN, tempLinkedItem);
+		}
+
+		// special items
+		if (linked->getBattleType() == BT_MEDIKIT)
+		{
+			addItem(BA_USE, linked->getMedikitActionName(), &id, SDLK_UNKNOWN, tempLinkedItem);
+		}
+		else if (linked->getBattleType() == BT_SCANNER)
+		{
+			addItem(BA_USE, linked->getPsiAttackName().empty() ? "STR_USE_SCANNER" : linked->getPsiAttackName(), &id, SDLK_UNKNOWN, tempLinkedItem);
+		}
+		else if (linked->getBattleType() == BT_PSIAMP)
+		{
+			if (linked->getCostMind().Time > 0)
+			{
+				addItem(BA_MINDCONTROL, "STR_MIND_CONTROL", &id, SDLK_UNKNOWN, tempLinkedItem);
+			}
+			if (linked->getCostPanic().Time > 0)
+			{
+				addItem(BA_PANIC, "STR_PANIC_UNIT", &id, SDLK_UNKNOWN, tempLinkedItem);
+			}
+			if (linked->getCostUse().Time > 0)
+			{
+				addItem(BA_USE, linked->getPsiAttackName(), &id, SDLK_UNKNOWN, tempLinkedItem);
+			}
+		}
+		else if (linked->getBattleType() == BT_MINDPROBE)
+		{
+			addItem(BA_USE, linked->getPsiAttackName().empty() ? "STR_USE_MIND_PROBE" : linked->getPsiAttackName(), &id, SDLK_UNKNOWN, tempLinkedItem);
+		}
+
+		// cleanup
+		delete tempLinkedItem;
+		tempLinkedItem = nullptr;
+	}
 }
 
 /**
@@ -217,16 +306,23 @@ void ActionMenuState::init()
  * @param name Action description.
  * @param id Pointer to the new item ID.
  */
-void ActionMenuState::addItem(BattleActionType ba, const std::string &name, int *id, SDLKey key)
+void ActionMenuState::addItem(BattleActionType ba, const std::string &name, int *id, SDLKey key, BattleItem* tempLinkedItem)
 {
+	if (*id > 5)
+	{
+		Log(LOG_WARNING) << "Too many action buttons on one battle item (linked item issue?), skipping some!!!";
+		return;
+	}
+
 	std::string s1, s2;
-	int acc = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(ba, _action->actor, _action->weapon), _game->getMod());
-	int tu = _action->actor->getActionTUs(ba, _action->weapon).Time;
+	int acc = BattleUnit::getFiringAccuracy(BattleActionAttack::GetBeforeShoot(ba, _action->actor, tempLinkedItem ? tempLinkedItem : _action->weapon), _game->getMod());
+	int tu = _action->actor->getActionTUs(ba, tempLinkedItem ? tempLinkedItem : _action->weapon).Time;
 
 	if (ba == BA_THROW || ba == BA_AIMEDSHOT || ba == BA_SNAPSHOT || ba == BA_AUTOSHOT || ba == BA_LAUNCH || ba == BA_HIT)
 		s1 = tr("STR_ACCURACY_SHORT").arg(Unicode::formatPercentage(acc));
 	s2 = tr("STR_TIME_UNITS_SHORT").arg(tu);
 	_actionMenu[*id]->setAction(ba, tr(name), s1, s2, tu);
+	_actionMenu[*id]->setLinkedItemRules(tempLinkedItem ? tempLinkedItem->getRules() : nullptr);
 	_actionMenu[*id]->setVisible(true);
 	if (key != SDLK_UNKNOWN)
 	{
@@ -293,6 +389,17 @@ void ActionMenuState::btnActionMenuItemClick(Action *action)
 	{
 		_action->type = _actionMenu[btnID]->getAction();
 		_action->skillRules = nullptr;
+
+		const RuleItem* linkedItemRules = _actionMenu[btnID]->getLinkedItemRules();
+		if (linkedItemRules)
+		{
+			int dummyId = -1;
+			BattleItem* tmpLinkedItem = new BattleItem(linkedItemRules, &dummyId);
+			_game->getSavedGame()->getSavedBattle()->getLinkedItems()->push_back(tmpLinkedItem); // lifecycle management
+
+			_action->weapon = tmpLinkedItem; // OVERRIDE
+		}
+
 		_action->updateTU();
 
 		handleAction();

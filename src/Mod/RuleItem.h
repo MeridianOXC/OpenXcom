@@ -367,6 +367,8 @@ public:
 private:
 	std::string _ufopediaType;
 	std::string _type, _name, _nameAsAmmo; // two types of objects can have the same name
+	std::vector<std::string> _linkedItemsName;
+	std::vector<const RuleItem*> _linkedItems;
 	std::string _requiresBuyCountry;
 	std::vector<std::string> _requiresName;
 	std::vector<std::string> _requiresBuyName;
@@ -517,6 +519,8 @@ public:
 	const std::string &getName() const;
 	/// Gets the item's name when loaded in weapon.
 	const std::string &getNameAsAmmo() const;
+	/// Gets the linked items.
+	const std::vector<const RuleItem*> &getLinkedItems() const { return _linkedItems; }
 	/// Gets the item's requirements.
 	const std::vector<const RuleResearch*> &getRequirements() const;
 	/// Gets the item's buy requirements.

@@ -29,6 +29,7 @@ class Language;
 class Text;
 class Frame;
 class RuleSkill;
+class RuleItem;
 
 /**
  * A class that represents a single box in the action popup menu on the battlescape.
@@ -41,6 +42,7 @@ private:
 	bool _highlighted;
 	BattleActionType _action;
 	const RuleSkill* _skill;
+	const RuleItem* _linkedItemRules;
 	int _tu, _highlightModifier;
 	Frame *_frame;
 	Text *_txtDescription, *_txtAcc, *_txtTU;
@@ -52,10 +54,13 @@ public:
 	/// Assigns an action to it.
 	void setAction(BattleActionType action, const std::string &description, const std::string &accuracy, const std::string &timeunits, int tu);
 	void setSkill(const RuleSkill* skill);
+	void setLinkedItemRules(const RuleItem* linkedItemRules) { _linkedItemRules = linkedItemRules; }
 	/// Gets the assigned action.
 	BattleActionType getAction() const;
 	/// Gets the assigned skill.
 	const RuleSkill* getSkill() const;
+	/// Gets the linked item rules.
+	const RuleItem* getLinkedItemRules() const { return _linkedItemRules; }
 	/// Gets the assigned action TUs.
 	int getTUs() const;
 	/// Sets the palettes.

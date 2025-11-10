@@ -317,6 +317,7 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	reader.tryRead("ufopediaType", _ufopediaType);
 	reader.tryRead("name", _name);
 	reader.tryRead("nameAsAmmo", _nameAsAmmo);
+	reader.tryRead("linkedItems", _linkedItemsName); // ordered
 
 	//requires
 	reader.tryRead("requiresBuyCountry", _requiresBuyCountry);
@@ -722,6 +723,7 @@ void RuleItem::afterLoad(const Mod* mod)
 
 	mod->verifySpriteOffset(_type, _customItemPreviewIndex, "CustomItemPreviews");
 
+	mod->linkRule(_linkedItems, _linkedItemsName);
 
 	_requires = mod->getResearch(_requiresName);
 	_requiresBuy = mod->getResearch(_requiresBuyName);
