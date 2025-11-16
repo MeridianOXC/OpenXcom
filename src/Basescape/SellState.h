@@ -78,6 +78,7 @@ private:
 public:
 	/// Creates the Sell state.
 	SellState(Base *base, DebriefingState *debriefingState, OptionsOrigin origin = OPT_GEOSCAPE);
+	void initCategories();
 	void delayedInit();
 	/// Cleans up the Sell state.
 	~SellState();

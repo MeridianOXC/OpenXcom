@@ -491,6 +491,8 @@ public:
 	bool isUfoOnIgnoreList(int ufoId);
 	/// Handles a soldier's death.
 	std::vector<Soldier*>::iterator killSoldier(bool resetArmor, Soldier *soldier, BattleUnitKills *cause = 0);
+	/// has any item set to autosell?
+	bool hasAutosellItems() const;
 	/// enables/disables autosell for an item type
 	void setAutosell(const RuleItem *itype, const bool enabled);
 	/// get autosell state for an item type

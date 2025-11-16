@@ -118,6 +118,7 @@ en-US:
   STR_FILTER_DEFAULT_NO_SUPPLIES: "Default (no supplies)"
   STR_FILTER_FACILITY_REQUIRED: "Facility Missing"
   STR_FILTER_HIDDEN: "Hidden"
+  STR_FILTER_AUTOSELL: "Autosold"
   STR_FILTER_EQUIPPED: "Equipped"
   STR_FILTER_MISSING: "Missing"
 #NewResearchListState.cpp

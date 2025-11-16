@@ -77,6 +77,25 @@ SellState::SellState(Base *base, DebriefingState *debriefingState, OptionsOrigin
 }
 
 /**
+ * Initializes the item categories with mod independant categories (_cats vector)
+ */
+
+
+void SellState::initCategories() {
+//	_cats.clear();
+	_cats.push_back("STR_ALL_ITEMS");
+	_cats.push_back("STR_FILTER_HIDDEN");
+	if (Options::oxceBaseFilterResearchable)
+	{
+		_cats.push_back("STR_FILTER_RESEARCHED");
+		_cats.push_back("STR_FILTER_RESEARCHABLE");
+	}
+
+	if (_game->getSavedGame()->hasAutosellItems())
+		_cats.push_back("STR_FILTER_AUTOSELL");
+}
+
+/**
  * Delayed constructor functionality.
  */
 void SellState::delayedInit()
@@ -185,13 +204,7 @@ void SellState::delayedInit()
 	_lstItems->onRightArrowClick((ActionHandler)&SellState::lstItemsRightArrowClick);
 	_lstItems->onMousePress((ActionHandler)&SellState::lstItemsMousePress);
 
-	_cats.push_back("STR_ALL_ITEMS");
-	_cats.push_back("STR_FILTER_HIDDEN");
-	if (Options::oxceBaseFilterResearchable)
-	{
-		_cats.push_back("STR_FILTER_RESEARCHED");
-		_cats.push_back("STR_FILTER_RESEARCHABLE");
-	}
+	initCategories();
 
 	for (auto* soldier : *_base->getSoldiers())
 	{
@@ -318,13 +331,7 @@ void SellState::delayedInit()
 		if (_game->getMod()->getDisplayCustomCategories() == 1)
 		{
 			_cats.clear();
-			_cats.push_back("STR_ALL_ITEMS");
-			_cats.push_back("STR_FILTER_HIDDEN");
-			if (Options::oxceBaseFilterResearchable)
-			{
-				_cats.push_back("STR_FILTER_RESEARCHED");
-				_cats.push_back("STR_FILTER_RESEARCHABLE");
-			}
+			initCategories();
 			_vanillaCategories = _cats.size();
 		}
 		for (auto& categoryName : _game->getMod()->getItemCategoriesList())
@@ -545,6 +552,7 @@ void SellState::updateList()
 	bool categoryHidden = (selectedCategory == "STR_FILTER_HIDDEN");
 	bool categoryResearched = (selectedCategory == "STR_FILTER_RESEARCHED");
 	bool categoryResearchable = (selectedCategory == "STR_FILTER_RESEARCHABLE");
+	bool categoryAutosell = (selectedCategory == "STR_FILTER_AUTOSELL");
 
 	if (_previousSort != _currentSort)
 	{
@@ -583,6 +591,19 @@ void SellState::updateList()
 				// don't show non-items (e.g. craft, personnel)
 				continue;
 			}
+		}
+		else if (categoryAutosell)
+		{
+			if (_items[i].type == TRANSFER_ITEM)
+			{
+				RuleItem* rule = (RuleItem*)_items[i].rule;
+				if (!_game->getSavedGame()->getAutosell(rule))
+				{
+					continue;
+				}
+			}
+			else // don't show non-items (e.g. craft, personnel)
+				continue;
 		}
 		else if (selCategory >= _vanillaCategories)
 		{
