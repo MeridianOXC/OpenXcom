@@ -54,7 +54,7 @@ namespace OpenXcom
  * @param game Pointer to the core game.
  * @param base Pointer to the base to get info from.
  */
-SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL)
+SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base->getSoldiers()), _dynGetter(NULL), _mainOffset(0)
 {
 	bool isPsiBtnVisible = Options::anytimePsiTraining && _base->getAvailablePsiLabs() > 0;
 	bool isTrnBtnVisible = _base->getAvailableTraining() > 0;
@@ -120,6 +120,7 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_btnOk->onMouseClick((ActionHandler)&SoldiersState::btnOkClick);
 	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnOkClick, Options::keyCancel);
 	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnInventoryClick, Options::keyBattleInventory);
+	_btnOk->onKeyboardPress((ActionHandler)&SoldiersState::btnTransformationsOverviewClick, SDLK_t);
 
 	_btnPsiTraining->setText(tr("STR_PSI_TRAINING"));
 	_btnPsiTraining->onMouseClick((ActionHandler)&SoldiersState::btnPsiTrainingClick);
@@ -150,7 +151,10 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 			_availableOptions.push_back("STR_TRAINING");
 
 		if (isTransformationAvailable)
+		{
+			_mainOffset = _availableOptions.size();
 			_availableOptions.push_back("STR_TRANSFORMATIONS_OVERVIEW");
+		}
 
 		bool refreshDeadSoldierStats = false;
 		for (const auto* transformationRule : availableTransformations)
@@ -604,6 +608,21 @@ void SoldiersState::btnTrainingClick(Action *)
 void SoldiersState::btnMemorialClick(Action *)
 {
 	_game->pushState(new SoldierMemorialState);
+}
+
+/**
+ * Opens the Transformations Overview screen.
+ * @param action Pointer to an action.
+ */
+void SoldiersState::btnTransformationsOverviewClick(Action *)
+{
+	if (_mainOffset > 0)
+	{
+		// needed in SoldierTransformationListState::lstTransformationsClick()
+		_cbxScreenActions->setSelected(_mainOffset);
+
+		_game->pushState(new SoldierTransformationListState(_base, _cbxScreenActions));
+	}
 }
 
 /**

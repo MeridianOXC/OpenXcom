@@ -51,6 +51,7 @@ private:
 	std::vector<SortFunctor *> _sortFunctors;
 	getStatFn_t _dynGetter;
 	std::vector<std::string> _availableOptions;
+	size_t _mainOffset;
 	///initializes the display list based on the craft soldier's list and the position to display
 	void initList(size_t scrl);
 public:
@@ -77,6 +78,8 @@ public:
 	void btnTrainingClick(Action *action);
 	/// Handler for clicking the Memorial button.
 	void btnMemorialClick(Action *action);
+	/// Handler for clicking the Transformations Overview button/hotkey.
+	void btnTransformationsOverviewClick(Action *action);
 	/// Handler for changing the screen actions combo box.
 	void cbxScreenActionsChange(Action *action);
 	/// Handler for clicking the Inventory button.
