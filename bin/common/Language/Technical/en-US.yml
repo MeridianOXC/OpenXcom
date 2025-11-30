@@ -247,6 +247,9 @@ en-US:
   armor: "Armor"
 #
   medikitType: "Medikit type"
+  painKillerActionName: "Painkiller action name"
+  stimulantActionName: "Stimulant action name"
+  healActionName: "Heal action name"
   medikitActionName: "Medikit action name"
   medikitTargetSelf: "Medikit on self?"
   medikitTargetImmune: "Medikit on bleed immune?"

@@ -2189,6 +2189,9 @@ void StatsForNerdsState::initItemList()
 	addInteger(ss, itemRule->getArmor(), "armor", 20);
 
 	addBattleMediKitType(ss, itemRule->getMediKitType(), "medikitType");
+	addSingleString(ss, itemRule->getPainKillerActionName(), "painKillerActionName", "STR_PAIN_KILLER");
+	addSingleString(ss, itemRule->getStimulantActionName(), "stimulantActionName", "STR_STIMULANT");
+	addSingleString(ss, itemRule->getHealActionName(), "healActionName", "STR_HEAL");
 	addSingleString(ss, itemRule->getMedikitActionName(), "medikitActionName", "STR_USE_MEDI_KIT");
 	addBoolean(ss, itemRule->getAllowTargetSelf(), "medikitTargetSelf");
 	addBoolean(ss, itemRule->getAllowTargetImmune(), "medikitTargetImmune");

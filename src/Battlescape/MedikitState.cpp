@@ -65,7 +65,7 @@ public:
  * @param y The title's y origin.
  * @param title The title.
  */
-MedikitTitle::MedikitTitle (int y, const std::string & title) : Text (73, 9, 186, y)
+MedikitTitle::MedikitTitle (int y, const std::string & title) : Text (73 + 60, 9, 186 - 30, y)
 {
 	this->setText(title);
 	this->setHighContrast(true);
@@ -151,9 +151,9 @@ MedikitState::MedikitState (BattleUnit *targetUnit, BattleAction *action, TileEn
 	add(_bg);
 	add(_medikitView, "body", "medikit", _bg);
 	add(_endButton, "buttonEnd", "medikit", _bg);
-	add(new MedikitTitle (37, tr("STR_PAIN_KILLER")), "textPK", "medikit", _bg);
-	add(new MedikitTitle (73, tr("STR_STIMULANT")), "textStim", "medikit", _bg);
-	add(new MedikitTitle (109, tr("STR_HEAL")), "textHeal", "medikit", _bg);
+	add(new MedikitTitle (37, tr(_item->getRules()->getPainKillerActionName())), "textPK", "medikit", _bg);
+	add(new MedikitTitle (73, tr(_item->getRules()->getStimulantActionName())), "textStim", "medikit", _bg);
+	add(new MedikitTitle (109, tr(_item->getRules()->getHealActionName())), "textHeal", "medikit", _bg);
 	add(_healButton, "buttonHeal", "medikit", _bg);
 	add(_stimulantButton, "buttonStim", "medikit", _bg);
 	add(_pkButton, "buttonPK", "medikit", _bg);

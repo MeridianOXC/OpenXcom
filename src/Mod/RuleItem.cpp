@@ -162,7 +162,10 @@ RuleItem::RuleItem(const std::string &type, int listOrder) :
 	_costUse(25), _costMind({}, {}), _costPanic({}, {}), _costThrow(25), _costPrime(50), _costUnprime(25),
 	_clipSize(0), _specialChance(100), _tuLoad{ }, _tuUnload{ },
 	_battleType(BT_NONE), _fuseType(BFT_NONE), _fuseTriggerEvents{ }, _hiddenOnMinimap(false),
-	_medikitActionName("STR_USE_MEDI_KIT"), _psiAttackName(), _primeActionName("STR_PRIME_GRENADE"), _unprimeActionName(), _primeActionMessage("STR_GRENADE_IS_ACTIVATED"), _unprimeActionMessage("STR_GRENADE_IS_DEACTIVATED"),
+	_painKillerActionName("STR_PAIN_KILLER"), _stimulantActionName("STR_STIMULANT"), _healActionName("STR_HEAL"),
+	_medikitActionName("STR_USE_MEDI_KIT"),
+	_psiAttackName(), _primeActionName("STR_PRIME_GRENADE"), _unprimeActionName(),
+	_primeActionMessage("STR_GRENADE_IS_ACTIVATED"), _unprimeActionMessage("STR_GRENADE_IS_DEACTIVATED"),
 	_twoHanded(false), _blockBothHands(false), _fixedWeapon(false), _fixedWeaponShow(false), _isConsumable(false), _isFireExtinguisher(false),
 	_specialUseEmptyHand(false), _specialUseEmptyHandShow(false),
 	_defaultInvSlotX(0), _defaultInvSlotY(0), _waypoints(0), _invWidth(1), _invHeight(1),
@@ -471,6 +474,9 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	reader.tryRead("powerForAnimation", _powerForAnimation);
 	reader.tryRead("hidePower", _hidePower);
 	reader.tryRead("ignoreAmmoPower", _ignoreAmmoPower);
+	reader.tryRead("painKillerActionName", _painKillerActionName);
+	reader.tryRead("stimulantActionName", _stimulantActionName);
+	reader.tryRead("healActionName", _healActionName);
 	reader.tryRead("medikitActionName", _medikitActionName);
 	reader.tryRead("psiAttackName", _psiAttackName);
 	reader.tryRead("primeActionName", _primeActionName);
