@@ -2384,7 +2384,10 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base, C
 		if (rule->getBattleType() == BT_AMMO && rule->getClipSize() > 0)
 		{
 			// It's a clip, count any rounds left.
-			_rounds[rule] += clip->getAmmoQuantity();
+			if (rule->isAmmoRechargeable())
+				_rounds[rule] += rule->getClipSize(); // restore 100% of clip capacity (i.e. the clip will be recharged at the base)
+			else
+				_rounds[rule] += clip->getAmmoQuantity();
 		}
 		else
 		{
@@ -2498,7 +2501,10 @@ void DebriefingState::recoverItems(std::vector<BattleItem*> *from, Base *base, C
 						// Special case: built-in ammo (e.g. throwing knives or bamboo stick)
 						if (!bi->needsAmmoForSlot(0) && rule->getClipSize() > 0)
 						{
-							_rounds[rule] += bi->getAmmoQuantity();
+							if (rule->isAmmoRechargeable())
+								_rounds[rule] += rule->getClipSize(); // restore 100% of clip capacity (i.e. the clip will be recharged at the base)
+							else
+								_rounds[rule] += bi->getAmmoQuantity();
 							recoverWeapon = false;
 						}
 						// It's a weapon, count any rounds left in the clip.

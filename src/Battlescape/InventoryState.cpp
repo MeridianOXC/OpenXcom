@@ -1996,7 +1996,7 @@ void InventoryState::invMouseOver(Action *)
 			_mouseHoverItem = nullptr;
 			updateTemplateButtons(!_tu);
 			std::string s;
-			if (item->getAmmoQuantity() != 0 && item->getRules()->getBattleType() == BT_AMMO)
+			if (item->getRules()->getBattleType() == BT_AMMO && (item->getAmmoQuantity() != 0 || item->getRules()->isAmmoRechargeable()))
 			{
 				s = tr("STR_AMMO_ROUNDS_LEFT").arg(item->getAmmoQuantity());
 			}

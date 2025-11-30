@@ -426,6 +426,7 @@ private:
 	std::string _sellActionMessage;
 
 	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _isConsumable, _isFireExtinguisher;
+	bool _isAmmoRechargeable;
 	bool _specialUseEmptyHand, _specialUseEmptyHandShow;
 	int _inventoryMoveCostPercent = 100;
 	std::string _defaultInventorySlotName;
@@ -862,6 +863,8 @@ public:
 	bool isConsumable() const;
 	/// Does this item extinguish fire?
 	bool isFireExtinguisher() const;
+	/// Is ammo replenished after battle? (Intended side effect: ammo item with 0 ammo left does not disappear.)
+	bool isAmmoRechargeable() const { return _isAmmoRechargeable; }
 	/// If this is used as a speacialWeapon, is it accessed by empty hand?
 	bool isSpecialUsingEmptyHand() const;
 	/// Display icon in an empty hand?

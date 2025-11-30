@@ -171,6 +171,7 @@ items: #done
     battleType: 1
     fixedWeapon: true
     clipSize: 100
+    isAmmoRechargeable: true
     invWidth: 2
     invHeight: 3
     turretType: 3

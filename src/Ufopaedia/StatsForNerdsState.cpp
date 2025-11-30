@@ -2150,6 +2150,7 @@ void StatsForNerdsState::initItemList()
 	}
 
 	addInteger(ss, itemRule->getClipSize(), "clipSize", 0, false, "STR_CLIP_SIZE_UNLIMITED", -1);
+	addBoolean(ss, itemRule->isAmmoRechargeable(), "isAmmoRechargeable");
 
 	// compatibleAmmo*
 	// tuLoad*

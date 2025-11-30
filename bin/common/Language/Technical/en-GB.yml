@@ -236,6 +236,7 @@ en-GB:
   arcing: "Arcing?"
 #
   clipSize: "Clip size"
+  isAmmoRechargeable: "Ammo rechargeable?"
 #
   primaryAmmo: "Primary ammo slot:"
   compatibleAmmo: "Compatible ammo"
