@@ -2070,6 +2070,7 @@ void StatsForNerdsState::initItemList()
 		addFloatAsPercentage(ss, rule->ToTile, "ToTile", ruleByResistType->ToTile);
 		addBoolean(ss, rule->RandomTile, "RandomTile", ruleByResistType->RandomTile);
 		addInteger(ss, rule->TileDamageMethod, "TileDamageMethod", ruleByResistType->TileDamageMethod);
+		addInteger(ss, rule->TileDamageLimit, "TileDamageLimit", ruleByResistType->TileDamageLimit);
 
 		endHeading();
 	}
