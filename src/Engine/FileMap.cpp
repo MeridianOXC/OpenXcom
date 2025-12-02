@@ -102,9 +102,11 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 		return NULL;
 	}
 
+	bool wholeFile = true;
 	size = SDL_RWsize(src);
 	if (size < 0) {
 		size = FILE_CHUNK_SIZE;
+		wholeFile = false;
 	}
 	data = SDL_malloc((size_t)(size + 1));
 
@@ -119,17 +121,19 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 				SDL_OutOfMemory();
 				goto done;
 			}
-		data = newdata;
-	}
-
-	size_read = SDL_RWread(src, (char *)data+size_total, 1, (size_t)(size-size_total));
-	if (size_read == 0) {
+			data = newdata;
+		}
+		size_read = SDL_RWread(src, (char*)data + size_total, 1, (size_t)(size - size_total));
+		if (size_read == 0) {
 			break;
 		}
-			if (size_read == -1) {
-				break;
-			}
+		if (size_read == -1) {
+			break;
+		}
 		size_total += size_read;
+		if (wholeFile) {
+			break;
+		}
 	}
 
 	if (datasize) {
