@@ -309,7 +309,7 @@ void CraftWeaponsState::lstWeaponsMiddleClick(Action *)
 
 	if (rule != 0)
 	{
-		std::string articleId = rule->getType();
+		std::string articleId = rule->getUfopediaType();
 		Ufopaedia::openArticle(_game, articleId);
 	}
 }

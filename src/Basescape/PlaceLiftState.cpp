@@ -178,7 +178,7 @@ void PlaceLiftState::lstAccessLiftsClick(Action *action)
 
 	if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
 	{
-		Ufopaedia::openArticle(_game, _accessLifts[index]->getType());
+		Ufopaedia::openArticle(_game, _accessLifts[index]->getUfopediaType());
 		return;
 	}
 

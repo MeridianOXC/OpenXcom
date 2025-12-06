@@ -56,6 +56,7 @@ void RuleCraftWeapon::load(const YAML::YamlNodeReader& node, Mod *mod)
 		load(parent, mod);
 	}
 
+	reader.tryRead("ufopediaType", _ufopediaType);
 	reader.tryRead("tooltip", _tooltip);
 	if (reader["stats"])
 	{
@@ -139,6 +140,18 @@ void RuleCraftWeapon::afterLoad(const Mod* mod)
 	}
 }
 
+
+/**
+ * Gets the custom name of the Ufopedia article related to this craft weapon.
+ * @return The ufopedia article name.
+ */
+const std::string& RuleCraftWeapon::getUfopediaType() const
+{
+	if (!_ufopediaType.empty())
+		return _ufopediaType;
+
+	return _type;
+}
 
 /**
  * Gets the language string that names this craft weapon.

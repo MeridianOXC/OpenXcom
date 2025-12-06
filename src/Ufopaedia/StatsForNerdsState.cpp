@@ -3248,6 +3248,7 @@ void StatsForNerdsState::initFacilityList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, facilityRule->getType(), "type");
+		addSingleString(ss, facilityRule->getUfopediaType(), "ufopediaType");
 		addInteger(ss, facilityRule->getListOrder(), "listOrder");
 		addInteger(ss, facilityRule->getMissileAttraction(), "missileAttraction", 100);
 		addRule(ss, facilityRule->getDestroyedFacility(), "destroyedFacility");
@@ -3929,6 +3930,7 @@ void StatsForNerdsState::initCraftWeaponList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, craftWeaponRule->getType(), "type");
+		addSingleString(ss, craftWeaponRule->getUfopediaType(), "ufopediaType");
 		addBoolean(ss, craftWeaponRule->getHidePediaInfo(), "hidePediaInfo");
 
 		addSection("{Visuals}", "", _white);
