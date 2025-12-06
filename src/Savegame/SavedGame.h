@@ -158,7 +158,7 @@ private:
 	int _toggleBrightness;
 	int _monthsPassed;
 	int _daysPassed;
-	int _vehiclesLost;
+	int _vehiclesLost, _craftLostDogfight, _craftLostMission;
 	std::string _graphRegionToggles;
 	std::string _graphCountryToggles;
 	std::string _graphFinanceToggles;
@@ -429,6 +429,12 @@ public:
 	/// Return the vehicles lost counter.
 	int getVehiclesLost() const { return _vehiclesLost; }
 	void increaseVehiclesLost() { _vehiclesLost++; }
+	/// Return the craft lost in dogfight counter.
+	int getCraftLostDogfight() const { return _craftLostDogfight; }
+	void increaseCraftLostDogfight() { _craftLostDogfight++; }
+	/// Return the craft lost in mission counter.
+	int getCraftLostMission() const { return _craftLostMission; }
+	void increaseCraftLostMission() { _craftLostMission++; }
 	/// Return the GraphRegionToggles.
 	const std::string &getGraphRegionToggles() const;
 	/// Return the GraphCountryToggles.

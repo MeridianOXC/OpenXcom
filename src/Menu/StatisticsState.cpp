@@ -174,6 +174,8 @@ void StatisticsState::listStats()
 	int soldiersRecruited = allSoldiers.size();
 	int soldiersLost = save->getDeadSoldiers()->size();
 	int vehiclesLost = save->getVehiclesLost();
+	int craftLostDogfight = save->getCraftLostDogfight();
+	int craftLostMission = save->getCraftLostMission();
 
 	int aliensKilled = 0, aliensCaptured = 0, friendlyKills = 0;
 	int daysWounded = 0, longestMonths = 0;
@@ -316,14 +318,18 @@ void StatisticsState::listStats()
 	if (Options::soldierDiaries)
 	{
 		_lstStats->addRow(2, tr("STR_TOTAL_ALIEN_BASES").c_str(), Unicode::formatNumber(alienBases).c_str());
+		_lstStats->addRow(2, tr("STR_ALIEN_BASES_DESTROYED").c_str(), Unicode::formatNumber(alienBasesDestroyed).c_str());
 	}
 	_lstStats->addRow(2, tr("STR_COUNTRIES_LOST").c_str(), Unicode::formatNumber(countriesLost).c_str());
 	_lstStats->addRow(2, tr("STR_TOTAL_TERROR_SITES").c_str(), Unicode::formatNumber(terrorSites).c_str());
 	if (Options::soldierDiaries)
 	{
 		_lstStats->addRow(2, tr("STR_TOTAL_BASES").c_str(), Unicode::formatNumber(xcomBases).c_str());
+		_lstStats->addRow(2, tr("STR_XCOM_BASES_LOST").c_str(), Unicode::formatNumber(xcomBasesLost).c_str());
 	}
 	_lstStats->addRow(2, tr("STR_TOTAL_CRAFT").c_str(), Unicode::formatNumber(totalCrafts).c_str());
+	_lstStats->addRow(2, tr("STR_CRAFT_LOST_DOGFIGHT").c_str(), Unicode::formatNumber(craftLostDogfight).c_str());
+	_lstStats->addRow(2, tr("STR_CRAFT_LOST_MISSION").c_str(), Unicode::formatNumber(craftLostMission).c_str());
 	_lstStats->addRow(2, tr("STR_TOTAL_SCIENTISTS").c_str(), Unicode::formatNumber(currentScientists).c_str());
 	_lstStats->addRow(2, tr("STR_TOTAL_ENGINEERS").c_str(), Unicode::formatNumber(currentEngineers).c_str());
 	_lstStats->addRow(2, tr("STR_TOTAL_RESEARCH").c_str(), Unicode::formatNumber(researchDone).c_str());
