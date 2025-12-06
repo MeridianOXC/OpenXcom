@@ -1089,10 +1089,15 @@ void PurchaseState::increaseByValue(int change)
 			if (ruleS->getMonthlyBuyLimit() > 0)
 			{
 				auto& soldierHireLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
-				int maxByLimit = std::max(0, ruleS->getMonthlyBuyLimit() - soldierHireLimitLog[ruleS->getType()] - getRow().amount);
+				int alreadyBought = soldierHireLimitLog[ruleS->getType()];
+				int maxByLimit = std::max(0, ruleS->getMonthlyBuyLimit() - alreadyBought - getRow().amount);
 				if (maxByLimit <= 0)
 				{
-					errorMessage = tr("STR_MONTHLY_SOLDIER_HIRING_LIMIT_EXCEEDED");
+					errorMessage = tr(!ruleS->getMonthlyBuyLimitMessage().empty() ? ruleS->getMonthlyBuyLimitMessage() : "STR_MONTHLY_SOLDIER_HIRING_LIMIT_EXCEEDED")
+						.arg(ruleS->getMonthlyBuyLimit())                 // {0} limit
+						.arg(alreadyBought)                               // {1} already bought
+						.arg(ruleS->getMonthlyBuyLimit() - alreadyBought) // {2} remaining
+						.arg(tr(ruleS->getType()));                       // {3} soldier type
 				}
 			}
 			// fall-through
@@ -1112,10 +1117,15 @@ void PurchaseState::increaseByValue(int change)
 			else if (ruleC->getMonthlyBuyLimit() > 0)
 			{
 				auto& craftPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
-				int maxByLimit = std::max(0, ruleC->getMonthlyBuyLimit() - craftPurchaseLimitLog[ruleC->getType()] - getRow().amount);
+				int alreadyBought = craftPurchaseLimitLog[ruleC->getType()];
+				int maxByLimit = std::max(0, ruleC->getMonthlyBuyLimit() - alreadyBought - getRow().amount);
 				if (maxByLimit <= 0)
 				{
-					errorMessage = tr("STR_MONTHLY_CRAFT_PURCHASE_LIMIT_EXCEEDED");
+					errorMessage = tr(!ruleC->getMonthlyBuyLimitMessage().empty() ? ruleC->getMonthlyBuyLimitMessage() : "STR_MONTHLY_CRAFT_PURCHASE_LIMIT_EXCEEDED")
+						.arg(ruleC->getMonthlyBuyLimit())                 // {0} limit
+						.arg(alreadyBought)                               // {1} already bought
+						.arg(ruleC->getMonthlyBuyLimit() - alreadyBought) // {2} remaining
+						.arg(tr(ruleC->getType()));                       // {3} craft type
 				}
 			}
 			break;
@@ -1136,10 +1146,15 @@ void PurchaseState::increaseByValue(int change)
 			else if (rule->getMonthlyBuyLimit() > 0)
 			{
 				auto& itemPurchaseLimitLog = _game->getSavedGame()->getMonthlyPurchaseLimitLog();
-				int maxByLimit = std::max(0, rule->getMonthlyBuyLimit() - itemPurchaseLimitLog[rule->getType()] - getRow().amount);
+				int alreadyBought = itemPurchaseLimitLog[rule->getType()];
+				int maxByLimit = std::max(0, rule->getMonthlyBuyLimit() - alreadyBought - getRow().amount);
 				if (maxByLimit <= 0)
 				{
-					errorMessage = tr("STR_MONTHLY_ITEM_PURCHASE_LIMIT_EXCEEDED");
+					errorMessage = tr(!rule->getMonthlyBuyLimitMessage().empty() ? rule->getMonthlyBuyLimitMessage() : "STR_MONTHLY_ITEM_PURCHASE_LIMIT_EXCEEDED")
+						.arg(rule->getMonthlyBuyLimit())                 // {0} limit
+						.arg(alreadyBought)                              // {1} already bought
+						.arg(rule->getMonthlyBuyLimit() - alreadyBought) // {2} remaining
+						.arg(tr(rule->getType()));                       // {3} item type
 				}
 			}
 			break;
@@ -1228,7 +1243,14 @@ void PurchaseState::increaseByValue(int change)
 	{
 		_timerInc->stop();
 		RuleInterface *menuInterface = _game->getMod()->getInterface("buyMenu");
-		_game->pushState(new ErrorMessageState(errorMessage, _palette, menuInterface->getElement("errorMessage")->color, "BACK13.SCR", menuInterface->getElement("errorPalette")->color));
+		_game->pushState(new ErrorMessageState(
+			errorMessage,
+			_palette,
+			menuInterface->getElement("errorMessage")->color,
+			"BACK13.SCR",
+			menuInterface->getElement("errorPalette")->color,
+			menuInterface->getElement("errorMessage")->color2
+		));
 	}
 }
 

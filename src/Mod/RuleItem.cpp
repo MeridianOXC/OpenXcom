@@ -335,6 +335,7 @@ void RuleItem::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript&
 	reader.tryRead("vehicleFixedAmmoSlot", _vehicleFixedAmmoSlot);
 	reader.tryRead("size", _size);
 	reader.tryRead("monthlyBuyLimit", _monthlyBuyLimit);
+	reader.tryRead("monthlyBuyLimitMessage", _monthlyBuyLimitMessage);
 	reader.tryRead("costBuy", _costBuy);
 	reader.tryRead("costSell", _costSell);
 	reader.tryRead("transferTime", _transferTime);

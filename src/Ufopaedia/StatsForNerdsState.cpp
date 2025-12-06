@@ -2266,6 +2266,7 @@ void StatsForNerdsState::initItemList()
 		addInteger(ss, itemRule->getListOrder(), "listOrder");
 		addBoolean(ss, itemRule->getHidePower(), "hidePower");
 		addBoolean(ss, itemRule->getIgnoreAmmoPower(), "ignoreAmmoPower");
+		addSingleString(ss, itemRule->getMonthlyBuyLimitMessage(), "monthlyBuyLimitMessage");
 
 		addSection("{Inventory}", "", _white);
 		addVectorOfIntegers(ss, itemRule->getCustomItemPreviewIndex(), "customItemPreviewIndex");
@@ -3498,6 +3499,7 @@ void StatsForNerdsState::initCraftList()
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, craftRule->getType(), "type");
 		addInteger(ss, craftRule->getListOrder(), "listOrder");
+		addSingleString(ss, craftRule->getMonthlyBuyLimitMessage(), "monthlyBuyLimitMessage");
 
 		addSection("{Geoscape}", "", _white);
 		addSingleString(ss, craftRule->getDefaultDisplayAltitude(), "defaultAltitude", "STR_VERY_LOW");

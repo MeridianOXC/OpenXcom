@@ -1117,6 +1117,7 @@ interfaces:
         color: 0     # brown
       - id: errorMessage
         color: 241   # pink
+        color2: 246  # purple
   - type: manageContainment
     backgroundImage: BACK05.SCR
     palette: PAL_BASESCAPE

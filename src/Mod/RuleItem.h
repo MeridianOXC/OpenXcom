@@ -381,6 +381,7 @@ private:
 	int _vehicleFixedAmmoSlot;
 	double _size;
 	int _monthlyBuyLimit;
+	std::string _monthlyBuyLimitMessage;
 	int _costBuy, _costSell, _transferTime, _weight;
 	int _throwRange, _underwaterThrowRange;
 	int _throwDropoffRange, _underwaterThrowDropoffRange, _throwDropoff;
@@ -546,6 +547,8 @@ public:
 
 	/// Gets the item's monthly buy limit.
 	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
+	/// Gets the item's monthly buy limit message.
+	const std::string& getMonthlyBuyLimitMessage() const { return _monthlyBuyLimitMessage; }
 	/// Gets the item's basic purchase cost.
 	int getBuyCost() const;
 	/// Gets the item's purchase cost.

@@ -1150,6 +1150,7 @@ interfaces: #done
         color: 6     # brown
       - id: errorMessage
         color: 1   # pink
+        color2: 244
   - type: manageContainment
     backgroundImage: BACK05.SCR
     elements:
