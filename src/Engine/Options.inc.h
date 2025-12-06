@@ -179,3 +179,4 @@ OPT std::vector< std::pair<std::string, bool> > mods; // ordered list of availab
 OPT SoundFormat currentSound;
 
 OPT int battleXcomSpeedOrig;
+OPT int battleAlienSpeedOrig;
