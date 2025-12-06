@@ -77,6 +77,7 @@ OPT bool oxceBattleTouchButtonsEnabled;
 OPT bool oxceQuickSearchButton;
 OPT bool oxceHighlightNewTopics;
 OPT bool oxcePediaShowClipSize;
+OPT int oxcePediaSortResistances; // hidden, unhide if becomes popular?
 
 OPT int oxceInterceptTableSize;
 OPT bool oxceEnableSlackingIndicator;
