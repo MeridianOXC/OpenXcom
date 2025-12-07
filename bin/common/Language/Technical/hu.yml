@@ -218,6 +218,7 @@ hu:
   ToTile: "Terepsebzés szorzó"
   RandomTile: "Terepsebzés RNG?"
   TileDamageMethod: "Mezősebzés módja"
+  TileDamageLimit: ""
 #
   confAimed: "Célzott akció:"
   confAuto: "Auto akció:"
@@ -235,6 +236,7 @@ hu:
   arcing: "Ívelt?"
 #
   clipSize: "Tár mérete"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "Elsődleges lőszertárhely"
   compatibleAmmo: "Használható lőszer"
@@ -247,6 +249,9 @@ hu:
   armor: "Páncél"
 #
   medikitType: "Elsősegélycsomag fajtája"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: ""
   medikitTargetSelf: "Medikit önmagán?"
   medikitTargetImmune: "Medikit immunison?"

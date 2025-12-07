@@ -218,6 +218,7 @@ cs:
   ToTile: ""
   RandomTile: ""
   TileDamageMethod: ""
+  TileDamageLimit: ""
 #
   confAimed: "Akce mířená:"
   confAuto: "Akce dávkou:"
@@ -235,6 +236,7 @@ cs:
   arcing: "Oblouková?"
 #
   clipSize: "Velikost zásobníku"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: ""
   compatibleAmmo: "Kompatibilní munice"
@@ -247,6 +249,9 @@ cs:
   armor: "Zbroj"
 #
   medikitType: "Typ lékárničky"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "Jméno akce léčení"
   medikitTargetSelf: "Léčení sebe?"
   medikitTargetImmune: ""

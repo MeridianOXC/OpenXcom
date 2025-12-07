@@ -218,6 +218,7 @@ pl:
   ToTile: "Mnożnik obrażeń dla terenu"
   RandomTile: "Losowe obrażenia na teren?"
   TileDamageMethod: "Tryb uszkadzania pól"
+  TileDamageLimit: ""
 #
   confAimed: "Akcja mierzona:"
   confAuto: "Akcja seryjna:"
@@ -235,6 +236,7 @@ pl:
   arcing: "Trajektoria artyleryjska?"
 #
   clipSize: "Rozmiar magazynka"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "Główne miejsce na amunicję:"
   compatibleAmmo: "Kompatybilna amunicja"
@@ -247,6 +249,9 @@ pl:
   armor: "Wytrzymałość"
 #
   medikitType: "Typ apteczki"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "Nazwa akcji leczenia"
   medikitTargetSelf: "Użycie apteczki na sobie?"
   medikitTargetImmune: "Użycie apteczki na celach niewrażliwich na krwawienie?"
