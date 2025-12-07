@@ -219,7 +219,7 @@ void BuildFacilitiesState::lstFacilitiesClick(Action *action)
 
 	if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
 	{
-		std::string tmp = (index >= _facilities.size()) ? _disabledFacilities[index - _facilities.size()]->getType() : _facilities[index]->getType();
+		std::string tmp = (index >= _facilities.size()) ? _disabledFacilities[index - _facilities.size()]->getUfopediaType() : _facilities[index]->getUfopediaType();
 		Ufopaedia::openArticle(_game, tmp);
 		return;
 	}

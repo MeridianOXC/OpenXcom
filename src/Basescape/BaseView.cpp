@@ -30,6 +30,7 @@
 #include "../Engine/Timer.h"
 #include "../Engine/Options.h"
 #include <climits>
+#include "../Mod/Texture.h"
 
 namespace OpenXcom
 {
@@ -492,7 +493,7 @@ void BaseView::draw()
 	{
 		for (int y = 0; y < BASE_SIZE; ++y)
 		{
-			Surface *frame = _texture->getFrame(0);
+			Surface *frame = _texture->getFrame(_base->getGlobeTexture() ? _base->getGlobeTexture()->getBaseGridSprite() : 0);
 			int fx = (x * GRID_SIZE);
 			int fy = (y * GRID_SIZE);
 			frame->blitNShade(this, fx, fy);

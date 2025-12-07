@@ -2070,6 +2070,7 @@ void StatsForNerdsState::initItemList()
 		addFloatAsPercentage(ss, rule->ToTile, "ToTile", ruleByResistType->ToTile);
 		addBoolean(ss, rule->RandomTile, "RandomTile", ruleByResistType->RandomTile);
 		addInteger(ss, rule->TileDamageMethod, "TileDamageMethod", ruleByResistType->TileDamageMethod);
+		addInteger(ss, rule->TileDamageLimit, "TileDamageLimit", ruleByResistType->TileDamageLimit);
 
 		endHeading();
 	}
@@ -2149,6 +2150,7 @@ void StatsForNerdsState::initItemList()
 	}
 
 	addInteger(ss, itemRule->getClipSize(), "clipSize", 0, false, "STR_CLIP_SIZE_UNLIMITED", -1);
+	addBoolean(ss, itemRule->isAmmoRechargeable(), "isAmmoRechargeable");
 
 	// compatibleAmmo*
 	// tuLoad*
@@ -2189,6 +2191,9 @@ void StatsForNerdsState::initItemList()
 	addInteger(ss, itemRule->getArmor(), "armor", 20);
 
 	addBattleMediKitType(ss, itemRule->getMediKitType(), "medikitType");
+	addSingleString(ss, itemRule->getPainKillerActionName(), "painKillerActionName", "STR_PAIN_KILLER");
+	addSingleString(ss, itemRule->getStimulantActionName(), "stimulantActionName", "STR_STIMULANT");
+	addSingleString(ss, itemRule->getHealActionName(), "healActionName", "STR_HEAL");
 	addSingleString(ss, itemRule->getMedikitActionName(), "medikitActionName", "STR_USE_MEDI_KIT");
 	addBoolean(ss, itemRule->getAllowTargetSelf(), "medikitTargetSelf");
 	addBoolean(ss, itemRule->getAllowTargetImmune(), "medikitTargetImmune");
@@ -2261,6 +2266,7 @@ void StatsForNerdsState::initItemList()
 		addInteger(ss, itemRule->getListOrder(), "listOrder");
 		addBoolean(ss, itemRule->getHidePower(), "hidePower");
 		addBoolean(ss, itemRule->getIgnoreAmmoPower(), "ignoreAmmoPower");
+		addSingleString(ss, itemRule->getMonthlyBuyLimitMessage(), "monthlyBuyLimitMessage");
 
 		addSection("{Inventory}", "", _white);
 		addVectorOfIntegers(ss, itemRule->getCustomItemPreviewIndex(), "customItemPreviewIndex");
@@ -3242,6 +3248,7 @@ void StatsForNerdsState::initFacilityList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, facilityRule->getType(), "type");
+		addSingleString(ss, facilityRule->getUfopediaType(), "ufopediaType");
 		addInteger(ss, facilityRule->getListOrder(), "listOrder");
 		addInteger(ss, facilityRule->getMissileAttraction(), "missileAttraction", 100);
 		addRule(ss, facilityRule->getDestroyedFacility(), "destroyedFacility");
@@ -3493,6 +3500,7 @@ void StatsForNerdsState::initCraftList()
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, craftRule->getType(), "type");
 		addInteger(ss, craftRule->getListOrder(), "listOrder");
+		addSingleString(ss, craftRule->getMonthlyBuyLimitMessage(), "monthlyBuyLimitMessage");
 
 		addSection("{Geoscape}", "", _white);
 		addSingleString(ss, craftRule->getDefaultDisplayAltitude(), "defaultAltitude", "STR_VERY_LOW");
@@ -3922,6 +3930,7 @@ void StatsForNerdsState::initCraftWeaponList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, craftWeaponRule->getType(), "type");
+		addSingleString(ss, craftWeaponRule->getUfopediaType(), "ufopediaType");
 		addBoolean(ss, craftWeaponRule->getHidePediaInfo(), "hidePediaInfo");
 
 		addSection("{Visuals}", "", _white);

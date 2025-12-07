@@ -218,6 +218,7 @@ fr:
   ToTile: "Multiplicateur de dégâts au terrain"
   RandomTile: "Dégâts au terrain aléatoires ?"
   TileDamageMethod: "Méthode de dégâts par case"
+  TileDamageLimit: ""
 #
   confAimed: "Action Précis :"
   confAuto: "Action Auto :"
@@ -235,6 +236,7 @@ fr:
   arcing: "Courbe?"
 #
   clipSize: "Taille du chargeur"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "Emplacement principal de munitions :"
   compatibleAmmo: "Munitions compatibles"
@@ -247,6 +249,9 @@ fr:
   armor: "Armure"
 #
   medikitType: "Type de medikit"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "Nom de l'action du medikit"
   medikitTargetSelf: "Medikit sur soi ?"
   medikitTargetImmune: "Medikit sur une cible immunisée contre les saignements ?"

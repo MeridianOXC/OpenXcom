@@ -115,14 +115,28 @@ UnitDieBState::~UnitDieBState()
 
 void UnitDieBState::init()
 {
-#if 0
 	// check for presence of battlestate to ensure that we're not pre-battle
 	// check for the unit's tile to make sure we're not trying to kill a dead guy
 	if (_parent->getSave()->getBattleState() && !_unit->getTile())
 	{
-		_parent->popState();
+		if (_unit->getOriginalFaction() == FACTION_PLAYER)
+		{
+			if (_unit->getNotificationShown() == 2)
+			{
+				// skip completely
+				_parent->popState();
+			}
+			else if (_unit->getNotificationShown() == 1)
+			{
+				// can't skip this (there could still be a death notification), but at least speed it up
+				_parent->setStateInterval(1);
+			}
+		}
+		else
+		{
+			_parent->popState();
+		}
 	}
-#endif
 }
 
 /**
@@ -183,16 +197,30 @@ void UnitDieBState::think()
 			{
 				if (_damageType->ResistType == DT_NONE && !_unit->getSpawnUnit())
 				{
-					game->pushState(new InfoboxOKState(game->getLanguage()->getString("STR_HAS_DIED_FROM_A_FATAL_WOUND", _unit->getGender()).arg(_unit->getName(game->getLanguage()))));
+					// Note: yes, this condition is necessary, init() will filter out most duplicates, but not everything
+					if (_unit->getNotificationShown() < 2)
+					{
+						_unit->setNotificationShown(2);
+						game->pushState(new InfoboxOKState(game->getLanguage()->getString("STR_HAS_DIED_FROM_A_FATAL_WOUND", _unit->getGender()).arg(_unit->getName(game->getLanguage()))));
+					}
 				}
 				else if (Options::battleNotifyDeath && _unit->getGeoscapeSoldier() != 0)
 				{
-					game->pushState(new InfoboxState(game->getLanguage()->getString("STR_HAS_BEEN_KILLED", _unit->getGender()).arg(_unit->getName(game->getLanguage()))));
+					// Note: yes, this condition is necessary, init() will filter out most duplicates, but not everything
+					if (_unit->getNotificationShown() < 2)
+					{
+						_unit->setNotificationShown(2);
+						game->pushState(new InfoboxState(game->getLanguage()->getString("STR_HAS_BEEN_KILLED", _unit->getGender()).arg(_unit->getName(game->getLanguage()))));
+					}
 				}
 			}
 			else if (_unit->indicatorsAreEnabled())
 			{
-				game->pushState(new InfoboxOKState(game->getLanguage()->getString("STR_HAS_BECOME_UNCONSCIOUS", _unit->getGender()).arg(_unit->getName(game->getLanguage()))));
+				if (_unit->getNotificationShown() < 1)
+				{
+					_unit->setNotificationShown(1);
+					game->pushState(new InfoboxOKState(game->getLanguage()->getString("STR_HAS_BECOME_UNCONSCIOUS", _unit->getGender()).arg(_unit->getName(game->getLanguage()))));
+				}
 			}
 		}
 		// if all units from either faction are killed - auto-end the mission.

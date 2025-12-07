@@ -152,7 +152,7 @@ public:
 
 	/// Check if item can use any ammo.
 	bool isWeaponWithAmmo() const;
-	/// Check if weapon is armed.
+	/// Check if the weapon is loaded with any ammo item(s). IMPORTANT: ammo quantity can also be zero!
 	bool haveAnyAmmo() const;
 	/// Check if weapon have all ammo slot filled.
 	bool haveAllAmmo() const;

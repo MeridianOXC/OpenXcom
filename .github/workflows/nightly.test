@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - test
+  workflow_dispatch:
 jobs:
   windows:
     name: Windows
@@ -137,3 +138,60 @@ jobs:
         with:
           name: ${{ env.FILENAME }}_linux.tar.gz
           path: ${{ env.FILENAME }}_linux.tar.gz
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        run: |
+          echo "DATEFILE=`git log -1 --date=format:\"%Y_%m_%d_%H%M\" --format=\"%ad\"`" >> $GITHUB_ENV
+          echo "DATEVERSION=`git log -1 --date=format:\"%Y-%m-%d %H:%M\" --format=\"%ad\"`" >> $GITHUB_ENV
+          echo "CMAKE_BUILD_PARALLEL_LEVEL=`getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || echo 2`" >> $GITHUB_ENV
+
+      - name: Setup version info
+        run: |
+          sed -i '' "s|OPENXCOM_VERSION_GIT \"[^\"]*\"|OPENXCOM_VERSION_GIT \" git ${{ env.DATEVERSION }}\"|" src/version.h
+          echo "FILENAME=oxce_git_${{ env.DATEFILE }}" >> $GITHUB_ENV
+
+      - name: Install libraries (macOS)
+        uses: melusina-org/setup-macports@v1
+        id: macports
+        with:
+          parameters: scripts/macports-config.yml
+
+      - name: Compile source code
+        run: |
+          CMAKE_EXTRA_ARGS=(-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64")
+          if [ -d /opt/local/share/doc/sdl12-compat ]
+          then
+            echo "SDL12-compat detected, linking SDL2 as well"
+            CMAKE_EXTRA_ARGS+=("-DEXTRA_XCOM_LIBS=/opt/local/lib/libSDL2.dylib")
+          fi
+          cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/local -G Ninja -B build "${CMAKE_EXTRA_ARGS[@]}"
+          cmake --build build
+
+      - name: Create an archive with .app in it
+        run: |
+          mkdir artifacts
+          ditto -c -k --sequesterRsrc --keepParent build/openxcom.app artifacts/${{ env.FILENAME }}_mac.zip
+
+      - name: Get SHA hashes
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: test
+
+      - name: Generate build log
+        run: |
+          git log --pretty=format:"<strong>%an, %ad</strong>%n%B" -n 10 --date=iso-local ${{ env.NX_BASE }}..${{ env.NX_HEAD }} > artifacts/${{ env.FILENAME }}.log
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FILENAME }}_macos
+          path: artifacts/*

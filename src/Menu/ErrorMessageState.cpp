@@ -37,9 +37,9 @@ namespace OpenXcom
  * @param bg Background image.
  * @param bgColor Background color (-1 for Battlescape).
  */
-ErrorMessageState::ErrorMessageState(const std::string &msg, SDL_Color *palette, Uint8 color, const std::string &bg, int bgColor)
+ErrorMessageState::ErrorMessageState(const std::string &msg, SDL_Color *palette, Uint8 color, const std::string &bg, int bgColor, Uint8 color2)
 {
-	create(msg, palette, color, bg, bgColor);
+	create(msg, palette, color, bg, bgColor, color2);
 }
 
 /**
@@ -58,7 +58,7 @@ ErrorMessageState::~ErrorMessageState()
  * @param bg Background image.
  * @param bgColor Background color (-1 for Battlescape).
  */
-void ErrorMessageState::create(const std::string &str, SDL_Color *palette, Uint8 color, const std::string &bg, int bgColor)
+void ErrorMessageState::create(const std::string &str, SDL_Color *palette, Uint8 color, const std::string &bg, int bgColor, Uint8 color2)
 {
 	_screen = false;
 
@@ -89,6 +89,10 @@ void ErrorMessageState::create(const std::string &str, SDL_Color *palette, Uint8
 	_btnOk->onKeyboardPress((ActionHandler)&ErrorMessageState::btnOkClick, Options::keyCancel);
 
 	_txtMessage->setColor(color);
+	if (color2 != 0) // just in case, probably not needed
+	{
+		_txtMessage->setSecondaryColor(color2);
+	}
 	_txtMessage->setAlign(ALIGN_CENTER);
 	_txtMessage->setVerticalAlign(ALIGN_MIDDLE);
 	_txtMessage->setBig();

@@ -34,7 +34,7 @@ RuleDamageType::RuleDamageType() :
 	FireThreshold(1000), SmokeThreshold(1000),
 	ToHealth(1.0f), ToMana(0.0f), ToArmor(0.1f), ToArmorPre(0.0f), ToWound(1.0f), ToItem(0.0f), ToTile(0.5f), ToStun(0.25f), ToEnergy(0.0f), ToTime(0.0f), ToMorale(0.0f),
 	RandomHealth(false), RandomMana(false), RandomArmor(false), RandomArmorPre(false), RandomWound(true), RandomItem(false), RandomTile(false), RandomStun(true), RandomEnergy(false), RandomTime(false), RandomMorale(false),
-	TileDamageMethod(1)
+	TileDamageMethod(1), TileDamageLimit(-1)
 {
 
 }
@@ -198,6 +198,7 @@ void RuleDamageType::load(const YAML::YamlNodeReader& node)
 	reader.tryRead("RandomMorale", RandomMorale);
 
 	reader.tryRead("TileDamageMethod", TileDamageMethod);
+	reader.tryRead("TileDamageLimit", TileDamageLimit);
 }
 
 namespace
@@ -294,7 +295,12 @@ int RuleDamageType::getItemFinalDamage(int damage) const
  */
 int RuleDamageType::getTileFinalDamage(int damage) const
 {
-	return getDamageHelper(RandomTile, ToTile, damage);
+	int tmp = getDamageHelper(RandomTile, ToTile, damage);
+	if (TileDamageLimit >= 0 && tmp > TileDamageLimit)
+	{
+		return TileDamageLimit;
+	}
+	return tmp;
 }
 
 /**

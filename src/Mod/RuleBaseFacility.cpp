@@ -72,6 +72,8 @@ void RuleBaseFacility::load(const YAML::YamlNodeReader& node, Mod *mod)
 		load(parent, mod);
 	}
 
+	reader.tryRead("ufopediaType", _ufopediaType);
+
 	mod->loadUnorderedNames(_type, _requires, reader["requires"]);
 
 	mod->loadBaseFunction(_type, _requiresBaseFunc, reader["requiresBaseFunc"]);
@@ -268,6 +270,18 @@ void RuleBaseFacility::afterLoad(const Mod* mod)
 	}
 
 	Collections::removeAll(_leavesBehindOnSellNames);
+}
+
+/**
+ * Gets the custom name of the Ufopedia article related to this facility.
+ * @return The ufopedia article name.
+ */
+const std::string& RuleBaseFacility::getUfopediaType() const
+{
+	if (!_ufopediaType.empty())
+		return _ufopediaType;
+
+	return _type;
 }
 
 /**

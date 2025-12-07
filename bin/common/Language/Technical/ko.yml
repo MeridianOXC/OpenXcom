@@ -218,6 +218,7 @@ ko:
   ToTile: "지형 피해 보정계수"
   RandomTile: "지형 피해가 무작위인가?"
   TileDamageMethod: "지형 피해 양식"
+  TileDamageLimit: ""
 #
   confAimed: "조준사격 행동:"
   confAuto: "자동사격 행동:"
@@ -235,6 +236,7 @@ ko:
   arcing: "곡사 무기인가?"
 #
   clipSize: "탄창 크기"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "주 탄약 칸:"
   compatibleAmmo: "호환 탄종"
@@ -247,6 +249,9 @@ ko:
   armor: "장갑"
 #
   medikitType: "메디키트 유형"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "메디키트 행동 이름"
   medikitTargetSelf: "메디키트 자가 사용 가능?"
   medikitTargetImmune: "출혈 면역에게 메디키트 사용 가능?"
@@ -267,8 +272,8 @@ ko:
   requiresBuy: "구매를 위한 기술 요구"
   requiresBuyBaseFunc: "구매를 위한 필요 기능"
   requiresBuyCountry: "동맹 국가 요구"
-  requiresAward: ""
-  requiresBonus: ""
+  requiresAward: "상훈 요구"
+  requiresBonus: "보너스 요구"
   categories: "분류"
   supportedInventorySections: "물품 칸"
 #
@@ -356,7 +361,7 @@ ko:
   stun: "기절"
   mana: "마나"
   units: "호환되는 유니트"
-  ranks: ""
+  ranks: "호환 계급"
   frontArmor: "전면 장갑"
   sideArmor: "측면 장갑"
   leftArmorDiff: "좌측 장갑 편차"
@@ -405,7 +410,7 @@ ko:
   leavesBehindOnSell: "매각으로 남는 것"
   removalTime: "제거 시간"
   canBeBuiltOver: "개수할 수 있는가?"
-  upgradeOnly: ""
+  upgradeOnly: "개수 전용인가?"
   buildOverFacilities: "개수 시설"
 #
   BFRCT_DEFAULT: "바닐라 기본"

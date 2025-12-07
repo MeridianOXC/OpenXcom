@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Texture.h"
+#include "Mod.h"
 #include "../Savegame/Target.h"
 #include "../Engine/RNG.h"
 
@@ -27,7 +28,7 @@ namespace OpenXcom
  * Initializes a globe texture.
  * @param id Texture identifier.
  */
-Texture::Texture(int id) : _id(id), _isOcean(false), _fakeUnderwater(false)
+Texture::Texture(int id) : _id(id), _baseGridSprite(0), _isOcean(false), _fakeUnderwater(false)
 {
 }
 
@@ -42,9 +43,13 @@ Texture::~Texture()
  * Loads the texture type from a YAML file.
  * @param node YAML node.
  */
-void Texture::load(const YAML::YamlNodeReader& reader)
+void Texture::load(const YAML::YamlNodeReader& reader, Mod* mod)
 {
 	reader.tryRead("id", _id);
+	{
+		std::string parent = "id_" + std::to_string(_id);
+		mod->loadSpriteOffset(parent, _baseGridSprite, reader["baseGridSprite"], "BASEBITS.PCK");
+	}
 	reader.tryRead("isOcean", _isOcean);
 	reader.tryRead("fakeUnderwater", _fakeUnderwater);
 	reader.tryRead("startingCondition", _startingCondition);

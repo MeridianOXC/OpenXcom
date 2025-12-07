@@ -258,6 +258,8 @@ en-GB:
   STR_BUG_HUNT_ACTIVATED: "Bug Hunt mode activated: enemies are visible on the minimap!"
   STR_QUICK_MODE_ACTIVATED: "Usain Bolt mode activated.{NEWLINE}Press Ctrl+S again to deactivate."
   STR_QUICK_MODE_DEACTIVATED: "Usain Bolt mode deactivated."
+  STR_SINGLE_MAP_LAYER_ACTIVATED: "Single map layer mode activated.{NEWLINE}Press Ctrl+C again to deactivate."
+  STR_SINGLE_MAP_LAYER_DEACTIVATED: "Single map layer mode deactivated."
   STR_TARGET_ENEMY: "; Target = ENEMY"
   STR_TARGET_NEUTRAL: "; Target = NEUTRAL"
   STR_TARGET_FRIEND: "; Target = FRIEND"
@@ -566,6 +568,10 @@ en-GB:
   STR_PATH_ENERGY_COST_DESC: "Clicking shows the energy your unit will have remaining after moving to the destination."
 #StatisticsState.cpp
   STR_VEHICLES_LOST: "Vehicles lost"
+  STR_CRAFT_LOST_DOGFIGHT: "Interceptors lost"
+  STR_CRAFT_LOST_MISSION: "Transports lost"
+  STR_ALIEN_BASES_DESTROYED: "Alien bases destroyed"
+  STR_XCOM_BASES_LOST: "Bases lost"
 #TestState.cpp
   STR_TEST_SCREEN: "TEST SCREEN"
   STR_PALETTE: "Palette:"

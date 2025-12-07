@@ -1,5 +1,13 @@
 <!--
 
+OpenXcom Extended (OXCE) does NOT accept any pull requests without prior discussion!
+
+Suggestion board is here: https://openxcom.org/forum/index.php?board=35.0
+Instructions are here: https://openxcom.org/forum/index.php?topic=11631.0
+
+
+After your suggestion has been approved on the forum, follow the below technical guidelines.
+
 Guidelines for pull requests:
 
 * Use a separate branch (instead of "oxce-plus"). This will save you a lot of headaches: https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests

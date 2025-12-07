@@ -218,6 +218,7 @@ ru:
   ToTile: "Множит. урона местности"
   RandomTile: "Разброс урона местности?"
   TileDamageMethod: "Способ повреждения окружения"
+  TileDamageLimit: "Предел урона тайлам"
 #
   confAimed: "Прицельный огонь:"
   confAuto: "Стрельба очередью:"
@@ -235,6 +236,7 @@ ru:
   arcing: "Навесная стрельба?"
 #
   clipSize: "Зарядов в магазине"
+  isAmmoRechargeable: "Заряд перезаряжается?"
 #
   primaryAmmo: "Главный приемник боеприпасов:"
   compatibleAmmo: "Использ. боеприпасы"
@@ -247,6 +249,9 @@ ru:
   armor: "Броня"
 #
   medikitType: "Тип медкомплекта"
+  painKillerActionName: "Наименование эффекта обезболивающего"
+  stimulantActionName: "Наименование эффекта стимулятора"
+  healActionName: "Наименование эффекта перевязки"
   medikitActionName: "Действие с аптечкой"
   medikitTargetSelf: "Применение медкомплекта на себе?"
   medikitTargetImmune: "Применение медкомплекта на иммунном к кровотечению?"
@@ -261,7 +266,7 @@ ru:
   energyRecovery: "Восстановление энергии"
   manaRecovery: "Восстановление маны"
   moraleRecovery: "Восстановление морали"
-  painKillerRecovery: "Эффективность болеутоляющего"
+  painKillerRecovery: "Эффективность обезболивающего"
 #
   requires: "Необх. исследование"
   requiresBuy: "Исследование, необх. для покупки"

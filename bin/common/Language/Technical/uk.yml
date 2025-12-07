@@ -218,6 +218,7 @@ uk:
   ToTile: "Множник пошкодження довкілля"
   RandomTile: "Випадкові пошкодження довкілля?"
   TileDamageMethod: "Метод пошкодження тайлів"
+  TileDamageLimit: ""
 #
   confAimed: "Точна дія:"
   confAuto: "Автоматична дія:"
@@ -235,6 +236,7 @@ uk:
   arcing: "Освітлювач?"
 #
   clipSize: "Розмір магазину"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "Основний слот для боєприпасів:"
   compatibleAmmo: "Сумісні боєприпаси"
@@ -247,6 +249,9 @@ uk:
   armor: "Броня"
 #
   medikitType: "Тип аптечки"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "Дія з аптечкою"
   medikitTargetSelf: "Лікувати себе?"
   medikitTargetImmune: "Лікувати об'єкт з імунітетом до кровотечі?"

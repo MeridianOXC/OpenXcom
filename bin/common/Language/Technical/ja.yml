@@ -218,6 +218,7 @@ ja:
   ToTile: "地形ダメージ倍率"
   RandomTile: "地形ダメージをランダム化するか"
   TileDamageMethod: "マス目に対するダメージの算出法"
+  TileDamageLimit: ""
 #
   confAimed: "狙い撃ちアクション："
   confAuto: "連射アクション："
@@ -235,6 +236,7 @@ ja:
   arcing: "アーク (非射線弾道) を許可するか"
 #
   clipSize: "装填数"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "主弾薬スロット"
   compatibleAmmo: "互換弾倉"
@@ -247,6 +249,9 @@ ja:
   armor: "アーマー"
 #
   medikitType: "メディキットのタイプ"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "メディキットのアクション名"
   medikitTargetSelf: "メディキットの自己使用を許可するか"
   medikitTargetImmune: "出血しないユニットへのメディキットの使用を許可するか"
@@ -267,8 +272,8 @@ ja:
   requiresBuy: "テクノロジー取得が購入条件"
   requiresBuyBaseFunc: "購入の為に必要な業務"
   requiresBuyCountry: "同盟国が必要"
-  requiresAward: ""
-  requiresBonus: ""
+  requiresAward: "褒章が必要"
+  requiresBonus: "ボーナスが必要"
   categories: "カテゴリー"
   supportedInventorySections: "持ち物スロット"
 #
@@ -356,7 +361,7 @@ ja:
   stun: "気絶"
   mana: "MP"
   units: "互換ユニット"
-  ranks: ""
+  ranks: "互換ランク"
   frontArmor: "前面装甲"
   sideArmor: "側面装甲"
   leftArmorDiff: "装甲の差"
@@ -405,7 +410,7 @@ ja:
   leavesBehindOnSell: "戦地残存物の売却"
   removalTime: "撤去時間"
   canBeBuiltOver: "既存施設上への建造を可能にするか"
-  upgradeOnly: ""
+  upgradeOnly: "アップグレードのみかどうか"
   buildOverFacilities: "重複建造された施設"
 #
   BFRCT_DEFAULT: "デフォルト設定"

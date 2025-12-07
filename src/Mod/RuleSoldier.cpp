@@ -104,6 +104,7 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 	reader.tryRead("allowPromotion", _allowPromotion);
 	reader.tryRead("allowPiloting", _allowPiloting);
 	reader.tryRead("monthlyBuyLimit", _monthlyBuyLimit);
+	reader.tryRead("monthlyBuyLimitMessage", _monthlyBuyLimitMessage);
 	reader.tryRead("costBuy", _costBuy);
 	reader.tryRead("costSalary", _costSalary);
 	reader.tryRead("costSalarySquaddie", _costSalarySquaddie);

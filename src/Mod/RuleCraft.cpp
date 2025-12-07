@@ -125,6 +125,7 @@ void RuleCraft::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript
 	reader.tryRead("maxSoldiers", _maxSoldiers);
 	reader.tryRead("maxVehicles", _maxVehicles);
 	reader.tryRead("monthlyBuyLimit", _monthlyBuyLimit);
+	reader.tryRead("monthlyBuyLimitMessage", _monthlyBuyLimitMessage);
 	reader.tryRead("costBuy", _costBuy);
 	reader.tryRead("costRent", _costRent);
 	reader.tryRead("costSell", _costSell);

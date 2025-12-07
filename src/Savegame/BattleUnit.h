@@ -113,6 +113,7 @@ private:
 	int _fireMaxHit;
 	int _smokeMaxHit;
 	int _moraleRestored;
+	int _notificationShown;
 	BattleUnit *_charging;
 
 	Uint8 _turnsSinceSpotted[FACTION_MAX] = { 255, 255, 255 };
@@ -830,6 +831,10 @@ public:
 	bool hasAlreadyExploded() const { return _alreadyExploded; }
 	/// Set the already exploded flag.
 	void setAlreadyExploded(bool alreadyExploded) { _alreadyExploded = alreadyExploded; }
+	/// Get the unconscious/dead notification shown flag.
+	int getNotificationShown() const { return _notificationShown; }
+	/// Set the unconscious/dead notification shown flag.
+	void setNotificationShown(int notificationShown) { _notificationShown = notificationShown; }
 	/// Gets whether this unit can be captured alive (applies to aliens).
 	bool getCapturable() const;
 	/// free up the patrol node target, to allow others to use it.

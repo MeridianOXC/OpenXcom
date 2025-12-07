@@ -25,6 +25,7 @@
 #include "../Savegame/SavedBattleGame.h"
 #include "../Engine/RNG.h"
 #include "BattlescapeGame.h"
+#include "../Mod/Mod.h"
 
 namespace OpenXcom
 {
@@ -80,11 +81,18 @@ void UnitPanicBState::think()
 					canShoot = ba.haveTU() && _parent->getSave()->canUseWeapon(ba.weapon, ba.actor, _berserking, ba.type);
 				}
 
-				if (!canShoot)
+				if (!canShoot && Mod::EXTENDED_BERSERK_WITH_AIMED > 0)
 				{
-					ba.type = BA_AIMEDSHOT;
-					ba.updateTU();
-					canShoot = ba.haveTU() && _parent->getSave()->canUseWeapon(ba.weapon, ba.actor, _berserking, ba.type);
+					if (Mod::EXTENDED_BERSERK_WITH_AIMED == 1 && ba.weapon->getCurrentWaypoints() != 0)
+					{
+						// can use BA_AIMEDSHOT, but cannot use BA_LAUNCH
+					}
+					else
+					{
+						ba.type = BA_AIMEDSHOT;
+						ba.updateTU();
+						canShoot = ba.haveTU() && _parent->getSave()->canUseWeapon(ba.weapon, ba.actor, _berserking, ba.type);
+					}
 				}
 
 				if (canShoot)

@@ -60,7 +60,7 @@ RuleGlobe::~RuleGlobe()
  * Loads the globe from a YAML file.
  * @param node YAML node.
  */
-void RuleGlobe::load(const YAML::YamlNodeReader& reader)
+void RuleGlobe::load(const YAML::YamlNodeReader& reader, Mod* mod)
 {
 	if (const auto& data = reader["data"])
 	{
@@ -115,7 +115,7 @@ void RuleGlobe::load(const YAML::YamlNodeReader& reader)
 				texture = new Texture(id);
 				_textures[id] = texture;
 			}
-			texture->load(textureReader);
+			texture->load(textureReader, mod);
 		}
 		else if (textureReader["delete"])
 		{

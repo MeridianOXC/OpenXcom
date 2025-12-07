@@ -34,6 +34,8 @@
 #include "../Savegame/SavedGame.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Mod/RuleInterface.h"
+#include "../Geoscape/Globe.h"
+#include "../Mod/RuleGlobe.h"
 
 namespace OpenXcom
 {
@@ -67,6 +69,14 @@ PlaceLiftState::PlaceLiftState(Base *base, Globe *globe, bool first) : _base(bas
 
 	// Set up objects
 	setWindowBackground(_window, "selectFacility");
+
+	if (_globe && _base)
+	{
+		int texture, shade;
+		_globe->getPolygonTextureAndShade(_base->getLongitude(), _base->getLatitude(), &texture, &shade);
+		auto* globeTexture = _game->getMod()->getGlobe()->getTexture(texture);
+		_base->setGlobeTexture(globeTexture);
+	}
 
 	auto* itf = _game->getMod()->getInterface("basescape")->getElementOptional("trafficLights");
 	if (itf)
@@ -168,7 +178,7 @@ void PlaceLiftState::lstAccessLiftsClick(Action *action)
 
 	if (action->getDetails()->button.button == SDL_BUTTON_MIDDLE)
 	{
-		Ufopaedia::openArticle(_game, _accessLifts[index]->getType());
+		Ufopaedia::openArticle(_game, _accessLifts[index]->getUfopediaType());
 		return;
 	}
 

@@ -218,6 +218,7 @@ en-GB:
   ToTile: "Terrain dmg multiplier"
   RandomTile: "Terrain dmg RNG?"
   TileDamageMethod: "Tile Damage Method"
+  TileDamageLimit: "Tile Damage Limit"
 #
   confAimed: "Aimed action:"
   confAuto: "Auto action:"
@@ -235,6 +236,7 @@ en-GB:
   arcing: "Arcing?"
 #
   clipSize: "Clip size"
+  isAmmoRechargeable: "Ammo rechargeable?"
 #
   primaryAmmo: "Primary ammo slot:"
   compatibleAmmo: "Compatible ammo"
@@ -247,6 +249,9 @@ en-GB:
   armor: "Armor"
 #
   medikitType: "Medikit type"
+  painKillerActionName: "Painkiller action name"
+  stimulantActionName: "Stimulant action name"
+  healActionName: "Heal action name"
   medikitActionName: "Medikit action name"
   medikitTargetSelf: "Medikit on self?"
   medikitTargetImmune: "Medikit on bleed immune?"

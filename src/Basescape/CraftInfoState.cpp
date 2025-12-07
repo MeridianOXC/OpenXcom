@@ -645,7 +645,7 @@ void CraftInfoState::btnWIconMiddleClick(Action* action)
 				RuleCraftWeapon* rule = w1->getRules();
 				if (rule)
 				{
-					std::string articleId = rule->getType();
+					std::string articleId = rule->getUfopediaType();
 					Ufopaedia::openArticle(_game, articleId);
 				}
 			}

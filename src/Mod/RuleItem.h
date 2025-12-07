@@ -381,6 +381,7 @@ private:
 	int _vehicleFixedAmmoSlot;
 	double _size;
 	int _monthlyBuyLimit;
+	std::string _monthlyBuyLimitMessage;
 	int _costBuy, _costSell, _transferTime, _weight;
 	int _throwRange, _underwaterThrowRange;
 	int _throwDropoffRange, _underwaterThrowDropoffRange, _throwDropoff;
@@ -421,14 +422,16 @@ private:
 	BattleFuseType _fuseType;
 	RuleItemFuseTrigger _fuseTriggerEvents;
 	bool _hiddenOnMinimap;
+	std::string _painKillerActionName, _stimulantActionName, _healActionName;
 	std::string _medikitActionName, _psiAttackName, _primeActionName, _unprimeActionName, _primeActionMessage, _unprimeActionMessage;
 	std::string _sellActionMessage;
 
 	bool _twoHanded, _blockBothHands, _fixedWeapon, _fixedWeaponShow, _isConsumable, _isFireExtinguisher;
+	bool _isAmmoRechargeable;
 	bool _specialUseEmptyHand, _specialUseEmptyHandShow;
 	int _inventoryMoveCostPercent = 100;
 	std::string _defaultInventorySlotName;
-	const RuleInventory* _defaultInventorySlot;
+	const RuleInventory* _defaultInventorySlot = nullptr;
 	int _defaultInvSlotX, _defaultInvSlotY;
 	std::vector<std::string> _supportedInventorySectionsNames;
 	std::vector<const RuleInventory*> _supportedInventorySections;
@@ -544,6 +547,8 @@ public:
 
 	/// Gets the item's monthly buy limit.
 	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
+	/// Gets the item's monthly buy limit message.
+	const std::string& getMonthlyBuyLimitMessage() const { return _monthlyBuyLimitMessage; }
 	/// Gets the item's basic purchase cost.
 	int getBuyCost() const;
 	/// Gets the item's purchase cost.
@@ -861,6 +866,8 @@ public:
 	bool isConsumable() const;
 	/// Does this item extinguish fire?
 	bool isFireExtinguisher() const;
+	/// Is ammo replenished after battle? (Intended side effect: ammo item with 0 ammo left does not disappear.)
+	bool isAmmoRechargeable() const { return _isAmmoRechargeable; }
 	/// If this is used as a speacialWeapon, is it accessed by empty hand?
 	bool isSpecialUsingEmptyHand() const;
 	/// Display icon in an empty hand?
@@ -914,6 +921,12 @@ public:
 	int getBulletSpeed() const;
 	/// How fast does the explosion animation play?
 	int getExplosionSpeed() const;
+	/// Get name of medikit pain killer action for medikit view.
+	const std::string& getPainKillerActionName() const { return _painKillerActionName; }
+	/// Get name of medikit stimulant action for medikit view.
+	const std::string& getStimulantActionName() const { return _stimulantActionName; }
+	/// Get name of medikit heal action for medikit view.
+	const std::string& getHealActionName() const { return _healActionName; }
 	/// Get name of medikit action for action menu.
 	const std::string &getMedikitActionName() const { return _medikitActionName; }
 	/// Get name of psi attack for action menu.

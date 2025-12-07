@@ -218,6 +218,7 @@ pt-BR:
   ToTile: "Multiplicador de dano ao terreno"
   RandomTile: "Gerador automático de dano ao terreno?"
   TileDamageMethod: "Método de dano ao terreno"
+  TileDamageLimit: ""
 #
   confAimed: "Ação precisa:"
   confAuto: "Ação rajada:"
@@ -235,6 +236,7 @@ pt-BR:
   arcing: "Tiro arqueado?"
 #
   clipSize: "Tamanho do carregador"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "Compartimento de munição primário:"
   compatibleAmmo: "Munição compatível"
@@ -247,6 +249,9 @@ pt-BR:
   armor: "Armadura"
 #
   medikitType: "Tipo de kit médico"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "Nome da ação do kit médico"
   medikitTargetSelf: "Kit médico em si mesmo?"
   medikitTargetImmune: "Kit médico em imune a sangramento?"

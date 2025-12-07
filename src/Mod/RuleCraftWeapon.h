@@ -39,6 +39,7 @@ enum CraftWeaponCategory { CWC_WEAPON, CWC_TRACTOR_BEAM, CWC_EQUIPMENT };
 class RuleCraftWeapon
 {
 private:
+	std::string _ufopediaType;
 	std::string _type;
 	std::string _tooltip;
 	int _sprite, _sound, _damage, _shieldDamageModifier, _range, _accuracy, _reloadCautious, _reloadStandard, _reloadAggressive, _ammoMax, _rearmRate, _projectileSpeed, _weaponType;
@@ -61,6 +62,9 @@ public:
 	void load(const YAML::YamlNodeReader& reader, Mod *mod);
 	/// Cross link with other rules.
 	void afterLoad(const Mod* mod);
+
+	/// Gets the custom name of the Ufopedia article related to this craft weapon.
+	const std::string& getUfopediaType() const;
 
 	/// Gets the craft weapon's type.
 	const std::string& getType() const;

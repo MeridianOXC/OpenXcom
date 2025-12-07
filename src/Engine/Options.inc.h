@@ -84,6 +84,7 @@ OPT bool oxceBattleTouchButtonsEnabled;
 OPT bool oxceQuickSearchButton;
 OPT bool oxceHighlightNewTopics;
 OPT bool oxcePediaShowClipSize;
+OPT int oxcePediaSortResistances; // hidden, unhide if becomes popular?
 
 OPT int oxceInterceptTableSize;
 OPT bool oxceEnableSlackingIndicator;
@@ -165,6 +166,7 @@ OPT int oxceTogglePersonalLightType;
 OPT int oxceToggleNightVisionType;
 OPT int oxceToggleBrightnessType;
 
+OPT bool oxceShowBurningAsWounded;
 OPT bool oxceDisableInfoOnThrowCursor;
 OPT bool oxceSwapDontReselectActions;
 OPT bool oxceEnableUnitResponseSounds;
@@ -196,3 +198,4 @@ OPT SoundFormat currentSound;
 OPT std::string systemLocale;
 
 OPT int battleXcomSpeedOrig;
+OPT int battleAlienSpeedOrig;

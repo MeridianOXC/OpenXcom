@@ -218,6 +218,7 @@ de:
   ToTile: "Terrain Schadensmultiplikator"
   RandomTile: "Zufälliger Umgebungsschaden"
   TileDamageMethod: "Fliesen-Schaden-Methode"
+  TileDamageLimit: ""
 #
   confAimed: "Gezielte Aktion:"
   confAuto: "Automatische Aktion"
@@ -235,6 +236,7 @@ de:
   arcing: "Lichtbogenbildung?"
 #
   clipSize: "Magazingröße"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "Primärer Munitionsplatz"
   compatibleAmmo: "Kompatible Munition"
@@ -247,6 +249,9 @@ de:
   armor: "Rüstung"
 #
   medikitType: "Medikit-Typ"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "Bezeichnung der Medikit-Aktion"
   medikitTargetSelf: "Medikit selbst benutzen?"
   medikitTargetImmune: "Medikit bei Blutungsimmunen?"

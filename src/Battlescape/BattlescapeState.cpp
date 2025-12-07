@@ -2621,7 +2621,7 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 			if (j >= VISIBLE_MAX) break; // loop finished
 			if (bu->getFaction() == FACTION_PLAYER && bu->getStatus() != STATUS_DEAD && !bu->isIgnored() && bu->indicatorsAreEnabled())
 			{
-				if (bu->getFatalWounds() > 0 || bu->getFire() > 0)
+				if (bu->getFatalWounds() > 0 || (Options::oxceShowBurningAsWounded && bu->getFire() > 0))
 				{
 					_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[VISIBLE_MAX]);
 					_btnVisibleUnit[j]->setVisible(true);
@@ -3060,6 +3060,16 @@ inline void BattlescapeState::handle(Action *action)
 
 					_game->pushState(new BriefingState(ycraft, 0, true));
 				}
+				// "ctrl-c" - camera: toggle show single map level
+				else if (key == SDLK_c && ctrlPressed)
+				{
+					_map->getCamera()->toggleShowSingleLayer();
+
+					if (_map->getCamera()->getShowSingleLayer())
+						warningLongRaw(tr("STR_SINGLE_MAP_LAYER_ACTIVATED"));
+					else
+						warning("STR_SINGLE_MAP_LAYER_DEACTIVATED");
+				}
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)
 				{
@@ -3109,17 +3119,35 @@ inline void BattlescapeState::handle(Action *action)
 				// "ctrl-s" - switch xcom unit speed to max and back
 				else if (key == SDLK_s && ctrlPressed)
 				{
-					if (Options::battleXcomSpeedOrig >= 1 && Options::battleXcomSpeedOrig <= 40)
+					if (_save->getSide() == FACTION_PLAYER)
 					{
-						Options::battleXcomSpeed = Options::battleXcomSpeedOrig;
-						Options::battleXcomSpeedOrig = -1;
-						warning("STR_QUICK_MODE_DEACTIVATED");
+						if (Options::battleXcomSpeedOrig >= 1 && Options::battleXcomSpeedOrig <= 40)
+						{
+							Options::battleXcomSpeed = Options::battleXcomSpeedOrig;
+							Options::battleXcomSpeedOrig = -1;
+							warning("STR_QUICK_MODE_DEACTIVATED");
+						}
+						else
+						{
+							Options::battleXcomSpeedOrig = Options::battleXcomSpeed;
+							Options::battleXcomSpeed = 1;
+							warningLongRaw(tr("STR_QUICK_MODE_ACTIVATED"));
+						}
 					}
 					else
 					{
-						Options::battleXcomSpeedOrig = Options::battleXcomSpeed;
-						Options::battleXcomSpeed = 1;
-						warningLongRaw(tr("STR_QUICK_MODE_ACTIVATED"));
+						if (Options::battleAlienSpeedOrig >= 1 && Options::battleAlienSpeedOrig <= 40)
+						{
+							Options::battleAlienSpeed = Options::battleAlienSpeedOrig;
+							Options::battleAlienSpeedOrig = -1;
+							warning("STR_QUICK_MODE_DEACTIVATED");
+						}
+						else
+						{
+							Options::battleAlienSpeedOrig = Options::battleAlienSpeed;
+							Options::battleAlienSpeed = 1;
+							warning("STR_QUICK_MODE_ACTIVATED");
+						}
 					}
 				}
 				// "ctrl-x" - mute/unmute unit response sounds

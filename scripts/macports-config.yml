@@ -1,0 +1,12 @@
+version: '2.11.5'
+prefix: /opt/local
+variants:
+  select:
+    - universal
+ports:
+  - name: libsdl
+    select:
+      - compat
+  - name: libsdl_gfx
+  - name: libsdl_image
+  - name: libsdl_mixer

@@ -1187,6 +1187,7 @@ void GeoscapeState::time5Seconds()
 				Craft *craft = *craftIt;
 				craftIt = xbase->removeCraft(craft, false);
 				delete craft;
+				_game->getSavedGame()->increaseCraftLostDogfight();
 				continue;
 			}
 			if (xcraft->getDestination() != 0)

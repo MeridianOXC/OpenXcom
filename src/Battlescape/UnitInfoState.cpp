@@ -82,6 +82,10 @@ UnitInfoState::UnitInfoState(BattleUnit *unit, BattlescapeState *parent, bool fr
 	_txtHealth = new Text(140, 9, 8, yPos);
 	_numHealth = new Text(18, 9, 150, yPos);
 	_barHealth = new Bar(150, 5, 170, yPos + 1);
+	{
+		int numMaxHealthPosX = _game->getMod()->getInterface("stats")->getElement("numMaxHealth")->x;
+		_numMaxHealth = new Text(40, 9, numMaxHealthPosX, yPos);
+	}
 	yPos += step;
 
 	_txtFatalWounds = new Text(140, 9, 8, yPos);
@@ -190,6 +194,7 @@ UnitInfoState::UnitInfoState(BattleUnit *unit, BattlescapeState *parent, bool fr
 	add(_txtHealth);
 	add(_numHealth);
 	add(_barHealth, "barHealth", "stats", 0);
+	add(_numMaxHealth, "numMaxHealth", "stats", 0);
 
 	add(_txtFatalWounds);
 	add(_numFatalWounds);
@@ -304,6 +309,9 @@ UnitInfoState::UnitInfoState(BattleUnit *unit, BattlescapeState *parent, bool fr
 
 	_numHealth->setColor(color2);
 	_numHealth->setHighContrast(true);
+
+	_numMaxHealth->setHighContrast(true);
+	_numMaxHealth->setAlign(ALIGN_RIGHT);
 
 	_barHealth->setScale(1.0);
 
@@ -510,6 +518,22 @@ void UnitInfoState::init()
 	_barHealth->setMax(_unit->getBaseStats()->health);
 	_barHealth->setValue(_unit->getHealth());
 	_barHealth->setValue2(_unit->getStunlevel());
+
+	_numMaxHealth->setText("");
+	if (_unit->getBaseStats()->health >= 147)
+	{
+		auto* numMaxHealthElement = _game->getMod()->getInterface("stats")->getElement("numMaxHealth");
+		if ((numMaxHealthElement->custom & 1) || _unit->getHealth() != _unit->getBaseStats()->health)
+		{
+			ss.str("");
+			if (numMaxHealthElement->custom & 2)
+			{
+				ss << "/";
+			}
+			ss << _unit->getBaseStats()->health;
+			_numMaxHealth->setText(ss.str());
+		}
+	}
 
 	ss.str("");
 	ss << _unit->getFatalWounds();

@@ -42,6 +42,7 @@ private:
 	bool _scrollTrigger;
 	int _visibleMapHeight;
 	bool _showAllLayers;
+	bool _showSingleLayer;
 	Map *_map;
 public:
 	static const int SCROLL_BORDER = 5;
@@ -102,6 +103,10 @@ public:
 	int toggleShowAllLayers();
 	/// Checks if the camera is showing all map layers.
 	bool getShowAllLayers() const;
+	/// Toggles showing a single map layer.
+	void toggleShowSingleLayer() { _showSingleLayer = !_showSingleLayer; }
+	/// Checks if the camera is showing a single map layer.
+	bool getShowSingleLayer() const { return _showSingleLayer; }
 	/// Checks if map coordinates X,Y,Z are on screen.
 	bool isOnScreen(Position mapPos, const bool unitWalking, const int unitSize, const bool boundary) const;
 	/// Resize the viewable area.

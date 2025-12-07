@@ -218,6 +218,7 @@ fi:
   ToTile: "Maastovahinkokerroin"
   RandomTile: "Maastovahingon SLG (RNG)?"
   TileDamageMethod: "Ruudun vahingoitustapa"
+  TileDamageLimit: ""
 #
   confAimed: "Tähdätyn toiminta:"
   confAuto: "Sarjatulen toiminta:"
@@ -235,6 +236,7 @@ fi:
   arcing: "Kaareva?"
 #
   clipSize: "Lipaskoko"
+  isAmmoRechargeable: ""
 #
   primaryAmmo: "Ensisijainen ammuspaikka"
   compatibleAmmo: "Yhteensopivat ammukset"
@@ -247,6 +249,9 @@ fi:
   armor: "Panssari"
 #
   medikitType: "Ensiapulaitetyyppi"
+  painKillerActionName: ""
+  stimulantActionName: ""
+  healActionName: ""
   medikitActionName: "Ensiapulaitteen toiminnon nimi"
   medikitTargetSelf: "Ensiapulaitteen käyttö itseen?"
   medikitTargetImmune: "Ensiapulaitteen käyttö verenvuodolle immuuneihin?"

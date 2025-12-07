@@ -195,6 +195,7 @@ bool Mod::EXTENDED_RUNNING_COST;
 int Mod::EXTENDED_MOVEMENT_COST_ROUNDING;
 bool Mod::EXTENDED_HWP_LOAD_ORDER;
 int Mod::EXTENDED_SPOT_ON_HIT_FOR_SNIPING;
+int Mod::EXTENDED_BERSERK_WITH_AIMED;
 int Mod::EXTENDED_MELEE_REACTIONS;
 int Mod::EXTENDED_TERRAIN_MELEE;
 int Mod::EXTENDED_UNDERWATER_THROW_FACTOR;
@@ -310,6 +311,7 @@ void Mod::resetGlobalStatics()
 	EXTENDED_MOVEMENT_COST_ROUNDING = 0;
 	EXTENDED_HWP_LOAD_ORDER = false;
 	EXTENDED_SPOT_ON_HIT_FOR_SNIPING = 0;
+	EXTENDED_BERSERK_WITH_AIMED = 0;
 	EXTENDED_MELEE_REACTIONS = 0;
 	EXTENDED_TERRAIN_MELEE = 0;
 	EXTENDED_UNDERWATER_THROW_FACTOR = 0;
@@ -2705,6 +2707,7 @@ void Mod::loadConstants(const YAML::YamlNodeReader &reader)
 	reader.tryRead("extendedMovementCostRounding", EXTENDED_MOVEMENT_COST_ROUNDING);
 	reader.tryRead("extendedHwpLoadOrder", EXTENDED_HWP_LOAD_ORDER);
 	reader.tryRead("extendedSpotOnHitForSniping", EXTENDED_SPOT_ON_HIT_FOR_SNIPING);
+	reader.tryRead("extendedBerserkWithAimed", EXTENDED_BERSERK_WITH_AIMED);
 	reader.tryRead("extendedMeleeReactions", EXTENDED_MELEE_REACTIONS);
 	reader.tryRead("extendedTerrainMelee", EXTENDED_TERRAIN_MELEE);
 	reader.tryRead("extendedUnderwaterThrowFactor", EXTENDED_UNDERWATER_THROW_FACTOR);
@@ -3485,7 +3488,7 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 
 	if (reader["globe"])
 	{
-		_globe->load(reader["globe"]);
+		_globe->load(reader["globe"], this);
 	}
 	if (reader["converter"])
 	{

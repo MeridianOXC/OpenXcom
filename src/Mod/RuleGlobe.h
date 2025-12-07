@@ -27,6 +27,7 @@ namespace OpenXcom
 class Polygon;
 class Polyline;
 class Texture;
+class Mod;
 
 /**
  * Represents the contents of the Geoscape globe,
@@ -45,7 +46,7 @@ public:
 	/// Cleans up the globe ruleset.
 	~RuleGlobe();
 	/// Loads the globe from YAML.
-	void load(const YAML::YamlNodeReader& reader);
+	void load(const YAML::YamlNodeReader& reader, Mod* mod);
 	/// Gets the list of world polygons.
 	std::list<Polygon*> *getPolygons();
 	/// Gets the list of world polylines.

@@ -203,6 +203,7 @@ private:
 	int _maxSmallSoldiers, _maxLargeSoldiers, _maxSmallVehicles, _maxLargeVehicles;
 	int _maxSmallUnits, _maxLargeUnits, _maxSoldiers, _maxVehicles;
 	int _monthlyBuyLimit;
+	std::string _monthlyBuyLimitMessage;
 	int _costBuy, _costRent, _costSell;
 	char _weaponTypes[WeaponMax][WeaponTypeMax];
 	const RuleItem* _refuelItem;
@@ -302,6 +303,8 @@ public:
 	int getMaxVehicles() const { return _maxVehicles; }
 	/// Gets the craft's monthly buy limit.
 	int getMonthlyBuyLimit() const { return _monthlyBuyLimit; }
+	/// Gets the craft's monthly buy limit message.
+	const std::string& getMonthlyBuyLimitMessage() const { return _monthlyBuyLimitMessage; }
 	/// Gets the craft's cost.
 	int getBuyCost() const;
 	/// Gets the craft's rent for a month.
