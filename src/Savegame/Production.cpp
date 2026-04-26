@@ -306,6 +306,16 @@ productionProgress_e Production::step(Base * b, SavedGame * g, const Mod *m, Lan
 					}
 				}
 			}
+			// Generate an event (side effect)
+			const std::string choice = _rules->chooseEvent();
+			if (!choice.empty())
+			{
+				RuleEvent* eventToSpawn = m->getEvent(choice, false);
+				if (eventToSpawn)
+				{
+					g->spawnEvent(eventToSpawn);
+				}
+			}
 			if (_rules->getPoints() != 0)
 			{
 				// yes, negative points are allowed too

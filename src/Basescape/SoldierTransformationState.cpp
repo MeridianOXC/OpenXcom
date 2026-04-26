@@ -447,6 +447,17 @@ void SoldierTransformationState::btnStartClick(Action *action)
 		}
 	}
 
+	// Generate an event (side effect)
+	const std::string choice = _transformationRule->chooseEvent();
+	if (!choice.empty())
+	{
+		RuleEvent* eventToSpawn = _game->getMod()->getEvent(choice, false);
+		if (eventToSpawn)
+		{
+			_game->getSavedGame()->spawnEvent(eventToSpawn);
+		}
+	}
+
 	// Here we go
 	if (!Mod::isEmptyRuleName(_transformationRule->getProducedItem()))
 	{

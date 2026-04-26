@@ -22,6 +22,7 @@
 #include "../Engine/Yaml.h"
 #include "Unit.h"
 #include "RuleBaseFacilityFunctions.h"
+#include "../Savegame/WeightedOptions.h"
 
 namespace OpenXcom
 {
@@ -56,6 +57,7 @@ private:
 	bool _reset;
 	bool _resetRank;
 	std::string _soldierBonusType;
+	WeightedOptions _events;
 
 public:
 	/// Default constructor
@@ -156,6 +158,9 @@ public:
 	bool getResetRank() const;
 	/// Gets the type of soldier bonus assigned by this project
 	const std::string &getSoldierBonusType() const;
+
+	/// Gets geoscape event rule name to spawn after soldier transformation
+	std::string chooseEvent() const { return _events.choose(); }
 };
 
 }

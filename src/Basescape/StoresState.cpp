@@ -287,7 +287,7 @@ void StoresState::initList()
 				for (const auto* research : xbase->getResearch())
 				{
 					const auto* rrule = research->getRules();
-					if (rrule->needItem() && rrule->destroyItem())
+					if (rrule->isHoldingNeededItem())
 					{
 						if (rrule->getNeededItem() && rrule->getNeededItem() == rule)
 						{

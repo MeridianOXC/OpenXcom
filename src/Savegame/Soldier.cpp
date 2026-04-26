@@ -329,8 +329,11 @@ void Soldier::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) cons
 		writer.write("personalEquipmentArmor", _personalEquipmentArmor->getType());
 	if (_death != 0)
 		 _death->save(writer["death"]);
-	if (Options::soldierDiaries && (!_diary->getMissionIdList().empty() || !_diary->getSoldierCommendations()->empty() || _diary->getMonthsService() > 0))
+	if (Options::soldierDiaries &&
+		(!_diary->getMissionIdList().empty() || !_diary->getSoldierCommendations()->empty() || _diary->getMonthsService() > 0 || _diary->getUfosShotDown() > 0))
+	{
 		_diary->save(writer["diary"]);
+	}
 	if (_corpseRecovered)
 		writer.write("corpseRecovered", _corpseRecovered);
 	if (!_previousTransformations.empty())

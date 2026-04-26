@@ -509,7 +509,7 @@ public:
 	const YAML::YamlString &getSpawnedSoldierTemplate() const { return _spawnedSoldier; }
 
 	/// Gets the unit's stats.
-	UnitStats *getStats();
+	const UnitStats *getStats() const;
 	/// Gets the unit's height when standing.
 	int getStandHeight() const;
 	/// Gets the unit's height when kneeling.
@@ -517,7 +517,7 @@ public:
 	/// Gets the unit's float elevation.
 	int getFloatHeight() const;
 	/// Gets the armor type.
-	Armor* getArmor() const;
+	const Armor* getArmor() const;
 	/// Gets the alien race type.
 	std::string getRace() const;
 	/// Gets the alien rank.
@@ -525,7 +525,7 @@ public:
 	/// Gets the value - for score calculation.
 	int getValue() const;
 	/// Percentage modifier for morale loss when this unit is killed.
-	int getMoraleLossWhenKilled() { return _moraleLossWhenKilled; };
+	int getMoraleLossWhenKilled() const { return _moraleLossWhenKilled; };
 	/// Gets the death sound id.
 	const std::vector<int> &getDeathSounds() const;
 	/// Gets the unit's panic sounds.
@@ -578,7 +578,7 @@ public:
 	bool autoSurrender() const;
 	bool isLeeroyJenkins() const { return _isLeeroyJenkins; };
 	/// Should the unit get "stuck" trying to fire from outside of weapon range? Vanilla bug, that may serve as "feature" in rare cases.
-	bool waitIfOutsideWeaponRange() { return _waitIfOutsideWeaponRange; };
+	bool waitIfOutsideWeaponRange() const { return _waitIfOutsideWeaponRange; };
 	/// Should the unit try to pick up weapons more actively?
 	int getPickUpWeaponsMoreActively() const { return _pickUpWeaponsMoreActively; }
 	/// Is the unit afraid to pathfind through fire?

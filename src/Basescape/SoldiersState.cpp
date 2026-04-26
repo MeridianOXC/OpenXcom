@@ -71,17 +71,17 @@ SoldiersState::SoldiersState(Base *base) : _base(base), _origSoldierOrder(*_base
 	_window = new Window(this, 320, 200, 0, 0);
 	if (showThreeButtons)
 	{
-		_btnOk = new TextButton(96, 16, 216, 176);
-		_btnMemorial = new TextButton(96, 16, 8, 176);
+		_btnOk = preAdd(new TextButton(96, 16, 216, 176));
+		_btnMemorial = preAdd(new TextButton(96, 16, 8, 176));
 	}
 	else
 	{
-		_btnOk = new TextButton(148, 16, 164, 176);
-		_btnMemorial = new TextButton(148, 16, 8, 176);
+		_btnOk = preAdd(new TextButton(148, 16, 164, 176));
+		_btnMemorial = preAdd(new TextButton(148, 16, 8, 176));
 	}
-	_btnPsiTraining = new TextButton(96, 16, 112, 176);
-	_btnTraining = new TextButton(96, 16, 112, 176);
-	_cbxScreenActions = new ComboBox(this, 148, 16, 8, 176, true);
+	_btnPsiTraining = preAdd(new TextButton(96, 16, 112, 176));
+	_btnTraining = preAdd(new TextButton(96, 16, 112, 176));
+	_cbxScreenActions = preAdd(new ComboBox(this, 148, 16, 8, 176, true));
 	_txtTitle = new Text(168, 17, 16, 8);
 	_cbxSortBy = new ComboBox(this, 120, 16, 192, 8, false);
 	_txtName = new Text(114, 9, 16, 32);

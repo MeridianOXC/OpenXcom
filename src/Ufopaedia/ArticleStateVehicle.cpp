@@ -43,7 +43,7 @@ namespace OpenXcom
 		{
 			throw Exception("ArticleStateVehicle: Item " + defs->id + " is missing a vehicle unit definition!");
 		}
-		Armor *armor = unit->getArmor();
+		const Armor *armor = unit->getArmor();
 
 		// add screen elements
 		_txtTitle = new Text(310, 17, 5, 23);

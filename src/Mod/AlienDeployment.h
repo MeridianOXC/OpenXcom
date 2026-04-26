@@ -118,6 +118,7 @@ private:
 	std::string _alert, _alertBackground, _alertDescription;
 	int _alertSound;
 	BriefingData _briefingData;
+	std::string _alienBaseDiscoveredMessage;
 	std::string _markerName, _objectivePopup, _objectiveCompleteText, _objectiveFailedText;
 	std::string _missionCompleteText, _missionFailedText;
 	WeightedOptions _genMission, _successEvents, _failureEvents, _despawnEvents;
@@ -239,6 +240,8 @@ public:
 	int getAlertSound() const;
 	/// Gets the briefing data for this mission type.
 	BriefingData getBriefingData() const;
+	/// Gets the "alien base discovered" message for this mission type.
+	const std::string& getAlienBaseDiscoveredMessage() const { return _alienBaseDiscoveredMessage; }
 	/// Gets the marker name for this mission.
 	std::string getMarkerName() const;
 	/// Gets the marker icon for this mission.

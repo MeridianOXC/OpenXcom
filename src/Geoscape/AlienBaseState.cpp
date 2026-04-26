@@ -101,7 +101,15 @@ AlienBaseState::AlienBaseState(AlienBase *base, GeoscapeState *state) : _state(s
 	{
 		location = tr("STR_UNKNOWN");
 	}
-	_txtTitle->setText(tr("STR_XCOM_AGENTS_HAVE_LOCATED_AN_ALIEN_BASE_IN_REGION").arg(location));
+	if (!_base->getDeployment()->getAlienBaseDiscoveredMessage().empty())
+	{
+		std::string markerName = tr(_base->getDeployment()->getMarkerName());
+		_txtTitle->setText(tr(_base->getDeployment()->getAlienBaseDiscoveredMessage()).arg(location).arg(markerName));
+	}
+	else
+	{
+		_txtTitle->setText(tr("STR_XCOM_AGENTS_HAVE_LOCATED_AN_ALIEN_BASE_IN_REGION").arg(location));
+	}
 }
 
 /**

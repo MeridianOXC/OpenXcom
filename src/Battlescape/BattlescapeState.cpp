@@ -3070,6 +3070,29 @@ inline void BattlescapeState::handle(Action *action)
 					else
 						warning("STR_SINGLE_MAP_LAYER_DEACTIVATED");
 				}
+				// "ctrl-f" - show fatal wounds
+				else if (key == SDLK_f && ctrlPressed)
+				{
+					if (_save->getSide() == FACTION_PLAYER)
+					{
+						auto* bu = _save->getSelectedUnit();
+						if (bu)
+						{
+							std::ostringstream ss;
+							ss << tr("STR_FATAL_WOUNDS");
+							ss << "\n";
+							for (int i = 0; i < BODYPART_MAX; ++i)
+							{
+								if (bu->getFatalWound((UnitBodyPart)i))
+								{
+									ss << "\n";
+									ss << _game->getLanguage()->getString(PARTS_STRING[i]);
+								}
+							}
+							_game->pushState(new InfoboxState(ss.str()));
+						}
+					}
+				}
 				// "ctrl-h" - show hit log
 				else if (key == SDLK_h && ctrlPressed)
 				{
@@ -4318,6 +4341,12 @@ void BattlescapeState::resize(int &dX, int &dY)
 	}
 	switch (Options::battlescapeScale)
 	{
+	case SCALE_SCREEN_DIV_10:
+		divisor = 10;
+		break;
+	case SCALE_SCREEN_DIV_8:
+		divisor = 8;
+		break;
 	case SCALE_SCREEN_DIV_6:
 		divisor = 6;
 		break;

@@ -448,8 +448,7 @@ void GeoscapeEventState::eventLogic()
 		size_t pickResearch = RNG::generate(0, possibilities.size() - 1);
 		const RuleResearch *eventResearch = possibilities.at(pickResearch);
 
-		std::string name = eventResearch->getLookup().empty() ? eventResearch->getName() : eventResearch->getLookup();
-		bool alreadyResearched = save->isResearched(name, false); // we have seen the pedia article already, don't show it again
+		bool alreadyResearched = save->isResearched(eventResearch->getLookup() ? eventResearch->getLookup() : eventResearch, false); // we have seen the pedia article already, don't show it again
 
 		auto addResearchDiaryEntryForEvent = [&](const RuleResearch* discoveredResearch, DiscoverySourceType sourceType, const RuleEvent* sourceEvent, const RuleResearch* sourceResearch)
 		{
@@ -477,9 +476,8 @@ void GeoscapeEventState::eventLogic()
 		topicsToCheck.push_back(eventResearch);
 		_researchName = alreadyResearched ? "" : eventResearch->getName();
 
-		if (!eventResearch->getLookup().empty())
+		if (const RuleResearch *lookupResearch = eventResearch->getLookup())
 		{
-			const RuleResearch *lookupResearch = mod->getResearch(eventResearch->getLookup(), true);
 			addResearchDiaryEntryForEvent(lookupResearch, DiscoverySourceType::EVENT, &rule, nullptr);
 			save->addFinishedResearch(lookupResearch, mod, hq, true);
 			_researchName = alreadyResearched ? "" : lookupResearch->getName();
@@ -492,9 +490,8 @@ void GeoscapeEventState::eventLogic()
 			topicsToCheck.push_back(bonus);
 			_bonusResearchName = bonus->getName();
 
-			if (!bonus->getLookup().empty())
+			if (const RuleResearch *bonusLookup = bonus->getLookup())
 			{
-				const RuleResearch *bonusLookup = mod->getResearch(bonus->getLookup(), true);
 				addResearchDiaryEntryForEvent(bonusLookup, DiscoverySourceType::FREE_FROM, nullptr, eventResearch);
 				save->addFinishedResearch(bonusLookup, mod, hq, true);
 				_bonusResearchName = bonusLookup->getName();

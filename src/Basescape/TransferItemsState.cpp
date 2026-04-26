@@ -551,7 +551,7 @@ void TransferItemsState::btnOkClick(Action *)
 void TransferItemsState::completeTransfer()
 {
 	int time = (int)floor(6 + _distance / 10.0);
-	_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() - _total);
+	_game->getSavedGame()->setFunds(_game->getSavedGame()->getFunds() - getTotal());
 	for (const auto& transferRow : _items)
 	{
 		if (transferRow.amount > 0)
@@ -1092,7 +1092,7 @@ void TransferItemsState::updateItemStrings()
  */
 int TransferItemsState::getTotal() const
 {
-	return _total;
+	return std::max(1, _total * _game->getMod()->getGlobalTransferCostMultiplier() / _game->getMod()->getGlobalTransferCostDivider());
 }
 
 /**

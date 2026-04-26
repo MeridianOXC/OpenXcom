@@ -75,8 +75,10 @@ private:
 	int _power, _range, _score, _reload, _breakOffTime, _missionScore;
 	int _hunterKillerPercentage, _huntMode, _huntSpeed, _huntBehavior, _softlockThreshold;
 	int _missilePower;
+	int _missileStopChance;
 	bool _unmanned;
 	bool _instaHyper;
+	bool _noAlert;
 	int _splashdownSurvivalChance;
 	int _fakeWaterLandingChance;
 	int _fireSound;
@@ -165,10 +167,14 @@ public:
 	int getSoftlockThreshold() const { return _softlockThreshold; }
 	/// Gets the missile power (of a UFO that represents one or more missiles).
 	int getMissilePower() const { return _missilePower; }
+	/// Gets the chance to stop retaliation mission after a successful missile strike (default = 0).
+	int getMissileStopChance() const { return _missileStopChance; }
 	/// Is this an unmanned UFO (drone, missile, etc.)?
 	bool isUnmanned() const { return _unmanned; }
 	/// Show extra info during base defense even if the UFO was not yet hyper-detected classically?
 	bool isInstaHyper() const { return _instaHyper; }
+	/// Suppress UFO detection alerts?
+	bool isNoAlert() const { return _noAlert; }
 	/// Gets the chance of surviving a splashdown on fake water.
 	int getSplashdownSurvivalChance() const { return _splashdownSurvivalChance; }
 	/// Gets the chance for deciding to land on fake water texture.

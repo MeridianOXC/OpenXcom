@@ -68,6 +68,10 @@ void RuleManufacture::load(const YAML::YamlNodeReader& node, Mod* mod)
 		_spawnedSoldier = reader["spawnedSoldier"].emitDescendants(YAML::YamlRootNodeReader(_spawnedSoldier, "(spawned soldier template)"));
 	}
 	reader.tryRead("transferTimes", _transferTimes);
+	if (reader["events"])
+	{
+		_events.load(reader["events"]);
+	}
 	reader.tryRead("listOrder", _listOrder);
 }
 

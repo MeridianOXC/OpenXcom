@@ -362,7 +362,7 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeRead
 			}
 			else if (stats.hasVal())
 			{
-				_container.load(parentName, stats.readVal<std::string>(), parser);
+				_container.loadContainer(parentName, stats.readVal<std::string>(), parser);
 				_refresh = false;
 			}
 			// let's remember that this was modified by a modder (i.e. is not a default value)
@@ -407,7 +407,7 @@ void RuleStatBonus::load(const std::string& parentName, const YAML::YamlNodeRead
 			script += "div bonus 1000;\n";
 		}
 		script += "return bonus;";
-		_container.load(parentName, script, parser);
+		_container.loadContainer(parentName, script, parser);
 		_refresh = false;
 	}
 }

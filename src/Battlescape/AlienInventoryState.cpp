@@ -28,6 +28,7 @@
 #include "../Interface/Text.h"
 #include "../Mod/Mod.h"
 #include "../Mod/Armor.h"
+#include "../Mod/RuleInterface.h"
 #include "../Mod/RuleSoldier.h"
 #include "../Ufopaedia/Ufopaedia.h"
 #include "../Savegame/BattleUnit.h"
@@ -56,6 +57,7 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 	int offsetX = _game->getMod()->getAlienInventoryOffsetX();
 	_soldier = new Surface(320 - offsetX, 200, offsetX, 0);
 	_txtName = new Text(308, 17, 6, 6);
+	_txtFatalWounds = new Text(100, 48, 6, 32);
 	_txtLeftHand = new Text(308, 17, 6, 160);
 	_txtRightHand = new Text(308, 17, 6, 180);
 	_btnArmor = new BattlescapeButton(40, 70, 140, 65);
@@ -67,6 +69,7 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 	add(_bg);
 	add(_soldier);
 	add(_txtName, "textName", "inventory", _bg);
+	add(_txtFatalWounds, "textName", "inventory", _bg);
 	add(_txtLeftHand, "textName", "inventory", _bg);
 	add(_txtRightHand, "textName", "inventory", _bg);
 	add(_btnArmor, "buttonOK", "inventory", _bg);
@@ -127,6 +130,8 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 			_txtName->setText(unit->getName(_game->getLanguage()));
 		}
 	}
+
+	_txtFatalWounds->setHighContrast(true);
 
 	_txtLeftHand->setBig();
 	_txtLeftHand->setHighContrast(true);
@@ -214,6 +219,22 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 	if (tmp && unit->getFatalWounds() > 0 && unit->indicatorsAreEnabled())
 	{
 		tmp->blitNShade(_soldier, 32, 32);
+
+		const Element* element = _game->getMod()->getInterface("inventory")->getElementOptional("textName");
+		if (element && element->custom == 0)
+		{
+			// fatally wounded body parts
+			std::ostringstream ss;
+			for (int i = 0; i < BODYPART_MAX; ++i)
+			{
+				if (unit->getFatalWound((UnitBodyPart)i))
+				{
+					ss << _game->getLanguage()->getString(PARTS_STRING[i]);
+					ss << "\n";
+				}
+			}
+			_txtFatalWounds->setText(ss.str());
+		}
 	}
 
 	// Burning indicator

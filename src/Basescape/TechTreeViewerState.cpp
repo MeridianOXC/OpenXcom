@@ -499,9 +499,9 @@ void TechTreeViewerState::initLists()
 					}
 				}
 			}
-			if (!Mod::isEmptyRuleName(temp->getLookup()))
+			if (temp->getLookup())
 			{
-				if (temp->getLookup() == rule->getName())
+				if (temp->getLookup() == rule)
 				{
 					lookupOf.push_back(j);
 				}
@@ -725,7 +725,7 @@ void TechTreeViewerState::initLists()
 		row = 0;
 
 		// lookup link
-		if (!Mod::isEmptyRuleName(rule->getLookup()))
+		if (rule->getLookup())
 		{
 			_lstRight->addRow(1, tr("STR_LOOKUP").c_str());
 			_lstRight->setRowColor(row, _blue);
@@ -733,11 +733,11 @@ void TechTreeViewerState::initLists()
 			_rightFlags.push_back(TTV_NONE);
 			++row;
 
-			std::string name = tr(rule->getLookup());
+			std::string name = tr(rule->getLookup()->getName());
 			name.insert(0, "  ");
 			_lstRight->addRow(1, name.c_str());
-			_lstRight->setRowColor(row, getResearchColor(rule->getLookup()));
-			_rightTopics.push_back(rule->getLookup());
+			_lstRight->setRowColor(row, getResearchColor(rule->getLookup()->getName()));
+			_rightTopics.push_back(rule->getLookup()->getName());
 			_rightFlags.push_back(TTV_RESEARCH);
 			++row;
 		}
@@ -793,6 +793,27 @@ void TechTreeViewerState::initLists()
 			_rightTopics.push_back("-");
 			_rightFlags.push_back(TTV_NONE);
 			++row;
+		}
+
+		// spawned random events
+		auto& randomEvents = rule->getEventsRaw();
+		if (!randomEvents.empty())
+		{
+			_lstRight->addRow(1, tr("STR_RANDOM_EVENTS").c_str());
+			_lstRight->setRowColor(row, _blue);
+			_rightTopics.push_back("-");
+			_rightFlags.push_back(TTV_NONE);
+			++row;
+			for (auto& randomEvent : randomEvents.getChoicesRaw())
+			{
+				std::ostringstream chance;
+				chance << "  " << tr(randomEvent.first) << ": " << randomEvent.second;
+				_lstRight->addRow(1, chance.str().c_str());
+				_lstRight->setRowColor(row, _white);
+				_rightTopics.push_back("-");
+				_rightFlags.push_back(TTV_NONE);
+				++row;
+			}
 		}
 
 		// 6. required by
@@ -1439,6 +1460,27 @@ void TechTreeViewerState::initLists()
 					_rightFlags.push_back(TTV_ITEMS);
 					++row;
 				}
+			}
+		}
+
+		// 4c. random events
+		auto& randomEvents = rule->getEventsRaw();
+		if (!randomEvents.empty())
+		{
+			_lstRight->addRow(1, tr("STR_RANDOM_EVENTS").c_str());
+			_lstRight->setRowColor(row, _blue);
+			_rightTopics.push_back("-");
+			_rightFlags.push_back(TTV_NONE);
+			++row;
+			for (auto& randomEvent : randomEvents.getChoicesRaw())
+			{
+				std::ostringstream chance;
+				chance << "  " << tr(randomEvent.first) << ": " << randomEvent.second;
+				_lstRight->addRow(1, chance.str().c_str());
+				_lstRight->setRowColor(row, _white);
+				_rightTopics.push_back("-");
+				_rightFlags.push_back(TTV_NONE);
+				++row;
 			}
 		}
 

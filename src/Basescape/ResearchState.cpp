@@ -100,14 +100,20 @@ ResearchState::ResearchState(Base *base) : _base(base)
 
 	_txtProgress->setText(tr("STR_PROGRESS"));
 
-	_lstResearch->setArrowColumn(192, ARROW_VERTICAL);
+	if (Options::oxceBaseResearchReorder)
+	{
+		_lstResearch->setArrowColumn(192, ARROW_VERTICAL);
+	}
 	_lstResearch->setColumns(3, 158, 58, 70);
 	_lstResearch->setSelectable(true);
 	_lstResearch->setBackground(_window);
 	_lstResearch->setMargin(2);
 	_lstResearch->setWordWrap(true);
-	_lstResearch->onLeftArrowClick((ActionHandler)&ResearchState::lstResearchLeftArrowClick);
-	_lstResearch->onRightArrowClick((ActionHandler)&ResearchState::lstResearchRightArrowClick);
+	if (Options::oxceBaseResearchReorder)
+	{
+		_lstResearch->onLeftArrowClick((ActionHandler)&ResearchState::lstResearchLeftArrowClick);
+		_lstResearch->onRightArrowClick((ActionHandler)&ResearchState::lstResearchRightArrowClick);
+	}
 	_lstResearch->onMouseClick((ActionHandler)&ResearchState::onSelectProject, SDL_BUTTON_LEFT);
 	_lstResearch->onMouseClick((ActionHandler)&ResearchState::onOpenTechTreeViewer, SDL_BUTTON_MIDDLE);
 	//_lstResearch->onMousePress((ActionHandler)&ResearchState::lstResearchMousePress);

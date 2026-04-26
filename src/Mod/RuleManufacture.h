@@ -22,6 +22,7 @@
 #include "../Engine/Yaml.h"
 #include <stdint.h>
 #include "RuleBaseFacilityFunctions.h"
+#include "../Savegame/WeightedOptions.h"
 
 namespace OpenXcom
 {
@@ -63,6 +64,7 @@ private:
 	std::vector<std::pair<int, std::map<std::string, int> > > _randomProducedItemsNames;
 	std::vector<std::pair<int, std::map<const RuleItem*, int> > > _randomProducedItems;
 	std::vector<int> _transferTimes;
+	WeightedOptions _events;
 	int _listOrder;
 public:
 	static const int MANU_STATUS_NEW = 0;
@@ -120,6 +122,9 @@ public:
 	bool canAutoSell() const;
 	/// Gets the transfer time info.
 	const std::vector<int>& getTransferTimes() const { return _transferTimes; }
+	/// Gets geoscape event rule name to spawn after (each) item production
+	std::string chooseEvent() const { return _events.choose(); }
+	const WeightedOptions& getEventsRaw() const { return _events; }
 	/// Gets the list weight for this manufacture item.
 	int getListOrder() const;
 };

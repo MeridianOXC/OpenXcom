@@ -100,6 +100,11 @@ void RuleSoldierTransformation::load(const YAML::YamlNodeReader& node, Mod* mod)
 	reader.tryRead("reset", _reset);
 	reader.tryRead("resetRank", _resetRank);
 	reader.tryRead("soldierBonusType", _soldierBonusType);
+
+	if (reader["events"])
+	{
+		_events.load(reader["events"]);
+	}
 }
 
 /**

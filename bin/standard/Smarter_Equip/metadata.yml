@@ -2,7 +2,7 @@
 # metadata.yaml for Smarter Equip
 
 name: "Smarter Equip"
-version: 1.0
+version: 1.1
 description: "Custom priority order of inventory slots for auto-equip and ctrl-click-equip."
 author: Meridian
 

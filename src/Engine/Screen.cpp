@@ -619,6 +619,14 @@ void Screen::updateScale(int type, int &width, int &height, bool change)
 		width = Screen::ORIGINAL_WIDTH * 2;
 		height = Screen::ORIGINAL_HEIGHT * 2;
 		break;
+	case SCALE_SCREEN_DIV_10:
+		width = Options::displayWidth / 10.0;
+		height = Options::displayHeight / pixelRatioY / 10.0;
+		break;
+	case SCALE_SCREEN_DIV_8:
+		width = Options::displayWidth / 8.0;
+		height = Options::displayHeight / pixelRatioY / 8.0;
+		break;
 	case SCALE_SCREEN_DIV_6:
 		width = Options::displayWidth / 6.0;
 		height = Options::displayHeight / pixelRatioY / 6.0;

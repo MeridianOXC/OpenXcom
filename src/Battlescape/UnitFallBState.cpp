@@ -178,15 +178,14 @@ void UnitFallBState::think()
 			bool escapeFound = false;
 
 			// We need to move all sections of the unit out of the way.
-			std::vector<Position> bodySections;
-			for (int x = unitBelow->getArmor()->getSize() - 1; x >= 0; --x)
+			const int bodyTotalSize = unitBelow->getArmor()->getTotalSize();
+			const Position bodyOffsets[4] =
 			{
-				for (int y = unitBelow->getArmor()->getSize() - 1; y >= 0; --y)
-				{
-					Position bs = unitBelow->getPosition() + Position(x, y, 0);
-					bodySections.push_back(bs);
-				}
-			}
+				{ 0, 0, 0 },
+				{ 1, 0, 0 },
+				{ 0, 1, 0 },
+				{ 1, 1, 0 },
+			};
 
 			// Check in each compass direction.
 			for (int dir = 0; dir < Pathfinding::DIR_UP && !escapeFound; dir++)
@@ -194,10 +193,19 @@ void UnitFallBState::think()
 				Position offset;
 				Pathfinding::directionToVector(dir, &offset);
 
-				for (auto bsIt = bodySections.begin(); bsIt < bodySections.end(); )
+				_parent->getSave()->getPathfinding()->setUnit(unitBelow); //TODO: remove as was done by `getTUCost`
+				PathfindingStep r = _parent->getSave()->getPathfinding()->getTUCost(unitBelow->getPosition(), dir, unitBelow, 0, BAM_NORMAL);
+				if (r.cost.time == Pathfinding::INVALID_MOVE_COST)
 				{
-					Position originalPosition = (*bsIt);
+					// can't move this way, try another direction
+					continue;
+				}
+
+				for (auto bs = 0; bs < bodyTotalSize; )
+				{
+					Position originalPosition = unitBelow->getPosition() + bodyOffsets[bs];
 					Position endPosition = originalPosition + offset;
+
 					Tile *t = _parent->getSave()->getTile(endPosition);
 					if (t == nullptr)
 					{
@@ -208,18 +216,14 @@ void UnitFallBState::think()
 					bool aboutToBeOccupiedFromAbove = std::find(tilesToFallInto.begin(), tilesToFallInto.end(), t) != tilesToFallInto.end();
 					bool alreadyTaken = std::find(escapeTiles.begin(), escapeTiles.end(), t) != escapeTiles.end();
 					bool alreadyOccupied = t->getUnit() && (t->getUnit() != unitBelow);
-					_parent->getSave()->getPathfinding()->setUnit(unitBelow); //TODO: remove as was done by `getTUCost`
-					PathfindingStep r = _parent->getSave()->getPathfinding()->getTUCost(originalPosition, dir, unitBelow, 0, BAM_NORMAL);
-					bool movementBlocked = r.cost.time == Pathfinding::INVALID_MOVE_COST;
-					endPosition = r.pos;
 					bool hasFloor = !t->hasNoFloor(_parent->getSave());
 					bool unitCanFly = unitBelow->getMovementType() == MT_FLY;
 
-					bool canMoveToTile = !alreadyOccupied && !alreadyTaken && !aboutToBeOccupiedFromAbove && !movementBlocked && (hasFloor || unitCanFly);
+					bool canMoveToTile = !alreadyOccupied && !alreadyTaken && !aboutToBeOccupiedFromAbove && (hasFloor || unitCanFly);
 					if (canMoveToTile)
 					{
 						// Check next section of the unit.
-						++bsIt;
+						++bs;
 					}
 					else
 					{
@@ -228,7 +232,7 @@ void UnitFallBState::think()
 					}
 
 					// If all sections of the fallen onto unit can be moved, then we move it.
-					if (bsIt == bodySections.end())
+					if (bs == bodyTotalSize)
 					{
 						if (_parent->getSave()->addFallingUnit(unitBelow))
 						{
@@ -251,7 +255,7 @@ void UnitFallBState::think()
 			}
 			if (!escapeFound)
 			{
-				// STOMP THAT GOOMBAH!
+				// STOMP THAT GOOMBA!
 				unitBelow->knockOut(_parent);
 				ubIt = unitsToMove.erase(ubIt);
 			}

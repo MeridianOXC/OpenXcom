@@ -1235,7 +1235,18 @@ void Map::drawTerrain(Surface *surface)
 							{
 								frameNumber += Mod::SMOKE_OFFSET;
 							}
-							frameNumber += int(floor((tile->getSmoke() / 6.0) - 0.1)); // see http://www.ufopaedia.org/images/c/cb/Smoke.gif
+							if (Mod::EXTENDED_SMOKE_OFFSET == 0)
+							{
+								frameNumber += int(floor((tile->getSmoke() / 6.0) - 0.1)); // see http://www.ufopaedia.org/images/c/cb/Smoke.gif
+							}
+							else if (Mod::EXTENDED_SMOKE_OFFSET == 1)
+							{
+								frameNumber += int(floor((tile->getSmoke() / 6.0) - 0.1)) * 4;
+							}
+							else // if (Mod::EXTENDED_SMOKE_OFFSET == 2)
+							{
+								frameNumber += (tile->getSmoke() - 1) / 5 * 4;
+							}
 							shade = tileShade;
 						}
 
@@ -1585,10 +1596,11 @@ void Map::drawTerrain(Surface *surface)
 							if (_save->getBattleGame()->getCurrentAction()->type == BA_LAUNCH || _save->getBattleGame()->getCurrentAction()->sprayTargeting)
 							{
 								_numWaypid->setValue(waypid);
+								_numWaypid->setBordered(true); // OXCE, not configurable
 								_numWaypid->draw();
 								_numWaypid->blitNShade(surface, screenPosition.x + waypXOff, screenPosition.y + waypYOff, 0);
 
-								waypXOff += waypid > 9 ? 8 : 6;
+								waypXOff += waypid > 9 ? 10 : 6; // OXCE
 								if (waypXOff >= 26)
 								{
 									waypXOff = 2;

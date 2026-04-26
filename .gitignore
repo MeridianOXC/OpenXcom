@@ -74,6 +74,8 @@ translations/
 !install/win/plugins/**/*.dll
 #Ignore Vim swap files
 *.swp
+#Ignore build config used by Vim plugins for completition
+compile_commands.json
 #Ignore NetBeans project directory
 nbproject/
 /makefile

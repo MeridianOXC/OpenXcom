@@ -128,7 +128,7 @@ void ResearchInfoState::buildUi()
 	if (_rule)
 	{
 		_base->addResearch(_project);
-		if (_rule->needItem() && _rule->destroyItem())
+		if (_rule->isHoldingNeededItem())
 		{
 			_base->getStorageItems()->removeItem(_rule->getNeededItem(), 1);
 		}

@@ -40,6 +40,16 @@
 namespace OpenXcom
 {
 
+/**
+ * Script execution counter.
+ */
+enum class ProgPos : size_t
+{
+	Unknown = (size_t)-1,
+	Start = (size_t)RetEnum::RetSize,
+};
+
+
 ////////////////////////////////////////////////////////////
 //						const definition
 ////////////////////////////////////////////////////////////
@@ -442,6 +452,7 @@ enum ProcEnum : Uint8
 static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 {
 	ProgPos curr = ProgPos::Start;
+	const Uint8* curr_proc = proc + (int)curr;
 	//--------------------------------------------------
 	//			helper macros for this function
 	//--------------------------------------------------
@@ -449,22 +460,19 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 	#define MACRO_FUNC_ARRAY_LOOP(POS) \
 		case (POS): \
 		{ \
-			using currType = helper::GetType<func, POS>; \
-			const auto p = proc + (int)curr; \
-			curr += currType::offset; \
-			const auto ret = currType::func(data, p, curr); \
-			if (ret != RetContinue) \
+			if constexpr (POS == 0) \
 			{ \
-				if (ret == RetEnd) \
-					goto endLabel; \
-				else \
-				{ \
-					curr += - currType::offset - 1; \
-					goto errorLabel; \
-				} \
+				break; \
 			} \
 			else \
-				continue; \
+			{ \
+				using currType = helper::GetType<func, POS>; \
+				const auto p = (int)curr; \
+				curr += (currType::offset + ProcOpSize); \
+				currType::funcDirect(data, curr_proc, curr); \
+				curr_proc += (int)curr - p; \
+			} \
+			continue; \
 		}
 	//--------------------------------------------------
 
@@ -472,10 +480,12 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 
 	while (true)
 	{
-		switch (proc[(int)curr++])
+		switch (*curr_proc)
 		{
 		MACRO_COPY_256(MACRO_FUNC_ARRAY_LOOP, 0)
 		}
+
+		break; // macro before should have `continue` only if `switch` not continued then loop stop here
 	}
 
 	//--------------------------------------------------
@@ -485,15 +495,26 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 	#undef MACRO_FUNC_ARRAY
 	//--------------------------------------------------
 
-	errorLabel:
-	static int bugCount = 0;
-	if (++bugCount < 100)
+	if (curr < ProgPos::Start)
 	{
-		Log(LOG_ERROR) << "Invalid script operation for OpId: " << std::hex << std::showbase << (int)proc[(int)curr] <<" at "<< (int)curr;
-	}
+		const auto ret = static_cast<RetEnum>(curr);
+		static int bugCount = 0;
+		switch (ret)
+		{
+			case RetContinue:
+			case RetEnd:
+				// normal end of script execution
+				return;
 
-	endLabel:
-	return;
+			case RetError:
+			default:
+				if (++bugCount < 100)
+				{
+					Log(LOG_ERROR) << "Invalid script operation";
+				}
+				return;
+		}
+	}
 }
 
 
@@ -2884,6 +2905,7 @@ ParserWriter::ParserWriter(
 	regIndexUsed(static_cast<RegEnum>(regUsed))
 {
 	pushScopeBlock(BlockMain);
+	push(static_cast<size_t>(ProgPos::Start));
 }
 
 /**
@@ -3052,6 +3074,7 @@ void ParserWriter::pushValue(ScriptValueData v)
  */
 ParserWriter::ReservedPos<ParserWriter::ProcOp> ParserWriter::pushProc(Uint8 procId)
 {
+	static_assert(sizeof(procId) == ProcOpSize, "procId should have same size as ProcOpSize");
 	auto curr = getCurrPos();
 	container._proc.push_back(procId);
 	return { curr };
@@ -3878,14 +3901,6 @@ void ScriptParserBase::parseCode(ScriptContainerBase& container, const std::stri
 }
 
 /**
- * Load global data from YAML.
- */
-void ScriptParserBase::load(const YAML::YamlNodeReader& reader)
-{
-
-}
-
-/**
  * Print all metadata
  */
 void ScriptParserBase::logScriptMetadata(bool haveEvents, const std::string& groupName) const
@@ -4059,10 +4074,8 @@ void ScriptParserEventsBase::parseCode(ScriptContainerEventsBase& container, con
 /**
  * Load global data from YAML.
  */
-void ScriptParserEventsBase::load(const YAML::YamlNodeReader& scripts)
+void ScriptParserEventsBase::loadEvents(const YAML::YamlNodeReader& scripts)
 {
-	ScriptParserBase::load(scripts);
-
 	// helper functions to get position in data vector
 	auto findPos = [&](const std::string& n)
 	{
@@ -4104,9 +4117,9 @@ void ScriptParserEventsBase::load(const YAML::YamlNodeReader& scripts)
 		return name;
 	};
 
-	if (const YAML::YamlNodeReader& curr = scripts[ryml::to_csubstr(getName())])
+	if (scripts)
 	{
-		for (const YAML::YamlNodeReader& i : curr.children())
+		for (const YAML::YamlNodeReader& i : scripts.children())
 		{
 			const auto deleteNode = getNode(i, "delete");
 			const auto newNode = getNode(i, "new");
@@ -4508,7 +4521,7 @@ void ScriptGlobal::pushParser(const std::string& groupName, ScriptParserEventsBa
 {
 	parser->logScriptMetadata(true, groupName);
 	_parserNames.insert(std::make_pair(parser->getName(), parser));
-	_parserEvents.push_back(parser);
+	_parserEvents.insert(std::make_pair(std::string_view(parser->getName()), parser));
 }
 
 /**
@@ -4564,7 +4577,7 @@ void ScriptGlobal::endLoad()
 {
 	for (auto& p : _parserEvents)
 	{
-		_events.push_back(p->releseEvents());
+		_events.push_back(p.second->releseEvents());
 	}
 	_parserNames.clear();
 	_parserEvents.clear();
@@ -4632,11 +4645,28 @@ void ScriptGlobal::load(const YAML::YamlNodeReader& reader)
 			}
 		}
 	}
-	if (const YAML::YamlNodeReader& s = reader["scripts"])
+	if (const YAML::YamlNodeReader& scripts = reader["scripts"])
 	{
-		for (auto& p : _parserNames)
+		if (scripts.hasNullVal() == false && scripts.isMap() == false)
 		{
-			p.second->load(s);
+			throw Exception("Wrong type of 'scripts' node at line " + std::to_string(scripts.getLocationInFile().line));
+		}
+
+		for (const auto& p : scripts.children())
+		{
+			auto key = p.key();
+			if (key.length() > 0 && key.back() == '#')
+			{
+				continue;
+			}
+
+			auto event = _parserEvents.find(p.key());
+			if (event == _parserEvents.end())
+			{
+				throw Exception("Unknown '" + std::string(p.key()) + "' node in 'scripts' at line " + std::to_string(p.getLocationInFile().line));
+			}
+
+			event->second->loadEvents(p);
 		}
 	}
 }

@@ -207,6 +207,7 @@ en-GB:
   STR_LOOKUP: "Lookup:"
   STR_SPAWNED_ITEMS: "Spawned items:"
   STR_SPAWNED_EVENT: "Spawned event:"
+  STR_RANDOM_EVENTS: "Events:"
   STR_REQUIRED_BY: "Required by:"
   STR_REQUIRED_BY_TRANSFORMATIONS: "Required by transformations:"
   STR_LEADS_TO: "Leads to:"
