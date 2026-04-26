@@ -64,7 +64,7 @@ ru:
   STR_USE_LEFT_HAND: "В левой руке"
   STR_USE_RIGHT_HAND: "В правой руке"
   STR_INVENTORY: "Инвентарь"
-  STR_MINIMAP: "Миникарта"
+  STR_MINIMAP: "Мини-карта"
   STR_MULTI_LEVEL_VIEW: "Показ всех уровней"
   STR_END_TURN: "Конец хода"
   STR_ABORT_MISSION: "Покинуть поле боя"

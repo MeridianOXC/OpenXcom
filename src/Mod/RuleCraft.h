@@ -18,6 +18,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <vector>
+#include <map>
 #include <string>
 #include "../Engine/Yaml.h"
 #include "Unit.h"
@@ -222,6 +223,7 @@ private:
 	std::vector<int> _groups;
 	std::vector<int> _allowedSoldierGroups;
 	std::vector<int> _allowedArmorGroups;
+	std::map<int, int> _limitArmorGroups;
 	bool _onlyOneSoldierGroupAllowed;
 	RuleCraftStats _stats;
 	int _shieldRechargeAtBase;
@@ -361,6 +363,8 @@ public:
 	const std::vector<int>& getAllowedSoldierGroups() const { return _allowedSoldierGroups; }
 	/// Gets the list of allowed armor groups.
 	const std::vector<int>& getAllowedArmorGroups() const { return _allowedArmorGroups; }
+	/// Gets the list of allowed armor groups.
+	const std::map<int, int>& getLimitArmorGroups() const { return _limitArmorGroups; }
 	/// Does this craft allow soldiers of the same group only?
 	bool isOnlyOneSoldierGroupAllowed() const { return _onlyOneSoldierGroupAllowed; }
 	/// Gets the item limit for this craft.

@@ -40,6 +40,16 @@
 namespace OpenXcom
 {
 
+/**
+ * Script execution counter.
+ */
+enum class ProgPos : size_t
+{
+	Unknown = (size_t)-1,
+	Start = (size_t)RetEnum::RetSize,
+};
+
+
 ////////////////////////////////////////////////////////////
 //						const definition
 ////////////////////////////////////////////////////////////
@@ -442,6 +452,7 @@ enum ProcEnum : Uint8
 static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 {
 	ProgPos curr = ProgPos::Start;
+	const Uint8* curr_proc = proc + (int)curr;
 	//--------------------------------------------------
 	//			helper macros for this function
 	//--------------------------------------------------
@@ -449,22 +460,19 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 	#define MACRO_FUNC_ARRAY_LOOP(POS) \
 		case (POS): \
 		{ \
-			using currType = helper::GetType<func, POS>; \
-			const auto p = proc + (int)curr; \
-			curr += currType::offset; \
-			const auto ret = currType::func(data, p, curr); \
-			if (ret != RetContinue) \
+			if constexpr (POS == 0) \
 			{ \
-				if (ret == RetEnd) \
-					goto endLabel; \
-				else \
-				{ \
-					curr += - currType::offset - 1; \
-					goto errorLabel; \
-				} \
+				break; \
 			} \
 			else \
-				continue; \
+			{ \
+				using currType = helper::GetType<func, POS>; \
+				const auto p = (int)curr; \
+				curr += (currType::offset + ProcOpSize); \
+				currType::funcDirect(data, curr_proc, curr); \
+				curr_proc += (int)curr - p; \
+			} \
+			continue; \
 		}
 	//--------------------------------------------------
 
@@ -472,10 +480,12 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 
 	while (true)
 	{
-		switch (proc[(int)curr++])
+		switch (*curr_proc)
 		{
 		MACRO_COPY_256(MACRO_FUNC_ARRAY_LOOP, 0)
 		}
+
+		break; // macro before should have `continue` only if `switch` not continued then loop stop here
 	}
 
 	//--------------------------------------------------
@@ -485,15 +495,26 @@ static inline void scriptExe(ScriptWorkerBase& data, const Uint8* proc)
 	#undef MACRO_FUNC_ARRAY
 	//--------------------------------------------------
 
-	errorLabel:
-	static int bugCount = 0;
-	if (++bugCount < 100)
+	if (curr < ProgPos::Start)
 	{
-		Log(LOG_ERROR) << "Invalid script operation for OpId: " << std::hex << std::showbase << (int)proc[(int)curr] <<" at "<< (int)curr;
-	}
+		const auto ret = static_cast<RetEnum>(curr);
+		static int bugCount = 0;
+		switch (ret)
+		{
+			case RetContinue:
+			case RetEnd:
+				// normal end of script execution
+				return;
 
-	endLabel:
-	return;
+			case RetError:
+			default:
+				if (++bugCount < 100)
+				{
+					Log(LOG_ERROR) << "Invalid script operation";
+				}
+				return;
+		}
+	}
 }
 
 
@@ -2884,6 +2905,7 @@ ParserWriter::ParserWriter(
 	regIndexUsed(static_cast<RegEnum>(regUsed))
 {
 	pushScopeBlock(BlockMain);
+	push(static_cast<size_t>(ProgPos::Start));
 }
 
 /**
@@ -3052,6 +3074,7 @@ void ParserWriter::pushValue(ScriptValueData v)
  */
 ParserWriter::ReservedPos<ParserWriter::ProcOp> ParserWriter::pushProc(Uint8 procId)
 {
+	static_assert(sizeof(procId) == ProcOpSize, "procId should have same size as ProcOpSize");
 	auto curr = getCurrPos();
 	container._proc.push_back(procId);
 	return { curr };

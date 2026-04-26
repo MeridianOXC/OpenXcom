@@ -433,6 +433,7 @@ en-GB:
   onlyOneSoldierGroupAllowed: "Only one soldier group allowed?"
   allowedSoldierGroups: "Allowed soldier groups"
   allowedArmorGroups: "Allowed armor groups"
+  limitArmorGroups: "Limit armor groups"
   maxHWPUnitsLimit: "Max HWP capacity"
   maxSmallSoldiers: "Max small soldiers"
   maxLargeSoldiers: "Max large soldiers"

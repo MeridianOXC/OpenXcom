@@ -1200,6 +1200,36 @@ void StatsForNerdsState::addVectorOfIntegers(std::ostringstream &ss, const std::
 }
 
 /**
+ * Adds a map of integer/integer numbers to the table.
+ */
+void StatsForNerdsState::addMapOfIntegers(std::ostringstream& ss, const std::map<int, int>& map, const std::string& propertyName)
+{
+	if (map.empty() && !_showDefaults)
+	{
+		return;
+	}
+	resetStream(ss);
+	int i = 0;
+	ss << "{";
+	for (auto& item : map)
+	{
+		if (i > 0)
+		{
+			ss << ", ";
+		}
+		ss << item.first << ":" << item.second;
+		i++;
+	}
+	ss << "}";
+	_lstRawData->addRow(2, trp(propertyName).c_str(), ss.str().c_str());
+	++_counter;
+	if (!map.empty())
+	{
+		_lstRawData->setCellColor(_lstRawData->getLastRowIndex(), 1, _pink);
+	}
+}
+
+/**
  * Adds a BattleType to the table.
  */
 void StatsForNerdsState::addBattleType(std::ostringstream &ss, const BattleType &value, const std::string &propertyName, const BattleType &defaultvalue)
@@ -3347,6 +3377,7 @@ void StatsForNerdsState::initCraftList()
 	addBoolean(ss, craftRule->isOnlyOneSoldierGroupAllowed(), "onlyOneSoldierGroupAllowed");
 	addVectorOfIntegers(ss, craftRule->getAllowedSoldierGroups(), "allowedSoldierGroups");
 	addVectorOfIntegers(ss, craftRule->getAllowedArmorGroups(), "allowedArmorGroups");
+	addMapOfIntegers(ss, craftRule->getLimitArmorGroups(), "limitArmorGroups");
 
 	addInteger(ss, craftRule->getMaxSmallSoldiers(), "maxSmallSoldiers", -1);
 	addInteger(ss, craftRule->getMaxLargeSoldiers(), "maxLargeSoldiers", -1);
@@ -3773,6 +3804,7 @@ void StatsForNerdsState::initUfoList()
 		addInteger(ss, ufoRule->getSoftlockThreshold(), "softlockThreshold", 100);
 		addSingleString(ss, ufoRule->getHitImage(), "hitImage");
 		addInteger(ss, ufoRule->getMissilePower(), "missilePower");
+		addInteger(ss, ufoRule->getMissileStopChance(), "missileStopChance");
 		addBoolean(ss, ufoRule->isUnmanned(), "unmanned");
 		addBoolean(ss, ufoRule->isInstaHyper(), "instaHyper");
 		addBoolean(ss, ufoRule->isNoAlert(), "noAlert");

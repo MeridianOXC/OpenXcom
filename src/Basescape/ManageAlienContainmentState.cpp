@@ -223,8 +223,8 @@ void ManageAlienContainmentState::resetListAndTotals()
 	for (const auto* proj : _base->getResearch())
 	{
 		const RuleResearch *research = proj->getRules();
-		const RuleItem *item = _game->getMod()->getItem(research->getName()); // don't use getNeededItem()
-		if (research->needItem() && research->destroyItem() && item && item->isAlien() && item->getPrisonType() == _prisonType)
+		const RuleItem *item = research->getNeededItem();
+		if (research->isHoldingNeededItem() && item && item->isAlien() && item->getPrisonType() == _prisonType)
 		{
 			researchList.push_back(research->getName());
 		}

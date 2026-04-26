@@ -33,7 +33,8 @@ namespace OpenXcom
 SoldierDiary::SoldierDiary() : _daysWoundedTotal(0), _totalShotByFriendlyCounter(0), _totalShotFriendlyCounter(0), _loneSurvivorTotal(0),
 	_monthsService(0), _unconciousTotal(0),	_shotAtCounterTotal(0), _hitCounterTotal(0), _ironManTotal(0), _longDistanceHitCounterTotal(0),
 	_lowAccuracyHitCounterTotal(0), _shotsFiredCounterTotal(0), _shotsLandedCounterTotal(0), _shotAtCounter10in1Mission(0), _hitCounter5in1Mission(0),
-	_timesWoundedTotal(0), _KIA(0), _allAliensKilledTotal(0), _allAliensStunnedTotal(0), _woundsHealedTotal(0), _allUFOs(0), _allMissionTypes(0),
+	_timesWoundedTotal(0), _KIA(0), _allAliensKilledTotal(0), _allAliensStunnedTotal(0),
+	_ufosShotDownTotal(0), _ufosDamageTotal(0), _woundsHealedTotal(0), _allUFOs(0), _allMissionTypes(0),
 	_statGainTotal(0), _revivedUnitTotal(0), _wholeMedikitTotal(0), _braveryGainTotal(0), _bestOfRank(0),
 	_MIA(0), _martyrKillsTotal(0), _postMortemKills(0), _slaveKillsTotal(0), _bestSoldier(false),
 	_revivedSoldierTotal(0), _revivedHostileTotal(0), _revivedNeutralTotal(0), _globeTrotter(false)
@@ -97,6 +98,8 @@ void SoldierDiary::load(const YAML::YamlNodeReader& node, const Mod *mod)
 	reader.tryRead("killedInAction", _KIA);
 	reader.tryRead("allAliensKilledTotal", _allAliensKilledTotal);
 	reader.tryRead("allAliensStunnedTotal", _allAliensStunnedTotal);
+	reader.tryRead("ufosShotDownTotal", _ufosShotDownTotal);
+	reader.tryRead("ufosDamageTotal", _ufosDamageTotal);
 	reader.tryRead("woundsHealedTotal", _woundsHealedTotal);
 	reader.tryRead("allUFOs", _allUFOs);
 	reader.tryRead("allMissionTypes", _allMissionTypes);
@@ -150,6 +153,8 @@ void SoldierDiary::save(YAML::YamlNodeWriter writer) const
 	if (_KIA) writer.write("killedInAction", _KIA);
 	if (_allAliensKilledTotal) writer.write("allAliensKilledTotal", _allAliensKilledTotal);
 	if (_allAliensStunnedTotal) writer.write("allAliensStunnedTotal", _allAliensStunnedTotal);
+	if (_ufosShotDownTotal) writer.write("ufosShotDownTotal", _ufosShotDownTotal);
+	if (_ufosDamageTotal) writer.write("ufosDamageTotal", _ufosDamageTotal);
 	if (_woundsHealedTotal) writer.write("woundsHealedTotal", _woundsHealedTotal);
 	if (_allUFOs) writer.write("allUFOs", _allUFOs);
 	if (_allMissionTypes) writer.write("allMissionTypes", _allMissionTypes);
@@ -377,6 +382,8 @@ bool SoldierDiary::manageCommendations(const Mod* mod, SavedGame* save, const So
 					(critName == "totalAlienBaseAssaults" && getAlienBaseAssaultTotal(missionStatistics) < nextLevelThreshold) ||
 					(critName == "totalAllAliensKilled" && _allAliensKilledTotal < nextLevelThreshold) ||
 					(critName == "totalAllAliensStunned" && _allAliensStunnedTotal < nextLevelThreshold) ||
+					(critName == "totalUfosShotDown" && _ufosShotDownTotal < nextLevelThreshold) ||
+					(critName == "totalUfosDamage" && _ufosDamageTotal < nextLevelThreshold) ||
 					(critName == "totalWoundsHealed" && _woundsHealedTotal < nextLevelThreshold) ||
 					(critName == "totalAllUFOs" && _allUFOs < nextLevelThreshold) ||
 					(critName == "totalAllMissionTypes" && _allMissionTypes < nextLevelThreshold) ||
@@ -992,6 +999,15 @@ void SoldierDiary::addMonthlyService()
 int SoldierDiary::getMonthsService() const
 {
 	return _monthsService;
+}
+
+/**
+ * Update the pilot's UFO stats.
+ */
+void SoldierDiary::addUfoShotDown(int damage)
+{
+	_ufosShotDownTotal += 1;
+	_ufosDamageTotal += damage;
 }
 
 /**

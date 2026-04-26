@@ -2388,11 +2388,11 @@ interfaces: #done
   - type: medikit
     elements:
       - id: textPK
-        pos: [181, 33]
+        pos: [151, 33]
       - id: textStim
-        pos: [181, 69]
+        pos: [151, 69]
       - id: textHeal
-        pos: [181, 105]
+        pos: [151, 105]
       - id: buttonPK
         pos: [186, 44]
         size: [21, 21]

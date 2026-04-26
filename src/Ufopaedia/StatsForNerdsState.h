@@ -119,6 +119,7 @@ private:
 	void addIntegerKm(std::ostringstream &ss, const int &value, const std::string &propertyName, const int &defaultvalue = 0);
 	void addIntegerSeconds(std::ostringstream &ss, const int &value, const std::string &propertyName, const int &defaultvalue = 0, const int &value2 = -1);
 	void addVectorOfIntegers(std::ostringstream &ss, const std::vector<int> &vec, const std::string &propertyName);
+	void addMapOfIntegers(std::ostringstream& ss, const std::map<int, int>& map, const std::string& propertyName);
 	void addBattleType(std::ostringstream &ss, const BattleType &value, const std::string &propertyName, const BattleType &defaultvalue = BT_NONE);
 	void addDamageType(std::ostringstream &ss, const ItemDamageType &value, const std::string &propertyName, const ItemDamageType &defaultvalue = DT_NONE);
 	void addDamageRandomType(std::ostringstream &ss, const ItemDamageRandomType &value, const std::string &propertyName, const ItemDamageRandomType &defaultvalue = DRT_DEFAULT);

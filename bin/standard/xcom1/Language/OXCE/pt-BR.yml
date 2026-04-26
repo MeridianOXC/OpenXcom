@@ -38,4 +38,5 @@ pt-BR:
   GLOBE_TEXTURE_10: "Floresta/Selva 3"
   GLOBE_TEXTURE_11: "Floresta/Selva 4"
   GLOBE_TEXTURE_12: "Polar 2"
+  STR_LANDED: "Pousado "
   STR_SHOT_TYPE_AUTO: "Auto (x{0})"

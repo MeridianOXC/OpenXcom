@@ -29,19 +29,6 @@
 namespace OpenXcom
 {
 /**
- * User interface string identifier of body parts.
- */
-const std::string PARTS_STRING[6] =
-{
-	"STR_HEAD",
-	"STR_TORSO",
-	"STR_RIGHT_ARM",
-	"STR_LEFT_ARM",
-	"STR_RIGHT_LEG",
-	"STR_LEFT_LEG"
-};
-
-/**
  * Initializes the Medikit view.
  * @param w The MinikitView width.
  * @param h The MinikitView height.

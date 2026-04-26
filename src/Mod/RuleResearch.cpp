@@ -45,7 +45,7 @@ void RuleResearch::load(const YAML::YamlNodeReader& node, Mod* mod, const ModScr
 		load(parent, mod, parsers);
 	}
 
-	reader.tryRead("lookup", _lookup);
+	reader.tryRead("lookup", _lookupName);
 	reader.tryRead("cutscene", _cutscene);
 	reader.tryRead("spawnedItem", _spawnedItem);
 	reader.tryRead("spawnedItemCount", _spawnedItemCount);
@@ -53,6 +53,10 @@ void RuleResearch::load(const YAML::YamlNodeReader& node, Mod* mod, const ModScr
 	mod->loadUnorderedNames(_name, _decreaseCounter, reader["decreaseCounter"]);
 	mod->loadUnorderedNames(_name, _increaseCounter, reader["increaseCounter"]);
 	reader.tryRead("spawnedEvent", _spawnedEvent);
+	if (reader["events"])
+	{
+		_events.load(reader["events"]);
+	}
 	reader.tryRead("cost", _cost);
 	reader.tryRead("points", _points);
 	mod->loadUnorderedNames(_name, _dependenciesName, reader["dependencies"]);
@@ -67,6 +71,7 @@ void RuleResearch::load(const YAML::YamlNodeReader& node, Mod* mod, const ModScr
 	mod->loadNameNull(_name, _neededItemName, reader["neededItem"]);
 	reader.tryRead("needItem", _needItem);
 	reader.tryRead("destroyItem", _destroyItem);
+	reader.tryRead("returnsItem", _returnsItem);
 	reader.tryRead("unlockFinalMission", _unlockFinalMission);
 	reader.tryRead("repeatable", _repeatable);
 	reader.tryRead("listOrder", _listOrder);
@@ -85,23 +90,30 @@ void RuleResearch::afterLoad(const Mod* mod)
 		throw Exception("Research topic " + _name + " has requirements, but the cost is not zero. Sorry, this is not allowed!");
 	}
 
-	if (_lookup == _name)
+	if (_lookupName == _name)
 	{
-		_lookup = "";
+		_lookupName = "";
 	}
+	mod->linkRule(_lookup, _lookupName);
+
 
 	if (_needItem)
 	{
 		// FIXME: this would break all mods unfortunately, maybe one day...
 		//mod->linkRule(_neededItem, _neededItemName.empty() ? _name : _neededItemName);
 
+		const auto* linkedByName = mod->getItem(_name, false); // false, because even vanilla ruleset is a mess
 		if (_neededItemName.empty())
 		{
-			_neededItem = mod->getItem(_name, false); // false, because even vanilla ruleset is a mess
+			_neededItem = linkedByName;
 		}
 		else
 		{
 			_neededItem = mod->getItem(_neededItemName, true);
+		}
+		if (_neededItem && linkedByName && linkedByName != _neededItem)
+		{
+			throw LoadRuleException(_name, "Conflict between researched item '" + _name + "' and needed item '" + _neededItemName + "'");
 		}
 	}
 
@@ -245,15 +257,6 @@ const std::vector<std::pair<const RuleResearch*, std::vector<const RuleResearch*
 }
 
 /**
- * Gets what article to look up in the ufopedia.
- * @return The article to look up in the ufopaedia
- */
-const std::string &RuleResearch::getLookup() const
-{
-	return _lookup;
-}
-
-/**
  * Gets the requirements for this ResearchProject.
  * @return The requirement for this research.
  */
@@ -325,6 +328,8 @@ void RuleResearch::ScriptRegister(ScriptParserBase* parser)
 
 	ar.add<&RuleResearch::getCost>("getCost");
 	ar.add<&RuleResearch::getPoints>("getPoints");
+	ar.add<&RuleResearch::getLookup>("getLookup");
+	ar.add<&RuleResearch::getNeededItem>("getNeededItem");
 
 	ar.addScriptValue<BindBase::OnlyGet, &RuleResearch::_scriptValues>();
 	ar.addDebugDisplay<&debugDisplayScript>();

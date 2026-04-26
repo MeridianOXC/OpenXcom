@@ -426,7 +426,7 @@ ko:
   STR_UFO_STARTED_HUNTING: "{0}은 {1}을 요격 경로 상에 두고 있다"
   STR_CRAFT_IS_READY: "{1}에 있는 {0} 기체가 준비되었다."
   STR_ECONOMY_WARNING: "자금 {0} 및 수입 {1}이 낮고 유지비 {2}는 너무 높다! 신용을 잃는 걸 피하기 위해 무언가 팔아라... 부족한 자금: {3}"
-  STR_SLACKING_INDICATOR: "업무 미할당{NEWLINE}과: {0} / 공: {1}"
+  STR_SLACKING_INDICATOR: "과{0}/공{1}"
   STR_TRAINING_INDICATOR: "{0}:{1}"
   STR_EXTENDED_UC: "확장"
   STR_RETURNING: "복귀함"

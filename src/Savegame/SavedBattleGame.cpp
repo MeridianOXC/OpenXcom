@@ -853,7 +853,16 @@ Position SavedBattleGame::getTileCoords(int index) const
  * Gets the currently selected unit
  * @return Pointer to BattleUnit.
  */
-BattleUnit *SavedBattleGame::getSelectedUnit() const
+BattleUnit *SavedBattleGame::getSelectedUnit()
+{
+	return _selectedUnit;
+}
+
+/**
+ * Gets the currently selected unit
+ * @return Pointer to BattleUnit.
+ */
+const BattleUnit *SavedBattleGame::getSelectedUnit() const
 {
 	return _selectedUnit;
 }
@@ -1920,7 +1929,7 @@ void SavedBattleGame::initUnit(BattleUnit *unit, size_t itemLevel)
 	}
 
 	unit->setSpecialWeapon(this, false);
-	Unit* rule = unit->getUnitRules();
+	const Unit* rule = unit->getUnitRules();
 	const Armor* armor = unit->getArmor();
 	// Built in weapons: the unit has this weapon regardless of loadout or what have you.
 	addFixedItems(unit, armor->getBuiltInWeapons());
@@ -3630,6 +3639,18 @@ void isShiftPressedScript(const SavedBattleGame* sbg, int& val)
 	}
 }
 
+void getSelectedUnitScript(const SavedBattleGame* sbg, const BattleUnit*& val)
+{
+	if (sbg)
+	{
+		val = sbg->getSelectedUnit();
+	}
+	else
+	{
+		val = nullptr;
+	}
+}
+
 
 
 std::string debugDisplayScript(const SavedBattleGame* p)
@@ -3698,7 +3719,11 @@ void SavedBattleGame::ScriptRegister(ScriptParserBase* parser)
 
 	sbg.add<&randomChanceScript>("randomChance", "first argument is percent in range 0 - 100, then return in that argument random 1 or 0 based on percent");
 	sbg.add<&randomRangeScript>("randomRange", "set in first argument random value from range given in two last arguments");
+
 	sbg.add<&turnSideScript>("getTurnSide", "Return the faction whose turn it is.");
+	sbg.add<&SavedBattleGame::getDepth>("getDepth", "Return the depth of the battlescape.");
+	sbg.add<&SavedBattleGame::getGlobalShade>("getGlobalShade", "Return the global shade of the battlescape.");
+
 	sbg.addCustomConst("FACTION_PLAYER", FACTION_PLAYER);
 	sbg.addCustomConst("FACTION_HOSTILE", FACTION_HOSTILE);
 	sbg.addCustomConst("FACTION_NEUTRAL", FACTION_NEUTRAL);
@@ -3732,6 +3757,7 @@ void SavedBattleGame::ScriptRegisterUnitAnimations(ScriptParserBase* parser)
 	sbg.addField<&SavedBattleGame::_toggleNightVisionTemp>("isNightVisionEnabled");
 	sbg.addField<&SavedBattleGame::_togglePersonalLightTemp>("isPersonalLightEnabled");
 	sbg.addField<&SavedBattleGame::_toggleNightVisionColorTemp>("getNightVisionColor");
+	sbg.add<&getSelectedUnitScript>("getSelectedUnit");
 }
 
 }

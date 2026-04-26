@@ -1220,6 +1220,26 @@ void getTypeScript(const Armor* r, ScriptText& txt)
 	}
 }
 
+void getCorpseBattlescapeScript(const Armor *ar, const RuleItem* &ret)
+{
+	if (ar && 0 < ar->getCorpseBattlescape().size())
+	{
+		ret = ar->getCorpseBattlescape()[0];
+		return;
+	}
+	ret = 0;
+}
+
+void getCorpseBattlescapeBigUnitScript(const Armor *ar, const RuleItem* &ret, int part)
+{
+	if (ar && 0 <= part && (size_t)part < ar->getCorpseBattlescape().size())
+	{
+		ret = ar->getCorpseBattlescape()[part];
+		return;
+	}
+	ret = 0;
+}
+
 void getArmorValueScript(const Armor *ar, int &ret, int side)
 {
 	if (ar && 0 <= side && side < SIDE_MAX)
@@ -1264,6 +1284,12 @@ void Armor::ScriptRegister(ScriptParserBase* parser)
 	ar.addCustomConst("SIDE_UNDER", SIDE_UNDER);
 
 	ar.add<&getTypeScript>("getType");
+
+	ar.add<&Armor::getCorpseGeoscape>("getCorpseGeoscape");
+	ar.add<&getCorpseBattlescapeScript>("getCorpseBattlescape", "Get corpse for small unit or main corpse of big unit");
+	ar.add<&getCorpseBattlescapeBigUnitScript>("getCorpseBattlescape", "Get corpses for big unit");
+
+	ar.add<&Armor::getRequiredResearch>("getRequiredResearch");
 
 	ar.add<&Armor::getDrawingRoutine>("getDrawingRoutine");
 	ar.add<&Armor::drawBubbles>("getDrawBubbles");

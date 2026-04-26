@@ -118,15 +118,6 @@ const inline ScriptText ScriptText::empty = { "" };
 
 using ScriptFunc = RetEnum (*)(ScriptWorkerBase&, const Uint8*, ProgPos&);
 
-/**
- * Script execution counter.
- */
-enum class ProgPos : size_t
-{
-	Unknown = (size_t)-1,
-	Start = 0,
-};
-
 inline ProgPos& operator+=(ProgPos& pos, int offset)
 {
 	pos = static_cast<ProgPos>(static_cast<size_t>(pos) + offset);
@@ -346,8 +337,10 @@ static_assert(ScriptMaxReg < RegInvalid, "RegInvalid could be interpreted as cor
 enum RetEnum : Uint8
 {
 	RetContinue = 0,
-	RetEnd = 1,
-	RetError = 2,
+	RetEnd,
+	RetError,
+
+	RetSize,
 };
 
 /**

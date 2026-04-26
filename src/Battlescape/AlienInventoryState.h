@@ -38,6 +38,7 @@ private:
 	Surface *_bg, *_soldier;
 	BattlescapeButton *_btnArmor;
 	Text *_txtName;
+	Text *_txtFatalWounds;
 	Text *_txtLeftHand, *_txtRightHand;
 	AlienInventory *_inv;
 

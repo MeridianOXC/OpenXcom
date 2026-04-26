@@ -392,7 +392,7 @@ ko:
   STR_ALIEN_KILLS: "사살한 외계인"
   STR_ALIEN_CAPTURES: "포획한 외계인"
   STR_FRIENDLY_KILLS: "아군 오사 사고"
-  STR_AVERAGE_ACCURACY: "평균 명중율"
+  STR_AVERAGE_ACCURACY: "평균 명중률"
   STR_WEAPON_MOST_KILLS: "가장 효과적인 무기"
   STR_ALIEN_MOST_KILLS: "가장 위험한 외계인"
   STR_LONGEST_SERVICE: "최장 복무 기간"

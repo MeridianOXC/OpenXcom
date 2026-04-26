@@ -108,18 +108,18 @@ void ResearchCompleteState::btnReportClick(Action *)
 	std::string bonusName;
 	if (_bonus)
 	{
-		if (_bonus->getLookup().empty())
-			bonusName = _bonus->getName();
+		if (_bonus->getLookup())
+			bonusName = _bonus->getLookup()->getName();
 		else
-			bonusName = _bonus->getLookup();
+			bonusName = _bonus->getName();
 		Ufopaedia::openArticle(_game, bonusName);
 	}
 	if (_research)
 	{
-		if (_research->getLookup().empty())
-			name = _research->getName();
+		if (_research->getLookup())
+			name = _research->getLookup()->getName();
 		else
-			name = _research->getLookup();
+			name = _research->getName();
 		Ufopaedia::openArticle(_game, name);
 	}
 }

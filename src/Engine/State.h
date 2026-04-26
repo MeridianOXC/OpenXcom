@@ -51,6 +51,7 @@ class State
 protected:
 	static Game *_game;
 	std::vector<Surface*> _surfaces;
+	std::vector<Surface*> _surfacesOwned;
 	bool _screen;
 	bool _soundPlayed;
 	InteractiveSurface *_modal;
@@ -71,6 +72,16 @@ public:
 	void setWindowBackground(Window *window, const std::string &s);
 	/// Set window background by image name (instead of by interface name).
 	void setWindowBackgroundImage(Window* window, const std::string& bgImageName);
+	/// Add a optional child element but it will not be displayed.
+	template<typename T>
+	T* preAdd(T *surface)
+	{
+		static_assert(std::is_base_of_v<Surface, T>, "Type need to be surface");
+		preAdd(static_cast<Surface*>(surface));
+		return surface;
+	}
+	/// Add a optional child element but it will not be displayed.
+	void preAdd(Surface *surface);
 	/// Adds a child element to the state.
 	void add(Surface *surface);
 	/// Adds a child element to the state.

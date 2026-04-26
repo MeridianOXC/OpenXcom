@@ -41,7 +41,7 @@ namespace OpenXcom
 		{
 			throw Exception("ArticleStateTFTDVehicle: Item " + defs->id + " is missing a vehicle unit definition!");
 		}
-		Armor *armor = unit->getArmor();
+		const Armor *armor = unit->getArmor();
 
 		_lstStats = new TextList(150, 65, 168, 106);
 
