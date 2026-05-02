@@ -281,7 +281,7 @@ namespace CrossPlatform
 #ifdef __cplusplus
 extern "C" {
 #endif
-	void Java_org_libsdl_openxcom_OpenXcom_nativeSetPaths(JNIEnv* env, jclass cls, jstring gamePath, jstring savePath, jstring confPath);
+	void Java_org_openxcom_extended_OpenXcom_nativeSetPaths(JNIEnv* env, jclass cls, jstring gamePath, jstring savePath, jstring confPath);
 #ifdef __cplusplus
 }
 #endif

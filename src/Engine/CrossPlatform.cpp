@@ -1453,7 +1453,7 @@ void setSystemUI()
 
 #ifdef __ANDROID__
 	// This loads up new paths for the game and restarts. Called from Java.
-	void Java_org_libsdl_openxcom_OpenXcom_nativeSetPaths(JNIEnv* env, jclass cls, jstring gamePath, jstring savePath, jstring confPath)
+	void Java_org_openxcom_extended_OpenXcom_nativeSetPaths(JNIEnv* env, jclass cls, jstring gamePath, jstring savePath, jstring confPath)
 	{
 		Log(LOG_INFO) << "Re-setting paths...";
 		const char *gamePathString = env->GetStringUTFChars(gamePath, 0);
