@@ -26,11 +26,17 @@ namespace OpenXcom
 {
 
 /**
- * String with normalized version number,
- * as is not printable it use `signed char` to
- * not confuse it with normal string.
+ * String with normalized version number
  */
-typedef std::basic_string<signed char> ModInfoNormalizedVersion;
+struct ModInfoNormalizedVersion : std::string
+{
+	ModInfoNormalizedVersion() = default;
+	ModInfoNormalizedVersion(ModInfoNormalizedVersion&&) = default;
+	ModInfoNormalizedVersion(const ModInfoNormalizedVersion&) = default;
+
+	ModInfoNormalizedVersion& operator=(ModInfoNormalizedVersion&&) = default;
+	ModInfoNormalizedVersion& operator=(const ModInfoNormalizedVersion&) = default;
+};
 
 /**
  * Version number with normalized value.
