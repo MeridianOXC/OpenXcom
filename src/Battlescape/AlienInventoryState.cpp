@@ -221,7 +221,7 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 		tmp->blitNShade(_soldier, 32, 32);
 
 		const Element* element = _game->getMod()->getInterface("inventory")->getElementOptional("textName");
-		if (element && element->custom == 0)
+		if (element && (element->custom == 0 || (element->custom == 1 && unit->getFaction() == FACTION_PLAYER)))
 		{
 			// fatally wounded body parts
 			std::ostringstream ss;

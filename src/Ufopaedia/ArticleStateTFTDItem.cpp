@@ -29,7 +29,6 @@
 #include "../Interface/TextButton.h"
 #include "../Engine/Unicode.h"
 #include "../Interface/TextList.h"
-#include <algorithm>
 
 namespace OpenXcom
 {

@@ -32,6 +32,7 @@ en-GB:
   STR_ALL: "Everything"
   STR_EQUIPPED: "Equipped"
   STR_NOT_EQUIPPED: "Not equipped"
+  STR_NOT_PURCHASABLE: "Not purchasable"
   STR_UNASSIGNED: "Other"
   STR_NO_MORE_EQUIPMENT_ALLOWED_BY_SIZE: "NO MORE EQUIPMENT ALLOWED ON BOARD!{SMALLLINE}Maximum storage space: {0}"
 #CraftInfoState.cpp

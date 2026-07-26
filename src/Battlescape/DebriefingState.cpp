@@ -1673,23 +1673,26 @@ void DebriefingState::prepareDebriefing()
 					}
 				}
 			}
-			else if (oldFaction == FACTION_NEUTRAL && !ignoreLivingCivilians)
+			else if (oldFaction == FACTION_NEUTRAL)
 			{
 				// if mission fails, all civilians die
 				if ((aborted && !success) || playersSurvived == 0)
 				{
-					if (!bunit->isResummonedFakeCivilian() && !bunit->isCosmetic())
+					if (!bunit->isResummonedFakeCivilian() && !bunit->isCosmetic() && !ignoreLivingCivilians)
 					{
 						addStat("STR_CIVILIANS_KILLED_BY_ALIENS", 1, -bunit->getValue());
 					}
 				}
 				else
 				{
-					if (!bunit->isResummonedFakeCivilian() && !bunit->isCosmetic())
+					if (!bunit->isResummonedFakeCivilian() && !bunit->isCosmetic() && !ignoreLivingCivilians)
 					{
 						addStat("STR_CIVILIANS_SAVED", 1, bunit->getValue());
 					}
-					recoverCivilian(bunit, base, craft);
+					if (!ignoreLivingCivilians || bunit->isResummonedFakeCivilian())
+					{
+						recoverCivilian(bunit, base, craft);
+					}
 				}
 			}
 		}

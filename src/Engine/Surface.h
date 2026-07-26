@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <vector>
 #include <assert.h>
 #include "GraphSubset.h"
 

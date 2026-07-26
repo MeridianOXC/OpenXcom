@@ -34,7 +34,6 @@
 #include "Zoom.h"
 #include "Timer.h"
 #include <SDL.h>
-#include <algorithm>
 #include "Renderer.h"
 #include "SDLRenderer.h"
 

@@ -1092,7 +1092,24 @@ void TransferItemsState::updateItemStrings()
  */
 int TransferItemsState::getTotal() const
 {
-	return std::max(1, _total * _game->getMod()->getGlobalTransferCostMultiplier() / _game->getMod()->getGlobalTransferCostDivider());
+	int ret = std::max(1, _total * _game->getMod()->getGlobalTransferCostMultiplier() / _game->getMod()->getGlobalTransferCostDivider());
+
+	if (ret == 1)
+	{
+		bool empty = true;
+		for (const auto& item : _items)
+		{
+			if (item.amount != 0)
+			{
+				empty = false;
+				break;
+			}
+		}
+		if (empty)
+			return 0;
+	}
+
+	return ret;
 }
 
 /**
