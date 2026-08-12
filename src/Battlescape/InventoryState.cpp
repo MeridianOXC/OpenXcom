@@ -24,6 +24,7 @@
 #include "Inventory.h"
 #include "../Basescape/SoldierArmorState.h"
 #include "../Basescape/SoldierAvatarState.h"
+#include "../Basescape/SoldierVoiceState.h"
 #include "../Basescape/SoldierDiaryLightState.h"
 #include "../Engine/Game.h"
 #include "../Engine/FileMap.h"
@@ -800,6 +801,17 @@ void InventoryState::btnArmorClick(Action *action)
 			}
 		}
 		return;
+	}
+
+	// voice set can be changed at any time
+	if ((_game->isCtrlPressed() || _base == 0) && _game->getMod()->getEnableUnitResponseSounds())
+	{
+		BattleUnit* unit = _battleGame->getSelectedUnit();
+		if (unit->getOriginalFaction() == FACTION_PLAYER)
+		{
+			_game->pushState(new SoldierVoiceState(unit, nullptr, SV_BATTLESCAPE));
+			return;
+		}
 	}
 
 	// only allowed during base equipment

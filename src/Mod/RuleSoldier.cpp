@@ -20,6 +20,7 @@
 #include <algorithm>
 #include "RuleSoldier.h"
 #include "RuleSkill.h"
+#include "RuleVoiceSet.h"
 #include "Mod.h"
 #include "ModScript.h"
 #include "RuleItem.h"
@@ -27,6 +28,7 @@
 #include "SoldierNamePool.h"
 #include "StatString.h"
 #include "../Engine/FileMap.h"
+#include "../Engine/RNG.h"
 #include "../Engine/ScriptBind.h"
 #include "../Engine/Unicode.h"
 
@@ -183,6 +185,8 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 	mod->loadSpriteOffset(_type, _skillIconSprite, reader["skillIconSprite"], "SPICONS.DAT");
 
 	mod->loadNames(_type, _skillNames, reader["skills"]);
+	mod->loadNames(_type, _voiceSetNamesMale, reader["voiceSetsMale"]);
+	mod->loadNames(_type, _voiceSetNamesFemale, reader["voiceSetsFemale"]);
 
 	if (reader["spawnedSoldier"])
 	{
@@ -243,6 +247,8 @@ void RuleSoldier::afterLoad(const Mod* mod)
 		}
 	}
 	mod->linkRule(_skills, _skillNames);
+	mod->linkRule(_voiceSetsMale, _voiceSetNamesMale);
+	mod->linkRule(_voiceSetsFemale, _voiceSetNamesFemale);
 
 	_manaMissingWoundThreshold = mod->getManaWoundThreshold();
 	_healthMissingWoundThreshold = mod->getHealthWoundThreshold();
@@ -536,6 +542,32 @@ const std::vector<int> &RuleSoldier::getMaleBerserkSounds() const
 const std::vector<int> &RuleSoldier::getFemaleBerserkSounds() const
 {
 	return _berserkSoundFemale;
+}
+
+/**
+ * Gets a random male voice set.
+ * @return A random male voice set.
+ */
+const RuleVoiceSet* RuleSoldier::getRandomVoiceSetMale() const
+{
+	if (!_voiceSetsMale.empty())
+	{
+		return _voiceSetsMale[RNG::seedless(0, _voiceSetsMale.size() - 1)];
+	}
+	return nullptr;
+}
+
+/**
+ * Gets a random female voice set.
+ * @return A random female voice set.
+ */
+const RuleVoiceSet* RuleSoldier::getRandomVoiceSetFemale() const
+{
+	if (!_voiceSetsFemale.empty())
+	{
+		return _voiceSetsFemale[RNG::seedless(0, _voiceSetsFemale.size() - 1)];
+	}
+	return nullptr;
 }
 
 /**

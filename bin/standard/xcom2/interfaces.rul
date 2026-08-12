@@ -1715,6 +1715,22 @@ interfaces: #done
         border: 1  # white
       - id: button
         color: 1   # white
+  - type: soldierVoice
+    backgroundImage: BACK14.SCR
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 1     # white
+      - id: text
+        color: 1     # white
+        color2: 239  # blue
+      - id: list
+        color: 1     # white
+        color2: 244  # green
+        border: 1    # white
+      - id: button
+        color: 1   # white
   - type: soldierDiaryLight
     backgroundImage: BACK14.SCR
     elements:

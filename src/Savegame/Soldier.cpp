@@ -152,6 +152,7 @@ void Soldier::load(const YAML::YamlNodeReader& node, const Mod *mod, SavedGame *
 		reader.tryRead("id", _id);
 	reader.tryRead("name", _name);
 	reader.tryRead("callsign", _callsign);
+	reader.tryRead("voiceSetID", _voiceSetType);
 	reader.tryRead("nationality", _nationality);
 	if (soldierTemplate)
 	{
@@ -286,6 +287,8 @@ void Soldier::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) cons
 	writer.write("name", _name);
 	if (!_callsign.empty())
 		writer.write("callsign", _callsign);
+	if (!_voiceSetType.empty())
+		writer.write("voiceSetID", _voiceSetType);
 	writer.write("nationality", _nationality);
 	writer.write("initialStats", _initialStats);
 	writer.write("currentStats", _currentStats);
@@ -1844,6 +1847,12 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 		if (transformationRule->getResetRank())
 		{
 			_rank = RANK_ROOKIE;
+		}
+
+		// reset soldier voice set, if needed
+		if (transformationRule->getResetVoice())
+		{
+			_voiceSetType = "";
 		}
 
 		// change stats

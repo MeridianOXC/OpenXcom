@@ -33,6 +33,7 @@ class StatString;
 class RuleItem;
 class RuleSkill;
 class Armor;
+class RuleVoiceSet;
 
 /**
  * Represents the creation data for an X-COM unit.
@@ -98,6 +99,8 @@ private:
 	int _skillIconSprite;
 	std::vector<std::string> _skillNames;
 	std::vector<const RuleSkill*> _skills;
+	std::vector<std::string> _voiceSetNamesMale, _voiceSetNamesFemale;
+	std::vector<const RuleVoiceSet*> _voiceSetsMale, _voiceSetsFemale;
 	ScriptValues<RuleSoldier> _scriptValues;
 
 	void addSoldierNamePool(const std::string &namFile);
@@ -202,6 +205,16 @@ public:
 	const std::vector<int> &getMaleAnnoyedSounds() const { return _annoyedSoundMale; }
 	/// Gets the soldier's female "annoyed" sounds.
 	const std::vector<int> &getFemaleAnnoyedSounds() const { return _annoyedSoundFemale; }
+
+	/// Gets the list of defined male voice sets.
+	const std::vector<const RuleVoiceSet*> &getVoiceSetsMaleRaw() const { return _voiceSetsMale; }
+	/// Gets a random male voice set.
+	const RuleVoiceSet* getRandomVoiceSetMale() const;
+	/// Gets the list of defined female voice sets.
+	const std::vector<const RuleVoiceSet*> &getVoiceSetsFemaleRaw() const { return _voiceSetsFemale; }
+	/// Gets a random female voice set.
+	const RuleVoiceSet* getRandomVoiceSetFemale() const;
+
 	/// Gets the pool list for soldier names.
 	const std::vector<SoldierNamePool*> &getNames() const;
 	/// Gets the total weight of all the soldier name pools.

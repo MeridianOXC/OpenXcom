@@ -136,6 +136,8 @@ en-US:
   STR_NOT_ENOUGH_CRAFT_SPACE: "Not enough space onboard!"
 #SoldierAvatarState.cpp
   STR_SELECT_AVATAR_FOR: "SELECT AVATAR FOR{NEWLINE}{0}"
+#SoldierVoiceState.cpp
+  STR_SELECT_VOICE_SET_FOR: "SELECT VOICE SET FOR{NEWLINE}{0}"
 #SoldierBonusState.cpp
   STR_SOLDIER_BONUSES_FOR: "SOLDIER BONUSES FOR{NEWLINE}{0}"
   STR_SUMMARY: "Summary"

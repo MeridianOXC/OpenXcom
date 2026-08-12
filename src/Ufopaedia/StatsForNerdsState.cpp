@@ -2936,6 +2936,8 @@ void StatsForNerdsState::initArmorList()
 		addVectorOfIntegers(ss, armorRule->getFemaleAnnoyedSounds(), "annoyedFemale");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", armorRule->getFemaleAnnoyedSounds());
 
+		addBoolean(ss, !armorRule->getVoiceSetsRaw().empty(), "voiceSets*", false); // just say if there are any or not
+
 		addSection("{Animations}", "", _white);
 		addDrawingRoutine(ss, armorRule->getDrawingRoutine(), "drawingRoutine");
 		addBoolean(ss, armorRule->drawBubbles(), "drawBubbles");
@@ -4131,6 +4133,9 @@ void StatsForNerdsState::initSoldierList()
 		addVectorOfIntegers(ss, soldierRule->getFemaleBerserkSounds(), "berserkFemale");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", soldierRule->getFemaleBerserkSounds());
 
+		addBoolean(ss, !soldierRule->getVoiceSetsMaleRaw().empty(), "voiceSetsMale*", false); // just say if there are any or not
+		addBoolean(ss, !soldierRule->getVoiceSetsFemaleRaw().empty(), "voiceSetsFemale*", false); // just say if there are any or not
+
 		addSection("{Mod info}", "", _white);
 		{
 			addSingleString(ss, mod->getModCreatingRule(soldierRule)->name, "createdByMod");
@@ -4256,6 +4261,8 @@ void StatsForNerdsState::initUnitList()
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", unitRule->getBerserkSounds());
 		addVectorOfIntegers(ss, unitRule->getAggroSounds(), "aggroSound");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", unitRule->getAggroSounds());
+
+		addBoolean(ss, !unitRule->getVoiceSetsRaw().empty(), "voiceSets*", false); // just say if there are any or not
 
 		addSection("{Mod info}", "", _white);
 		{

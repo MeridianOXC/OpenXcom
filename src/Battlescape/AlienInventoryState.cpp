@@ -18,6 +18,7 @@
  */
 #include "AlienInventoryState.h"
 #include "AlienInventory.h"
+#include "../Basescape/SoldierVoiceState.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
@@ -144,6 +145,7 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 	_txtRightHand->setVisible(false);
 
 	_btnArmor->onKeyboardPress((ActionHandler)&AlienInventoryState::btnToggleClick, SDLK_F1);
+	_btnArmor->onKeyboardPress((ActionHandler)&AlienInventoryState::btnVoiceClick, Options::keySelectMusicTrack);
 	_btnArmor->onKeyboardPress((ActionHandler)&AlienInventoryState::btnOkClick, Options::keyCancel);
 	_btnArmor->onMouseClick((ActionHandler)&AlienInventoryState::btnArmorClickMiddle, SDL_BUTTON_MIDDLE);
 
@@ -461,6 +463,24 @@ void AlienInventoryState::btnToggleClick(Action *)
 {
 	_txtLeftHand->setVisible(!_txtLeftHand->getVisible());
 	_txtRightHand->setVisible(!_txtRightHand->getVisible());
+}
+
+/**
+ * Opens the Voice Selection GUI
+ * @param action Pointer to an action.
+ */
+void AlienInventoryState::btnVoiceClick(Action* action)
+{
+	// voice set can be changed at any time
+	if (_game->getMod()->getEnableUnitResponseSounds())
+	{
+		BattleUnit* unit = _game->getSavedGame()->getSavedBattle()->getSelectedUnit();
+		if (unit->getOriginalFaction() == FACTION_PLAYER)
+		{
+			_game->pushState(new SoldierVoiceState(unit, nullptr, SV_BATTLESCAPE));
+			return;
+		}
+	}
 }
 
 /**

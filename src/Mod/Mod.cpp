@@ -61,6 +61,7 @@
 #include "RuleCraftWeapon.h"
 #include "RuleItemCategory.h"
 #include "RuleItem.h"
+#include "RuleVoiceSet.h"
 #include "RuleWeaponSet.h"
 #include "RuleUfo.h"
 #include "RuleTerrain.h"
@@ -454,7 +455,7 @@ Mod::Mod() :
 	_defeatScore(0), _defeatFunds(0), _difficultyDemigod(false), _startingTime(6, 1, 1, 1999, 12, 0, 0), _startingDifficulty(0),
 	_baseDefenseMapFromLocation(0), _disableUnderwaterSounds(false), _enableUnitResponseSounds(false), _pediaReplaceCraftFuelWithRangeType(-1),
 	_facilityListOrder(0), _craftListOrder(0), _itemCategoryListOrder(0), _itemListOrder(0), _armorListOrder(0), _alienRaceListOrder(0),
-	_researchListOrder(0),  _manufactureListOrder(0), _soldierBonusListOrder(0), _transformationListOrder(0), _ufopaediaListOrder(0), _invListOrder(0), _soldierListOrder(0),
+	_researchListOrder(0),  _manufactureListOrder(0), _soldierBonusListOrder(0), _transformationListOrder(0), _ufopaediaListOrder(0), _invListOrder(0), _soldierListOrder(0), _voiceSetsListOrder(0),
 	_modCurrent(0), _statePalette(0)
 {
 	_muteMusic = new Music();
@@ -664,6 +665,10 @@ Mod::~Mod()
 		delete pair.second;
 	}
 	for (auto& pair : _items)
+	{
+		delete pair.second;
+	}
+	for (auto& pair : _voiceSets)
 	{
 		delete pair.second;
 	}
@@ -2322,6 +2327,7 @@ void Mod::loadAll()
 	afterLoadHelper("countries", this, _countries, &RuleCountry::afterLoad);
 	afterLoadHelper("crafts", this, _crafts, &RuleCraft::afterLoad);
 	afterLoadHelper("events", this, _events, &RuleEvent::afterLoad);
+	afterLoadHelper("voiceSets", this, _voiceSets, &RuleVoiceSet::afterLoad);
 
 	for (auto& a : _armors)
 	{
@@ -2846,6 +2852,14 @@ void Mod::loadFile(const FileMap::FileRecord &filerec, ModScript &parsers)
 		if (rule != 0)
 		{
 			rule->load(ruleReader, this, parsers);
+		}
+	}
+	for (const auto& ruleReader : iterateRules("voiceSets", "type"))
+	{
+		RuleVoiceSet* rule = loadRule(ruleReader, &_voiceSets, &_voiceSetsIndex, "type", RuleListOrderedFactory<RuleVoiceSet>{ _voiceSetsListOrder, 100 });
+		if (rule != 0)
+		{
+			rule->load(ruleReader, this);
 		}
 	}
 	for (const auto& ruleReader : iterateRules("weaponSets", "type"))
@@ -4162,6 +4176,26 @@ const std::vector<std::string> &Mod::getItemsList() const
 }
 
 /**
+ * Returns the rules for the specified voice set.
+ * @param type Voice set type.
+ * @return Rules for the voice set.
+ */
+RuleVoiceSet* Mod::getVoiceSet(const std::string& type, bool error) const
+{
+	return getRule(type, "VoiceSet", _voiceSets, error);
+}
+
+/**
+ * Returns the list of all voice sets
+ * provided by the mod.
+ * @return List of voice sets.
+ */
+const std::vector<std::string> &Mod::getVoiceSetsList() const
+{
+	return _voiceSetsIndex;
+}
+
+/**
  * Returns the rules for the specified weapon set.
  * @param type Weapon set type.
  * @return Rules for the weapon set.
@@ -5019,6 +5053,10 @@ void Mod::sortLists()
 	sortIndex(_manufactureIndex, _manufacture, compareRule<RuleManufacture>(this));
 	sortIndex(_soldierTransformationIndex, _soldierTransformation, compareRule<RuleSoldierTransformation>(this));
 	sortIndex(_invsIndex, _invs, compareRule<RuleInventory>(this));
+	sortIndex(_soldiersIndex, _soldiers, compareRule<RuleSoldier>(this));
+	sortIndex(_aliensIndex, _alienRaces, compareRule<AlienRace>(this));
+	sortIndex(_voiceSetsIndex, _voiceSets, compareRule<RuleVoiceSet>(this));
+
 	// special cases
 	sortIndex(_craftWeaponsIndex, _craftWeapons, compareRule<RuleCraftWeapon>(this));
 	sortIndex(_armorsIndex, _armors, compareRule<Armor>(this));
@@ -5026,8 +5064,6 @@ void Mod::sortLists()
 	_ufopaediaSections[UFOPAEDIA_NOT_AVAILABLE] = 0;
 	sortIndex(_ufopaediaIndex, _ufopaediaArticles, compareRule<ArticleDefinition>(this));
 	std::sort(_ufopaediaCatIndex.begin(), _ufopaediaCatIndex.end(), compareSection(this));
-	sortIndex(_soldiersIndex, _soldiers, compareRule<RuleSoldier>(this));
-	sortIndex(_aliensIndex, _alienRaces, compareRule<AlienRace>(this));
 }
 
 /**

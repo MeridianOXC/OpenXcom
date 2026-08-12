@@ -58,6 +58,7 @@ class RuleCraft;
 class RuleCraftWeapon;
 class RuleItemCategory;
 class RuleItem;
+class RuleVoiceSet;
 class RuleWeaponSet;
 struct RuleDamageType;
 class RuleUfo;
@@ -174,6 +175,7 @@ private:
 	std::map<std::string, RuleCraftWeapon*> _craftWeapons;
 	std::map<std::string, RuleItemCategory*> _itemCategories;
 	std::map<std::string, RuleItem*> _items;
+	std::map<std::string, RuleVoiceSet*> _voiceSets;
 	std::map<std::string, RuleWeaponSet*> _weaponSets;
 	std::map<std::string, RuleUfo*> _ufos;
 	std::map<std::string, RuleTerrain*> _terrains;
@@ -315,12 +317,12 @@ private:
 	std::map<std::string, int> _ufopaediaSections;
 	std::vector<std::string> _countriesIndex, _extraGlobeLabelsIndex, _regionsIndex, _facilitiesIndex, _craftsIndex, _craftWeaponsIndex, _itemCategoriesIndex, _itemsIndex, _invsIndex, _ufosIndex;
 	std::vector<std::string> _aliensIndex, _enviroEffectsIndex, _startingConditionsIndex, _deploymentsIndex, _armorsIndex, _ufopaediaIndex, _ufopaediaCatIndex, _researchIndex, _manufactureIndex;
-	std::vector<std::string> _skillsIndex, _soldiersIndex, _soldierTransformationIndex, _soldierBonusIndex;
+	std::vector<std::string> _skillsIndex, _soldiersIndex, _soldierTransformationIndex, _soldierBonusIndex, _voiceSetsIndex;
 	std::vector<std::string> _alienMissionsIndex, _terrainIndex, _customPalettesIndex, _arcScriptIndex, _eventScriptIndex, _eventIndex, _missionScriptIndex, _adhocScriptIndex;
 	std::vector<std::vector<int> > _alienItemLevels;
 	std::vector<std::array<SDL_Color, TransparenciesOpacityLevels>> _transparencies;
 	int _facilityListOrder, _craftListOrder, _itemCategoryListOrder, _itemListOrder, _armorListOrder, _alienRaceListOrder, _researchListOrder,  _manufactureListOrder;
-	int _soldierBonusListOrder, _transformationListOrder, _ufopaediaListOrder, _invListOrder, _soldierListOrder;
+	int _soldierBonusListOrder, _transformationListOrder, _ufopaediaListOrder, _invListOrder, _soldierListOrder, _voiceSetsListOrder;
 	std::vector<ModData> _modData;
 	ModData* _modCurrent;
 	const SDL_Color *_statePalette;
@@ -629,6 +631,10 @@ public:
 		{
 			rule = getCommendation(name, true);
 		}
+		else if constexpr (std::is_same_v<T, RuleVoiceSet>)
+		{
+			rule = getVoiceSet(name, true);
+		}
 		else
 		{
 			static_assert(sizeof(T) == 0, "Unsupported type to link");
@@ -699,6 +705,10 @@ public:
 	RuleItem *getItem(const std::string &id, bool error = false) const;
 	/// Gets the available items.
 	const std::vector<std::string> &getItemsList() const;
+	/// Gets the ruleset for a voice set type.
+	RuleVoiceSet* getVoiceSet(const std::string& type, bool error = false) const;
+	/// Gets the available voice sets.
+	const std::vector<std::string> &getVoiceSetsList() const;
 	/// Gets the ruleset for a weapon set type.
 	RuleWeaponSet* getWeaponSet(const std::string& type, bool error = false) const;
 	/// Gets the ruleset for a UFO type.

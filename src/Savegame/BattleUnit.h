@@ -169,6 +169,7 @@ private:
 	Soldier *_geoscapeSoldier;
 	std::vector<int> _loftempsSet;
 	const Unit *_unitRules;
+	const RuleVoiceSet* _unitVoiceSet = nullptr;
 	int _rankInt;
 	int _rankIntUnified = 0;
 	int _turretType;
@@ -717,6 +718,11 @@ public:
 	UnitFaction getOriginalFaction() const;
 	/// Get alien/HWP unit.
 	const Unit *getUnitRules() const { return _unitRules; }
+	/// Get unit voice set.
+	const RuleVoiceSet* getUnitVoiceSet() const { return _unitVoiceSet; }
+	/// Set unit voice set. Propagate to geoscape soldier if possible.
+	void setUnitAndSoldierVoiceSet(const RuleVoiceSet* voiceSet);
+
 	Position lastCover;
 	/// get the vector of units we've seen this turn.
 	std::vector<BattleUnit *> &getUnitsSpottedThisTurn();

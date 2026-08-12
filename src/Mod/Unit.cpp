@@ -22,6 +22,7 @@
 #include "LoadYaml.h"
 #include "Mod.h"
 #include "Armor.h"
+#include "RuleVoiceSet.h"
 
 namespace OpenXcom
 {
@@ -132,6 +133,8 @@ void Unit::load(const YAML::YamlNodeReader& node, Mod *mod)
 	mod->loadSoundOffset(_type, _selectWeaponSound, reader["selectWeaponSound"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _annoyedSound, reader["annoyedSound"], "BATTLE.CAT");
 
+	mod->loadNames(_type, _voiceSetNames, reader["voiceSets"]);
+
 	mod->loadSoundOffset(_type, _moveSound, reader["moveSound"], "BATTLE.CAT");
 }
 
@@ -151,6 +154,8 @@ void Unit::afterLoad(const Mod* mod)
 	{
 		mod->linkRule(_liveAlien, _liveAlienName);
 	}
+
+	mod->linkRule(_voiceSets, _voiceSetNames);
 
 	if (Mod::isEmptyRuleName(_civilianRecoveryTypeName) == false)
 	{
@@ -308,6 +313,19 @@ const std::vector<int> &Unit::getPanicSounds() const
 const std::vector<int> &Unit::getBerserkSounds() const
 {
 	return _berserkSound;
+}
+
+/**
+ * Gets a random voice set.
+ * @return A random voice set.
+ */
+const RuleVoiceSet* Unit::getRandomVoiceSet() const
+{
+	if (!_voiceSets.empty())
+	{
+		return _voiceSets[RNG::seedless(0, _voiceSets.size() - 1)];
+	}
+	return nullptr;
 }
 
 /**
