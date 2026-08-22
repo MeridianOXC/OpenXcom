@@ -79,6 +79,8 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 		load(parent, mod, parsers);
 	}
 
+	reader.tryRead("prefix", _prefix);
+
 	//requires
 	mod->loadUnorderedNames(_type, _requires, reader["requires"]);
 	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, reader["requiresBuyBaseFunc"]);
@@ -187,6 +189,7 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 	mod->loadNames(_type, _skillNames, reader["skills"]);
 	mod->loadNames(_type, _voiceSetNamesMale, reader["voiceSetsMale"]);
 	mod->loadNames(_type, _voiceSetNamesFemale, reader["voiceSetsFemale"]);
+	reader.tryRead("voiceSets", _voiceSetNames);
 
 	if (reader["spawnedSoldier"])
 	{
@@ -249,6 +252,22 @@ void RuleSoldier::afterLoad(const Mod* mod)
 	mod->linkRule(_skills, _skillNames);
 	mod->linkRule(_voiceSetsMale, _voiceSetNamesMale);
 	mod->linkRule(_voiceSetsFemale, _voiceSetNamesFemale);
+
+	// Link manually
+	for (auto& entry : _voiceSetNames)
+	{
+		for (auto& voiceSetName : entry.second)
+		{
+			auto* voiceSet = mod->getVoiceSet(voiceSetName, true); // crash if doesn't exist
+			if (voiceSet)
+			{
+				_voiceSets[entry.first].push_back(voiceSet);
+			}
+		}
+	}
+
+	//remove not needed data
+	Collections::removeAll(_voiceSetNames);
 
 	_manaMissingWoundThreshold = mod->getManaWoundThreshold();
 	_healthMissingWoundThreshold = mod->getHealthWoundThreshold();
@@ -566,6 +585,57 @@ const RuleVoiceSet* RuleSoldier::getRandomVoiceSetFemale() const
 	if (!_voiceSetsFemale.empty())
 	{
 		return _voiceSetsFemale[RNG::seedless(0, _voiceSetsFemale.size() - 1)];
+	}
+	return nullptr;
+}
+
+/**
+ * Gets a random voice set.
+ * @return A random voice set.
+ */
+const RuleVoiceSet* RuleSoldier::getRandomVoiceSet(const Soldier* s) const
+{
+	if (!_voiceSets.empty())
+	{
+		if (s)
+		{
+			const std::string gender = s->getGender() == GENDER_MALE ? "M" : "F";
+			std::stringstream ss;
+
+			// find relevant entry by gender, look and look variant
+			for (int i = 0; i <= RuleSoldier::LookVariantBits; ++i)
+			{
+				ss.str("");
+				ss << gender;
+				ss << (int)s->getLook() + (s->getLookVariant() & (RuleSoldier::LookVariantMask >> i)) * 4;
+				auto it = _voiceSets.find(ss.str());
+				if (it != _voiceSets.end())
+				{
+					auto& picks = it->second;
+					if (!picks.empty())
+					{
+						auto* pick = picks[RNG::seedless(0, picks.size() - 1)];
+						return pick;
+					}
+				}
+			}
+
+			// try also gender + hardcoded look 0
+			{
+				ss.str("");
+				ss << gender << "0";
+				auto it = _voiceSets.find(ss.str());
+				if (it != _voiceSets.end())
+				{
+					auto& picks = it->second;
+					if (!picks.empty())
+					{
+						auto* pick = picks[RNG::seedless(0, picks.size() - 1)];
+						return pick;
+					}
+				}
+			}
+		}
 	}
 	return nullptr;
 }

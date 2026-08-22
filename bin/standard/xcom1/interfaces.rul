@@ -1365,6 +1365,10 @@ interfaces:
         color: 241   # pink
       - id: button2
         color: 246   # purple
+      - id: button3
+        color: 213   # gold
+      - id: touchButton
+        color: 213   # gold
   - type: researchMenu
     backgroundImage: BACK05.SCR
     palette: PAL_BASESCAPE
@@ -1449,6 +1453,10 @@ interfaces:
         color: 213   # gold
       - id: button2
         color: 218   # blue
+      - id: button3
+        color: 241   # pink
+      - id: touchButton
+        color: 241   # pink
   - type: techTreeViewer
     backgroundImage: BACK05.SCR
     palette: PAL_BASESCAPE

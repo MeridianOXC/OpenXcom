@@ -2474,7 +2474,8 @@ void Mod::loadAll()
 		}
 	}
 
-	Log(LOG_INFO) << "Loading ended.";
+	auto size = _voxelData.size();
+	Log(LOG_INFO) << "Loading ended. s: " << size << ", e: " << size / 16 << ", m: " << size / 16 - 1; // size, entries, max ID
 
 	sortLists();
 	modResources();

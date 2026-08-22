@@ -1392,6 +1392,10 @@ interfaces: #done
         color: 1   # pink
       - id: button2
         color: 1   # purple
+      - id: button3
+        color: 244
+      - id: touchButton
+        color: 244
   - type: researchMenu
     backgroundImage: BACK05.SCR
     elements:
@@ -1473,6 +1477,10 @@ interfaces: #done
         color: 1   # gold
       - id: button2
         color: 1   # blue
+      - id: button3
+        color: 244
+      - id: touchButton
+        color: 244
   - type: techTreeViewer
     backgroundImage: BACK05.SCR
     elements:

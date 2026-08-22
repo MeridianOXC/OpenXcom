@@ -94,9 +94,16 @@ SoldierVoiceState::SoldierVoiceState(BattleUnit* bu, Soldier* soldier, SoldierVo
 
 	_txtTitle->setAlign(ALIGN_CENTER);
 	if (_bu)
-		_txtTitle->setText(tr("STR_SELECT_VOICE_SET_FOR").arg(_bu->getName(_game->getLanguage())));
+	{
+		if (_bu->getGeoscapeSoldier())
+			_txtTitle->setText(tr("STR_SELECT_VOICE_SET_FOR").arg(_bu->getGeoscapeSoldier()->getName()));
+		else
+			_txtTitle->setText(tr("STR_SELECT_VOICE_SET_FOR").arg(_bu->getName(_game->getLanguage())));
+	}
 	else if (_soldier)
+	{
 		_txtTitle->setText(tr("STR_SELECT_VOICE_SET_FOR").arg(_soldier->getName()));
+	}
 
 	_txtType->setText(tr("STR_TYPE"));
 

@@ -18,6 +18,7 @@
  */
 #include "SlideshowState.h"
 #include "CutsceneState.h"
+#include "../Engine/Action.h"
 #include "../Engine/FileMap.h"
 #include "../Engine/Game.h"
 #include "../Engine/InteractiveSurface.h"
@@ -42,7 +43,7 @@ SlideshowState::SlideshowState(const SlideshowHeader &slideshowHeader, const std
 		InteractiveSurface *slide =
 			new InteractiveSurface(Screen::ORIGINAL_WIDTH, Screen::ORIGINAL_HEIGHT, 0, 0);
 		slide->loadImage(def.imagePath);
-		slide->onMouseClick((ActionHandler)&SlideshowState::screenClick);
+		slide->onMouseClick((ActionHandler)&SlideshowState::screenClick, 0);
 		slide->onKeyboardPress((ActionHandler)&SlideshowState::screenClick, Options::keyOk);
 		slide->onKeyboardPress((ActionHandler)&SlideshowState::screenSkip, Options::keyCancel);
 		slide->setVisible(false);
@@ -102,13 +103,28 @@ void SlideshowState::think()
  */
 void SlideshowState::screenClick(Action *action)
 {
+	bool backwards = false;
+	if (action)
+	{
+		if (action->getDetails()->button.button == SDL_BUTTON_RIGHT || action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
+		{
+			backwards = true;
+		}
+	}
+
+	if (_curScreen <= 0 && backwards)
+	{
+		// can't go more backwards
+		return;
+	}
+
 	if (_curScreen >= 0)
 	{
 		_slides[_curScreen]->setVisible(false);
 		_captions[_curScreen]->setVisible(false);
 	}
 
-	++_curScreen;
+	backwards ? --_curScreen : ++_curScreen;
 
 	// next screen
 	if (_curScreen < (int)_slideshowSlides->size())

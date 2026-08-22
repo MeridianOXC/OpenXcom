@@ -50,6 +50,7 @@ void RuleManufacture::load(const YAML::YamlNodeReader& node, Mod* mod)
 		load(parent, mod);
 	}
 
+	reader.tryRead("ufopediaType", _ufopediaType);
 	reader.tryRead("category", _category);
 	mod->loadUnorderedNames(_name, _requiresName, reader["requires"]);
 	mod->loadBaseFunction(_name, _requiresBaseFunc, reader["requiresBaseFunc"]);
@@ -207,6 +208,18 @@ void RuleManufacture::breakDown(const Mod* mod, const RuleManufactureShortcut* r
 	{
 		_requiresBaseFunc = tempRequiresBaseFunc;
 	}
+}
+
+/**
+ * Gets the custom name of the Ufopedia article related to this manufacture.
+ * @return The ufopedia article name.
+ */
+const std::string& RuleManufacture::getUfopediaType() const
+{
+	if (!_ufopediaType.empty())
+		return _ufopediaType;
+
+	return _name;
 }
 
 /**

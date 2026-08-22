@@ -864,16 +864,7 @@ void InventoryState::btnArmorClickRight(Action *action)
 
 	if (!(s->getCraft() && s->getCraft()->getStatus() == "STR_OUT"))
 	{
-		size_t soldierIndex = 0;
-		for (auto soldierIt = _base->getSoldiers()->begin(); soldierIt != _base->getSoldiers()->end(); ++soldierIt)
-		{
-			if ((*soldierIt)->getId() == s->getId())
-			{
-				soldierIndex = soldierIt - _base->getSoldiers()->begin();
-			}
-		}
-
-		_game->pushState(new SoldierAvatarState(_base, soldierIndex));
+		_game->pushState(new SoldierAvatarState(unit));
 	}
 }
 

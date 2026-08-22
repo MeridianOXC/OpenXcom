@@ -100,7 +100,12 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	default:             rankbonus =  0; break;
 	}
 
-	_value = soldier->getRules()->getValue() + soldier->getMissions() + rankbonus;
+	_valueKilled = soldier->getRules()->getValue() + soldier->getMissions() + rankbonus;
+	_valueCaptured = 0;
+	_valueCapturedResearched = 0;
+	_valueCivilian = 0;
+	_valueCivilianKilledByXcom = 0;
+	_valueVIP = 0;
 
 
 	for (int i = 0; i < BODYPART_MAX; ++i)
@@ -349,8 +354,13 @@ void BattleUnit::prepareUnitResponseSounds(const Mod *mod)
 	// lower priority: soldier type / unit type
 	if (_geoscapeSoldier)
 	{
-		auto soldierRules = _geoscapeSoldier->getRules();
-		if (_gender == GENDER_MALE)
+		const auto* soldierRules = _geoscapeSoldier->getRules();
+		const auto* soldierTypeVoiceSet = soldierRules->getRandomVoiceSet(_geoscapeSoldier);
+		if (soldierTypeVoiceSet)
+		{
+			setUnitAndSoldierVoiceSet(soldierTypeVoiceSet);
+		}
+		else if (_gender == GENDER_MALE)
 		{
 			const auto* voiceSetMale = soldierRules->getRandomVoiceSetMale();
 			if (voiceSetMale)
@@ -507,7 +517,12 @@ BattleUnit::BattleUnit(const Mod *mod, const Unit *unit, UnitFaction faction, in
 		_vip = true;
 	}
 
-	_value = unit->getValue();
+	_valueKilled = unit->getValueKilled();
+	_valueCaptured = unit->getValueCaptured();
+	_valueCapturedResearched = unit->getValueCapturedResearched();
+	_valueCivilian = unit->getValueCivilian();
+	_valueCivilianKilledByXcom = unit->getValueCivilianKilledByXcom();
+	_valueVIP = unit->getValueVIP();
 
 
 	for (int i = 0; i < BODYPART_MAX; ++i)
@@ -3350,6 +3365,17 @@ AIModule *BattleUnit::getAIModule() const
 }
 
 /**
+ * Increases the AI walk abort counter.
+ */
+void BattleUnit::increaseAIWalkAbortCounter()
+{
+	if (_currentAIState)
+	{
+		_currentAIState->increaseWalkAbortCounter();
+	}
+}
+
+/**
  * Gets weight value as hostile unit.
  */
 AIAttackWeight BattleUnit::getAITargetWeightAsHostile(const Mod *mod) const
@@ -4478,15 +4504,6 @@ int BattleUnit::getLoftemps(int entry) const
 }
 
 /**
-  * Get the unit's value. Used for score at debriefing.
-  * @return value score
-  */
-int BattleUnit::getValue() const
-{
-	return _value;
-}
-
-/**
  * Get the unit's death sounds.
  * @return List of sound IDs.
  */
@@ -4991,16 +5008,31 @@ void BattleUnit::setUnitAndSoldierVoiceSet(const RuleVoiceSet* voiceSet)
 {
 	_unitVoiceSet = voiceSet;
 
-	// set also on the soldier if it exists, so that the voice set is persisted beyond a single battle
-	if (_geoscapeSoldier)
+	if (voiceSet)
 	{
-		_geoscapeSoldier->setVoiceSetType(voiceSet->getType());
-	}
+		// set also on the soldier if it exists, so that the voice set is persisted beyond a single battle
+		if (_geoscapeSoldier)
+		{
+			_geoscapeSoldier->setVoiceSetType(voiceSet->getType());
+		}
 
-	_selectUnitSound = voiceSet->getSelectUnitSounds();
-	_startMovingSound = voiceSet->getStartMovingSounds();
-	_selectWeaponSound = voiceSet->getSelectWeaponSounds();
-	_annoyedSound = voiceSet->getAnnoyedSounds();
+		_selectUnitSound = voiceSet->getSelectUnitSounds();
+		_startMovingSound = voiceSet->getStartMovingSounds();
+		_selectWeaponSound = voiceSet->getSelectWeaponSounds();
+		_annoyedSound = voiceSet->getAnnoyedSounds();
+	}
+	else
+	{
+		if (_geoscapeSoldier)
+		{
+			_geoscapeSoldier->setVoiceSetType("");
+		}
+
+		_selectUnitSound = { };
+		_startMovingSound = { };
+		_selectWeaponSound = { };
+		_annoyedSound = { };
+	}
 }
 
 /**

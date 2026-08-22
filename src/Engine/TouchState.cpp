@@ -28,7 +28,7 @@
 namespace OpenXcom
 {
 
-void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100, int horizontalOffset, int verticalOffset)
+void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100, int horizontalOffset, int verticalOffset, bool hideGroupKeys)
 {
 	// Reset touch flags
 	_game->resetTouchButtonFlags();
@@ -37,18 +37,19 @@ void TouchState::touchComponentsCreate(Text* txtTitlePtr, bool hideGroup100, int
 		return;
 
 	_hideGroup100 = hideGroup100;
+	_hideGroupKeys = hideGroupKeys;
 	_txtTitlePtr = txtTitlePtr;
 
 	_btnTouch = new TextButton(40, 16, horizontalOffset + 273, 7 + verticalOffset);
 
-	_btn1     = new       TextButton(25, 16, horizontalOffset + 61 + 0 * 26, 7 + verticalOffset);
-	_btn10    = new       TextButton(25, 16, horizontalOffset + 61 + 1 * 26, 7 + verticalOffset);
-	_btn100   = new       TextButton(25, 16, horizontalOffset + 61 + 2 * 26, 7 + verticalOffset);
+	_btn1     = new       TextButton(25, 16, horizontalOffset + 61 + 0 * 26 + (_hideGroupKeys ? 93 : 0), 7 + verticalOffset);
+	_btn10    = new       TextButton(25, 16, horizontalOffset + 61 + 1 * 26 + (_hideGroupKeys ? 93 : 0), 7 + verticalOffset);
+	_btn100   = new       TextButton(25, 16, horizontalOffset + 61 + 2 * 26 + (_hideGroupKeys ? 93 : 0), 7 + verticalOffset);
 	_owner100 = _btn1;
 
-	_btnLMB   = new       TextButton(25, 16, horizontalOffset + 65 + 3 * 26, 7 + verticalOffset);
-	_btnRMB   = new       TextButton(25, 16, horizontalOffset + 65 + 4 * 26, 7 + verticalOffset);
-	_btnMMB   = new       TextButton(25, 16, horizontalOffset + 65 + 5 * 26, 7 + verticalOffset);
+	_btnLMB   = new       TextButton(25, 16, horizontalOffset + 65 + 3 * 26 + (_hideGroupKeys ? 93 : 0), 7 + verticalOffset);
+	_btnRMB   = new       TextButton(25, 16, horizontalOffset + 65 + 4 * 26 + (_hideGroupKeys ? 93 : 0), 7 + verticalOffset);
+	_btnMMB   = new       TextButton(25, 16, horizontalOffset + 65 + 5 * 26 + (_hideGroupKeys ? 93 : 0), 7 + verticalOffset);
 	_ownerLRM = _btnLMB;
 
 	_btnCtrl  = new ToggleTextButton(27, 16, horizontalOffset + 69 + 6 * 26, 7 + verticalOffset);
@@ -152,9 +153,12 @@ void TouchState::btnTouchClick(Action* action)
 		_btn10->setVisible(true);
 		_btn100->setVisible(true);
 	}
-	_btnCtrl->setVisible(true);
-	_btnAlt->setVisible(true);
-	_btnShift->setVisible(true);
+	if (!_hideGroupKeys)
+	{
+		_btnCtrl->setVisible(true);
+		_btnAlt->setVisible(true);
+		_btnShift->setVisible(true);
+	}
 	_btnLMB->setVisible(true);
 	_btnRMB->setVisible(true);
 	_btnMMB->setVisible(true);

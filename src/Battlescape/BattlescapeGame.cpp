@@ -813,6 +813,10 @@ void BattlescapeGame::checkForCasualties(const RuleDamageType *damageType, Battl
 						if (!victim->isCosmetic())
 						{
 							bu->getStatistics()->kills.push_back(new BattleUnitKills(killStat));
+							if (killStat.status == STATUS_DEAD)
+							{
+								bu->addKillCount();
+							}
 							if (victim->getFaction() == FACTION_HOSTILE)
 							{
 								bu->getStatistics()->slaveKills++;
@@ -1730,6 +1734,11 @@ void BattlescapeGame::primaryAction(Position pos)
 
 	if (_currentAction.targeting && _save->getSelectedUnit())
 	{
+		if (_currentAction.weapon && _currentAction.weapon->getRules()->isOutOfRange(_currentAction.actor->distance3dToPositionSq(pos)))
+		{
+			_parentState->warning("STR_OUT_OF_RANGE");
+			return;
+		}
 		if (_currentAction.type == BA_LAUNCH)
 		{
 			int maxWaypoints = _currentAction.weapon->getCurrentWaypoints();
@@ -2492,35 +2501,35 @@ void BattlescapeGame::tallySummonedVIPs()
 		{
 			if (unit->getStatus() == STATUS_DEAD)
 			{
-				_save->addLostVIP(unit->getValue());
+				_save->addLostVIP(unit->getValueVIP());
 			}
 			else if (escapeType == ESCAPE_EXIT)
 			{
 				if (unit->isInExitArea(END_POINT))
-					_save->addSavedVIP(unit->getValue());
+					_save->addSavedVIP(unit->getValueVIP());
 				else
-					_save->addLostVIP(unit->getValue());
+					_save->addLostVIP(unit->getValueVIP());
 			}
 			else if (escapeType == ESCAPE_ENTRY)
 			{
 				if (unit->isInExitArea(START_POINT))
-					_save->addSavedVIP(unit->getValue());
+					_save->addSavedVIP(unit->getValueVIP());
 				else
-					_save->addLostVIP(unit->getValue());
+					_save->addLostVIP(unit->getValueVIP());
 			}
 			else if (escapeType == ESCAPE_EITHER)
 			{
 				if (unit->isInExitArea(START_POINT) || unit->isInExitArea(END_POINT))
-					_save->addSavedVIP(unit->getValue());
+					_save->addSavedVIP(unit->getValueVIP());
 				else
-					_save->addLostVIP(unit->getValue());
+					_save->addLostVIP(unit->getValueVIP());
 			}
 			else //if (escapeType == ESCAPE_NONE)
 			{
 				if (unit->isInExitArea(START_POINT))
-					_save->addSavedVIP(unit->getValue()); // waiting in craft, saved even if aborted
+					_save->addSavedVIP(unit->getValueVIP()); // waiting in craft, saved even if aborted
 				else
-					_save->addWaitingOutsideVIP(unit->getValue()); // waiting outside, lost if aborted
+					_save->addWaitingOutsideVIP(unit->getValueVIP()); // waiting outside, lost if aborted
 			}
 		}
 	}

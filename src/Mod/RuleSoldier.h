@@ -34,6 +34,7 @@ class RuleItem;
 class RuleSkill;
 class Armor;
 class RuleVoiceSet;
+class Soldier;
 
 /**
  * Represents the creation data for an X-COM unit.
@@ -64,6 +65,7 @@ public:
 
 private:
 	std::string _type;
+	std::string _prefix;
 	YAML::YamlString _spawnedSoldier;
 	int _group;
 	int _listOrder;
@@ -101,6 +103,8 @@ private:
 	std::vector<const RuleSkill*> _skills;
 	std::vector<std::string> _voiceSetNamesMale, _voiceSetNamesFemale;
 	std::vector<const RuleVoiceSet*> _voiceSetsMale, _voiceSetsFemale;
+	std::map<std::string, std::vector<std::string> > _voiceSetNames;
+	std::map<std::string, std::vector<const RuleVoiceSet*> > _voiceSets;
 	ScriptValues<RuleSoldier> _scriptValues;
 
 	void addSoldierNamePool(const std::string &namFile);
@@ -115,6 +119,8 @@ public:
 	void afterLoad(const Mod* mod);
 	/// Gets the soldier's type.
 	const std::string& getType() const;
+	/// Gets the soldier's name prefix.
+	const std::string& getPrefix() const { return _prefix; }
 	/// Gets the spawned soldier template.
 	const YAML::YamlString& getSpawnedSoldierTemplate() const { return _spawnedSoldier; }
 	/// Gets the soldier type group.
@@ -214,6 +220,11 @@ public:
 	const std::vector<const RuleVoiceSet*> &getVoiceSetsFemaleRaw() const { return _voiceSetsFemale; }
 	/// Gets a random female voice set.
 	const RuleVoiceSet* getRandomVoiceSetFemale() const;
+
+	/// Gets the list of defined voice sets.
+	const std::map<std::string, std::vector<const RuleVoiceSet*> > &getVoiceSetsRaw() const { return _voiceSets; }
+	/// Gets a random voice set.
+	const RuleVoiceSet* getRandomVoiceSet(const Soldier* s) const;
 
 	/// Gets the pool list for soldier names.
 	const std::vector<SoldierNamePool*> &getNames() const;

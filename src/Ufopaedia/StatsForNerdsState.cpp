@@ -4058,6 +4058,7 @@ void StatsForNerdsState::initSoldierList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, soldierRule->getType(), "type");
+		addSingleString(ss, soldierRule->getPrefix(), "prefix");
 		addBoolean(ss, soldierRule->getShowTypeInInventory(), "showTypeInInventory");
 		addInteger(ss, soldierRule->getNames().size(), "soldierNames*"); // size only
 		addInteger(ss, soldierRule->getFemaleFrequency(), "femaleFrequency", 50);
@@ -4135,6 +4136,8 @@ void StatsForNerdsState::initSoldierList()
 
 		addBoolean(ss, !soldierRule->getVoiceSetsMaleRaw().empty(), "voiceSetsMale*", false); // just say if there are any or not
 		addBoolean(ss, !soldierRule->getVoiceSetsFemaleRaw().empty(), "voiceSetsFemale*", false); // just say if there are any or not
+
+		addBoolean(ss, !soldierRule->getVoiceSetsRaw().empty(), "voiceSets*", false); // just say if there are any or not
 
 		addSection("{Mod info}", "", _white);
 		{
@@ -4231,7 +4234,12 @@ void StatsForNerdsState::initUnitList()
 		addBoolean(ss, unitRule->waitIfOutsideWeaponRange(), "waitIfOutsideWeaponRange");
 
 		addSection("{Debriefing}", "", _white);
-		addInteger(ss, unitRule->getValue(), "value", 0);
+		addInteger(ss, unitRule->getValueKilled(), "value", 0);
+		addInteger(ss, unitRule->getValueCaptured(), "valueCaptured", 0);
+		addInteger(ss, unitRule->getValueCapturedResearched(), "valueCapturedResearched", 10);
+		addInteger(ss, unitRule->getValueCivilian(), "valueCivilian", 0);
+		addInteger(ss, unitRule->getValueCivilianKilledByXcom(), "valueCivilianKilledByXcom", 0);
+		addInteger(ss, unitRule->getValueVIP(), "valueVIP", 0);
 		addBoolean(ss, unitRule->isRecoverableAsCivilian(), "civilianRecoveryType*"); // just say if there are any or not
 		addBoolean(ss, unitRule->isRecoverableAsScientist(), "_recoverScientist");
 		addBoolean(ss, unitRule->isRecoverableAsEngineer(), "_recoverEngineer");

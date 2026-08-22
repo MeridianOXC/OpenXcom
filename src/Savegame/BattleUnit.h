@@ -156,7 +156,8 @@ private:
 	int _lastReloadSound;
 	std::vector<int> _deathSound, _aggroSound;
 	std::vector<int> _selectUnitSound, _startMovingSound, _selectWeaponSound, _annoyedSound;
-	int _value, _moveSound;
+	int _valueKilled, _valueCaptured, _valueCapturedResearched, _valueCivilian, _valueCivilianKilledByXcom, _valueVIP;
+	int _moveSound;
 	int _intelligence, _aggression;
 	int _maxViewDistanceAtDark, _maxViewDistanceAtDay;
 	int _maxViewDistanceAtDarkSquared;
@@ -436,6 +437,8 @@ public:
 	AIModule *getAIModule() const;
 	/// Set AI Module.
 	void setAIModule(AIModule *ai);
+	/// Increases the AI walk abort counter.
+	void increaseAIWalkAbortCounter();
 	/// Gets weight value as hostile unit.
 	AIAttackWeight getAITargetWeightAsHostile(const Mod *mod) const;
 	/// Gets weight value as civilian unit when consider by aliens.
@@ -586,8 +589,13 @@ public:
 	int getKneelHeight() const;
 	/// Get the unit's loft ID.
 	int getLoftemps(int entry = 0) const;
-	/// Get the unit's value.
-	int getValue() const;
+	/// Get the unit's value. Used for score at debriefing.
+	int getValueKilled() const { return _valueKilled; }
+	int getValueCaptured() const { return _valueCaptured; }
+	int getValueCapturedResearched() const { return _valueCapturedResearched; }
+	int getValueCivilian() const { return _valueCivilian; }
+	int getValueCivilianKilledByXcom() const { return _valueCivilianKilledByXcom; }
+	int getValueVIP() const { return _valueVIP; }
 	/// Get the reload sound (of the last reloaded weapon).
 	int getReloadSound() const { return _lastReloadSound; }
 	/// Get the unit's death sounds.

@@ -94,8 +94,15 @@ bool CutsceneState::initDisplay()
 {
 	bool letterboxed = Options::keepAspectRatio;
 	Options::keepAspectRatio = true;
-	Options::baseXResolution = Screen::ORIGINAL_WIDTH;
-	Options::baseYResolution = Screen::ORIGINAL_HEIGHT;
+	if (Options::oxceMaximizeCutsceneScreens)
+	{
+		Options::baseXResolution = Screen::ORIGINAL_WIDTH;
+		Options::baseYResolution = Screen::ORIGINAL_HEIGHT;
+	}
+	else
+	{
+		Screen::updateScale(Options::geoscapeScale, Options::baseXGeoscape, Options::baseYGeoscape, true);
+	}
 	_game->getScreen()->resetDisplay(false);
 	return letterboxed;
 }

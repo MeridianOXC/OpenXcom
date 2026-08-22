@@ -48,6 +48,7 @@ class Mod;
 class RuleManufacture
 {
 private:
+	std::string _ufopediaType;
 	std::string _name, _category;
 	std::string _spawnedPersonType, _spawnedPersonName;
 	YAML::YamlString _spawnedSoldier;
@@ -80,6 +81,9 @@ public:
 	void afterLoad(const Mod* mod);
 	/// Change the name and break down the sub-projects into simpler components.
 	void breakDown(const Mod* mod, const RuleManufactureShortcut* recipe);
+
+	/// Gets the custom name of the Ufopedia article related to this manufacture.
+	const std::string& getUfopediaType() const;
 
 	/// Gets the manufacture name.
 	const std::string &getName() const;

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "../Engine/State.h"
+#include "../Engine/TouchState.h"
 
 namespace OpenXcom
 {
@@ -36,7 +36,7 @@ class InteractiveSurface;
 /**
  * Screen that allows changing of Production settings (assigned engineer, units to build).
  */
-class ManufactureInfoState : public State
+class ManufactureInfoState : public TouchState
 {
 private:
 	Base * _base;
@@ -124,6 +124,8 @@ public:
 	ManufactureInfoState(Base * base, Production * production);
 	/// Cleans up the state
 	~ManufactureInfoState();
+	/// Resets state.
+	void init() override;
 };
 
 }

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "../Engine/State.h"
+#include "../Engine/TouchState.h"
 
 namespace OpenXcom
 {
@@ -35,7 +35,7 @@ class InteractiveSurface;
 /**
  * Window which allows changing of the number of assigned scientist to a project.
  */
-class ResearchInfoState : public State
+class ResearchInfoState : public TouchState
 {
 private:
 	Base *_base;
@@ -56,6 +56,8 @@ public:
 	ResearchInfoState(Base *base, ResearchProject *project);
 	/// Cleans up the ResearchInfo state
 	~ResearchInfoState();
+	/// Resets state.
+	void init() override;
 	/// Handler for clicking the OK button.
 	void btnOkClick(Action *action);
 	/// Handler for clicking the Cancel button.

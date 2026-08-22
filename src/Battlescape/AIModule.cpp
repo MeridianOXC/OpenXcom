@@ -47,7 +47,7 @@ namespace OpenXcom
  */
 AIModule::AIModule(SavedBattleGame *save, BattleUnit *unit, Node *node) :
 	_save(save), _unit(unit), _aggroTarget(0), _knownEnemies(0), _visibleEnemies(0), _spottingEnemies(0),
-	_escapeTUs(0), _ambushTUs(0), _weaponPickedUp(false), _rifle(false), _melee(false), _blaster(false), _grenade(false),
+	_escapeTUs(0), _ambushTUs(0), _walkAbortCounter(0), _weaponPickedUp(false), _rifle(false), _melee(false), _blaster(false), _grenade(false),
 	_didPsi(false), _AIMode(AI_PATROL), _closestDist(100), _fromNode(node), _toNode(0), _foundBaseModuleToDestroy(false)
 {
 	_traceAI = Options::traceAI;
@@ -90,6 +90,9 @@ void AIModule::reset()
 	// these variables are not saved in save() and also not initiated in think()
 	_escapeTUs = 0;
 	_ambushTUs = 0;
+
+	// temp counter to prevent infinite loops, reset every turn
+	_walkAbortCounter = 0;
 }
 
 /**
@@ -421,6 +424,12 @@ bool AIModule::medikit_think(BattleMediKitType healOrStim)
  */
 void AIModule::think(BattleAction *action)
 {
+	// Workaround: AI freeze
+	if (_walkAbortCounter > 200)
+	{
+		_unit->clearTimeUnits();
+	}
+
 	action->type = BA_RETHINK;
 	action->actor = _unit;
 	action->weapon = _unit->getMainHandWeapon(false);

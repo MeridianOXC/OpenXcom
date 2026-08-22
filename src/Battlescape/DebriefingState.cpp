@@ -1481,7 +1481,6 @@ void DebriefingState::prepareDebriefing()
 		UnitStatus status = bunit->getStatus();
 		UnitFaction faction = bunit->getFaction();
 		UnitFaction oldFaction = bunit->getOriginalFaction();
-		int value = bunit->getValue();
 		Soldier *soldier = save->getSoldier(bunit->getId());
 
 		if (!bunit->getTile())
@@ -1511,13 +1510,13 @@ void DebriefingState::prepareDebriefing()
 		{ // so this is a dead unit
 			if (oldFaction == FACTION_HOSTILE && bunit->killedBy() == FACTION_PLAYER)
 			{
-				addStat("STR_ALIENS_KILLED", 1, value);
+				addStat("STR_ALIENS_KILLED", 1, bunit->getValueKilled());
 			}
 			else if (oldFaction == FACTION_PLAYER)
 			{
 				if (soldier != 0)
 				{
-					addStat("STR_XCOM_OPERATIVES_KILLED", 1, -value);
+					addStat("STR_XCOM_OPERATIVES_KILLED", 1, -bunit->getValueKilled());
 					bunit->updateGeoscapeStats(soldier);
 
 					// starting conditions: recover armor backup
@@ -1537,7 +1536,7 @@ void DebriefingState::prepareDebriefing()
 				}
 				else
 				{ // non soldier player = tank
-					addStat("STR_TANKS_DESTROYED", 1, -value);
+					addStat("STR_TANKS_DESTROYED", 1, -bunit->getValueKilled());
 					save->increaseVehiclesLost();
 				}
 			}
@@ -1547,14 +1546,14 @@ void DebriefingState::prepareDebriefing()
 				{
 					if (!bunit->isCosmetic())
 					{
-						addStat("STR_CIVILIANS_KILLED_BY_XCOM_OPERATIVES", 1, -bunit->getValue() - (2 * (bunit->getValue() / 3)));
+						addStat("STR_CIVILIANS_KILLED_BY_XCOM_OPERATIVES", 1, -bunit->getValueCivilianKilledByXcom());
 					}
 				}
 				else // if civilians happen to kill themselves XCOM shouldn't get penalty for it
 				{
 					if (!bunit->isCosmetic())
 					{
-						addStat("STR_CIVILIANS_KILLED_BY_ALIENS", 1, -bunit->getValue());
+						addStat("STR_CIVILIANS_KILLED_BY_ALIENS", 1, -bunit->getValueCivilian());
 					}
 				}
 			}
@@ -1615,7 +1614,7 @@ void DebriefingState::prepareDebriefing()
 				}
 				else
 				{ // so game is aborted and unit is not on exit area
-					addStat("STR_XCOM_OPERATIVES_MISSING_IN_ACTION", 1, -value);
+					addStat("STR_XCOM_OPERATIVES_MISSING_IN_ACTION", 1, -bunit->getValueKilled());
 					playersSurvived--;
 					if (soldier != 0)
 					{
@@ -1680,14 +1679,14 @@ void DebriefingState::prepareDebriefing()
 				{
 					if (!bunit->isResummonedFakeCivilian() && !bunit->isCosmetic() && !ignoreLivingCivilians)
 					{
-						addStat("STR_CIVILIANS_KILLED_BY_ALIENS", 1, -bunit->getValue());
+						addStat("STR_CIVILIANS_KILLED_BY_ALIENS", 1, -bunit->getValueCivilian());
 					}
 				}
 				else
 				{
 					if (!bunit->isResummonedFakeCivilian() && !bunit->isCosmetic() && !ignoreLivingCivilians)
 					{
-						addStat("STR_CIVILIANS_SAVED", 1, bunit->getValue());
+						addStat("STR_CIVILIANS_SAVED", 1, bunit->getValueCivilian());
 					}
 					if (!ignoreLivingCivilians || bunit->isResummonedFakeCivilian())
 					{
@@ -2746,16 +2745,16 @@ void DebriefingState::recoverAlien(BattleUnit *from, Base *base, Craft* craft)
 		if (research != 0 && !_game->getSavedGame()->isResearched(research))
 		{
 			// more points if it's not researched
-			addStat(surrendered ? "STR_LIVE_ALIENS_SURRENDERED" : "STR_LIVE_ALIENS_RECOVERED", 1, from->getValue() * 2);
+			addStat(surrendered ? "STR_LIVE_ALIENS_SURRENDERED" : "STR_LIVE_ALIENS_RECOVERED", 1, from->getValueCaptured());
 		}
 		else if (_game->getMod()->getGiveScoreAlsoForResearchedArtifacts())
 		{
-			addStat(surrendered ? "STR_LIVE_ALIENS_SURRENDERED" : "STR_LIVE_ALIENS_RECOVERED", 1, from->getValue() * 2);
+			addStat(surrendered ? "STR_LIVE_ALIENS_SURRENDERED" : "STR_LIVE_ALIENS_RECOVERED", 1, from->getValueCaptured());
 		}
 		else
 		{
 			// 10 points for recovery
-			addStat(surrendered ? "STR_LIVE_ALIENS_SURRENDERED" : "STR_LIVE_ALIENS_RECOVERED", 1, 10);
+			addStat(surrendered ? "STR_LIVE_ALIENS_SURRENDERED" : "STR_LIVE_ALIENS_RECOVERED", 1, from->getValueCapturedResearched());
 		}
 
 		addItemsToBaseStores(ruleLiveAlienItem, base, 1, false);

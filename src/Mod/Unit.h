@@ -460,7 +460,8 @@ private:
 	std::vector<int> _selectUnitSound, _startMovingSound, _selectWeaponSound, _annoyedSound;
 	std::vector<std::string> _voiceSetNames;
 	std::vector<const RuleVoiceSet*> _voiceSets;
-	int _value, _moraleLossWhenKilled, _moveSound;
+	int _valueKilled, _valueCaptured, _valueCapturedResearched, _valueCivilian, _valueCivilianKilledByXcom, _valueVIP;
+	int _moraleLossWhenKilled, _moveSound;
 	int _intelligence, _aggression, _spotter, _sniper, _energyRecovery;
 	SpecialAbility _specab;
 	const RuleItem* _liveAlien = nullptr;
@@ -526,7 +527,12 @@ public:
 	/// Gets the alien rank.
 	std::string getRank() const;
 	/// Gets the value - for score calculation.
-	int getValue() const;
+	int getValueKilled() const { return _valueKilled; }
+	int getValueCaptured() const { return _valueCaptured; }
+	int getValueCapturedResearched() const { return _valueCapturedResearched; }
+	int getValueCivilian() const { return _valueCivilian; }
+	int getValueCivilianKilledByXcom() const { return _valueCivilianKilledByXcom; }
+	int getValueVIP() const { return _valueVIP; }
 	/// Percentage modifier for morale loss when this unit is killed.
 	int getMoraleLossWhenKilled() const { return _moraleLossWhenKilled; };
 	/// Gets the death sound id.
