@@ -106,7 +106,7 @@ void SlideshowState::screenClick(Action *action)
 	bool backwards = false;
 	if (action)
 	{
-		if (action->getDetails()->button.button == SDL_BUTTON_RIGHT || action->getDetails()->button.button == SDL_BUTTON_WHEELUP)
+		if (action->getDetails()->button.button == SDL_BUTTON_RIGHT /* || action->getDetails()->button.button == SDL_BUTTON_WHEELUP */)
 		{
 			backwards = true;
 		}
