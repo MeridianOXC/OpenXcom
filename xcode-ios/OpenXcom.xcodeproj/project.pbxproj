@@ -15,6 +15,8 @@
 		5B32845D255B1B14002C2AC1 /* NotesState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B328451255B1B13002C2AC1 /* NotesState.cpp */; };
 		5B498CD325404F5D00D97DF7 /* SoldierTransformationListState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B498CC725404F5C00D97DF7 /* SoldierTransformationListState.cpp */; };
 		5B5F680D2391B9A100D2D740 /* OptionsFoldersState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B5F68012391B9A000D2D740 /* OptionsFoldersState.cpp */; };
+		5B650199304D7C7E00770C53 /* RuleVoiceSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B65018D304D7C7E00770C53 /* RuleVoiceSet.cpp */; };
+		5B65019D304D7C9500770C53 /* SoldierVoiceState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B65019B304D7C9400770C53 /* SoldierVoiceState.cpp */; };
 		5B76D7A8241000F800F6D311 /* SkillMenuState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B76D7A7241000F800F6D311 /* SkillMenuState.cpp */; };
 		5B76D7AB2410011D00F6D311 /* RuleSkill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B76D7AA2410011D00F6D311 /* RuleSkill.cpp */; };
 		5B7A846625D94084003698D9 /* ExtendedGeoscapeLinksState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5B7A846525D94084003698D9 /* ExtendedGeoscapeLinksState.cpp */; };
@@ -549,6 +551,10 @@
 		5B498CD225404F5C00D97DF7 /* SoldierTransformationListState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoldierTransformationListState.h; sourceTree = "<group>"; };
 		5B5F68012391B9A000D2D740 /* OptionsFoldersState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OptionsFoldersState.cpp; sourceTree = "<group>"; };
 		5B5F680C2391B9A000D2D740 /* OptionsFoldersState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OptionsFoldersState.h; sourceTree = "<group>"; };
+		5B65018D304D7C7E00770C53 /* RuleVoiceSet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RuleVoiceSet.cpp; sourceTree = "<group>"; };
+		5B650198304D7C7E00770C53 /* RuleVoiceSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuleVoiceSet.h; sourceTree = "<group>"; };
+		5B65019B304D7C9400770C53 /* SoldierVoiceState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoldierVoiceState.cpp; sourceTree = "<group>"; };
+		5B65019C304D7C9400770C53 /* SoldierVoiceState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoldierVoiceState.h; sourceTree = "<group>"; };
 		5B76D79C241000F700F6D311 /* SkillMenuState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkillMenuState.h; sourceTree = "<group>"; };
 		5B76D7A7241000F800F6D311 /* SkillMenuState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkillMenuState.cpp; sourceTree = "<group>"; };
 		5B76D7A92410011D00F6D311 /* RuleSkill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuleSkill.h; sourceTree = "<group>"; };
@@ -2428,6 +2434,8 @@
 		B28343BD201F6D9D00BAEC9D /* Basescape */ = {
 			isa = PBXGroup;
 			children = (
+				5B65019B304D7C9400770C53 /* SoldierVoiceState.cpp */,
+				5B65019C304D7C9400770C53 /* SoldierVoiceState.h */,
 				5B287CA12DFF1BDC00155995 /* ItemLocationsState.cpp */,
 				5B287CA02DFF1BDB00155995 /* ItemLocationsState.h */,
 				5B9804FE2DA51DBA00DC818D /* GlobalResearchDiaryState.cpp */,
@@ -2555,6 +2563,8 @@
 		B283440E201F6D9D00BAEC9D /* Mod */ = {
 			isa = PBXGroup;
 			children = (
+				5B65018D304D7C7E00770C53 /* RuleVoiceSet.cpp */,
+				5B650198304D7C7E00770C53 /* RuleVoiceSet.h */,
 				5BC900FA2CD504D3007AE997 /* RuleWeaponSet.cpp */,
 				5BC900FB2CD504D3007AE997 /* RuleWeaponSet.h */,
 				5BF23CE629FD070900A5C239 /* LoadYaml.h */,
@@ -2841,6 +2851,7 @@
 				B28344B4201F6D9E00BAEC9D /* scale2x.cpp in Sources */,
 				B283457B201F6D9E00BAEC9D /* SoldierNamePool.cpp in Sources */,
 				5B95F041233D1BB20018C910 /* GeoscapeEvent.cpp in Sources */,
+				5B65019D304D7C9500770C53 /* SoldierVoiceState.cpp in Sources */,
 				B283448C201F6D9D00BAEC9D /* TargetInfoState.cpp in Sources */,
 				5B81539B2D247C9B00B41A33 /* common.cpp in Sources */,
 				5BD0BB032242E05B008E6DFB /* Unicode.cpp in Sources */,
@@ -2892,6 +2903,7 @@
 				B28344E3201F6D9E00BAEC9D /* ItemContainer.cpp in Sources */,
 				B283452B201F6D9E00BAEC9D /* ArticleStateTFTDArmor.cpp in Sources */,
 				B2834533201F6D9E00BAEC9D /* ArticleStateVehicle.cpp in Sources */,
+				5B650199304D7C7E00770C53 /* RuleVoiceSet.cpp in Sources */,
 				B28344BD201F6D9E00BAEC9D /* Font.cpp in Sources */,
 				B2834560201F6D9E00BAEC9D /* ManufactureState.cpp in Sources */,
 				B28344C7201F6D9E00BAEC9D /* FlcPlayer.cpp in Sources */,
