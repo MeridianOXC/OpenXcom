@@ -284,13 +284,14 @@ void NewManufactureListState::lstProdClickMiddle(Action *)
 	_doInit = false;
 
 	std::string articleId = _displayedStrings[_lstManufacture->getSelectedRow()];
+	const RuleManufacture* selectedTopic = _game->getMod()->getManufacture(articleId);
+
 	if (_game->isCtrlPressed(true))
 	{
-		Ufopaedia::openArticle(_game, articleId);
+		Ufopaedia::openArticle(_game, selectedTopic->getUfopediaType());
 	}
 	else
 	{
-		const RuleManufacture* selectedTopic = _game->getMod()->getManufacture(articleId);
 		_game->pushState(new TechTreeViewerState(0, selectedTopic));
 	}
 }

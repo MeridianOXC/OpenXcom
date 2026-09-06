@@ -39,6 +39,7 @@ class RuleResearch;
 class RuleSoldier;
 class RulesoldierBonus;
 class RuleCommendations;
+class RuleVoiceSet;
 
 /**
  * Move cost multipler.
@@ -160,6 +161,9 @@ private:
 	std::vector<int> _startMovingSoundMale, _startMovingSoundFemale;
 	std::vector<int> _selectWeaponSoundMale, _selectWeaponSoundFemale;
 	std::vector<int> _annoyedSoundMale, _annoyedSoundFemale;
+
+	std::map<std::string, std::vector<std::string> > _voiceSetNames;
+	std::map<std::string, std::vector<const RuleVoiceSet*> > _voiceSets;
 
 	int _size, _weight, _visibilityAtDark, _visibilityAtDay;
 
@@ -337,6 +341,12 @@ public:
 	const std::vector<int> &getMaleAnnoyedSounds() const { return _annoyedSoundMale; }
 	/// Gets the female "annoyed" sounds.
 	const std::vector<int> &getFemaleAnnoyedSounds() const { return _annoyedSoundFemale; }
+
+	/// Gets the list of defined voice sets.
+	const std::map<std::string, std::vector<const RuleVoiceSet*> > &getVoiceSetsRaw() const { return _voiceSets; }
+	/// Gets a random voice set.
+	const RuleVoiceSet* getRandomVoiceSet(const Soldier* s) const;
+
 	/// Gets whether this is a normal or big unit.
 	int getSize() const;
 	/// Gets how much space the armor occupies in a craft.

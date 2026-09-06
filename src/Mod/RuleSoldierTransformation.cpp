@@ -32,7 +32,7 @@ RuleSoldierTransformation::RuleSoldierTransformation(const std::string &name, in
 	_allowsDeadSoldiers(false), _allowsLiveSoldiers(false), _allowsWoundedSoldiers(false),
 	_listOrder(listOrder), _cost(0), _transferTime(0), _recoveryTime(0), _minRank(0), _includeBonusesForMinStats(false), _includeBonusesForMaxStats(false),
 	_showMinMax(false), _lowerBoundAtMinStats(true), _upperBoundAtMaxStats(false), _upperBoundAtStatCaps(false), _upperBoundType(0),
-	_reset(false), _resetRank(false)
+	_reset(false), _resetRank(false), _resetVoice(false)
 {
 	_requiredMaxStats = UnitStats::scalar(9999); // set all default max stats to 9999
 }
@@ -99,6 +99,7 @@ void RuleSoldierTransformation::load(const YAML::YamlNodeReader& node, Mod* mod)
 	mod->loadUnorderedNames(_name, _removeTransformations, reader["removeTransformations"]);
 	reader.tryRead("reset", _reset);
 	reader.tryRead("resetRank", _resetRank);
+	reader.tryRead("resetVoice", _resetVoice);
 	reader.tryRead("soldierBonusType", _soldierBonusType);
 
 	if (reader["events"])

@@ -13,7 +13,7 @@ ${LangFileString} SETUP_DESKTOP_DESC "Vytvoří zástupce na ploše, který umo�
 ${LangFileString} SETUP_UNDATA "Vymazat data X-COM"
 ${LangFileString} SETUP_UNDATA_DESC "Smaže všechna data ${GAME_NAME} včetně X-COM zdrojových souborů. Doporučeno, pokud provádíte čistou instalaci."
 ${LangFileString} SETUP_UNUSER "Vymazat data uživatele"
-${LangFileString} SETUP_UNUSER_DESC "Smaže všechna data ${GAME_NAME} vytvořená uživatelem, včetně modů, uložených her a nastavení. Použijte pouze při kompletní přeinstalaci."
+${LangFileString} SETUP_UNUSER_DESC "Smaže všechna uživatelská data ${GAME_NAME}, včetně modů, uložených her, snímků obrazovky a nastavení. Použijte pouze tehdy, chcete-li data zcela vymazat."
 ${LangFileString} SETUP_SHORTCUT_CHANGELOG "Changelog"
 ${LangFileString} SETUP_SHORTCUT_README "Přečti si"
 ${LangFileString} SETUP_SHORTCUT_USER "Složka uživatele"

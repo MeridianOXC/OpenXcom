@@ -152,6 +152,7 @@ void Soldier::load(const YAML::YamlNodeReader& node, const Mod *mod, SavedGame *
 		reader.tryRead("id", _id);
 	reader.tryRead("name", _name);
 	reader.tryRead("callsign", _callsign);
+	reader.tryRead("voiceSetID", _voiceSetType);
 	reader.tryRead("nationality", _nationality);
 	if (soldierTemplate)
 	{
@@ -286,6 +287,8 @@ void Soldier::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) cons
 	writer.write("name", _name);
 	if (!_callsign.empty())
 		writer.write("callsign", _callsign);
+	if (!_voiceSetType.empty())
+		writer.write("voiceSetID", _voiceSetType);
 	writer.write("nationality", _nationality);
 	writer.write("initialStats", _initialStats);
 	writer.write("currentStats", _currentStats);
@@ -352,17 +355,18 @@ void Soldier::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) cons
  */
 std::string Soldier::getName(bool statstring, unsigned int maxLength) const
 {
-	if (statstring && !_statString.empty())
+	if (statstring && (!_statString.empty() || !_rules->getPrefix().empty()))
 	{
 		auto nameCodePointLength = Unicode::codePointLengthUTF8(_name);
 		auto statCodePointLength = Unicode::codePointLengthUTF8(_statString);
+		statCodePointLength += _rules->getPrefix().empty() ? 0 : Unicode::codePointLengthUTF8(_rules->getPrefix());
 		if (nameCodePointLength + statCodePointLength > maxLength)
 		{
-			return Unicode::codePointSubstrUTF8(_name, 0, maxLength - statCodePointLength) + "/" + _statString;
+			return _rules->getPrefix() + Unicode::codePointSubstrUTF8(_name, 0, maxLength - statCodePointLength) + (_statString.empty() ? "" : "/") + _statString;
 		}
 		else
 		{
-			return _name + "/" + _statString;
+			return _rules->getPrefix() + _name + (_statString.empty() ? "" : "/") + _statString;
 		}
 	}
 	else
@@ -1540,11 +1544,11 @@ void Soldier::calcStatString(const std::vector<StatString *> &statStrings, bool 
 {
 	if (_rules->getStatStrings().empty())
 	{
-		_statString = StatString::calcStatString(_currentStats, statStrings, psiStrengthEval, _psiTraining);
+		_statString = StatString::calcStatStringWorker(_currentStats, (int)_rank, statStrings, psiStrengthEval, _psiTraining);
 	}
 	else
 	{
-		_statString = StatString::calcStatString(_currentStats, _rules->getStatStrings(), psiStrengthEval, _psiTraining);
+		_statString = StatString::calcStatStringWorker(_currentStats, (int)_rank, _rules->getStatStrings(), psiStrengthEval, _psiTraining);
 	}
 }
 
@@ -1844,6 +1848,12 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 		if (transformationRule->getResetRank())
 		{
 			_rank = RANK_ROOKIE;
+		}
+
+		// reset soldier voice set, if needed
+		if (transformationRule->getResetVoice())
+		{
+			_voiceSetType = "";
 		}
 
 		// change stats

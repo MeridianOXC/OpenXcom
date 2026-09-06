@@ -1392,6 +1392,10 @@ interfaces: #done
         color: 1   # pink
       - id: button2
         color: 1   # purple
+      - id: button3
+        color: 244
+      - id: touchButton
+        color: 244
   - type: researchMenu
     backgroundImage: BACK05.SCR
     elements:
@@ -1473,6 +1477,10 @@ interfaces: #done
         color: 1   # gold
       - id: button2
         color: 1   # blue
+      - id: button3
+        color: 244
+      - id: touchButton
+        color: 244
   - type: techTreeViewer
     backgroundImage: BACK05.SCR
     elements:
@@ -1713,6 +1721,22 @@ interfaces: #done
       - id: list
         color: 1   # white
         border: 1  # white
+      - id: button
+        color: 1   # white
+  - type: soldierVoice
+    backgroundImage: BACK14.SCR
+    elements:
+      - id: palette
+        color: 4     # green
+      - id: window
+        color: 1     # white
+      - id: text
+        color: 1     # white
+        color2: 239  # blue
+      - id: list
+        color: 1     # white
+        color2: 244  # green
+        border: 1    # white
       - id: button
         color: 1   # white
   - type: soldierDiaryLight

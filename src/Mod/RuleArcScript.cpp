@@ -29,7 +29,8 @@ namespace OpenXcom
  */
 RuleArcScript::RuleArcScript(const std::string& type) :
 	_type(type), _firstMonth(0), _lastMonth(-1), _executionOdds(100), _maxArcs(-1), _minDifficulty(0), _maxDifficulty(4),
-	_minScore(INT_MIN), _maxScore(INT_MAX), _minFunds(INT64_MIN), _maxFunds(INT64_MAX)
+	_minScore(INT_MIN), _maxScore(INT_MAX), _minFunds(INT64_MIN), _maxFunds(INT64_MAX), _counterMin(0), _counterMax(-1)
+
 {
 }
 

@@ -53,6 +53,8 @@ public:
 	void btnOkClick(Action *action);
 	/// Handler for clicking the [Toggle] button.
 	void btnToggleClick(Action *action);
+	/// Handler for clicking the [Voice] button.
+	void btnVoiceClick(Action *action);
 	/// Handler for clicking the Armor button.
 	void btnArmorClickMiddle(Action *action);
 };

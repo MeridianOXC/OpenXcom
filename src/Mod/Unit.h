@@ -31,6 +31,7 @@ class Mod;
 class Armor;
 class RuleItem;
 class RuleSoldier;
+class RuleVoiceSet;
 class ModScript;
 class ScriptParserBase;
 
@@ -457,7 +458,10 @@ private:
 	int _standHeight, _kneelHeight, _floatHeight;
 	std::vector<int> _deathSound, _panicSound, _berserkSound, _aggroSound;
 	std::vector<int> _selectUnitSound, _startMovingSound, _selectWeaponSound, _annoyedSound;
-	int _value, _moraleLossWhenKilled, _moveSound;
+	std::vector<std::string> _voiceSetNames;
+	std::vector<const RuleVoiceSet*> _voiceSets;
+	int _valueKilled, _valueCaptured, _valueCapturedResearched, _valueCivilian, _valueCivilianKilledByXcom, _valueVIP;
+	int _moraleLossWhenKilled, _moveSound;
 	int _intelligence, _aggression, _spotter, _sniper, _energyRecovery;
 	SpecialAbility _specab;
 	const RuleItem* _liveAlien = nullptr;
@@ -523,7 +527,12 @@ public:
 	/// Gets the alien rank.
 	std::string getRank() const;
 	/// Gets the value - for score calculation.
-	int getValue() const;
+	int getValueKilled() const { return _valueKilled; }
+	int getValueCaptured() const { return _valueCaptured; }
+	int getValueCapturedResearched() const { return _valueCapturedResearched; }
+	int getValueCivilian() const { return _valueCivilian; }
+	int getValueCivilianKilledByXcom() const { return _valueCivilianKilledByXcom; }
+	int getValueVIP() const { return _valueVIP; }
 	/// Percentage modifier for morale loss when this unit is killed.
 	int getMoraleLossWhenKilled() const { return _moraleLossWhenKilled; };
 	/// Gets the death sound id.
@@ -540,6 +549,12 @@ public:
 	const std::vector<int> &getSelectWeaponSounds() const { return _selectWeaponSound; }
 	/// Gets the unit's "annoyed" sounds.
 	const std::vector<int> &getAnnoyedSounds() const { return _annoyedSound; }
+
+	/// Gets the list of defined voice sets.
+	const std::vector<const RuleVoiceSet*> &getVoiceSetsRaw() const { return _voiceSets; }
+	/// Gets a random voice set.
+	const RuleVoiceSet* getRandomVoiceSet() const;
+
 	/// Gets the move sound id.
 	int getMoveSound() const;
 	/// Gets the intelligence. This is the number of turns AI remembers your troop positions.

@@ -46,6 +46,7 @@
 #include "../Mod/RuleSoldier.h"
 #include "../Mod/RuleSoldierBonus.h"
 #include "../Mod/RuleStartingCondition.h"
+#include "../Mod/RuleVoiceSet.h"
 #include "Soldier.h"
 #include "Tile.h"
 #include "SavedGame.h"
@@ -99,7 +100,12 @@ BattleUnit::BattleUnit(const Mod *mod, Soldier *soldier, int depth, const RuleSt
 	default:             rankbonus =  0; break;
 	}
 
-	_value = soldier->getRules()->getValue() + soldier->getMissions() + rankbonus;
+	_valueKilled = soldier->getRules()->getValue() + soldier->getMissions() + rankbonus;
+	_valueCaptured = 0;
+	_valueCapturedResearched = 0;
+	_valueCivilian = 0;
+	_valueCivilianKilledByXcom = 0;
+	_valueVIP = 0;
 
 
 	for (int i = 0; i < BODYPART_MAX; ++i)
@@ -309,6 +315,16 @@ void BattleUnit::prepareUnitResponseSounds(const Mod *mod)
 	if (!mod->getEnableUnitResponseSounds())
 		return;
 
+	if (_geoscapeSoldier && !_geoscapeSoldier->getVoiceSetType().empty())
+	{
+		const auto* vs = mod->getVoiceSet(_geoscapeSoldier->getVoiceSetType(), false);
+		if (vs)
+		{
+			setUnitAndSoldierVoiceSet(vs);
+			return;
+		}
+	}
+
 	// custom sounds by soldier name
 	bool custom = false;
 	if (mod->getSelectUnitSounds().find(_name) != mod->getSelectUnitSounds().end())
@@ -338,52 +354,89 @@ void BattleUnit::prepareUnitResponseSounds(const Mod *mod)
 	// lower priority: soldier type / unit type
 	if (_geoscapeSoldier)
 	{
-		auto soldierRules = _geoscapeSoldier->getRules();
-		if (_gender == GENDER_MALE)
+		const auto* soldierRules = _geoscapeSoldier->getRules();
+		const auto* soldierTypeVoiceSet = soldierRules->getRandomVoiceSet(_geoscapeSoldier);
+		if (soldierTypeVoiceSet)
 		{
-			_selectUnitSound = soldierRules->getMaleSelectUnitSounds();
-			_startMovingSound = soldierRules->getMaleStartMovingSounds();
-			_selectWeaponSound = soldierRules->getMaleSelectWeaponSounds();
-			_annoyedSound = soldierRules->getMaleAnnoyedSounds();
+			setUnitAndSoldierVoiceSet(soldierTypeVoiceSet);
+		}
+		else if (_gender == GENDER_MALE)
+		{
+			const auto* voiceSetMale = soldierRules->getRandomVoiceSetMale();
+			if (voiceSetMale)
+			{
+				setUnitAndSoldierVoiceSet(voiceSetMale);
+			}
+			else
+			{
+				_selectUnitSound = soldierRules->getMaleSelectUnitSounds();
+				_startMovingSound = soldierRules->getMaleStartMovingSounds();
+				_selectWeaponSound = soldierRules->getMaleSelectWeaponSounds();
+				_annoyedSound = soldierRules->getMaleAnnoyedSounds();
+			}
 		}
 		else
 		{
-			_selectUnitSound = soldierRules->getFemaleSelectUnitSounds();
-			_startMovingSound = soldierRules->getFemaleStartMovingSounds();
-			_selectWeaponSound = soldierRules->getFemaleSelectWeaponSounds();
-			_annoyedSound = soldierRules->getFemaleAnnoyedSounds();
+			const auto* voiceSetFemale = soldierRules->getRandomVoiceSetFemale();
+			if (voiceSetFemale)
+			{
+				setUnitAndSoldierVoiceSet(voiceSetFemale);
+			}
+			else
+			{
+				_selectUnitSound = soldierRules->getFemaleSelectUnitSounds();
+				_startMovingSound = soldierRules->getFemaleStartMovingSounds();
+				_selectWeaponSound = soldierRules->getFemaleSelectWeaponSounds();
+				_annoyedSound = soldierRules->getFemaleAnnoyedSounds();
+			}
 		}
 	}
 	else if (_unitRules)
 	{
-		_selectUnitSound = _unitRules->getSelectUnitSounds();
-		_startMovingSound = _unitRules->getStartMovingSounds();
-		_selectWeaponSound = _unitRules->getSelectWeaponSounds();
-		_annoyedSound = _unitRules->getAnnoyedSounds();
+		const auto* unitVoiceSet = _unitRules->getRandomVoiceSet();
+		if (unitVoiceSet)
+		{
+			setUnitAndSoldierVoiceSet(unitVoiceSet);
+		}
+		else
+		{
+			_selectUnitSound = _unitRules->getSelectUnitSounds();
+			_startMovingSound = _unitRules->getStartMovingSounds();
+			_selectWeaponSound = _unitRules->getSelectWeaponSounds();
+			_annoyedSound = _unitRules->getAnnoyedSounds();
+		}
 	}
 
 	// higher priority: armor
-	if (_gender == GENDER_MALE)
+	const auto* armorVoiceSet = _armor->getRandomVoiceSet(_geoscapeSoldier);
+	if (armorVoiceSet)
 	{
-		if (!_armor->getMaleSelectUnitSounds().empty())
-			_selectUnitSound = _armor->getMaleSelectUnitSounds();
-		if (!_armor->getMaleStartMovingSounds().empty())
-			_startMovingSound = _armor->getMaleStartMovingSounds();
-		if (!_armor->getMaleSelectWeaponSounds().empty())
-			_selectWeaponSound = _armor->getMaleSelectWeaponSounds();
-		if (!_armor->getMaleAnnoyedSounds().empty())
-			_annoyedSound = _armor->getMaleAnnoyedSounds();
+		setUnitAndSoldierVoiceSet(armorVoiceSet);
 	}
 	else
 	{
-		if (!_armor->getFemaleSelectUnitSounds().empty())
-			_selectUnitSound = _armor->getFemaleSelectUnitSounds();
-		if (!_armor->getFemaleStartMovingSounds().empty())
-			_startMovingSound = _armor->getFemaleStartMovingSounds();
-		if (!_armor->getFemaleSelectWeaponSounds().empty())
-			_selectWeaponSound = _armor->getFemaleSelectWeaponSounds();
-		if (!_armor->getFemaleAnnoyedSounds().empty())
-			_annoyedSound = _armor->getFemaleAnnoyedSounds();
+		if (_gender == GENDER_MALE)
+		{
+			if (!_armor->getMaleSelectUnitSounds().empty())
+				_selectUnitSound = _armor->getMaleSelectUnitSounds();
+			if (!_armor->getMaleStartMovingSounds().empty())
+				_startMovingSound = _armor->getMaleStartMovingSounds();
+			if (!_armor->getMaleSelectWeaponSounds().empty())
+				_selectWeaponSound = _armor->getMaleSelectWeaponSounds();
+			if (!_armor->getMaleAnnoyedSounds().empty())
+				_annoyedSound = _armor->getMaleAnnoyedSounds();
+		}
+		else
+		{
+			if (!_armor->getFemaleSelectUnitSounds().empty())
+				_selectUnitSound = _armor->getFemaleSelectUnitSounds();
+			if (!_armor->getFemaleStartMovingSounds().empty())
+				_startMovingSound = _armor->getFemaleStartMovingSounds();
+			if (!_armor->getFemaleSelectWeaponSounds().empty())
+				_selectWeaponSound = _armor->getFemaleSelectWeaponSounds();
+			if (!_armor->getFemaleAnnoyedSounds().empty())
+				_annoyedSound = _armor->getFemaleAnnoyedSounds();
+		}
 	}
 }
 
@@ -464,7 +517,12 @@ BattleUnit::BattleUnit(const Mod *mod, const Unit *unit, UnitFaction faction, in
 		_vip = true;
 	}
 
-	_value = unit->getValue();
+	_valueKilled = unit->getValueKilled();
+	_valueCaptured = unit->getValueCaptured();
+	_valueCapturedResearched = unit->getValueCapturedResearched();
+	_valueCivilian = unit->getValueCivilian();
+	_valueCivilianKilledByXcom = unit->getValueCivilianKilledByXcom();
+	_valueVIP = unit->getValueVIP();
 
 
 	for (int i = 0; i < BODYPART_MAX; ++i)
@@ -601,6 +659,15 @@ void BattleUnit::load(const YAML::YamlNodeReader& node, const Mod *mod, const Sc
 {
 	const auto& reader = node.useIndex();
 	reader.tryRead("id", _id);
+	if (reader["voiceSetID"])
+	{
+		auto voiceSetID = reader["voiceSetID"].readVal<std::string>("");
+		auto* voiceSet = mod->getVoiceSet(voiceSetID, false); // ignore bugged types
+		if (voiceSet)
+		{
+			setUnitAndSoldierVoiceSet(voiceSet);
+		}
+	}
 	reader.tryRead("faction", _faction);
 	reader.tryRead("status", _status);
 	reader.tryRead("wantsToSurrender", _wantsToSurrender);
@@ -705,6 +772,8 @@ void BattleUnit::save(YAML::YamlNodeWriter writer, const ScriptGlobal *shared) c
 {
 	writer.setAsMap();
 	writer.write("id", _id);
+	if (_unitVoiceSet)
+		writer.write("voiceSetID", _unitVoiceSet->getType());
 	writer.write("genUnitType", _type);
 	writer.write("genUnitArmor", _armor->getType());
 	writer.write("faction", _faction);
@@ -3038,7 +3107,10 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 	// their loadouts are defined in the rulesets and more or less set in stone.
 	if (isStandardPlayerUnit)
 	{
-		weight = getCarriedWeight() + item->getTotalWeight();
+		if (!Mod::EXTENDED_IGNORE_OVERWEIGHT_RULE)
+		{
+			weight = getCarriedWeight() + item->getTotalWeight();
+		}
 		// allow all weapons to be loaded by avoiding this check,
 		// they'll return false later anyway if the unit has something in his hand.
 		if (rule->getBattleType() != BT_FIREARM && rule->getBattleType() != BT_MELEE)
@@ -3293,6 +3365,17 @@ void BattleUnit::setAIModule(AIModule *ai)
 AIModule *BattleUnit::getAIModule() const
 {
 	return _currentAIState;
+}
+
+/**
+ * Increases the AI walk abort counter.
+ */
+void BattleUnit::increaseAIWalkAbortCounter()
+{
+	if (_currentAIState)
+	{
+		_currentAIState->increaseWalkAbortCounter();
+	}
 }
 
 /**
@@ -4424,15 +4507,6 @@ int BattleUnit::getLoftemps(int entry) const
 }
 
 /**
-  * Get the unit's value. Used for score at debriefing.
-  * @return value score
-  */
-int BattleUnit::getValue() const
-{
-	return _value;
-}
-
-/**
  * Get the unit's death sounds.
  * @return List of sound IDs.
  */
@@ -4928,6 +5002,40 @@ int BattleUnit::getTurnsLeftSpottedForSnipersByFaction(UnitFaction faction) cons
 UnitFaction BattleUnit::getOriginalFaction() const
 {
 	return _originalFaction;
+}
+
+/**
+ * Set unit voice set. Propagate to geoscape soldier if possible.
+ */
+void BattleUnit::setUnitAndSoldierVoiceSet(const RuleVoiceSet* voiceSet)
+{
+	_unitVoiceSet = voiceSet;
+
+	if (voiceSet)
+	{
+		// set also on the soldier if it exists, so that the voice set is persisted beyond a single battle
+		if (_geoscapeSoldier)
+		{
+			_geoscapeSoldier->setVoiceSetType(voiceSet->getType());
+		}
+
+		_selectUnitSound = voiceSet->getSelectUnitSounds();
+		_startMovingSound = voiceSet->getStartMovingSounds();
+		_selectWeaponSound = voiceSet->getSelectWeaponSounds();
+		_annoyedSound = voiceSet->getAnnoyedSounds();
+	}
+	else
+	{
+		if (_geoscapeSoldier)
+		{
+			_geoscapeSoldier->setVoiceSetType("");
+		}
+
+		_selectUnitSound = { };
+		_startMovingSound = { };
+		_selectWeaponSound = { };
+		_annoyedSound = { };
+	}
 }
 
 /**

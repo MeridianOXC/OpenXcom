@@ -56,6 +56,7 @@ private:
 	std::vector<std::string> _removeTransformations;
 	bool _reset;
 	bool _resetRank;
+	bool _resetVoice;
 	std::string _soldierBonusType;
 	WeightedOptions _events;
 
@@ -156,6 +157,8 @@ public:
 	bool getReset() const;
 	/// Gets whether or not this project should reset the rank of the destination soldier to rookie
 	bool getResetRank() const;
+	/// Gets whether or not this project should reset the voice set of the destination soldier
+	bool getResetVoice() const { return _resetVoice; }
 	/// Gets the type of soldier bonus assigned by this project
 	const std::string &getSoldierBonusType() const;
 

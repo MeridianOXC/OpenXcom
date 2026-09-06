@@ -18,10 +18,12 @@
  */
 #include "Armor.h"
 #include "Unit.h"
+#include "../Engine/RNG.h"
 #include "../Engine/ScriptBind.h"
 #include "LoadYaml.h"
 #include "Mod.h"
 #include "RuleSoldier.h"
+#include "RuleVoiceSet.h"
 #include "../Savegame/SoldierDiary.h"
 
 namespace OpenXcom
@@ -166,6 +168,8 @@ void Armor::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript &pa
 	mod->loadSoundOffset(_type, _selectWeaponSoundFemale, reader["selectWeaponFemale"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _annoyedSoundMale, reader["annoyedMale"], "BATTLE.CAT");
 	mod->loadSoundOffset(_type, _annoyedSoundFemale, reader["annoyedFemale"], "BATTLE.CAT");
+
+	reader.tryRead("voiceSets", _voiceSetNames);
 
 	reader.tryRead("weight", _weight);
 	reader.tryRead("visibilityAtDark", _visibilityAtDark);
@@ -372,6 +376,22 @@ void Armor::afterLoad(const Mod* mod)
 			version.second.shrink_to_fit();
 		}
 	}
+
+	// Link manually
+	for (auto& entry : _voiceSetNames)
+	{
+		for (auto& voiceSetName : entry.second)
+		{
+			auto* voiceSet = mod->getVoiceSet(voiceSetName, true); // crash if doesn't exist
+			if (voiceSet)
+			{
+				_voiceSets[entry.first].push_back(voiceSet);
+			}
+		}
+	}
+
+	//remove not needed data
+	Collections::removeAll(_voiceSetNames);
 
 	Collections::sortVector(_units);
 	Collections::sortVector(_ranks);
@@ -610,6 +630,71 @@ int Armor::getSpecialAbility() const
 int Armor::getMoveSound() const
 {
 	return _moveSound;
+}
+
+/**
+ * Gets a random voice set.
+ * @return A random voice set.
+ */
+const RuleVoiceSet* Armor::getRandomVoiceSet(const Soldier* s) const
+{
+	if (!_voiceSets.empty())
+	{
+		if (s)
+		{
+			const std::string gender = s->getGender() == GENDER_MALE ? "M" : "F";
+			std::stringstream ss;
+
+			// find relevant entry by gender, look and look variant
+			for (int i = 0; i <= RuleSoldier::LookVariantBits; ++i)
+			{
+				ss.str("");
+				ss << gender;
+				ss << (int)s->getLook() + (s->getLookVariant() & (RuleSoldier::LookVariantMask >> i)) * 4;
+				auto it = _voiceSets.find(ss.str());
+				if (it != _voiceSets.end())
+				{
+					auto& picks = it->second;
+					if (!picks.empty())
+					{
+						auto* pick = picks[RNG::seedless(0, picks.size() - 1)];
+						return pick;
+					}
+				}
+			}
+
+			// try also gender + hardcoded look 0
+			{
+				ss.str("");
+				ss << gender << "0";
+				auto it = _voiceSets.find(ss.str());
+				if (it != _voiceSets.end())
+				{
+					auto& picks = it->second;
+					if (!picks.empty())
+					{
+						auto* pick = picks[RNG::seedless(0, picks.size() - 1)];
+						return pick;
+					}
+				}
+			}
+		}
+		else
+		{
+			// no soldier, use M0
+			auto it = _voiceSets.find("M0");
+			if (it != _voiceSets.end())
+			{
+				auto& picks = it->second;
+				if (!picks.empty())
+				{
+					auto* pick = picks[RNG::seedless(0, picks.size() - 1)];
+					return pick;
+				}
+			}
+		}
+	}
+	return nullptr;
 }
 
 /**

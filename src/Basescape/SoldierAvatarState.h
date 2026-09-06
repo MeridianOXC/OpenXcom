@@ -24,7 +24,7 @@
 namespace OpenXcom
 {
 
-class Base;
+class BattleUnit;
 class TextButton;
 class Window;
 class Text;
@@ -39,8 +39,7 @@ class SoldierAvatar;
 class SoldierAvatarState : public State
 {
 private:
-	Base *_base;
-	size_t _soldier;
+	BattleUnit* _bu;
 
 	TextButton *_btnCancel, *_btnOk;
 	Window *_window;
@@ -53,7 +52,7 @@ private:
 	void initPreview(Soldier *s);
 public:
 	/// Creates the Soldier Avatar state.
-	SoldierAvatarState(Base *base, size_t soldier);
+	SoldierAvatarState(BattleUnit* bu);
 	/// Cleans up the Soldier Avatar state.
 	~SoldierAvatarState();
 	/// Handler for clicking the Cancel button.

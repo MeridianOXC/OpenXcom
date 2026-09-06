@@ -1717,6 +1717,7 @@ ModScript::TryMeleeAttackItemParser::TryMeleeAttackItemParser(ScriptGlobal* shar
 	"item",
 	"attacker",
 	"victim",
+	"is_same_faction",
 	"skill",
 	"attack_strength",
 	"defense_strength",
@@ -1736,8 +1737,10 @@ ModScript::TryMeleeAttackItemParser::TryMeleeAttackItemParser(ScriptGlobal* shar
 		"random.randomRange r 0 99;\n"
 		"sub melee_attack_success r;\n"
 		"add melee_attack_success attack_strength;\n"
-		"sub melee_attack_success defense_strength;\n"
-		"add melee_attack_success defense_strength_penalty;\n"
+		"if eq is_same_faction 0;\n"
+		"  sub melee_attack_success defense_strength;\n"
+		"  add melee_attack_success defense_strength_penalty;\n"
+		"end;\n"
 		"return melee_attack_success;\n"
 	);
 }

@@ -2936,6 +2936,8 @@ void StatsForNerdsState::initArmorList()
 		addVectorOfIntegers(ss, armorRule->getFemaleAnnoyedSounds(), "annoyedFemale");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", armorRule->getFemaleAnnoyedSounds());
 
+		addBoolean(ss, !armorRule->getVoiceSetsRaw().empty(), "voiceSets*", false); // just say if there are any or not
+
 		addSection("{Animations}", "", _white);
 		addDrawingRoutine(ss, armorRule->getDrawingRoutine(), "drawingRoutine");
 		addBoolean(ss, armorRule->drawBubbles(), "drawBubbles");
@@ -4056,6 +4058,7 @@ void StatsForNerdsState::initSoldierList()
 
 		addSection("{Naming}", "", _white);
 		addSingleString(ss, soldierRule->getType(), "type");
+		addSingleString(ss, soldierRule->getPrefix(), "prefix");
 		addBoolean(ss, soldierRule->getShowTypeInInventory(), "showTypeInInventory");
 		addInteger(ss, soldierRule->getNames().size(), "soldierNames*"); // size only
 		addInteger(ss, soldierRule->getFemaleFrequency(), "femaleFrequency", 50);
@@ -4130,6 +4133,11 @@ void StatsForNerdsState::initSoldierList()
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", soldierRule->getMaleBerserkSounds());
 		addVectorOfIntegers(ss, soldierRule->getFemaleBerserkSounds(), "berserkFemale");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", soldierRule->getFemaleBerserkSounds());
+
+		addBoolean(ss, !soldierRule->getVoiceSetsMaleRaw().empty(), "voiceSetsMale*", false); // just say if there are any or not
+		addBoolean(ss, !soldierRule->getVoiceSetsFemaleRaw().empty(), "voiceSetsFemale*", false); // just say if there are any or not
+
+		addBoolean(ss, !soldierRule->getVoiceSetsRaw().empty(), "voiceSets*", false); // just say if there are any or not
 
 		addSection("{Mod info}", "", _white);
 		{
@@ -4226,7 +4234,12 @@ void StatsForNerdsState::initUnitList()
 		addBoolean(ss, unitRule->waitIfOutsideWeaponRange(), "waitIfOutsideWeaponRange");
 
 		addSection("{Debriefing}", "", _white);
-		addInteger(ss, unitRule->getValue(), "value", 0);
+		addInteger(ss, unitRule->getValueKilled(), "value", 0);
+		addInteger(ss, unitRule->getValueCaptured(), "valueCaptured", 0);
+		addInteger(ss, unitRule->getValueCapturedResearched(), "valueCapturedResearched", 10);
+		addInteger(ss, unitRule->getValueCivilian(), "valueCivilian", 0);
+		addInteger(ss, unitRule->getValueCivilianKilledByXcom(), "valueCivilianKilledByXcom", 0);
+		addInteger(ss, unitRule->getValueVIP(), "valueVIP", 0);
 		addBoolean(ss, unitRule->isRecoverableAsCivilian(), "civilianRecoveryType*"); // just say if there are any or not
 		addBoolean(ss, unitRule->isRecoverableAsScientist(), "_recoverScientist");
 		addBoolean(ss, unitRule->isRecoverableAsEngineer(), "_recoverEngineer");
@@ -4256,6 +4269,8 @@ void StatsForNerdsState::initUnitList()
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", unitRule->getBerserkSounds());
 		addVectorOfIntegers(ss, unitRule->getAggroSounds(), "aggroSound");
 		addSoundVectorResourcePaths(ss, mod, "BATTLE.CAT", unitRule->getAggroSounds());
+
+		addBoolean(ss, !unitRule->getVoiceSetsRaw().empty(), "voiceSets*", false); // just say if there are any or not
 
 		addSection("{Mod info}", "", _white);
 		{

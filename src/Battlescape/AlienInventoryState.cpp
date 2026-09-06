@@ -18,6 +18,7 @@
  */
 #include "AlienInventoryState.h"
 #include "AlienInventory.h"
+#include "../Basescape/SoldierVoiceState.h"
 #include "../Engine/Action.h"
 #include "../Engine/Game.h"
 #include "../Engine/LocalizedText.h"
@@ -144,6 +145,7 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 	_txtRightHand->setVisible(false);
 
 	_btnArmor->onKeyboardPress((ActionHandler)&AlienInventoryState::btnToggleClick, SDLK_F1);
+	_btnArmor->onKeyboardPress((ActionHandler)&AlienInventoryState::btnVoiceClick, Options::keySelectMusicTrack);
 	_btnArmor->onKeyboardPress((ActionHandler)&AlienInventoryState::btnOkClick, Options::keyCancel);
 	_btnArmor->onMouseClick((ActionHandler)&AlienInventoryState::btnArmorClickMiddle, SDL_BUTTON_MIDDLE);
 
@@ -221,7 +223,7 @@ AlienInventoryState::AlienInventoryState(BattleUnit *unit)
 		tmp->blitNShade(_soldier, 32, 32);
 
 		const Element* element = _game->getMod()->getInterface("inventory")->getElementOptional("textName");
-		if (element && element->custom == 0)
+		if (element && (element->custom == 0 || (element->custom == 1 && unit->getFaction() == FACTION_PLAYER)))
 		{
 			// fatally wounded body parts
 			std::ostringstream ss;
@@ -358,7 +360,12 @@ void AlienInventoryState::calculateMeleeWeapon(BattleUnit* unit, BattleItem* wea
 			float penalty = 1.0f - arc * victim->getArmor()->getMeleeDodgeBackPenalty() / 4.0f;
 			if (penalty > 0)
 			{
-				hitChance -= victim->getArmor()->getMeleeDodge(victim) * penalty;
+				int defenseStrength = 0;
+				if (attack.attacker->getFaction() != victim->getFaction())
+				{
+					defenseStrength = victim->getArmor()->getMeleeDodge(victim);
+				}
+				hitChance -= defenseStrength * penalty;
 			}
 		}
 		ss << "hitChance " << hitChance << "% ";
@@ -433,7 +440,12 @@ void AlienInventoryState::calculateRangedWeapon(BattleUnit* unit, BattleItem* we
 					float penalty = 1.0f - arc * victim->getArmor()->getMeleeDodgeBackPenalty() / 4.0f;
 					if (penalty > 0)
 					{
-						hitChance -= victim->getArmor()->getMeleeDodge(victim) * penalty;
+						int defenseStrength = 0;
+						if (attack.attacker->getFaction() != victim->getFaction())
+						{
+							defenseStrength = victim->getArmor()->getMeleeDodge(victim);
+						}
+						hitChance -= defenseStrength * penalty;
 					}
 				}
 				ss << "cqcChance " << hitChance << "% ";
@@ -461,6 +473,24 @@ void AlienInventoryState::btnToggleClick(Action *)
 {
 	_txtLeftHand->setVisible(!_txtLeftHand->getVisible());
 	_txtRightHand->setVisible(!_txtRightHand->getVisible());
+}
+
+/**
+ * Opens the Voice Selection GUI
+ * @param action Pointer to an action.
+ */
+void AlienInventoryState::btnVoiceClick(Action* action)
+{
+	// voice set can be changed at any time
+	if (_game->getMod()->getEnableUnitResponseSounds())
+	{
+		BattleUnit* unit = _game->getSavedGame()->getSavedBattle()->getSelectedUnit();
+		if (unit->getOriginalFaction() == FACTION_PLAYER)
+		{
+			_game->pushState(new SoldierVoiceState(unit, nullptr, SV_BATTLESCAPE));
+			return;
+		}
+	}
 }
 
 /**

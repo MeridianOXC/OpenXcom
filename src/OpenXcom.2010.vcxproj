@@ -401,6 +401,7 @@
     <ClCompile Include="Basescape\SoldierTransformationListState.cpp" />
     <ClCompile Include="Basescape\SoldierTransformationState.cpp" />
     <ClCompile Include="Basescape\SoldierTransformState.cpp" />
+    <ClCompile Include="Basescape\SoldierVoiceState.cpp" />
     <ClCompile Include="Basescape\StoresState.cpp" />
     <ClCompile Include="Basescape\TechTreeSelectState.cpp" />
     <ClCompile Include="Basescape\TechTreeViewerState.cpp" />
@@ -642,6 +643,7 @@
     <ClCompile Include="Mod\ExtraSprites.cpp" />
     <ClCompile Include="Mod\ExtraStrings.cpp" />
     <ClCompile Include="Mod\RuleMissionScript.cpp" />
+    <ClCompile Include="Mod\RuleVoiceSet.cpp" />
     <ClCompile Include="Mod\RuleWeaponSet.cpp" />
     <ClCompile Include="Mod\Texture.cpp" />
     <ClCompile Include="Mod\MapScript.cpp" />
@@ -880,6 +882,7 @@
     <ClInclude Include="Basescape\SoldierTransformationListState.h" />
     <ClInclude Include="Basescape\SoldierTransformationState.h" />
     <ClInclude Include="Basescape\SoldierTransformState.h" />
+    <ClInclude Include="Basescape\SoldierVoiceState.h" />
     <ClInclude Include="Basescape\StoresState.h" />
     <ClInclude Include="Basescape\TechTreeSelectState.h" />
     <ClInclude Include="Basescape\TechTreeViewerState.h" />
@@ -1133,6 +1136,7 @@
     <ClInclude Include="Mod\RuleStatBonus.h" />
     <ClInclude Include="Mod\RuleCommendations.h" />
     <ClInclude Include="Mod\RuleConverter.h" />
+    <ClInclude Include="Mod\RuleVoiceSet.h" />
     <ClInclude Include="Mod\RuleWeaponSet.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Mod\ArticleDefinition.h" />

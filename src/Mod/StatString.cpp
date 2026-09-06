@@ -45,7 +45,11 @@ StatString::~StatString()
  */
 void StatString::load(const YAML::YamlNodeReader& reader)
 {
-	std::string conditionNames[] = {"psiStrength", "psiSkill", "bravery", "strength", "firing", "reactions", "stamina", "tu", "health", "throwing", "melee", "psiTraining", "manaPool"};
+	std::string conditionNames[] = {
+		"psiStrength", "psiSkill", "bravery", "strength",
+		"firing", "reactions", "stamina", "tu", "health",
+		"throwing", "melee", "psiTraining", "manaPool", "rank"
+	};
 	reader.tryRead("string", _stringToBeAddedIfAllConditionsAreMet);
 	for (size_t i = 0; i < std::size(conditionNames); i++)
 	{
@@ -99,10 +103,10 @@ std::string StatString::getString() const
  * @param psiStrengthEval Are psi stats available?
  * @return Resulting string of all valid StatStrings.
  */
-std::string StatString::calcStatString(UnitStats &currentStats, const std::vector<StatString *> &statStrings, bool psiStrengthEval, bool inTraining)
+std::string StatString::calcStatStringWorker(UnitStats &currentStats, int rank, const std::vector<StatString *> &statStrings, bool psiStrengthEval, bool inTraining)
 {
 	std::string result;
-	std::map<std::string, int> currentStatsMap = getCurrentStats(currentStats);
+	std::map<std::string, int> currentStatsMap = getCurrentStats(currentStats, rank);
 	if (inTraining)
 	{
 		currentStatsMap["psiTraining"] = 1;
@@ -145,7 +149,7 @@ std::string StatString::calcStatString(UnitStats &currentStats, const std::vecto
  * @param currentStats Unit stats to use.
  * @return Map of unit stats.
  */
-std::map<std::string, int> StatString::getCurrentStats(UnitStats &currentStats)
+std::map<std::string, int> StatString::getCurrentStats(UnitStats &currentStats, int rank)
 {
 	std::map<std::string, int> currentStatsMap;
 	currentStatsMap["psiStrength"] = currentStats.psiStrength;
@@ -160,6 +164,7 @@ std::map<std::string, int> StatString::getCurrentStats(UnitStats &currentStats)
 	currentStatsMap["throwing"] = currentStats.throwing;
 	currentStatsMap["melee"] = currentStats.melee;
 	currentStatsMap["manaPool"] = currentStats.mana;
+	currentStatsMap["rank"] = rank;
 	return currentStatsMap;
 }
 

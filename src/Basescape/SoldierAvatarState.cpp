@@ -27,9 +27,8 @@
 #include "../Interface/Window.h"
 #include "../Interface/Text.h"
 #include "../Interface/TextList.h"
-#include "../Savegame/SavedGame.h"
+#include "../Savegame/BattleUnit.h"
 #include "../Savegame/Soldier.h"
-#include "../Savegame/Base.h"
 #include "../Mod/Armor.h"
 #include "../Mod/RuleSoldier.h"
 
@@ -38,11 +37,9 @@ namespace OpenXcom
 
 /**
  * Initializes all the elements in the Soldier Avatar window.
- * @param game Pointer to the core game.
- * @param base Pointer to the base to get info from.
- * @param soldier ID of the selected soldier.
+ * @param bu Pointer to the selected unit.
  */
-SoldierAvatarState::SoldierAvatarState(Base *base, size_t soldier) : _base(base), _soldier(soldier)
+SoldierAvatarState::SoldierAvatarState(BattleUnit* bu) : _bu(bu)
 {
 	_screen = false;
 
@@ -79,7 +76,7 @@ SoldierAvatarState::SoldierAvatarState(Base *base, size_t soldier) : _base(base)
 	_btnOk->onMouseClick((ActionHandler)&SoldierAvatarState::btnOkClick);
 	_btnOk->onKeyboardPress((ActionHandler)&SoldierAvatarState::btnOkClick, Options::keyOk);
 
-	Soldier *s = _base->getSoldiers()->at(_soldier);
+	Soldier *s = _bu->getGeoscapeSoldier();
 	_origAvatar = SoldierAvatar("original", s->getGender(), s->getLook(), s->getLookVariant());
 	initPreview(s);
 
@@ -193,7 +190,7 @@ SoldierAvatarState::~SoldierAvatarState()
  */
 void SoldierAvatarState::btnCancelClick(Action *)
 {
-	Soldier *soldier = _base->getSoldiers()->at(_soldier);
+	Soldier *soldier = _bu->getGeoscapeSoldier();
 
 	// revert the avatar to original
 	soldier->setGender(_origAvatar.getGender());
@@ -209,6 +206,11 @@ void SoldierAvatarState::btnCancelClick(Action *)
  */
 void SoldierAvatarState::btnOkClick(Action *)
 {
+	if (Options::oxceResetUnitResponseSoundsOnAvatarChange && _game->getMod()->getEnableUnitResponseSounds())
+	{
+		_bu->setUnitAndSoldierVoiceSet(nullptr);
+		// TODO: call also _bu->prepareUnitResponseSounds(_game->getMod()); or not? both options seem valid...
+	}
 	_game->popState();
 }
 
@@ -218,7 +220,7 @@ void SoldierAvatarState::btnOkClick(Action *)
  */
 void SoldierAvatarState::lstAvatarClick(Action *)
 {
-	Soldier *soldier = _base->getSoldiers()->at(_soldier);
+	Soldier *soldier = _bu->getGeoscapeSoldier();
 
 	// change the avatar
 	soldier->setGender(_avatars[_lstAvatar->getSelectedRow()].getGender());

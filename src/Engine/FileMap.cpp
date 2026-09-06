@@ -102,9 +102,11 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 		return NULL;
 	}
 
+	bool wholeFile = true;
 	size = SDL_RWsize(src);
 	if (size < 0) {
 		size = FILE_CHUNK_SIZE;
+		wholeFile = false;
 	}
 	data = SDL_malloc((size_t)(size + 1));
 
@@ -130,6 +132,9 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 				break;
 			}
 		size_total += size_read;
+		if (wholeFile) {
+			break;
+		}
 	}
 
 	if (datasize) {
