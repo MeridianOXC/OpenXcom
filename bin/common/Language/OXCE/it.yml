@@ -168,6 +168,7 @@ it:
   STR_LOOKUP: "Guarda:"
   STR_SPAWNED_ITEMS: "Oggetti generati:"
   STR_SPAWNED_EVENT: "Evento generato:"
+  STR_RANDOM_EVENTS: "Eventi:"
   STR_REQUIRED_BY: "Richiesto da:"
   STR_REQUIRED_BY_TRANSFORMATIONS: "Richiesto per trasformazione:"
   STR_LEADS_TO: "Porta a:"

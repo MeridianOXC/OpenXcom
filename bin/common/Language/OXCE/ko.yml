@@ -168,6 +168,7 @@ ko:
   STR_LOOKUP: "색인:"
   STR_SPAWNED_ITEMS: "생성되는 물품:"
   STR_SPAWNED_EVENT: "생성되는 이벤트:"
+  STR_RANDOM_EVENTS: "이벤트:"
   STR_REQUIRED_BY: "아래의 요구사항:"
   STR_REQUIRED_BY_TRANSFORMATIONS: "아래 변신의 요구사항:"
   STR_LEADS_TO: "아래의 단서:"

@@ -191,6 +191,7 @@ int Mod::DIFFICULTY_BASED_RETAL_DELAY[5];
 int Mod::UNIT_RESPONSE_SOUNDS_FREQUENCY[4];
 int Mod::PEDIA_FACILITY_RENDER_PARAMETERS[4];
 bool Mod::EXTENDED_ITEM_RELOAD_COST;
+bool Mod::EXTENDED_IGNORE_OVERWEIGHT_RULE;
 bool Mod::EXTENDED_INVENTORY_SLOT_SORTING;
 bool Mod::EXTENDED_RUNNING_COST;
 int Mod::EXTENDED_MOVEMENT_COST_ROUNDING;
@@ -308,6 +309,7 @@ void Mod::resetGlobalStatics()
 	PEDIA_FACILITY_RENDER_PARAMETERS[3] = 0; // pedia facility Y offset
 
 	EXTENDED_ITEM_RELOAD_COST = false;
+	EXTENDED_IGNORE_OVERWEIGHT_RULE = false;
 	EXTENDED_INVENTORY_SLOT_SORTING = false;
 	EXTENDED_RUNNING_COST = false;
 	EXTENDED_MOVEMENT_COST_ROUNDING = 0;
@@ -2712,6 +2714,7 @@ void Mod::loadConstants(const YAML::YamlNodeReader &reader)
 		for (size_t j = 0; j < std::size(PEDIA_FACILITY_RENDER_PARAMETERS); j++)
 			arrayReader[j].tryReadVal(PEDIA_FACILITY_RENDER_PARAMETERS[j]);
 	reader.tryRead("extendedItemReloadCost", EXTENDED_ITEM_RELOAD_COST);
+	reader.tryRead("extendedIgnoreOverweightRule", EXTENDED_IGNORE_OVERWEIGHT_RULE);
 	reader.tryRead("extendedInventorySlotSorting", EXTENDED_INVENTORY_SLOT_SORTING);
 	reader.tryRead("extendedRunningCost", EXTENDED_RUNNING_COST);
 	reader.tryRead("extendedMovementCostRounding", EXTENDED_MOVEMENT_COST_ROUNDING);

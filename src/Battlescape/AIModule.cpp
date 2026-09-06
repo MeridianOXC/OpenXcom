@@ -1532,6 +1532,7 @@ bool AIModule::selectPointNearTarget(BattleUnit *target, int maxTUs)
 	int size = _unit->getArmor()->getSize();
 	int sizeTarget = target->getArmor()->getSize();
 	int dirTarget = target->getDirection();
+	// Note to self: AI doesn't attack units of the same faction, so we don't need to worry about ignoring melee dodge here
 	float dodgeChanceDiff = target->getArmor()->getMeleeDodge(target) * target->getArmor()->getMeleeDodgeBackPenalty() * _attackAction.diff / 160.0f;
 	bool returnValue = false;
 	int distance = 1000;

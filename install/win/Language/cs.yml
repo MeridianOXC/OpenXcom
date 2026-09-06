@@ -13,7 +13,7 @@ cs:
   SETUP_UNDATA: "Vymazat data X-COM"
   SETUP_UNDATA_DESC: "Smaže všechna data ${GAME_NAME} včetně X-COM zdrojových souborů. Doporučeno, pokud provádíte čistou instalaci."
   SETUP_UNUSER: "Vymazat data uživatele"
-  SETUP_UNUSER_DESC: "Smaže všechna data ${GAME_NAME} vytvořená uživatelem, včetně modů, uložených her a nastavení. Použijte pouze při kompletní přeinstalaci."
+  SETUP_UNUSER_DESC: "Smaže všechna uživatelská data ${GAME_NAME}, včetně modů, uložených her, snímků obrazovky a nastavení. Použijte pouze tehdy, chcete-li data zcela vymazat."
   SETUP_SHORTCUT_CHANGELOG: "Changelog"
   SETUP_SHORTCUT_README: "Přečti si"
   SETUP_SHORTCUT_USER: "Složka uživatele"

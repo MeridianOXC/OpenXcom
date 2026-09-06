@@ -3107,7 +3107,10 @@ bool BattleUnit::addItem(BattleItem *item, const Mod *mod, bool allowSecondClip,
 	// their loadouts are defined in the rulesets and more or less set in stone.
 	if (isStandardPlayerUnit)
 	{
-		weight = getCarriedWeight() + item->getTotalWeight();
+		if (!Mod::EXTENDED_IGNORE_OVERWEIGHT_RULE)
+		{
+			weight = getCarriedWeight() + item->getTotalWeight();
+		}
 		// allow all weapons to be loaded by avoiding this check,
 		// they'll return false later anyway if the unit has something in his hand.
 		if (rule->getBattleType() != BT_FIREARM && rule->getBattleType() != BT_MELEE)

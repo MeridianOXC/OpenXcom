@@ -1015,7 +1015,7 @@ ru:
   STR_UNITS_IN_CRAFT:
     one: "{N} боец в транспорте X-Com"
     few: "{N} бойца в транспорте X-Com"
-    many: "{N} бойцрв в транспорте X-Com"
+    many: "{N} бойцов в транспорте X-Com"
     other: "{N} бойцов в транспорте X-Com"
   STR_UNITS_OUTSIDE:
     one: "{N} боец остался снаружи"
