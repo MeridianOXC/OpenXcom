@@ -1912,9 +1912,9 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 				const auto* rtRule = mod->getSoldierTransformation(remove_transf, false);
 				if (rtRule)
 				{
-					if (!Mod::isEmptyRuleName(rtRule->getSoldierBonusType()))
+					if (rtRule->getSoldierBonus())
 					{
-						auto it2 = _transformationBonuses.find(rtRule->getSoldierBonusType());
+						auto it2 = _transformationBonuses.find(rtRule->getSoldierBonus()->getName());
 						if (it2 != _transformationBonuses.end())
 						{
 							if (it2->second > count)
@@ -1923,7 +1923,7 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 							}
 							else
 							{
-								_transformationBonuses.erase(rtRule->getSoldierBonusType());
+								_transformationBonuses.erase(rtRule->getSoldierBonus()->getName());
 							}
 						}
 					}
@@ -1951,16 +1951,16 @@ void Soldier::transform(const Mod *mod, RuleSoldierTransformation *transformatio
 	}
 
 	// Award a soldier bonus, if defined
-	if (!Mod::isEmptyRuleName(transformationRule->getSoldierBonusType()))
+	if (transformationRule->getSoldierBonus())
 	{
-		auto it2 = _transformationBonuses.find(transformationRule->getSoldierBonusType());
+		auto it2 = _transformationBonuses.find(transformationRule->getSoldierBonus()->getName());
 		if (it2 != _transformationBonuses.end())
 		{
 			it2->second += 1;
 		}
 		else
 		{
-			_transformationBonuses[transformationRule->getSoldierBonusType()] = 1;
+			_transformationBonuses[transformationRule->getSoldierBonus()->getName()] = 1;
 		}
 	}
 }

@@ -52,7 +52,11 @@ const int MAX_FRAME = 2;
  * @param camera The Battlescape camera.
  * @param battleGame Pointer to the SavedBattleGame.
  */
-MiniMapView::MiniMapView(int w, int h, int x, int y, Game * game, Camera * camera, SavedBattleGame * battleGame) : InteractiveSurface(w, h, x, y), _game(game), _camera(camera), _battleGame(battleGame), _frame(0), _isMouseScrolling(false), _isMouseScrolled(false), _xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _mouseScrollX(0), _mouseScrollY(0), _mouseScrollingStartTime(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(false)
+MiniMapView::MiniMapView(int w, int h, int x, int y, Game * game, Camera * camera, SavedBattleGame * battleGame, int maxShade) : InteractiveSurface(w, h, x, y),
+	_game(game), _camera(camera), _battleGame(battleGame), _maxShade(maxShade),
+	_frame(0), _isMouseScrolling(false), _isMouseScrolled(false),
+	_xBeforeMouseScrolling(0), _yBeforeMouseScrolling(0), _mouseScrollX(0), _mouseScrollY(0),
+	_mouseScrollingStartTime(0), _totalMouseMoveX(0), _totalMouseMoveY(0), _mouseMovedOverThreshold(false)
 {
 	_set = _game->getMod()->getSurfaceSet("SCANG.DAT");
 	_emptySpaceIndex = _game->getMod()->getInterface("minimap")->getElement("emptySpace")->color;
@@ -111,7 +115,7 @@ void MiniMapView::draw()
 							if (t->isDiscovered(O_FLOOR))
 							{
 								shade = t->getShade();
-								if (shade > 7) shade = 7; //vanilla
+								if (shade > _maxShade) shade = _maxShade; //vanilla
 							}
 							s->blitNShade(this, x, y, shade);
 						}

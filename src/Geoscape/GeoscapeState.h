@@ -191,7 +191,7 @@ public:
 	/// Update the resolution settings, we just resized the window.
 	void resize(int &dX, int &dY) override;
 	/// Handle alien mission generation.
-	void determineAlienMissions(bool isNewMonth = true, const RuleEvent* eventRules = nullptr);
+	void determineAlienMissions(bool isNewMonth = true, const RuleEvent* p_eventRules = nullptr);
 private:
 	bool attemptAlienRaceEvolution(int month, AlienBase* ab) const;
 	/// Process each individual mission script command.

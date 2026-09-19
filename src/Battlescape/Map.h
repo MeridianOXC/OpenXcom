@@ -208,7 +208,8 @@ public:
 	/// Check if the screen is flashing this.
 	bool getBlastFlash() const;
 	/// Modify shade for fading
-	int reShade(Tile *tile);
+	int reShade(Tile *tile) const;
+	int reShadeMinimap(int maxShade) const;
 	/// toggle the night-vision mode
 	void enableNightVision();
 	void toggleNightVision();

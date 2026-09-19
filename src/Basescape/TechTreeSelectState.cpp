@@ -171,7 +171,7 @@ void TechTreeSelectState::initLists()
 			{
 				for (auto& trigger : arcScript->getResearchTriggers())
 				{
-					tmpList.insert(trigger.first);
+					tmpList.insert(trigger.first->getName());
 				}
 			}
 		}
@@ -185,7 +185,7 @@ void TechTreeSelectState::initLists()
 			{
 				for (auto& trigger : eventScript->getResearchTriggers())
 				{
-					tmpList.insert(trigger.first);
+					tmpList.insert(trigger.first->getName());
 				}
 			}
 		}
@@ -199,7 +199,7 @@ void TechTreeSelectState::initLists()
 			{
 				for (auto& trigger : missionScript->getResearchTriggers())
 				{
-					tmpList.insert(trigger.first);
+					tmpList.insert(trigger.first->getName());
 				}
 			}
 		}

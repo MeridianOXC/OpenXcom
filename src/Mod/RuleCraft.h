@@ -31,6 +31,7 @@ namespace OpenXcom
 typedef std::vector<std::vector<int> > RuleCraftDeployment;
 
 class RuleTerrain;
+class RuleResearch;
 class RuleItem;
 class Mod;
 class ModScript;
@@ -195,7 +196,8 @@ public:
 
 private:
 	std::string _type;
-	std::vector<std::string> _requires;
+	std::vector<std::string> _requireNames;
+	std::vector<const RuleResearch*> _requires;
 	RuleBaseFacilityFunctions _requiresBuyBaseFunc;
 	std::string _requiresBuyCountry;
 	int _sprite, _marker;
@@ -253,7 +255,7 @@ public:
 	/// Gets the craft's type.
 	const std::string &getType() const;
 	/// Gets the craft's requirements.
-	const std::vector<std::string> &getRequirements() const;
+	const std::vector<const RuleResearch*>& getRequirements() const { return _requires; }
 	/// Gets the base functions required to buy craft.
 	RuleBaseFacilityFunctions getRequiresBuyBaseFunc() const { return _requiresBuyBaseFunc; }
 	/// Gets the allied country name required to buy this craft.

@@ -84,7 +84,7 @@ void RuleCraft::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript
 	}
 
 	//requires
-	mod->loadUnorderedNames(_type, _requires, reader["requires"]);
+	mod->loadUnorderedNames(_type, _requireNames, reader["requires"]);
 	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, reader["requiresBuyBaseFunc"]);
 	reader.tryRead("requiresBuyCountry", _requiresBuyCountry);
 
@@ -216,6 +216,8 @@ void RuleCraft::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScript
  */
 void RuleCraft::afterLoad(const Mod* mod)
 {
+	mod->linkRule(_requires, _requireNames);
+
 	mod->linkRule(_refuelItem, _refuelItemName);
 	mod->linkRule(_pilotSoldierBonusesRequired, _pilotSoldierBonusesRequiredNames);
 
@@ -246,16 +248,6 @@ void RuleCraft::afterLoad(const Mod* mod)
 const std::string &RuleCraft::getType() const
 {
 	return _type;
-}
-
-/**
- * Gets the list of research required to
- * acquire this craft.
- * @return The list of research IDs.
- */
-const std::vector<std::string> &RuleCraft::getRequirements() const
-{
-	return _requires;
 }
 
 /**

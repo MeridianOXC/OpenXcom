@@ -67,7 +67,7 @@ void RuleEvent::load(const YAML::YamlNodeReader& node)
 	}
 	reader.tryRead("researchList", _researchNames);
 	reader.tryRead("adhocMissionScriptTags", _adhocMissionScriptTags);
-	reader.tryRead("interruptResearch", _interruptResearch);
+	reader.tryRead("interruptResearch", _interruptResearchName);
 	reader.tryRead("timer", _timer);
 	reader.tryRead("timerRandom", _timerRandom);
 	reader.tryRead("invert", _invert);
@@ -82,6 +82,7 @@ void RuleEvent::load(const YAML::YamlNodeReader& node)
 void RuleEvent::afterLoad(const Mod* mod)
 {
 	mod->linkRule(_research, _researchNames);
+	mod->linkRule(_interruptResearch, _interruptResearchName);
 }
 
 }

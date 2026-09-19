@@ -52,7 +52,7 @@ void RuleSoldierTransformation::load(const YAML::YamlNodeReader& node, Mod* mod)
 
 	reader.tryRead("listOrder", _listOrder);
 
-	mod->loadUnorderedNames(_name, _requires, reader["requires"]);
+	mod->loadUnorderedNames(_name, _requireNames, reader["requires"]);
 	mod->loadBaseFunction(_name, _requiresBaseFunc, reader["requiresBaseFunc"]);
 	reader.tryRead("producedItem", _producedItem);
 	reader.tryRead("producedSoldierType", _producedSoldierType);
@@ -109,6 +109,15 @@ void RuleSoldierTransformation::load(const YAML::YamlNodeReader& node, Mod* mod)
 }
 
 /**
+ * Cross link with other rules.
+ */
+void RuleSoldierTransformation::afterLoad(const Mod* mod)
+{
+	mod->linkRule(_requires, _requireNames);
+	mod->linkRule(_soldierBonus, _soldierBonusType);
+}
+
+/**
  * Gets the unique name id of the project
  * @return The name of the project
  */
@@ -124,15 +133,6 @@ const std::string &RuleSoldierTransformation::getName() const
 int RuleSoldierTransformation::getListOrder() const
 {
 	return _listOrder;
-}
-
-/**
- * Gets the list of research this project requires
- * @return The list of required research
- */
-const std::vector<std::string > &RuleSoldierTransformation::getRequiredResearch() const
-{
-	return _requires;
 }
 
 /**
@@ -393,15 +393,6 @@ bool RuleSoldierTransformation::getReset() const
 bool RuleSoldierTransformation::getResetRank() const
 {
 	return _resetRank;
-}
-
-/**
- * Gets the type of soldier bonus assigned by this project
- * @return The soldier bonus type
- */
-const std::string &RuleSoldierTransformation::getSoldierBonusType() const
-{
-	return _soldierBonusType;
 }
 
 }

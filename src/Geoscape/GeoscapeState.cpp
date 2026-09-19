@@ -2050,7 +2050,7 @@ void GeoscapeState::time30Minutes()
 		if (ge->isOver())
 		{
 			bool interrupted = false;
-			if (!ge->getRules().getInterruptResearch().empty())
+			if (ge->getRules().getInterruptResearch())
 			{
 				if (_game->getSavedGame()->isResearched(ge->getRules().getInterruptResearch(), false))
 				{
@@ -3575,7 +3575,7 @@ void GeoscapeState::handleBaseDefense(Base *base, Ufo *ufo)
 /**
  * Determine the alien missions to start this month.
  */
-void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eventRules)
+void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* p_eventRules)
 {
 	SavedGame *save = _game->getSavedGame();
 	AlienStrategy &strategy = save->getAlienStrategy();
@@ -3755,21 +3755,22 @@ void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eve
 			int arcsEnabled = 0;
 			// level four condition check: check maxArcs (duplicates count, arcs enabled by other commands or in any other way count too!)
 			{
-				for (auto& seqArc : arcCommand->getSequentialArcs())
+				for (auto* seqArc : arcCommand->getSequentialArcs())
 				{
 					if (save->isResearched(seqArc))
 						++arcsEnabled;
 					else
-						disabledSeqArcs.push_back(seqArc);
+						disabledSeqArcs.push_back(seqArc->getName());
 				}
 				WeightedOptions tmp = arcCommand->getRandomArcs(); // copy for the iterator, because of getNames()
 				disabledRngArcs = tmp; // copy for us to modify
 				for (auto& rngArc : tmp.getNames())
 				{
-					if (save->isResearched(rngArc))
+					auto* research = mod->getResearch(rngArc, true);
+					if (save->isResearched(research))
 					{
 						++arcsEnabled;
-						disabledRngArcs.set(rngArc, 0); // delete
+						disabledRngArcs.set(research->getName(), 0); // delete
 					}
 				}
 			}
@@ -3824,10 +3825,10 @@ void GeoscapeState::determineAlienMissions(bool isNewMonth, const RuleEvent* eve
 		RuleMissionScript *command = isNewMonth ? mod->getMissionScript(missionScriptName) : mod->getAdhocScript(missionScriptName);
 
 		// level zero condition check: filter adhoc mission scripts by tags
-		if (!isNewMonth && eventRules)
+		if (!isNewMonth && p_eventRules)
 		{
 			bool matchFound = false;
-			for (auto& atag : eventRules->getAdhocMissionScriptTags())
+			for (auto& atag : p_eventRules->getAdhocMissionScriptTags())
 			{
 				for (auto& btag : command->getAdhocMissionScriptTags())
 				{
@@ -4277,7 +4278,7 @@ bool GeoscapeState::attemptAlienRaceEvolution(int month, AlienBase* ab) const
 {
 	for (const auto& tuple : ab->getDeployment()->getAlienRaceEvolution())
 	{
-		if (std::get<0>(tuple) <= month && std::get<1>(tuple) == ab->getAlienRace())
+		if ((int)std::get<0>(tuple) <= month && std::get<1>(tuple) == ab->getAlienRace())
 		{
 			auto* newRace = _game->getMod()->getAlienRace(std::get<2>(tuple), false);
 			if (newRace)

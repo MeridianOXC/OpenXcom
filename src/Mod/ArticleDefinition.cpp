@@ -18,6 +18,7 @@
  */
 
 #include "ArticleDefinition.h"
+#include "Mod.h"
 #include "../Engine/Exception.h"
 #include "../Mod/RuleItem.h"
 
@@ -58,8 +59,8 @@ namespace OpenXcom
 		reader.tryRead("id", id);
 		_pages[0].title = id;
 		reader.tryRead("section", section);
-		reader.tryRead("requires", _requires);
-		reader.tryRead("disabledBy", disabledBy);
+		reader.tryRead("requires", requireNames);
+		reader.tryRead("disabledBy", disabledByNames);
 		reader.tryRead("hiddenCommendation", hiddenCommendation);
 		//_type_id = (UfopaediaTypeId)node["type_id"].as<int>(_type_id);
 		reader.tryRead("listOrder", _listOrder);
@@ -96,6 +97,15 @@ namespace OpenXcom
 				throw Exception("Unsupported type of node 'pages' for Article '" + id + "'");
 			}
 		}
+	}
+
+	/**
+	 * Cross link with other rules.
+	 */
+	void ArticleDefinition::afterLoad(const Mod* mod)
+	{
+		mod->linkRule(_requires, requireNames);
+		mod->linkRule(disabledBy, disabledByNames);
 	}
 
 	/**

@@ -24,6 +24,10 @@
 
 namespace OpenXcom
 {
+
+	class Mod;
+	class RuleResearch;
+
 	/// define article types
 	enum UfopaediaTypeId {
 		UFOPAEDIA_TYPE_UNKNOWN            = 0,
@@ -80,13 +84,15 @@ namespace OpenXcom
 		UfopaediaTypeId getType() const;
 		/// Loads the article from YAML.
 		virtual void load(const YAML::YamlNodeReader& reader, int listOrder);
+		/// Cross link with other rules.
+		void afterLoad(const Mod* mod);
 		/// Gets the article's list weight.
 		int getListOrder() const;
 
 		std::string id;
 		std::string section;
-		std::vector<std::string> _requires;
-		std::vector<std::string> disabledBy;
+		std::vector<const RuleResearch*> _requires;
+		std::vector<const RuleResearch*> disabledBy;
 		bool customPalette;
 		bool hiddenCommendation;
 
@@ -147,6 +153,8 @@ namespace OpenXcom
 		UfopaediaTypeId _type_id;
 		std::vector<ArticlePage> _pages;
 	private:
+		std::vector<std::string> requireNames;
+		std::vector<std::string> disabledByNames;
 		int _listOrder;
 	};
 

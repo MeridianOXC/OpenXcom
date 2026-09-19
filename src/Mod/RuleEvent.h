@@ -52,7 +52,8 @@ private:
 	std::vector<std::string> _researchNames;
 	std::vector<const RuleResearch*> _research;
 	std::vector<std::string> _adhocMissionScriptTags;
-	std::string _interruptResearch;
+	std::string _interruptResearchName;
+	const RuleResearch* _interruptResearch = nullptr;
 	int _timer, _timerRandom;
 	bool _invert;
 	std::map<std::string, int> _everyMultiSoldierList;
@@ -115,7 +116,7 @@ public:
 	/// Gets a list of adhoc script tags; used for adhoc alien mission generation.
 	const std::vector<std::string> &getAdhocMissionScriptTags() const { return _adhocMissionScriptTags; }
 	/// Gets the research project that will interrupt/terminate an already generated (but not yet popped up) event.
-	const std::string &getInterruptResearch() const { return _interruptResearch; }
+	const RuleResearch* getInterruptResearch() const { return _interruptResearch; }
 	/// Gets the timer of delay for this event, for it occurring after being spawned with eventScripts ruleset.
 	int getTimer() const { return _timer; }
 	/// Gets value for calculation of random part of delay for this event.

@@ -243,7 +243,7 @@ void SoldierTransformationState::initTransformationData()
 	UnitStats changedStatsMin = _sourceSoldier->calculateStatChanges(_game->getMod(), _transformationRule, _sourceSoldier, 1, _sourceSoldier->getRules());
 	UnitStats changedStatsMax = _sourceSoldier->calculateStatChanges(_game->getMod(), _transformationRule, _sourceSoldier, 2, _sourceSoldier->getRules());
 	UnitStats bonusStats;
-	auto* bonusRule = _game->getMod()->getSoldierBonus(_transformationRule->getSoldierBonusType(), false);
+	auto* bonusRule = _transformationRule->getSoldierBonus();
 	if (bonusRule)
 	{
 		bonusStats += *bonusRule->getStats();

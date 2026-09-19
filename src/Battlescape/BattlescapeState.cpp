@@ -1396,7 +1396,10 @@ void BattlescapeState::btnShowMapClick(Action *)
 {
 	//MiniMapState
 	if (allowButtons())
-		_game->pushState (new MiniMapState (_map->getCamera(), _save));
+	{
+		int maxShade = _map->reShadeMinimap(7); // 7 = vanilla
+		_game->pushState (new MiniMapState (_map->getCamera(), _save, maxShade));
+	}
 }
 
 void BattlescapeState::toggleKneelButton(BattleUnit* unit)
