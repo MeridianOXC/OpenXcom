@@ -26,11 +26,15 @@
 namespace OpenXcom
 {
 
+class Mod;
+class RuleResearch;
+
 class RuleArcScript
 {
 private:
 	std::string _type;
-	std::vector<std::string> _sequentialArcs;
+	std::vector<std::string> _sequentialArcNames;
+	std::vector<const RuleResearch*> _sequentialArcs;
 	WeightedOptions _randomArcs;
 	int _firstMonth, _lastMonth, _executionOdds, _maxArcs, _minDifficulty, _maxDifficulty;
 	int _minScore, _maxScore;
@@ -38,7 +42,8 @@ private:
 	std::string _missionVarName, _missionMarkerName;
 	int _counterMin, _counterMax;
 
-	std::map<std::string, bool> _researchTriggers;
+	std::map<std::string, bool> _researchTriggerNames;
+	std::map<const RuleResearch*, bool> _researchTriggers;
 	std::map<std::string, bool> _itemTriggers;
 	std::map<std::string, bool> _facilityTriggers;
 	std::map<std::string, bool> _soldierTypeTriggers;
@@ -53,10 +58,12 @@ public:
 	~RuleArcScript();
 	/// Loads an arc script from yaml.
 	void load(const YAML::YamlNodeReader& reader);
+	/// Cross link with other rules.
+	void afterLoad(const Mod* mod);
 	/// Gets the name of the script command.
 	const std::string &getType() const { return _type; }
 	/// Gets the sequential arcs list.
-	const std::vector<std::string> &getSequentialArcs() const { return _sequentialArcs; }
+	const std::vector<const RuleResearch*> &getSequentialArcs() const { return _sequentialArcs; }
 	/// Gets the random arcs weighted list.
 	const WeightedOptions &getRandomArcs() const { return _randomArcs; }
 	/// Gets the first month this command will run.
@@ -89,7 +96,7 @@ public:
 	int getCounterMax() const { return _counterMax; }
 
 	/// Gets the research triggers that may apply to this command.
-	const std::map<std::string, bool> &getResearchTriggers() const { return _researchTriggers; }
+	const std::map<const RuleResearch*, bool> &getResearchTriggers() const { return _researchTriggers; }
 	/// Gets the item triggers that may apply to this command.
 	const std::map<std::string, bool> &getItemTriggers() const { return _itemTriggers; }
 	/// Gets the facility triggers that may apply to this command.

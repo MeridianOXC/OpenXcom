@@ -28,6 +28,8 @@ namespace OpenXcom
 {
 
 class Mod;
+class RuleResearch;
+class RuleSoldierBonus;
 
 /**
  * Ruleset data structure for the information to transform a soldier.
@@ -36,7 +38,9 @@ class RuleSoldierTransformation
 {
 private:
 	std::string _name;
-	std::vector<std::string > _requires, _requiredPreviousTransformations, _forbiddenPreviousTransformations;
+	std::vector<std::string> _requireNames;
+	std::vector<const RuleResearch*> _requires;
+	std::vector<std::string > _requiredPreviousTransformations, _forbiddenPreviousTransformations;
 	RuleBaseFacilityFunctions _requiresBaseFunc;
 	std::string _producedItem;
 	std::string _producedSoldierType, _producedSoldierArmor;
@@ -58,6 +62,7 @@ private:
 	bool _resetRank;
 	bool _resetVoice;
 	std::string _soldierBonusType;
+	const RuleSoldierBonus* _soldierBonus = nullptr;
 	WeightedOptions _events;
 
 public:
@@ -65,12 +70,14 @@ public:
 	RuleSoldierTransformation(const std::string &name, int listOrder);
 	/// Loads the project data from YAML
 	void load(const YAML::YamlNodeReader& reader, Mod* mod);
+	/// Cross link with other rules.
+	void afterLoad(const Mod* mod);
 	/// Gets the unique name id of the project
 	const std::string &getName() const;
 	/// Gets the list weight of the project
 	int getListOrder() const;
 	/// Gets the list of research this project requires
-	const std::vector<std::string > &getRequiredResearch() const;
+	const std::vector<const RuleResearch*> &getRequiredResearch() const { return _requires; }
 	/// Gets the list of required base functions for this project
 	RuleBaseFacilityFunctions getRequiredBaseFuncs() const { return _requiresBaseFunc; }
 	/// Gets the type of item produced by this project (the soldier stops existing completely and is fully replaced by the item)
@@ -159,8 +166,8 @@ public:
 	bool getResetRank() const;
 	/// Gets whether or not this project should reset the voice set of the destination soldier
 	bool getResetVoice() const { return _resetVoice; }
-	/// Gets the type of soldier bonus assigned by this project
-	const std::string &getSoldierBonusType() const;
+	/// Gets the soldier bonus assigned by this project
+	const RuleSoldierBonus* getSoldierBonus() const { return _soldierBonus; }
 
 	/// Gets geoscape event rule name to spawn after soldier transformation
 	std::string chooseEvent() const { return _events.choose(); }

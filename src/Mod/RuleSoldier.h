@@ -31,6 +31,7 @@ class ModScript;
 class SoldierNamePool;
 class StatString;
 class RuleItem;
+class RuleResearch;
 class RuleSkill;
 class Armor;
 class RuleVoiceSet;
@@ -69,7 +70,8 @@ private:
 	YAML::YamlString _spawnedSoldier;
 	int _group;
 	int _listOrder;
-	std::vector<std::string> _requires;
+	std::vector<std::string> _requireNames;
+	std::vector<const RuleResearch*> _requires;
 	RuleBaseFacilityFunctions _requiresBuyBaseFunc;
 	std::string _requiresBuyCountry;
 	UnitStats _minStats, _maxStats, _statCaps, _trainingStatCaps, _dogfightExperience;
@@ -130,7 +132,7 @@ public:
 	/// Gets the list/sort order of the soldier's type.
 	int getListOrder() const;
 	/// Gets the soldier's requirements.
-	const std::vector<std::string> &getRequirements() const;
+	const std::vector<const RuleResearch*> &getRequirements() const { return _requires; }
 	/// Gets the base functions required to hire this soldier type.
 	RuleBaseFacilityFunctions getRequiresBuyBaseFunc() const { return _requiresBuyBaseFunc; }
 	/// Gets the allied country name required to hire this soldier type.

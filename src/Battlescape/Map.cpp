@@ -1954,7 +1954,7 @@ void Map::persistToggles()
  * @param original tile/item/unit shade
  */
 
-int Map::reShade(Tile *tile)
+int Map::reShade(Tile *tile) const
 {
 	// when modders just don't know where to stop...
 	if (_debugVisionMode > 0)
@@ -1994,6 +1994,25 @@ int Map::reShade(Tile *tile)
 
 	// hybrid night vision (global)
 	return std::min(+NIGHT_VISION_MAX_SHADE, tile->getShade());
+}
+
+int Map::reShadeMinimap(int maxShade) const
+{
+	if (_debugVisionMode > 0)
+	{
+		if (_debugVisionMode == 1)
+		{
+			return maxShade / 2;
+		}
+		return 0;
+	}
+
+	if (_nvColor == 0)
+	{
+		return maxShade;
+	}
+
+	return std::min(+NIGHT_VISION_MAX_SHADE / 2, maxShade);
 }
 
 /**

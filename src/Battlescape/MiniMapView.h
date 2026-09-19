@@ -36,6 +36,7 @@ class MiniMapView : public InteractiveSurface
 	Game * _game;
 	Camera * _camera;
 	SavedBattleGame * _battleGame;
+	int _maxShade;
 	int _frame;
 	SurfaceSet * _set;
 	int _emptySpaceIndex;
@@ -58,7 +59,7 @@ class MiniMapView : public InteractiveSurface
 	void mouseIn(Action *action, State *state) override;
 public:
 	/// Creates the MiniMapView.
-	MiniMapView(int w, int h, int x, int y, Game * game, Camera * camera, SavedBattleGame * battleGame);
+	MiniMapView(int w, int h, int x, int y, Game * game, Camera * camera, SavedBattleGame * battleGame, int maxShade);
 	/// Draws the minimap.
 	void draw() override;
 	/// Changes the displayed minimap level.

@@ -27,6 +27,9 @@
 namespace OpenXcom
 {
 enum GenerationType { GEN_REGION, GEN_MISSION, GEN_RACE };
+
+class Mod;
+class RuleResearch;
 class WeightedOptions;
 
 class RuleMissionScript
@@ -42,7 +45,8 @@ private:
 	std::vector<std::string> _adhocMissionScriptTags;
 	std::vector<std::pair<size_t, WeightedOptions*> > _regionWeights, _missionWeights, _raceWeights;
 
-	std::map<std::string, bool> _researchTriggers;
+	std::map<std::string, bool> _researchTriggerNames;
+	std::map<const RuleResearch*, bool> _researchTriggers;
 	std::map<std::string, bool> _itemTriggers;
 	std::map<std::string, bool> _facilityTriggers;
 	std::map<std::string, bool> _soldierTypeTriggers;
@@ -59,6 +63,8 @@ public:
 	~RuleMissionScript();
 	/// Loads a mission script from yaml.
 	void load(const YAML::YamlNodeReader& reader);
+	/// Cross link with other rules.
+	void afterLoad(const Mod* mod);
 	/// Gets the name of the script command.
 	const std::string& getType() const;
 	/// Gets the name of the variable to use for keeping track of... things.
@@ -117,7 +123,7 @@ public:
 	bool hasRegionWeights() const;
 
 	/// Gets the research triggers that may apply to this command.
-	const std::map<std::string, bool> &getResearchTriggers() const;
+	const std::map<const RuleResearch*, bool>& getResearchTriggers() const { return _researchTriggers; }
 	/// Gets the item triggers that may apply to this command.
 	const std::map<std::string, bool> &getItemTriggers() const;
 	/// Gets the facility triggers that may apply to this command.

@@ -96,9 +96,9 @@ namespace OpenXcom
 		}
 		for (size_t it = 0; it<articles.size(); ++it)
 		{
-			for (const auto& req : articles[it]->_requires)
+			for (const auto* req : articles[it]->_requires)
 			{
-				if (article_id == req)
+				if (article_id == req->getName())
 				{
 					return it;
 				}

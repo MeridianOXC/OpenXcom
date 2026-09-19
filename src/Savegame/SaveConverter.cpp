@@ -1182,9 +1182,8 @@ void SaveConverter::loadDatUp()
 			bool discovered = load<Uint8>(rdata + 0x08) == 2;
 			if (discovered)
 			{
-				for (const auto& req : article->_requires)
+				for (const auto* research : article->_requires)
 				{
-					RuleResearch *research = _mod->getResearch(req);
 					if (research && research->getCost() == 0)
 					{
 						_save->addFinishedResearch(research, _mod, 0, false);

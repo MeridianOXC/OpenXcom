@@ -17,6 +17,7 @@
  * along with OpenXcom.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "RuleMissionScript.h"
+#include "Mod.h"
 #include "../Engine/Exception.h"
 #include "../Engine/RNG.h"
 #include <climits>
@@ -110,7 +111,7 @@ void RuleMissionScript::load(const YAML::YamlNodeReader& node)
 		_regionWeights.push_back(std::make_pair(monthWeights.readKey<size_t>(0), nw));
 	}
 
-	reader.tryRead("researchTriggers", _researchTriggers);
+	reader.tryRead("researchTriggers", _researchTriggerNames);
 	reader.tryRead("itemTriggers", _itemTriggers);
 	reader.tryRead("facilityTriggers", _facilityTriggers);
 	reader.tryRead("soldierTypeTriggers", _soldierTypeTriggers);
@@ -124,6 +125,25 @@ void RuleMissionScript::load(const YAML::YamlNodeReader& node)
 		throw Exception("Error in mission script: " + _type +": no varName provided for a script with maxRuns or repeatAvoidance.");
 	}
 
+}
+
+/**
+ * Cross link with other Rules.
+ */
+void RuleMissionScript::afterLoad(const Mod* mod)
+{
+	// Link manually
+	for (auto& entry : _researchTriggerNames)
+	{
+		auto* research = mod->getResearch(entry.first, true); // crash if doesn't exist
+		if (research)
+		{
+			_researchTriggers[research] = entry.second;
+		}
+	}
+
+	//remove not needed data
+	Collections::removeAll(_researchTriggerNames);
 }
 
 /**
@@ -240,14 +260,6 @@ bool RuleMissionScript::hasMissionWeights() const
 bool RuleMissionScript::hasRegionWeights() const
 {
 	return !_regionWeights.empty();
-}
-
-/**
- * @return a list of research topics that govern execution of this script.
- */
-const std::map<std::string, bool> &RuleMissionScript::getResearchTriggers() const
-{
-	return _researchTriggers;
 }
 
 /**

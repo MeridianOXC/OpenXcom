@@ -82,7 +82,7 @@ void RuleSoldier::load(const YAML::YamlNodeReader& node, Mod *mod, const ModScri
 	reader.tryRead("prefix", _prefix);
 
 	//requires
-	mod->loadUnorderedNames(_type, _requires, reader["requires"]);
+	mod->loadUnorderedNames(_type, _requireNames, reader["requires"]);
 	mod->loadBaseFunction(_type, _requiresBuyBaseFunc, reader["requiresBuyBaseFunc"]);
 	reader.tryRead("requiresBuyCountry", _requiresBuyCountry);
 
@@ -216,6 +216,8 @@ void RuleSoldier::afterLoad(const Mod* mod)
 		Log(LOG_ERROR) << _type << ": total soldier name pool weight is invalid. Forgotten 'soldierNames:' ?";
 	}
 
+	mod->linkRule(_requires, _requireNames);
+
 	mod->linkRule(_armor, _armorName);
 	mod->checkForSoftError(_armor == nullptr, _type, "Soldier type is missing the default armor", LOG_ERROR);
 
@@ -297,16 +299,6 @@ const std::string& RuleSoldier::getType() const
 int RuleSoldier::getListOrder() const
 {
 	return _listOrder;
-}
-
-/**
- * Gets the list of research required to
- * acquire this soldier.
- * @return The list of research IDs.
-*/
-const std::vector<std::string> &RuleSoldier::getRequirements() const
-{
-	return _requires;
 }
 
 /**

@@ -252,7 +252,7 @@ void BasescapeState::init()
 
 	_btnNewBase->setVisible(_game->getSavedGame()->getBases()->size() < MiniBaseView::MAX_BASES);
 
-	if (!_game->getMod()->getNewBaseUnlockResearch().empty())
+	if (_game->getMod()->getNewBaseUnlockResearch())
 	{
 		bool newBasesUnlocked = _game->getSavedGame()->isResearched(_game->getMod()->getNewBaseUnlockResearch(), true);
 		if (!newBasesUnlocked)
