@@ -1492,7 +1492,7 @@ bool TileEngine::calculateUnitsInFOV(BattleUnit* unit, const Position eventPos, 
 							{
 								bu->setVisible(true);
 							}
-							if ((( bu->getFaction() == FACTION_HOSTILE && unit->getFaction() == FACTION_PLAYER )
+							if ((( bu->getFaction() == FACTION_HOSTILE && unit->getFaction() != FACTION_HOSTILE )
 								|| ( bu->getFaction() != FACTION_HOSTILE && unit->getFaction() == FACTION_HOSTILE ))
 								&& !unit->hasVisibleUnit(bu))
 							{
@@ -2611,6 +2611,12 @@ std::vector<TileEngine::ReactionScore> TileEngine::getSpottingUnits(BattleUnit* 
 						unit->setVisible(true);
 					}
 					bu->addToVisibleUnits(unit);
+					unit->setTurnsSinceSpottedByFaction(bu->getFaction(), 0);
+					unit->setTurnsLeftSpottedForSnipersByFaction(
+						bu->getFaction(),
+						std::max(bu->getSpotterDuration(), unit->getTurnsLeftSpottedForSnipersByFaction(bu->getFaction()))
+					); // defaults to 0 = no information given to snipers
+
 					ReactionScore rs = determineReactionType(bu, unit);
 					if (rs.attackType != BA_NONE)
 					{
