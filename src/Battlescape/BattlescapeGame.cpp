@@ -1819,7 +1819,7 @@ void BattlescapeGame::primaryAction(Position pos)
 			{
 				if (!_currentAction.weapon->getRules()->isLOSRequired() ||
 					(_currentAction.actor->getFaction() == FACTION_PLAYER && targetUnit->getFaction() != FACTION_HOSTILE) ||
-					std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
+					_currentAction.actor->hasVisibleUnit(targetUnit))
 				{
 					std::string error;
 					if (_currentAction.spendTU(&error))
@@ -1887,7 +1887,7 @@ void BattlescapeGame::primaryAction(Position pos)
 					_currentAction.target = pos;
 					if (!_currentAction.weapon->getRules()->isLOSRequired() ||
 						(attackerFaction == FACTION_PLAYER && targetFaction != FACTION_HOSTILE) ||
-						std::find(_currentAction.actor->getVisibleUnits()->begin(), _currentAction.actor->getVisibleUnits()->end(), targetUnit) != _currentAction.actor->getVisibleUnits()->end())
+						_currentAction.actor->hasVisibleUnit(targetUnit))
 					{
 						// get the sound/animation started
 						getMap()->setCursorType(CT_NONE);

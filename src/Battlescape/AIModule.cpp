@@ -2765,8 +2765,8 @@ bool AIModule::psiAction()
 				validTarget(bu, true, false) &&
 				// they must be player units
 				bu->getOriginalFaction() != _unit->getFaction() &&
-				(!LOSRequired ||
-				std::find(_unit->getVisibleUnits()->begin(), _unit->getVisibleUnits()->end(), bu) != _unit->getVisibleUnits()->end()))
+				(!LOSRequired || _unit->hasVisibleUnit(bu))
+			)
 			{
 				BattleUnit *victim = bu;
 				if (item->getRules()->isOutOfRange(_unit->distance3dToUnitSq(victim)))

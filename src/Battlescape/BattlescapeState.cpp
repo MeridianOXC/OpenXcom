@@ -2313,16 +2313,8 @@ void BattlescapeState::updateSoldierInfo(bool checkFOV)
 		// check if they are hostile and visible (by any friendly unit)
 		if (bu->getOriginalFaction() == FACTION_HOSTILE && !bu->isOut() && bu->getVisible())
 		{
-			bool alreadyShown = false;
 			// check if they are not already shown (e.g. because we see them directly)
-			for (auto* bu2 : *battleUnit->getVisibleUnits())
-			{
-				if (bu->getId() == bu2->getId())
-				{
-					alreadyShown = true;
-				}
-			}
-			if (!alreadyShown)
+			if (!battleUnit->hasVisibleUnit(bu))
 			{
 				_btnVisibleUnit[j]->setTooltip(_txtVisibleUnitTooltip[j]);
 				_btnVisibleUnit[j]->setVisible(true);
